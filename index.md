@@ -2,23 +2,30 @@
 layout: home
 ---
 
-# Some stuff about your course
-
-Blah blah
-
-Learning outcomes
-
-You can use any elements of [Bootstrap](https://getbootstrap.com) that you like.
-
-For example, here's a jumbotron
-
 <div class="jumbotron">
-  <h1 class="display-3">STAT XXX</h1>
-  <p class="lead">Welcome to your first semester of statistics!</p>
+  <h1 class="display-3">STAT 406</h1>
+  <p class="lead">Elements of Statistical Learning</p>
   <hr class="my-4">
-  <p>Here we will learn many topics. You can learn about bootstrap components (like buttons) at <a href="https://getbootstrap.com/docs/4.0/components/buttons/">button documentation</a>.</p>
   <p class="lead">
-  <a class="btn btn-danger btn-lg" href="https://getbootstrap.com/docs/4.0/components/jumbotron/" role="button">More documentation.</a>
+  <a class="btn btn-danger btn-lg" href="/schedule.html" role="button">Jump to Schedule.</a>
   </p>
 </div>
 
+## Short description of topics
+
+Flexible, data-adaptive methods for regression and classification models; regression smoothers;
+penalty methods; assessing accuracy of prediction; model selection; robustness; classification and
+regression trees; nearest-neighbour methods; ensembles; unsupervised learning.
+
+## Learning outcomes
+
+At the end of the course, the student will be able to: 
+
+1. assess the prediction properties of the supervised learning methods covered in class; 
+2. correctly use regularization to improve predictions from linear models, and also to identify important explanatory variables; 
+3. explain the practical
+difference between predictions obtained with parametric and non-parametric methods, and decide in specific applications which approach should be used; 
+4. select and construct appropriate ensembles to obtain improved predictions in different contexts; 
+5. select sensible clustering methods and correctly interpret their output; 
+6. correctly utilize and interpret principal components and other dimension reduction techniques;
+7. employ reasonable coding practices and understand basic R syntax and function.
