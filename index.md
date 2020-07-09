@@ -7,7 +7,7 @@ layout: home
   <p class="lead">Elements of Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
-  <a class="btn btn-danger btn-lg" href="/schedule.html" role="button">Jump to Schedule.</a>
+  <a class="btn btn-danger btn-lg" href="stat-406/schedule.html" role="button">Jump to Schedule.</a>
   </p>
 </div>
 
