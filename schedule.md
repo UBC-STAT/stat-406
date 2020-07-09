@@ -8,12 +8,12 @@
     -   [Midterm 5 and Final exam](#midterm-5-and-final-exam)
 
 <div class="btn-group" role="group" align-items="center" aria-label="Basic example">
-  <button type="button" class="btn btn-secondary" href="0-introduction-and-review">0 Intro</button>
-  <button type="button" class="btn btn-secondary" href="1-model-accuracy">1 Model Checks</button>
-  <button type="button" class="btn btn-secondary" href="2-regularization-smoothing-and-trees">2 Regression</button>
-  <button type="button" class="btn btn-secondary" href="3-classification">3 Classification</button>
-  <button type="button" class="btn btn-secondary" href="4-modern-techniques">4 Modern</button>
-  <button type="button" class="btn btn-secondary" href="5-unsupervised-learning">5 Unsupervised</button>
+  <button type="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</button>
+  <button type="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</button>
+  <button type="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</button>
+  <button type="button" class="btn btn-secondary" href="#3-classification">3 Classification</button>
+  <button type="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</button>
+  <button type="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</button>
 </div>
 
 0 Introduction and Review
