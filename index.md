@@ -11,12 +11,6 @@ layout: home
   </p>
 </div>
 
-## Short description of topics
-
-Flexible, data-adaptive methods for regression and classification models; regression smoothers;
-penalty methods; assessing accuracy of prediction; model selection; robustness; classification and
-regression trees; nearest-neighbour methods; ensembles; unsupervised learning.
-
 ## Learning outcomes
 
 At the end of the course, the student will be able to: 
@@ -29,3 +23,10 @@ difference between predictions obtained with parametric and non-parametric metho
 5. select sensible clustering methods and correctly interpret their output; 
 6. correctly utilize and interpret principal components and other dimension reduction techniques;
 7. employ reasonable coding practices and understand basic R syntax and function.
+
+## Short list of covered topics
+
+Flexible, data-adaptive methods for regression and classification models; regression smoothers;
+penalty methods; assessing accuracy of prediction; model selection; robustness; classification and
+regression trees; nearest-neighbour methods; ensembles; unsupervised learning.
+
