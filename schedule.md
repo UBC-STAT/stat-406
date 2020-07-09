@@ -1,12 +1,17 @@
-<button type="button" class="btn btn-primary">0 Intro</button>
-<button type="button" class="btn btn-primary">1 Model Checks</button>
-<button type="button" class="btn btn-primary">2 Regression</button>
-<button type="button" class="btn btn-primary">3 Classification</button>
-<button type="button" class="btn btn-primary">4 Modern</button>
-<button type="button" class="btn btn-primary">5 Unsupervised</button>
+Schedule
+========
+
+<div class="btn-group" role="group" align-items="center" aria-label="Basic example">
+  <button type="button" class="btn" href="#0-Introduction-and-Review">0 Intro</button>
+  <button type="button" class="btn" href="#1-Model-Accuracy">1 Model Checks</button>
+  <button type="button" class="btn">2 Regression</button>
+  <button type="button" class="btn">3 Classification</button>
+  <button type="button" class="btn">4 Modern</button>
+  <button type="button" class="btn">5 Unsupervised</button>
+</div>
 
 0 Introduction and Review
--------------------------
+=========================
 
 Reading  
 \[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
@@ -14,27 +19,8 @@ Reading
 Video lectures  
 Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">8 Sep 20</td>
-<td style="text-align: left;">Imagine UBC</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">10 Sep 20</td>
-<td style="text-align: left;">Special</td>
-</tr>
-</tbody>
-</table>
-
 1 Model Accuracy
-----------------
+================
 
 Reading  
 \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
