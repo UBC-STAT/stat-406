@@ -10,7 +10,7 @@
 <div class="btn-group" role="group" align-items="center" aria-label="Basic example">
   <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
   <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
-  <a role="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</button>
+  <a role="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</a>
   <a role="button" class="btn btn-secondary" href="#3-classification">3 Classification</a>
   <a role="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</a>
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
@@ -18,8 +18,6 @@
 
 0 Introduction and Review
 =========================
-
-<a name="0intro"></a>
 
 Reading  
 \[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
@@ -29,8 +27,6 @@ Lecture 0 (in class on Thursday)
 
 1 Model Accuracy
 ================
-
-<a name="1model"></a>
 
 Reading  
 \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
@@ -72,8 +68,6 @@ Lecture 0 (in class on Thursday)
 2 Regularization, smoothing, and trees
 --------------------------------------
 
-<a name="2reg"></a>
-
 Reading  
 \[ISLR\] Ch 6.2, 7.1&nbsp7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
@@ -113,8 +107,6 @@ Lecture 0 (in class on Thursday)
 
 3 Classification
 ----------------
-
-<a name="3class"></a>
 
 Reading  
 \[ISLR\] Ch 2.2.3, 4&nbsp4.5, 8.1.2
@@ -156,8 +148,6 @@ Lecture 0 (in class on Thursday)
 4 Modern techniques
 -------------------
 
-<a name="4modern"></a>
-
 Reading  
 \[ISLR\] 5.2, 8.2
 
@@ -197,8 +187,6 @@ Lecture 0 (in class on Thursday)
 
 5 Unsupervised learning
 -----------------------
-
-<a name="5unsup"></a>
 
 Reading  
 \[ISLR\] 10
