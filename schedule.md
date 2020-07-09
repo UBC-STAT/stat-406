@@ -1,13 +1,19 @@
-Schedule
-========
+-   [0 Introduction and Review](#introduction-and-review)
+-   [1 Model Accuracy](#model-accuracy)
+    -   [2 Regularization, smoothing, and
+        trees](#regularization-smoothing-and-trees)
+    -   [3 Classification](#classification)
+    -   [4 Modern techniques](#modern-techniques)
+    -   [5 Unsupervised learning](#unsupervised-learning)
+    -   [Midterm 5 and Final exam](#midterm-5-and-final-exam)
 
 <div class="btn-group" role="group" align-items="center" aria-label="Basic example">
-  <button type="button" class="btn" href="#0-Introduction-and-Review">0 Intro</button>
-  <button type="button" class="btn" href="#1-Model-Accuracy">1 Model Checks</button>
-  <button type="button" class="btn">2 Regression</button>
-  <button type="button" class="btn">3 Classification</button>
-  <button type="button" class="btn">4 Modern</button>
-  <button type="button" class="btn">5 Unsupervised</button>
+  <button type="button" class="btn btn-secondary" href="#introduction-and-review">0 Intro</button>
+  <button type="button" class="btn btn-secondary" href="#1-Model-Accuracy">1 Model Checks</button>
+  <button type="button" class="btn btn-secondary">2 Regression</button>
+  <button type="button" class="btn btn-secondary">3 Classification</button>
+  <button type="button" class="btn btn-secondary">4 Modern</button>
+  <button type="button" class="btn btn-secondary">5 Unsupervised</button>
 </div>
 
 0 Introduction and Review
