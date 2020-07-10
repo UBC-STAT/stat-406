@@ -80,7 +80,7 @@ to learn more and understand the material more deeply, this is the book for you.
 
 ### Course assesssment opportunities
 
-1 Mini pre quiz (1%)
+1 Mini pre quiz (1%)  
 5 In-class mini quizzes (1% each)  
 5 In-class group quizzes (1% each)  
 5 Peer evaluations (1% each)  
