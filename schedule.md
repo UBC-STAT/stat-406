@@ -11,13 +11,14 @@ the beginning of the module.
 
 
 
-<div class="btn-group" role="group" align-items="center" aria-label="Basic example">
+<div class="btn-group text-center" role="group" aria-label="Basic example">
   <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
   <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
   <a role="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</a>
   <a role="button" class="btn btn-secondary" href="#3-classification">3 Classification</a>
   <a role="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</a>
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
+  <a role="button" class="btn btn-secondary" href="#F-midterm-5-and-final-exam">F Final</a>
 </div>
 
 
@@ -35,6 +36,7 @@ Video lectures
 |:---------|:-----------|
 |8 Sep 20  |Imagine UBC |
 |10 Sep 20 |Special     |
+{: .table .table-striped}
 
 
 ---
@@ -55,6 +57,7 @@ Video lectures
 |22 Sep 20 |Lab       |
 |24 Sep 20 |Lab       |
 |29 Sep 20 |Midterm 1  |
+{: .table .table-striped}
 
 
 ---
@@ -76,6 +79,7 @@ Video lectures
 |8 Oct 20  |Lab       |
 |13 Oct 20 |Lab       |
 |15 Oct 20 |Midterm  2 |
+{: .table .table-striped}
 
 ---
 
@@ -95,6 +99,7 @@ Video lectures
 |27 Oct 20 |Lab       |
 |29 Oct 20 |Lab       |
 |3 Nov 20  |Midterm   3|
+{: .table .table-striped}
 
 ---
 
@@ -114,6 +119,7 @@ Video lectures
 |12 Nov 20 |Lab       |
 |17 Nov 20 |Lab       |
 |19 Nov 20 |Midterm 4  |
+{: .table .table-striped}
 
 ---
 
@@ -133,11 +139,12 @@ Video lectures
 |26 Nov 20 |Lab       |
 |1 Dec 20  |Lab       |
 |3 Dec 20  |Lab       |
+{: .table .table-striped}
 
 ---
 
 
-## Midterm 5 and Final exam
+## F Midterm 5 and Final exam
 
 
 TBA – During University Scheduled Final Exam Period
