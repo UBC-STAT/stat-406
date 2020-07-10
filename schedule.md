@@ -1,12 +1,3 @@
--   [0 Introduction and Review](#introduction-and-review)
--   [1 Model Accuracy](#model-accuracy)
-    -   [2 Regularization, smoothing, and
-        trees](#regularization-smoothing-and-trees)
-    -   [3 Classification](#classification)
-    -   [4 Modern techniques](#modern-techniques)
-    -   [5 Unsupervised learning](#unsupervised-learning)
-    -   [Midterm 5 and Final exam](#midterm-5-and-final-exam)
-
 <div class="btn-group" role="group" align-items="center" aria-label="Basic example">
   <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
   <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
@@ -16,8 +7,18 @@
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
 </div>
 
+Modules
+=======
+
+Required readings and lecture videos are listed below for each module.
+Note that any reading from \[ISLR\] is required while \[ESL\] is
+optional. Readings and videos must be completed before the mini quiz at
+the beginning of the module.
+
+------------------------------------------------------------------------
+
 0 Introduction and Review
-=========================
+-------------------------
 
 Reading  
 \[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
@@ -25,8 +26,10 @@ Reading
 Video lectures  
 Lecture 0 (in class on Thursday)
 
+------------------------------------------------------------------------
+
 1 Model Accuracy
-================
+----------------
 
 Reading  
 \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
@@ -64,6 +67,8 @@ Lecture 0 (in class on Thursday)
 </tr>
 </tbody>
 </table>
+
+------------------------------------------------------------------------
 
 2 Regularization, smoothing, and trees
 --------------------------------------
@@ -105,6 +110,8 @@ Lecture 0 (in class on Thursday)
 </tbody>
 </table>
 
+------------------------------------------------------------------------
+
 3 Classification
 ----------------
 
@@ -144,6 +151,8 @@ Lecture 0 (in class on Thursday)
 </tr>
 </tbody>
 </table>
+
+------------------------------------------------------------------------
 
 4 Modern techniques
 -------------------
@@ -185,6 +194,8 @@ Lecture 0 (in class on Thursday)
 </tbody>
 </table>
 
+------------------------------------------------------------------------
+
 5 Unsupervised learning
 -----------------------
 
@@ -221,7 +232,9 @@ Lecture 0 (in class on Thursday)
 </tbody>
 </table>
 
+------------------------------------------------------------------------
+
 Midterm 5 and Final exam
 ------------------------
 
-TBA &nbsp During University Scheduled Final Exam Period
+TBA – During University Scheduled Final Exam Period
