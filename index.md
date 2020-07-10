@@ -24,7 +24,7 @@ difference between predictions obtained with parametric and non-parametric metho
 6. correctly utilize and interpret principal components and other dimension reduction techniques;
 7. employ reasonable coding practices and understand basic R syntax and function.
 
-![](assets/img/smooths.jpg){: align="center" width="900px"}
+![](assets/img/smooths.jpg){: class="center" width="900px"}
 
 ## Short list of covered topics
 

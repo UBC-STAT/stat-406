@@ -1,3 +1,16 @@
+---
+title: Schedule
+layout: page
+icon: "far fa-calendar-alt"
+---
+
+Required readings and lecture videos are listed below for each module.
+Note that any reading from \[ISLR\] is required while \[ESL\] is
+optional, supplemental mateerial. Readings and videos must be completed before the mini quiz at
+the beginning of the module.
+
+
+
 <div class="btn-group" role="group" align-items="center" aria-label="Basic example">
   <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
   <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
@@ -7,234 +20,124 @@
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
 </div>
 
-Modules
-=======
 
-Required readings and lecture videos are listed below for each module.
-Note that any reading from \[ISLR\] is required while \[ESL\] is
-optional. Readings and videos must be completed before the mini quiz at
-the beginning of the module.
 
-------------------------------------------------------------------------
+## 0 Introduction and Review
 
-0 Introduction and Review
--------------------------
 
 Reading  
-\[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
+: \[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-------------------------------------------------------------------------
+|Date      |Activity    |
+|:---------|:-----------|
+|8 Sep 20  |Imagine UBC |
+|10 Sep 20 |Special     |
 
-1 Model Accuracy
-----------------
+
+---
+
+## 1 Model Accuracy
+
 
 Reading  
-\[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
+: \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">15 Sep 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">17 Sep 20</td>
-<td style="text-align: left;">Mini Quiz</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">22 Sep 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">24 Sep 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">29 Sep 20</td>
-<td style="text-align: left;">Midterm</td>
-</tr>
-</tbody>
-</table>
+|Date      |Activity  |
+|:---------|:---------|
+|15 Sep 20 |Lab       |
+|17 Sep 20 |Mini Quiz |
+|22 Sep 20 |Lab       |
+|24 Sep 20 |Lab       |
+|29 Sep 20 |Midterm 1  |
 
-------------------------------------------------------------------------
 
-2 Regularization, smoothing, and trees
---------------------------------------
+---
+
+## 2 Regularization, smoothing, and trees
+
 
 Reading  
-\[ISLR\] Ch 6.2, 7.1&nbsp7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
+: \[ISLR\] Ch 6.2, 7.1&nbsp7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">1 Oct 20</td>
-<td style="text-align: left;">Mini Quiz</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">6 Oct 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">8 Oct 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">13 Oct 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">15 Oct 20</td>
-<td style="text-align: left;">Midterm</td>
-</tr>
-</tbody>
-</table>
 
-------------------------------------------------------------------------
+|Date      |Activity  |
+|:---------|:---------|
+|1 Oct 20  |Mini Quiz |
+|6 Oct 20  |Lab       |
+|8 Oct 20  |Lab       |
+|13 Oct 20 |Lab       |
+|15 Oct 20 |Midterm  2 |
 
-3 Classification
-----------------
+---
+
+## 3 Classification
+
 
 Reading  
-\[ISLR\] Ch 2.2.3, 4&nbsp4.5, 8.1.2
+: \[ISLR\] Ch 2.2.3, 4&nbsp4.5, 8.1.2
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">20 Oct 20</td>
-<td style="text-align: left;">Special</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">22 Oct 20</td>
-<td style="text-align: left;">Mini Quiz</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">27 Oct 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">29 Oct 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">3 Nov 20</td>
-<td style="text-align: left;">Midterm</td>
-</tr>
-</tbody>
-</table>
+|Date      |Activity  |
+|:---------|:---------|
+|20 Oct 20 |Special   |
+|22 Oct 20 |Mini Quiz |
+|27 Oct 20 |Lab       |
+|29 Oct 20 |Lab       |
+|3 Nov 20  |Midterm   3|
 
-------------------------------------------------------------------------
+---
 
-4 Modern techniques
--------------------
+## 4 Modern techniques
+
 
 Reading  
-\[ISLR\] 5.2, 8.2
+: \[ISLR\] 5.2, 8.2
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">5 Nov 20</td>
-<td style="text-align: left;">Mini Quiz</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">10 Nov 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">12 Nov 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">17 Nov 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">19 Nov 20</td>
-<td style="text-align: left;">Midterm</td>
-</tr>
-</tbody>
-</table>
+|Date      |Activity  |
+|:---------|:---------|
+|5 Nov 20  |Mini Quiz |
+|10 Nov 20 |Lab       |
+|12 Nov 20 |Lab       |
+|17 Nov 20 |Lab       |
+|19 Nov 20 |Midterm 4  |
 
-------------------------------------------------------------------------
+---
 
-5 Unsupervised learning
------------------------
+## 5 Unsupervised learning
+
 
 Reading  
-\[ISLR\] 10
+: \[ISLR\] 10
 
 Video lectures  
-Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday)
 
-<table>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Date</th>
-<th style="text-align: left;">Activity</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">24 Nov 20</td>
-<td style="text-align: left;">Mini Quiz</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">26 Nov 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">1 Dec 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">3 Dec 20</td>
-<td style="text-align: left;">Lab</td>
-</tr>
-</tbody>
-</table>
 
-------------------------------------------------------------------------
+|Date      |Activity  |
+|:---------|:---------|
+|24 Nov 20 |Mini Quiz |
+|26 Nov 20 |Lab       |
+|1 Dec 20  |Lab       |
+|3 Dec 20  |Lab       |
 
-Midterm 5 and Final exam
-------------------------
+---
+
+
+## Midterm 5 and Final exam
+
 
 TBA – During University Scheduled Final Exam Period
