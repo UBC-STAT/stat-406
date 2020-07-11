@@ -10,8 +10,8 @@ optional, supplemental mateerial. Readings and videos must be completed before t
 the beginning of the module.
 
 
-
-<div class="btn-group text-center" role="group" aria-label="Basic example">
+<div class="text-center">
+<div class="btn-group" role="group" aria-label="Basic example">
   <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
   <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
   <a role="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</a>
@@ -19,6 +19,7 @@ the beginning of the module.
   <a role="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</a>
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
   <a role="button" class="btn btn-secondary" href="#F-midterm-5-and-final-exam">F Final</a>
+</div>
 </div>
 
 
