@@ -40,7 +40,7 @@ Video lectures
 {: .table .table-striped}
 
 
----
+
 
 ## 1 Model Accuracy
 
@@ -61,7 +61,7 @@ Video lectures
 {: .table .table-striped}
 
 
----
+
 
 ## 2 Regularization, smoothing, and trees
 
@@ -82,7 +82,7 @@ Video lectures
 |15 Oct 20 |Midterm  2 |
 {: .table .table-striped}
 
----
+
 
 ## 3 Classification
 
@@ -102,7 +102,7 @@ Video lectures
 |3 Nov 20  |Midterm   3|
 {: .table .table-striped}
 
----
+
 
 ## 4 Modern techniques
 
@@ -122,7 +122,7 @@ Video lectures
 |19 Nov 20 |Midterm 4  |
 {: .table .table-striped}
 
----
+
 
 ## 5 Unsupervised learning
 
@@ -142,7 +142,7 @@ Video lectures
 |3 Dec 20  |Lab       |
 {: .table .table-striped}
 
----
+
 
 
 ## F Midterm 5 and Final exam

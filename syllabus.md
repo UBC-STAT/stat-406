@@ -1,21 +1,21 @@
 ---
 title: Syllabus
 layout: page
-icon: "fas fa-arrow-right"
+icon: "fas fa-user-shield"
 ---
  
 ### Course info
 __Instructor__:  
 Daniel McDonald  
 Office: Earth Sciences Building  
-Website: https://dajmcdon.github.io/  
-Email: daniel@stat.ubc.ca  
+Website: <https://dajmcdon.github.io/>  
+Email: <daniel@stat.ubc.ca>  
 
 __Office hours__:  
 TBA
 
 __Course webpage__:    
-WWW: https://ubc-stat.github.io/stat-406/
+WWW: <https://ubc-stat.github.io/stat-406/>  
 See also Canvas
 
 __Lectures__:  
@@ -66,13 +66,13 @@ difference between predictions obtained with parametric and non-parametric metho
 
 *An Introduction to Statistical Learning*, James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted [ISLR])
 
-Available **free** online: http://faculty.marshall.usc.edu/gareth-james/ISL/index.html
+Available **free** online: <http://faculty.marshall.usc.edu/gareth-james/ISL/index.html>
 
 **Optional**
     
 *The Elements of Statistical Learning*, Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted [ESL])
 
-Also available **free** online: https://web.stanford.edu/~hastie/ElemStatLearn/
+Also available **free** online: <https://web.stanford.edu/~hastie/ElemStatLearn/>
 
 This second book is a more advanced treatment of a superset of the topics we will cover. If you want 
 to learn more and understand the material more deeply, this is the book for you. 
