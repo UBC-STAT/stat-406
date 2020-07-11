@@ -1,6 +1,6 @@
 ---
 layout: page
 title: Computing
-icon: "fas fa-r-project"
+icon: "fab fa-r-project"
 ---
 
