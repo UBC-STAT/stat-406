@@ -21,11 +21,13 @@ See also Canvas
 __Lectures__:  
 Tue/Thu 16:00-17:00 UTC-7 Vancouver local time
 
-Repeated
+Repeated  
 Tue/Thu 20:00-21:00 UTC-7 Vancouver local time
 
 
-__Textbook__:  
+__Textbooks__:  
+[\[ISLR\]](http://faculty.marshall.usc.edu/gareth-james/ISL/index.html)  
+[\[ESL\]](https://web.stanford.edu/~hastie/ElemStatLearn/)
 
 __Prerequisite__:  
 STAT 306 or CPSC 340 
@@ -60,22 +62,21 @@ difference between predictions obtained with parametric and non-parametric metho
 
 
 
-### Textbook
+### Textbooks
 
 **Required**:
 
-*An Introduction to Statistical Learning*, James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted [ISLR])
+*An Introduction to Statistical Learning*, James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted \[ISLR\])
 
 Available **free** online: <http://faculty.marshall.usc.edu/gareth-james/ISL/index.html>
 
-**Optional**
     
-*The Elements of Statistical Learning*, Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted [ESL])
+*The Elements of Statistical Learning*, Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted \[ESL\])
 
 Also available **free** online: <https://web.stanford.edu/~hastie/ElemStatLearn/>
 
 This second book is a more advanced treatment of a superset of the topics we will cover. If you want 
-to learn more and understand the material more deeply, this is the book for you. 
+to learn more and understand the material more deeply, this is the book for you. With the exception of Chapter 10, all readings from \[ESL\] are optional.
 
 
 ### Course assesssment opportunities
