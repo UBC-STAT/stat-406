@@ -9,7 +9,7 @@ both conceptual and computational questions in groups. This requires some softwa
 
 In order to participate in this class, we will require the use of R, and encourage
 the use of RStudio. Both are free, and you likely already have both. If not, see below.
-These instructions are taken from [UBC's MDS site](), thanks Tiffany and Mike.
+These instructions are taken from [UBC's MDS site](https://ubc-mds.github.io/resources_pages/installation_instructions/), thanks!
 
 ### R and Rstudio on macOS
 
