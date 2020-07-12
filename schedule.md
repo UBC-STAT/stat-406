@@ -27,11 +27,14 @@ the beginning of the module.
 ## 0 Introduction and Review
 
 
-Reading  
-: \[ISLR\] Ch 2.1, 2.2 and Chapter 3 (should be review)
+Required reading  
+: \[ISLR\] 2.1, 2.2, and Chapter 3 (should be review)
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
+
+Optional reading
+: \[ESL\] 2.4 and 2.6
 
 |Date      |Activity    |
 |:---------|:-----------|
@@ -45,11 +48,14 @@ Video lectures
 ## 1 Model Accuracy
 
 
-Reading  
+Required reading  
 : \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
 
 Video lectures  
-: Lecture 0 (in class on Thursday)
+: Lecture 0 
+
+Optional reading
+: \[ESL\] 7.1&ndash7.5, 7.10
 
 |Date      |Activity  |
 |:---------|:---------|
@@ -66,12 +72,14 @@ Video lectures
 ## 2 Regularization, smoothing, and trees
 
 
-Reading  
-: \[ISLR\] Ch 6.2, 7.1&nbsp7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
+Required reading  
+: \[ISLR\] Ch 6.2, 7.1&ndash7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
 
+Optional reading
+: \[ESL\] 3.4, 3.8, 5.4, 6.3
 
 |Date      |Activity  |
 |:---------|:---------|
@@ -87,11 +95,14 @@ Video lectures
 ## 3 Classification
 
 
-Reading  
-: \[ISLR\] Ch 2.2.3, 4&nbsp4.5, 8.1.2
+Required reading  
+: \[ISLR\] Ch 2.2.3, 4&ndash4.5, 8.1.2
 
 Video lectures  
-: Lecture 0 (in class on Thursday)
+: Lecture 0
+
+Optional reading
+: \[ESL\] 4&ndash4.4, 9.2, 13.3
 
 |Date      |Activity  |
 |:---------|:---------|
@@ -107,11 +118,14 @@ Video lectures
 ## 4 Modern techniques
 
 
-Reading  
-: \[ISLR\] 5.2, 8.2
+Required reading  
+: \[ISLR\] 5.2, 8.2, \[ESL\] 11.1, 11.3, 11.4, 11.7
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
+
+Optional reading
+: \[ESL\] 10.1&ndash10.10 (skip 10.7), 11.2, 11.5, 11.6
 
 |Date      |Activity  |
 |:---------|:---------|
@@ -127,11 +141,14 @@ Video lectures
 ## 5 Unsupervised learning
 
 
-Reading  
+Required reading  
 : \[ISLR\] 10
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
+
+Optional reading
+: \[ESL\] 8.5, 13.2, 14.3, 14.5.1, 14.8, 14.9
 
 
 |Date      |Activity  |
