@@ -24,9 +24,11 @@ Readings from [\[ISLR\]](http://faculty.marshall.usc.edu/gareth-james/ISL/index.
 
 ## 0 Introduction and Review
 
+Required reading below is meant to reengage brain cells which have no doubt forgotten all
+the material that was covered in STAT 306 or CPSC 340. We don't presume that you remember all these details, but that, upon rereading, they at least sound familiar. If this all strikes you as completely foreign, this class may not be for you. 
 
 Required reading  
-: \[ISLR\] 2.1, 2.2, and Chapter 3 (should be review)
+: \[ISLR\] 2.1, 2.2, and Chapter 3 (this material is review)
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
@@ -71,7 +73,7 @@ Optional reading
 
 
 Required reading  
-: \[ISLR\] Ch 6.2, 7.1&ndash7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
+: \[ISLR\] Ch 6.2, 7.1-7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
 Video lectures  
 : Lecture 0 (in class on Thursday)
@@ -94,13 +96,13 @@ Optional reading
 
 
 Required reading  
-: \[ISLR\] Ch 2.2.3, 4&ndash4.5, 8.1.2
+: \[ISLR\] Ch 2.2.3, 4-4.5, 8.1.2
 
 Video lectures  
 : Lecture 0
 
 Optional reading
-: \[ESL\] 4&ndash4.4, 9.2, 13.3
+: \[ESL\] 4-4.4, 9.2, 13.3
 
 |Date      |Activity  |
 |:---------|:---------|
@@ -123,7 +125,7 @@ Video lectures
 : Lecture 0 (in class on Thursday)
 
 Optional reading
-: \[ESL\] 10.1&ndash10.10 (skip 10.7), 11.2, 11.5, 11.6
+: \[ESL\] 10.1-10.10 (skip 10.7), 11.2, 11.5, 11.6
 
 |Date      |Activity  |
 |:---------|:---------|
