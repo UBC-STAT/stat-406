@@ -55,7 +55,7 @@ Video lectures
 : Lecture 0 
 
 Optional reading
-: \[ESL\] 7.1&ndash7.5, 7.10
+: \[ESL\] 7.1-7.5, 7.10
 
 |Date      |Activity  |
 |:---------|:---------|
