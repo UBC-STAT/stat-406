@@ -9,6 +9,8 @@ click the appropriate link below.
 
 ## 0 Introduction and Review
 
+* [Intro to class](lecture-slides/00-intro-to-class.html)
+
 ## 1 Model Accuracy
 
 ## 2 Regularization, smoothing, and trees
