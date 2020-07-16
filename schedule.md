@@ -49,7 +49,7 @@ Optional reading
 
 
 Required reading  
-: \[ISLR\] Ch 2.2, 5.1, 6.1, 6.4
+: \[ISLR\] Ch 2.2 (not 2.2.3), 5.1 (not 5.1.5), 6.1, 6.4
 
 Video lectures  
 : Lecture 0 
@@ -96,7 +96,7 @@ Optional reading
 
 
 Required reading  
-: \[ISLR\] Ch 2.2.3, 4-4.5, 8.1.2
+: \[ISLR\] Ch 2.2.3, 5.1.5, 4-4.5, 8.1.2
 
 Video lectures  
 : Lecture 0

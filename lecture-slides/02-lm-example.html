@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>02 Linear model example</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 02 Linear model example
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2020-07-15
+
+---
+
+
+
+
+
+## Economic mobility
+
+* `mobility` in the course R package. For documentation, try `?mobility`
+
+
+```r
+library(UBCstat406labs)
+library(tidyverse)
+tibble(mobility)
+```
+
+```
+## # A tibble: 741 x 43
+##       ID Name  Mobility State Population Urban Black Seg_racial Seg_income
+##    &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1   100 John…   0.0622 TN        576081     1 0.021      0.09       0.035
+##  2   200 Morr…   0.0537 TN        227816     1 0.02       0.093      0.026
+##  3   301 Midd…   0.0726 TN         66708     0 0.015      0.064      0.024
+##  4   302 Knox…   0.0563 TN        727600     1 0.056      0.21       0.092
+##  5   401 Wins…   0.0448 NC        493180     1 0.174      0.262      0.072
+##  6   402 Mart…   0.0518 VA         92753     0 0.224      0.137      0.024
+##  7   500 Gree…   0.0474 NC       1055133     1 0.218      0.22       0.068
+##  8   601 Nort…   0.0517 NC         90016     0 0.032      0.114      0.012
+##  9   602 Galax   0.0796 VA         64676     0 0.029      0.131      0.005
+## 10   700 Spar…   0.0431 SC        354533     1 0.207      0.139      0.045
+## # … with 731 more rows, and 34 more variables: Seg_poverty &lt;dbl&gt;,
+## #   Seg_affluence &lt;dbl&gt;, Commute &lt;dbl&gt;, Income &lt;dbl&gt;, Gini &lt;dbl&gt;,
+## #   Share01 &lt;dbl&gt;, Gini_99 &lt;dbl&gt;, Middle_class &lt;dbl&gt;, Local_tax_rate &lt;dbl&gt;,
+## #   Local_gov_spending &lt;dbl&gt;, Progressivity &lt;dbl&gt;, EITC &lt;dbl&gt;,
+## #   School_spending &lt;dbl&gt;, Student_teacher_ratio &lt;dbl&gt;, Test_scores &lt;dbl&gt;,
+## #   HS_dropout &lt;dbl&gt;, Colleges &lt;dbl&gt;, Tuition &lt;dbl&gt;, Graduation &lt;dbl&gt;,
+## #   Labor_force_participation &lt;dbl&gt;, Manufacturing &lt;dbl&gt;,
+## #   Chinese_imports &lt;dbl&gt;, Teenage_labor &lt;dbl&gt;, Migration_in &lt;dbl&gt;,
+## #   Migration_out &lt;dbl&gt;, Foreign_born &lt;dbl&gt;, Social_capital &lt;dbl&gt;,
+## #   Religious &lt;dbl&gt;, Violent_crime &lt;dbl&gt;, Single_mothers &lt;dbl&gt;, Divorced &lt;dbl&gt;,
+## #   Married &lt;dbl&gt;, Longitude &lt;dbl&gt;, Latitude &lt;dbl&gt;
+```
+
+???
+
+Note how many observations and predictors it has.
+
+We'll use mobility as the response
+
+
+---
+
+## A linear model
+
+
+`$$\mbox{mobility}_i = \beta_0 + \beta_1 \, \mbox{State}_i + \beta_2 \, \mbox{Urban}_i + \cdots + \epsilon_i$$` 
+    
+or equivalently
+
+`$$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban}, 
+    \ldots \right]  = \beta_0 + \beta_1 \, \mbox{State} + 
+    \beta_2 \, \mbox{Urban} + \cdots$$`
+
+---
+
+## Analysis
+
+
+-   Randomly split into a training (say 3/4) and a test set (1/4)
+
+-   Use training set to fit a model 
+
+-   Fit the "full" model
+
+-   "Look" at the fit
+
+--
+
+
+```r
+set.seed(20200901)
+mob = mobility[complete.cases(mobility),]
+n = nrow(mob)
+mob = mob %&gt;% select(-Name,-ID,-State)
+set = sample.int(n, floor(n*.75), FALSE)
+*train = mob[set,]
+test = mob[setdiff(1:n, set),]
+full = lm(Mobility ~ ., data=train)
+```
+
+???
+
+Why don't we include `Name` or `ID`?
+
+
+---
+
+## Results
+
+
+```r
+summary(full) %&gt;% broom::tidy()
+```
+
+```
+## # A tibble: 40 x 5
+##    term           estimate     std.error statistic p.value
+##    &lt;chr&gt;             &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 (Intercept)    2.23e- 1 0.0834           2.67   0.00799
+##  2 Population     8.09e-10 0.00000000236    0.343  0.732  
+##  3 Urban         -3.93e- 4 0.00408         -0.0964 0.923  
+##  4 Black          9.17e- 2 0.0299           3.07   0.00236
+##  5 Seg_racial    -3.13e- 2 0.0188          -1.66   0.0974 
+##  6 Seg_income     1.92e+ 0 0.961            2.00   0.0469 
+##  7 Seg_poverty   -1.33e+ 0 0.513           -2.59   0.0101 
+##  8 Seg_affluence -7.44e- 1 0.484           -1.54   0.125  
+##  9 Commute        7.27e- 2 0.0295           2.47   0.0142 
+## 10 Income         4.98e- 7 0.000000669      0.745  0.457  
+## # … with 30 more rows
+```
+
+```r
+summary(full) %&gt;% broom::glance()
+```
+
+```
+## # A tibble: 1 x 6
+##   r.squared adj.r.squared  sigma statistic  p.value    df
+##       &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;
+## 1     0.802         0.774 0.0220      28.4 6.92e-75    40
+```
+
+---
+
+## Diagnostic plots
+
+.pull-left[
+
+```r
+plot(full, 1)
+```
+
+![](rmd_gfx/02-lm-example/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+plot(full, 2)
+```
+
+![](rmd_gfx/02-lm-example/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+]
+
+---
+
+## Fit a reduced model
+
+
+```r
+reduced &lt;- lm(
+  Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
+    Manufacturing + Migration_in + Religious + Single_mothers, 
+  data=train)
+summary(reduced) %&gt;% broom::tidy()
+```
+
+```
+## # A tibble: 9 x 5
+##   term            estimate std.error statistic  p.value
+##   &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)     0.171     0.0185        9.26 3.78e-18
+## 2 Commute         0.0774    0.0155        4.99 1.02e- 6
+## 3 Gini_99        -0.185     0.0400       -4.62 5.63e- 6
+## 4 Test_scores     0.000391  0.000268      1.46 1.46e- 1
+## 5 HS_dropout     -0.153     0.0844       -1.81 7.17e- 2
+## 6 Manufacturing  -0.198     0.0218       -9.08 1.42e-17
+## 7 Migration_in   -0.595     0.164        -3.64 3.22e- 4
+## 8 Religious       0.0584    0.0113        5.17 4.25e- 7
+## 9 Single_mothers -0.216     0.0461       -4.70 4.02e- 6
+```
+
+```r
+summary(reduced) %&gt;% broom::glance()
+```
+
+```
+## # A tibble: 1 x 6
+##   r.squared adj.r.squared  sigma statistic  p.value    df
+##       &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;
+## 1     0.728         0.721 0.0244      102. 2.13e-81     9
+```
+
+---
+
+## Diagnostic plots for reduced model
+
+.pull-left[
+
+```r
+plot(reduced, 1)
+```
+
+![](rmd_gfx/02-lm-example/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+]
+
+.pull-right[
+
+```r
+plot(reduced, 2)
+```
+
+![](rmd_gfx/02-lm-example/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+]
+
+
+---
+
+## How do we decide which model is better?
+
+.pull-left[
+
+* Goodness of fit versus prediction power
+
+* Use both models to predict `Mobility` 
+
+* Compare both sets of predictions
+
+
+
+```r
+test$full = predict(full, newdata = test)
+test$reduced = predict(reduced, newdata = test)
+mses &lt;- function(preds, obs) mean((obs-preds)^2)
+sapply(
+  test[, c("full","reduced")], mses, 
+  obs=test$Mobility)
+```
+
+```
+##         full      reduced 
+## 0.0007022828 0.0006705997
+```
+]
+
+.pull-right[
+![](rmd_gfx/02-lm-example/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+]
+
+---
+class: inverse, center, middle
+
+# Next time...
+
+???
+How do we evaluate predictions
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "zenburn",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

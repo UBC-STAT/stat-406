@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>00 Intro to Class</title>
+    <title>01 Linear model review</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
+    <meta name="date" content="2020-07-14" />
     <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
     <link rel="stylesheet" href="slides-style.css" type="text/css" />
@@ -13,237 +14,211 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 00 Intro to Class
+# 01 Linear model review
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-14
+### 2020-07-14
 
 ---
 
 
 
 
+## The normal linear model
 
-## About me
+Assume that 
 
--   Daniel J. McDonald
+$$
+y_i = x_i^\top \beta + \epsilon_i.
+$$
 
--   daniel@stat.ubc.ca 
 
--   http://dajmcdon.github.io
+2. What is the mean of `\(y_i\)`?
 
--   Associate Professor, Department of Statistics 
+--
+
+3. What is the distribution of `\(\epsilon_i\)`?
+
+--
+
+4. What is the notation `\(X\)` or `\(y\)`?
+
+---
+
+## Drawing a sample
+
+$$
+y_i = x_i^\top \beta + \epsilon_i.
+$$
+
+How would I **create** data from this model (draw a sample)?
+
+--
 
 
 ```r
-plot(cars, pch=19)
+p = 3
+n = 100
+sigma = 2
 ```
 
-![](rmd_gfx/00-intro-to-class/unnamed-chunk-1-1.png)&lt;!-- --&gt;
+--
+
+
+```r
+epsilon = rnorm(n,sd=sigma) # this is random
+X = matrix(runif(n*p), n, p) # treat this as fixed, but I need numbers
+beta = rpois(p+1, 5) # also fixed, but I again need numbers
+Y = cbind(1,X) %*% beta + epsilon # epsilon is random, so this is
+## Equiv: Y = beta[1] + X %*% beta[-1] + epsilon
+```
 
 ---
 
-## Prerequisites
+## How do we estimate beta?
 
--   STAT306 `or` CPSC340 
-
--   You are comfortable **working independently** 
-
--   You are **motivated** and enjoy being challenged 
-
--   You **want to be here** and are **interested in learning** the
-    material 
+1. Guess.
+2. Ordinary least squares (OLS).
+3. Maximum likelihood.
+4. Do something more creative.
 
 ---
 
-## Philosophy of the class
+## Method 2. OLS
 
-We're here to **help you learn** (vs. teaching you)
+Suppose I want to find an estimator `\(\widehat\beta\)` which makes small errors on my data.
 
+I measure errors with the difference between predictions `\(X\widehat\beta\)` and the responses `\(Y\)`.
 
-We'll encourage **engagement**, **curiosity** and **generosity**
-    
+I don't care if the differences are positive or negative, so I try to measure the total error with
+\[
+\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.
+\]
 
-.alert[We'll have zero tolerance for plagiarism]
+This is fine, but hard to minimize (what is the derivative of `\(|\cdot|\)`?)
 
-.alert[Zero tolerance for discrimination/--ism/hostility]
-
-We favour **steady work** through the Term (vs. sleeping until finals) 
-
-
-We emphasize **teamwork**.
-
----
-class: inverse, center, middle
-
-
-# Course map
+So I use 
+\[
+\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.
+\]
 
 ---
 
-## 5 modules
+## Method 2. OLS solution
+
+We write this as
+
+`$$\widehat\beta = \arg\min_\beta \sum_{i=1}^n ( y_i - x_i^\top \beta )^2.$$`
 
 
-.pull-left[
-0. Baby review
+"Find the `\(\beta\)` which minimizes the sum of squared errors."
 
-1. Model accuracy and selection
+--
 
-2. Regularization, smoothing, trees
+Note that this is the same as 
 
-3. Classifiers
+`$$\widehat\beta = \arg\min_\beta \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2.$$`
 
-4. Modern techniques (classification and regression)
-
-5. Unsupervised learning
-]
-
-.pull-right[
-* Each module is approximately 2 weeks long
-
-* Each module is based on collection of readings and lecture videos
-
-* Module begins with a prequiz to make sure you prepared, done in class
-
-* Synchronous time is group tutorials based on materials
-
-* Module ends with an individual exam
-
-]
+"Find the beta which minimizes the mean squared error."
 
 ---
 
+## Method 2. Ok, do it
 
+We differentiate and set to zero
 
-
-## Grades
-
-
-
--   Practice WebWork: 0% --- Do this on your own for practice 
-
-- Class pretest: 1% 
-
--   5 module prequizzes: 10% (5+5)
-
-- Peer assessment: 5%
-
--   5 module midterms: 70% (14% each)
-
--   Final exam: 14% (taken simultaneously with fifth midterm, during UBC-scheduled exam time)
-
--   There will be **no make-up** activities, quizzes, labs, or exams.
-    Anything you **miss** will be assigned to your **final exam
-    weight**. 
-    
----
-
-## Why this scheme?
-
-- You stay on top of the material
-
-- You do work outside of class
-
-- You support your group
-
-- Learning to code is much more productive in groups
-
-- Exam weight is diluted across the semester (no 50% final to stress over)
-
----
-class: center, middle, inverse
-
-# Materials
-
----
-
-## Textbooks
-
-.emphasis[
-
-*An Introduction to Statistical Learning*, James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted [ISLR])
-
-Available **free** online: http://faculty.marshall.usc.edu/gareth-james/ISL/index.html
-
-Most readings are from here.
-]
-    
-*The Elements of Statistical Learning*, Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted [ESL])
-
-Also available **free** online: https://web.stanford.edu/~hastie/ElemStatLearn/
+`\begin{aligned}
+&amp; \frac{\partial}{\partial \beta} \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2\\
+&amp;= \frac{2}{n}\sum_{i=1}^n x_i (y_i - x_i^\top\beta)\\
+&amp;= \frac{2}{n}\sum_{i=1}^n - x_i x_i^\top \beta + x_i y_i\\
+0 &amp;\equiv \sum_{i=1}^n - x_i x_i^\top \beta + x_i y_i\\
+&amp;\Rightarrow \sum_{i=1}^n x_i x_i^\top \beta = \sum_{i=1}^n x_i y_i\\
+&amp;\Rightarrow \beta = \left(\sum_{i=1}^n x_i x_i^\top\right)^{-1}\sum_{i=1}^n x_i y_i
+\end{aligned}`
 
 
 ---
 
-## Computer
+## In matrix notation...
 
-.pull-left[
-![](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.zkhw_1OE7heqIY0DVy0yrAHaGk%26pid%3DApi&amp;f=1)
-]
+...this is 
 
-.pull-right[
-All coding in `R`
+\[
+\hat\beta = (X^\top X)^{-1} X^\top Y.
+\]
 
-Suggest you use **RStudio** IDE
+The `\(\beta\)` which "minimizes the sum of squared errors"
 
-See the [website](http://stat406-w20.github.io) for instructions
 
-It tells you how to install what you will need, hopefully all at once for the whole semester.
-
-This course is not an "intro to R/python/MongoDB/SQL" course, we will use R and we assume some background knowledge.
-
-Links to useful supplementary resources are available on the website.
-]
+AKA, the SSE.
 
 ---
 
-## Other resources
+## Method 3: maximum likelihood
+
+Method 2 didn't use anything about the distribution of `\(\epsilon\)`.
+
+But if we know that `\(\epsilon\)` has a normal distribution, we can write down the joint distribution
+of `\(Y=(y_1,\ldots,y_n)\)`:
 
 
+`\begin{aligned}
+f_Y(y ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
+  &amp;= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
+  &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
+\end{aligned}`
 
--   Canvas: Webwork solutions, Labs solutions, grades 
+--
 
--   GitHub: Slides, notes, notebooks 
+In probability courses, we think of `\(f_Y\)` as a function of `\(y\)` with `\(\beta\)` fixed:
 
--   PIAZZA: Discussions, announcements  
-    http://piazza.com/ubc.ca/winterterm12019/stat406
-
----
-
-## More about scripts
-
-
-
--   You can read them from `GitHub` 
-
--   You can cut-and-paste block-by-block 
-
--   You can run / play with **notebooks**: 
-
-    -   On your computer 
-
-    -   On https://ubc.syzygy.ca/
+1. If we integrate over `\(y\)` from `\(-\infty\)` to `\(\infty\)`, it's `\(1\)`.
+2. If we want the probability of `\((a,b)\)`, we integrate from `\(a\)` to `\(b\)`.
+3. etc.
 
 ---
 
-## Ready, set, go!
+## Turn it around...
 
--   Check `canvas.ubc.ca` often 
+...instead, think of it as a function of `\(\beta\)`.
 
--   Visit `github.com/msalibian/STAT406` often 
+We call this "the likelihood" of beta: `\(\mathcal{L}(\beta)\)`.
 
--   Use `PIAZZA` 
+Given some data, we can evaluate the likelihood for any value of `\(\beta\)` (assuming `\(\sigma\)` is known).
 
--   **Do the pre-class readings** 
+It won't integrate to `\(1\)` over `\(\beta\)`.
 
--   **Attend the labs** 
+But it is "convex", meaning we can maximize it (the second derivative wrt `\(\beta\)` is everywhere negative).
 
--   **Show up**
+---
+
+## So let's maximize
+
+The derivative of this thing is kind of ugly.
+
+But if we're trying to maximize over `\(\beta\)`, we can take an increasing transformation without changing anything.
+
+I choose `\(\log_e\)`.
+
+
+`\begin{aligned}
+\mathcal{L}(\beta) &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)\\
+\ell(\beta) &amp;=-\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2
+\end{aligned}`
+
+
+But we can ignore constants, so this gives
+
+
+`$$\widehat\beta = \arg\max_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2$$`
+
+
+The same as before!
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "solarized-light",
+"highlightStyle": "zenburn",
 "highlightLines": true,
 "countIncrementalSlides": false,
 "ratio": "16:9"
