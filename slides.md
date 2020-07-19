@@ -17,6 +17,8 @@ click the appropriate link below.
 
 * [The regression function](lecture-slides/03-regression-function.html)
 * [Bias and variance](lecture-slides/04-bias-variance.html)
+* [Estimating test MSE](lecture-slides/05-estimating-test-mse.html)
+* [Information criteria](lecture-slides/06-information-criteria.html)
 
 ## 2 Regularization, smoothing, and trees
 
