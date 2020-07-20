@@ -31,7 +31,7 @@ Required reading
 : \[ISLR\] 2.1, 2.2, and Chapter 3 (this material is review)
 
 Video lectures  
-: Lecture 0 (in class on Thursday)
+: Lecture 0 (in class on Thursday), Video Lectures 1 and 2
 
 Optional reading
 : \[ESL\] 2.4 and 2.6
@@ -47,12 +47,14 @@ Optional reading
 
 ## 1 Model Accuracy
 
+Topics  
+: Model selection; cross validation; information criteria; stepwise regression
 
 Required reading  
 : \[ISLR\] Ch 2.2 (not 2.2.3), 5.1 (not 5.1.5), 6.1, 6.4
 
 Video lectures  
-: Lecture 0 
+: Lectures 3 to 7 
 
 Optional reading
 : \[ESL\] 7.1-7.5, 7.10
@@ -71,12 +73,14 @@ Optional reading
 
 ## 2 Regularization, smoothing, and trees
 
+Topics  
+: Ridge regression, lasso, and related; linear smoothers (splines, kernels); kNN
 
 Required reading  
 : \[ISLR\] Ch 6.2, 7.1-7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
 Video lectures  
-: Lecture 0 (in class on Thursday)
+: Lectures 8
 
 Optional reading
 : \[ESL\] 3.4, 3.8, 5.4, 6.3
@@ -94,6 +98,8 @@ Optional reading
 
 ## 3 Classification
 
+Topics  
+: logistic regression; LDA/QDA; naive bayes; trees
 
 Required reading  
 : \[ISLR\] Ch 2.2.3, 5.1.5, 4-4.5, 8.1.2
@@ -117,6 +123,8 @@ Optional reading
 
 ## 4 Modern techniques
 
+Topics  
+: bagging; boosting; random forests; neural networks
 
 Required reading  
 : \[ISLR\] 5.2, 8.2, \[ESL\] 11.1, 11.3, 11.4, 11.7
@@ -140,6 +148,8 @@ Optional reading
 
 ## 5 Unsupervised learning
 
+Topics  
+: clustering and dimension reduction
 
 Required reading  
 : \[ISLR\] 10
