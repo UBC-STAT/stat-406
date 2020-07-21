@@ -19,8 +19,14 @@ click the appropriate link below.
 * [Bias and variance](lecture-slides/04-bias-variance.html)
 * [Estimating test MSE](lecture-slides/05-estimating-test-mse.html)
 * [Information criteria](lecture-slides/06-information-criteria.html)
+* [Greedy variable selection](lecture-slides/07-greedy-selection.html)
+
 
 ## 2 Regularization, smoothing, and trees
+
+* [Ridge regression](lecture-slides/08-ridge-regression.html)
+* [l1 penalties](lecture-slides/09-l1-penalties.html)
+
 
 ## 3 Classification
 
