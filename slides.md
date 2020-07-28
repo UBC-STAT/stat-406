@@ -26,6 +26,9 @@ click the appropriate link below.
 
 * [Ridge regression](lecture-slides/08-ridge-regression.html)
 * [l1 penalties](lecture-slides/09-l1-penalties.html)
+* [Basis expansions](lecture-slides/10-basis-expansions.htmll)
+* [Kernel smoothers](lecture-slides/11-kernel-smoothers.html)
+* [To smooth or not to smooth](lecture-slides/12-why-smooth.html)
 
 
 ## 3 Classification
