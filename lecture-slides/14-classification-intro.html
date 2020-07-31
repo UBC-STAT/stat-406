@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>14 Classification</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 14 Classification
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2020-07-31
+
+---
+
+
+
+
+
+
+
+
+
+## An Overview of Classification
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$`
+
+
+
+* A person arrives at an emergency room with a set of symptoms that
+could be 1 of 3 possible conditions. Which one is it?
+
+* An online banking service must be able to determine whether each
+transaction is fraudulent or not, using a customer's location, past
+transaction history, etc.
+
+* Given a set of individuals sequenced DNA, can we determine whether
+various mutations are associated with different phenotypes?
+
+--
+
+These problems are __not__ regression
+problems. They are __classification__ problems.
+
+---
+
+## The Set-up
+
+It begins just like regression: suppose we have observations
+`$$\{(X_1,Y_1),\ldots,(X_n,Y_n)\}$$`
+
+Again, we want to estimate a function that maps `\(X\)` to `\(Y\)` to
+predict as yet observed data.
+
+(This function is known as a __classifier__)
+
+
+The same constraints apply:
+
+* We want a classifier that predicts test data, not just the training
+data.
+
+* Often, this comes with the introduction of some bias to get lower
+variance and better predictions.
+
+---
+
+## How do we measure quality?
+
+Before in regression, we have `\(Y_i \in \mathbb{R}\)` and use squared error loss
+
+
+Instead, let `\(Y \in \mathcal{K} = \{1,\ldots, K\}\)`
+
+(This is arbitrary, sometimes other numbers, such as `\(\{-1,1\}\)` will be
+used)
+
+We can always take "factors": `\(\{\textrm{cat},\textrm{dog}\}\)` and convert to integers, which is what we assume.
+
+
+We again make predictions `\(\hat{Y}\)` based on the data
+
+
+* We get zero loss if we predict the right class
+* We lose `\(\ell(k,k')\)` on `\((k\neq k')\)` for incorrect predictions
+
+--
+
+We're going to use `\(g\)` to be our classifier. It takes values in `\(\mathcal{K}\)`.
+
+---
+
+## How do we measure quality?
+
+Again, we appeal to risk
+`$$R(g) = \mathbb{E}_{(X,Y)} \ell(Y,g(X))$$` If we use the law of
+total probability, this can be written
+`$$R(g) = \mathbb{E}_X \sum_{y=1}^K \ell(y,\; g(X)) \mathbb{P}(Y = y \given X)$$`
+This can be minimized over `\(X\)`, to produce
+`$$g_*(X) = \arg\min_{g \in \mathcal{G}} \sum_{y=1}^K \ell(y,g(X)) \mathbb{P}(Y = y \given X)$$`
+
+
+`\(g_*\)` is the __Bayes' classifier__. 
+
+`\(R(g_*)\)` is the called the __Bayes' limit__ or __Bayes' Risk__. It's the best we could hope to do if we knew the distribution of the data.
+
+--
+
+But we don't, so we'll try to do our best to estimate it.
+
+---
+
+## Best classifier
+
+If we make specific choices for `\(\ell\)`, we can find `\(g_*\)` exactly (pretending we know `\(\P\)`)
+
+Define (for convenience)
+`$$\ell_g(Z) = \ell(Y,g(X))$$` 
+
+As `\(Y\)` takes only a few values, __zero-one__
+prediction risk is natural
+`$$\ell_g(Z) = \begin{cases}0 &amp; Y=g(X)\\1 &amp; Y\neq g(X) \end{cases} \Longrightarrow R(g) = \mathbb{E}[\ell_g(Z)] = \mathbb{P}(g(X) \neq Y),$$`
+
+This means we want to __label__ or
+__classify__ a new observation `\((X,Y)\)` such that
+`\(g(X) = Y\)` as often as possible
+
+
+Under this loss, we have
+`$$g_*(X) = \argmin_{g \in\mathcal{G}} \mathbb{P}(g(X) \neq Y) = \argmin_{g \in \mathcal{G}} \left[ 1 - \mathbb{P}(Y = g(x) | X=x)\right]  = \argmax_{g \in \mathcal{G}} \mathbb{P}(Y = g(x) | X=x )$$`
+
+---
+
+## Best classifier
+
+Suppose we encode a two-class response as `\(Y \in \{0,1\}\)`
+
+
+Let's try using __squared error loss__ instead:
+`\(\ell_f(Z) = (Y - f(X))^2\)`
+
+
+Then, the Bayes' rule is
+`$$f_*(X) = \mathbb{E}[ Y | X] = \mathbb{P}(Y = 1 | X)$$` 
+(note that `\(f_* \in [0,1]\)` is the regression function)
+
+Hence, we achieve the same Bayes' rule/limit with squared error
+classification by discretizing the probability:
+
+`$$g_*(X) = \begin{cases}0 &amp; f_*(X) &lt; 1/2\\1 &amp; else\end{cases}$$`
+
+---
+
+## Classification is easier than regression
+
+Let `\(\hat{f}\)` be any estimate of `\(f_*\)`
+
+
+Let `\(\widehat g (X) = \begin{cases}0 &amp; f_*(X) &lt; 1/2\\1 &amp; else\end{cases}\)`
+
+
+It can be shown that 
+`$$\begin{aligned}
+  &amp;\mathbb{P}(Y \neq \hat{g}(X) | X) - \mathbb{P}(Y \neq g_*(X) | X)  \\
+  &amp;= \cdots =\\
+&amp; =  2\left|f_*(X) - \frac{1}{2}\right|\mathbf{1}(g_*(X)\neq \hat{g}(X)) \end{aligned}$$`
+
+
+--
+
+__Can you show this?__
+
+---
+
+## Classification is easier than regression
+
+Now
+`$$g_*(X)\neq \hat{g}(X) \Rightarrow |\hat{f}(X) - f_*(X)| \geq |\hat{f}(X) - 1/2|$$`
+Therefore
+
+`$$\begin{aligned}
+ &amp;\mathbb{P}(Y \neq \hat{g}(X)) - \mathbb{P}(Y \neq g_*(X)) \\
+&amp; =  \int(\mathbb{P}(Y \neq \hat{g}(X) | X) - \mathbb{P}(Y \neq g_*(X) | X))d\mathbb{P}_X   \\
+&amp; =  \int 2\left|\hat{f}(X) - \frac{1}{2}\right|\mathbf{1}(g_*(X)\neq \hat{g}(X))d\mathbb{P}_X  \\
+&amp; \leq  2\int |\hat{f}(X) - f_*(X)| \mathbf{1}(g_*(X)\neq \hat{g}(X))d\mathbb{P}_X \\
+&amp; \leq  2\int |\hat{f}(X) - f_*(X)|d\mathbb{P}_X \end{aligned}$$`
+
+
+
+---
+
+## Bayes' rule and class densities
+
+Using Bayes' theorem 
+
+`$$\begin{aligned}
+f_*(X) &amp; = \mathbb{P}(Y = 1 | X) \\ &amp; =\frac{\P(X|Y = 1) \mathbb{P}(Y = 1)}{\sum_{g \in \{0,1\}} \P(X|Y = g) \mathbb{P}(Y = g)} \\ &amp; = \frac{f_1(X) \pi}{ f_1(X)\pi + f_0(X)(1-\pi)}\end{aligned}$$`
+
+We call `\(f_g(X)\)` the __class densities__
+
+
+The Bayes' rule can be rewritten 
+
+`$$g_*(X) = \begin{cases}
+1 &amp; \textrm{ if } \frac{f_1(X)}{f_0(X)} &gt; \frac{1-\pi}{\pi} \\
+0  &amp;  \textrm{ otherwise}
+\end{cases}$$`
+
+---
+
+## How to find a classifier
+
+All of these prior expressions for `\(g_*\)` give rise to classifiers
+
+__Empirical risk minimization:__ Choose a set
+of classifiers `\(\mathcal{G}\)` and find `\(g \in \mathcal{G}\)` that minimizes
+some estimate of `\(R(g)\)`
+    
+&gt; (This can be quite challenging as, unlike in regression, the
+training error is nonconvex)
+
+__Regression:__ Find an
+estimate `\(\hat{f}\)` and plug it in to the Bayes' rule
+
+__Density estimation:__
+Estimate `\(\hat{\pi}\)` and `\(f_g\)` from `\(\mathcal{D}\)` where `\(Y =g\)` and
+
+--
+
+Easiest classifier when `\(y\in \{0,\ 1\}\)`:
+
+
+```r
+ghat = round(predict(lm(y~., trainingdata)))
+```
+
+Think about why this may not be very good.
+
+---
+class: middle, inverse, center
+
+# Next time:
+
+Estimating the densities
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "zenburn",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
