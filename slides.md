@@ -44,5 +44,13 @@ the quizzes and exams cover my material not theirs.
 
 ## 4 Modern techniques
 
+* [The bootstrap](lecture-slides/18-the-bootstrap.html)
+* [Bagging and random forests](lecture-slides/19-bagging-and-rf.html)
+* [Boosting](lecture-slides/20-boosting.html)
+* [Aside on gradient descent](lecture-slides/00-gradient-descent.html)
+* [Intro to neural nets](lecture-slides/21-nnets-intro.html)
+* [Estimating neural nets](lecture-slides/22-nnets-estimation.html)
+* [Neural nets wrapup](lecture-slides/23-nnets-other.html)
+
 ## 5 Unsupervised learning
 
