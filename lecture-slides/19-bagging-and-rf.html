@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>19 Bagging and random forests</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 19 Bagging and random forests
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2020-08-05
+
+---
+
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$`
+
+
+
+
+
+
+## Bagging
+
+Many methods (trees, nonparametric smoothers) tend to have low bias but high variance.  
+
+Especially fully grown trees (that's why we prune them)
+
+
+High-variance means if we split the training data into two parts at random and fit a decision tree to each part, the results will be quite different.
+
+
+In contrast, a low variance estimator would yield similar results if applied repeatedly to distinct data sets (consider `\(\widehat{f} = 0\)`).
+
+
+__Bagging__, short for __bootstrap aggregation__, is a general purpose procedure for reducing variance. 
+
+We'll use it specifically in the context of trees, but it can be applied much more broadly.
+
+---
+
+## Bagging: The main idea
+
+
+Suppose we have `\(n\)` uncorrelated observations `\(Z_1, \ldots, Z_n\)`, each with variance `\(\sigma^2\)`.
+
+
+What is the variance of
+
+`$$\overline{Z} = \frac{1}{n} \sum_{i=1}^n Z_i?$$`
+
+
+
+More generally, if we have `\(B\)` separate (uncorrelated) training sets, `\(1, \ldots, B\)`, 
+
+we can form `\(B\)` separate model fits, 
+`\(\widehat{f}^1(x), \ldots, \widehat{f}^B(x)\)`, and then average them:
+
+`$$\widehat{f}_{B}(x) = \frac{1}{B} \sum_{b=1}^B \widehat{f}^b(x)$$`
+
+
+---
+
+## Bagging: The bootstrap part
+
+Of course, this isn't practical: we don't have many training sets.  
+
+We therefore turn to the bootstrap to simulate having many training sets.
+
+Suppose we have data `\(Z_1, \ldots, Z_n\)` 
+
+1. Choose some large number of samples, `\(B\)`. 
+2. For each `\(b = 1,\ldots,B\)`, draw a resample from `\(Z_1, \ldots, Z_n\)`, call it 
+`\(\widetilde{Z}_1, \ldots, \widetilde{Z}_n\)`. 
+3. Compute `\(\widehat{f}_b = \widehat{f}(\widetilde{Z}_1, \ldots, \widetilde{Z}_n)\)`.
+
+Then average them:
+
+`$$\widehat{f}_{\textrm{bag}}(x) = \frac{1}{B} \sum_{b=1}^B \widehat{f}_b(x)$$`
+
+This process is known as Bagging
+
+---
+
+## Bagging trees
+
+.pull-left[.center[
+![](gfx/bagtree.jpg)
+]]
+
+.pull-right[
+
+The procedure for trees is the following
+
+
+1. Choose a large number `\(B\)`.
+2. For each `\(b = 1,\ldots, B\)`, grow an unpruned tree on the `\(b^{th}\)` bootstrap draw from the data.
+3. Average all these trees together.
+
+
+
+Each tree, since it is unpruned, will have 
+
+.primary[low]/.secondary[high] variance
+
+.primary[low]/.secondary[high] bias
+
+
+Therefore averaging many trees results in an estimator that has lower variance and still low bias.
+
+]
+
+---
+
+## Bagging trees: Variable importance measures
+
+
+Though bagging can improve predictive performance of trees 
+
+We sacrificed some interpretability. 
+
+We no longer have that nice diagram that shows the segmentation of the predictor space 
+
+(or, more accurately, we have `\(B\)` of them).  
+
+To recover some information, we can do the following:
+
+1. For each of the `\(b\)` trees and each of the `\(p\)` variables, we record the amount that the Gini index is reduced
+by the addition of that variable 
+2. Report the average reduction over all `\(B\)` trees.
+
+
+---
+
+
+## Random Forest
+
+Random Forest is an extension of Bagging, in which the bootstrap trees are __decorrelated__.  
+
+
+The idea is, we draw a bootstrap sample and start to build a tree. 
+
+* At each split, we randomly select
+`\(m\)` of the possible `\(p\)` predictors as candidates for the split. 
+* A new sample of size `\(m\)` of the predictors is taken at each split. 
+   
+
+
+Usually, we use about `\(m = \sqrt{p}\)` 
+
+
+
+In other words, at each split, we .fourth-color[aren't even allowed to consider the majority of possible predictors!]
+
+---
+
+## What is going on here?
+
+
+Suppose there is 1 really strong predictor and many mediocre ones. 
+
+
+* Then each tree will have this one predictor in it,
+
+* Therefore, each tree will look very similar (i.e. highly correlated).  
+
+* Averaging highly correlated things leads to much less variance reduction than if they were uncorrelated.
+
+If we don't allow some trees/splits to use this important variable, each of the trees will be much less similar and
+hence much less correlated.
+
+
+Bagging Trees is Random Forest when `\(m = p\)`, that is, when we can consider all the variables at each split.
+
+---
+
+## Example with Mobility data
+
+.pull-left[
+
+```r
+data(mobility, package="UBCstat406labs")
+mob = mobility %&gt;% 
+  mutate(mobile=as.factor(Mobility&gt;.1)) %&gt;%
+  dplyr::select(-ID,-Name,-Mobility,-State) %&gt;% 
+  drop_na()
+n = nrow(mob)
+trainidx = sample.int(n, floor(n*.75))
+testidx = setdiff(1:n, trainidx)
+train = mob[trainidx,]; test=mob[testidx,]
+rf = randomForest(mobile~., data=train)
+bag = randomForest(mobile~., data=train,
+  mtry=ncol(mob)-1)
+preds = tibble(
+  truth=test$mobile,
+  rf = predict(rf, test),
+  bag = predict(bag, test))
+cbind(table(preds$truth, preds$rf), 
+      table(preds$truth, preds$bag))
+```
+
+```
+##       FALSE TRUE FALSE TRUE
+## FALSE    55    5    56    4
+## TRUE     11   34    14   31
+```
+]
+
+.pull-right[
+
+```r
+varImpPlot(rf)
+```
+
+![](rmd_gfx/19-bagging-and-rf/mobility-results-1.svg)&lt;!-- --&gt;
+]
+
+
+---
+
+## One last thing...
+
+On average, drawing `\(n\)` samples from `\(n\)` observations with replacement (also known as bootstrap) results in about 2/3 of the observations being selected. (Can you show this?)
+
+
+The remaining one-third of the observations not used on that tree.
+
+These are referred to as __out-of-bag (OOB)__.
+
+
+We can think of it as a for-free cross-validation.  
+
+
+Each time a tree is grown, we can get its prediction error on the unused observations.  
+
+We average this over all bootstrap samples.
+
+
+---
+
+## Out-of-bag error estimation for bagging
+
+
+```r
+tab = table(predict(bag), train$mobile)
+tab
+```
+
+```
+##        
+##         FALSE TRUE
+##   FALSE   200   36
+##   TRUE     14   63
+```
+
+```r
+1-sum(diag(tab))/sum(tab) ## misclassification error
+```
+
+```
+## [1] 0.1597444
+```
+
+
+---
+class: inverse, middle, center
+
+# Next time...
+
+Boosting
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "zenburn",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

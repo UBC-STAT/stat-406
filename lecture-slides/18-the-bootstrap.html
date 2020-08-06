@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>18 The bootstrap</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 18 The bootstrap
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2020-08-03
+
+---
+
+
+
+class: middle, center
+background-image: url("https://i1.wp.com/bdtechtalks.com/wp-content/uploads/2018/12/artificial-intelligence-deep-learning-neural-networks-ai.jpg?w=1392&amp;ssl=1")
+background-size: cover
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$`
+
+
+
+
+
+.secondary[.larger[Module]] .huge-orange-number[4]
+
+.secondary[.large[bagging, random forests, boosting, and neural nets]]
+
+
+---
+
+## A small detour...
+
+.center[
+![](https://www.azquotes.com/picture-quotes/quote-i-believe-in-pulling-yourself-up-by-your-own-bootstraps-i-believe-it-is-possible-i-saw-stephen-colbert-62-38-03.jpg)
+]
+
+---
+
+.center[
+![:scale 80%](http://rackjite.com/wp-content/uploads/rr11014aa.jpg)
+]
+
+---
+
+## In statistics...
+
+The "bootstrap" works. And well.
+
+It's good for "second-level" analysis.
+
+* "First-level" analyses are things like `\(\hat\beta\)`, `\(\hat y\)`, an estimator of the center (a median), etc.
+
+* "Second-level" are things like `\(\Var{\hat\beta}\)`, a confidence interval for `\(\hat y\)`, or a median, etc.
+
+You usual get these "second-level" properties from "the sampling distribution of an estimator"
+
+But what if you don't know the sampling distribution? Or you're skeptical of the CLT argument?
+
+---
+
+## An example
+
+I estimate a classification tree on some data.
+
+I get a new `\(x_0\)` and produce `\(\widehat{P}(y_0 =1 \given x_0)\)`.
+
+Can I get a 95% confidence interval for `\(P(y_0=1 \given x_0)\)`?
+
+The bootstrap gives this to you. 
+
+--
+
+__Procedure__
+
+1. Resample your training data w/ replacement.
+2. Calculate a new tree on this sample.
+3. Produce a new prediction, call it `\(\widehat{P}_b(y_0 =1 \given x_0)\)`.
+4. Repeat 1-3 `\(B\)` times.
+5. CI: `\(\left[2\widehat{P}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha),\ 2\widehat{P}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha)\right]\)`
+
+---
+
+## How does this work?
+
+.center[
+![:scale 70%](/gfx/boot1.png)
+]
+
+---
+
+## Approximations
+
+.center[
+![:scale 70%](/gfx/boot2.png)
+]
+
+---
+
+## Bootstrap error sources
+
+(From the bottom up on the last slide)
+
+1. Simulation error: using only `\(B\)` samples to estimate `\(F\)` with `\(\hat{F}\)`.
+
+2. Statistical error: our data depended on a sample from the population. We don't have the whole population so we make an error by using a sample (Note: this part is what __always__ happens with data, and what the science of statistics analyzes.)
+
+3. Specification error: If we use the model-based bootstrap (we're ignoring this), and our model is wrong, then we are overconfident.
+
+---
+
+## Dumb example
+
+
+
+.pull-left[
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+```r
+cats.lm = lm(Hwt ~ 0+Bwt,data=fatcats)
+summary(cats.lm)
+```
+
+```
+## 
+## Call:
+## lm(formula = Hwt ~ 0 + Bwt, data = fatcats)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.7267 -0.7113  0.1474  0.7654  3.2780 
+## 
+## Coefficients:
+##     Estimate Std. Error t value Pr(&gt;|t|)    
+## Bwt  3.98867    0.04203    94.9   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.395 on 143 degrees of freedom
+## Multiple R-squared:  0.9844,	Adjusted R-squared:  0.9843 
+## F-statistic:  9005 on 1 and 143 DF,  p-value: &lt; 2.2e-16
+```
+
+```r
+confint(cats.lm)
+```
+
+```
+##        2.5 %   97.5 %
+## Bwt 3.905587 4.071754
+```
+]
+
+
+---
+
+## I think that that CI is wrong...
+
+
+.pull-left[
+
+```r
+qqnorm(residuals(cats.lm))
+qqline(residuals(cats.lm))
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+```r
+B = 500
+bhats = double(B)
+alpha = .05
+for(b in 1:B){
+  samp = sample.int(
+    nrow(fatcats), replace = TRUE)
+  newcats = fatcats[samp,]
+  bhats[b] = coef(
+    lm(Hwt~0+Bwt,data=newcats))
+}
+2*coef(cats.lm) - 
+  quantile(
+    bhats, 
+    probs = c(1-alpha/2, alpha/2))
+```
+
+```
+##    97.5%     2.5% 
+## 3.907037 4.066914
+```
+
+```r
+confint(cats.lm)
+```
+
+```
+##        2.5 %   97.5 %
+## Bwt 3.905587 4.071754
+```
+]
+
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Bootstrap for bagging and random forests
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "zenburn",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
