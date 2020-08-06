@@ -35,11 +35,9 @@ STAT 306 or CPSC 340
 
 ### Course objectives
 
-This is a course in advanced data analysis. Based on the theory of
+This is a course in statistical learning methods. Based on the theory of
 linear models covered in Stat 306, this course will focus on applying many
-types of data analysis methods to interesting datasets. The focus will
-be dealing with and describing data rather than on particular methods
-per se.
+techniques of data analysis methods to interesting datasets. 
 
 The course combines analysis with methodology and
 computational aspects. It treats both the "art" of understanding
