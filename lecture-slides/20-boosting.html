@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 20 Boosting
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-03
+### Last modified - 2020-08-08
 
 ---
 
@@ -169,7 +169,7 @@ If `\(L(y,\ f(x))= \exp(-y f(x))\)` and `\(G_m\)` is a classifier, then this is 
 
 ## So what?
 
-It turns out that "exponential loss" `\(L(y,\ f(x))= \exp(-y f(x))\)` is very robust.
+It turns out that "exponential loss" `\(L(y,\ f(x))= \exp(-y f(x))\)` is not very robust.
 
 Here are some other loss functions for 0-1 classification
 
@@ -181,9 +181,81 @@ Want losses which penalize negative margin a lot, but not positive margins.
 
 ---
 
-## Gradient boosting machines
+## Gradient boosting
 
-This version for regression (simpler to write) trees (most common case)
+
+In the forward stagewise algorithm, we solved a minimization and then made an update 
+
+`\(f_m(x) = f_{m-1}(x) + \beta_m G_m(x)\)`.
+
+For most loss functions, `\(\arg\min_{\beta, G} \sum_{i=1}^n L\left(y_i,\ f_{m-1}(x_i) + \beta G(x_i)\right)\)` cannot be solved
+
+Instead, if we take one gradient step toward the minimum, we get
+
+`\(f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x))\)`
+
+Then do line search on `\(\gamma_m\)`
+
+This is called __Gradient boosting__
+
+Notice how similar the update steps look.
+
+Gradient boosting goes only part of the way toward the minimum at each `\(m\)`. This has two implications:
+
+1. Since we're not fitting `\(G\)` to the data as hard, the "learner" is weaker.
+
+2. This procedure is computationally much simpler.
+
+
+---
+
+## Gradient boosting
+
+.emphasis[
+
+__Algorithm:__
+
+1. Set initial predictor `\(f_0(x)=\overline{y}\)`
+
+2. Until we quit ( `\(m&lt;M\)` iterations )
+    
+    a. Compute pseudo-residuals (what is the gradient of `\(L(y,f)=(y-f(x))^2\)`?)
+    `$$r_i = -\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}\bigg|_{f(x_i)=f_{m-1}(x_i)}$$`
+    
+    b. Estimate weak learner, `\(G_m\)`, with the training set `\(\{r_i, x_i\}\)`.
+    
+    c. Find the step size `\(\gamma_m = \arg\min_\gamma \sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \gamma G_m(x_i))\)`
+    
+    b. Set `\(f_m(x) = f_{m-1}(x) + \gamma_m G_m(x)\)`
+    
+3. Final predictor is `\(f_M(x)\)`.
+]
+
+
+```r
+grad_boost = gbm(mobile~., data=train, n.trees = 500, distribution = "bernoulli")
+```
+
+---
+
+## Gradient boosting modifications
+
+* Typically done with "small" trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)
+
+* Usually modify the gradient step to `\(f_m(x) = f_{m-1}(x) + \gamma_m \alpha G_m(x)\)` with `\(0&lt;\alpha&lt;1\)`. Helps to keep from fitting too hard.
+
+* Often combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.
+
+* There are many other extensions, notably XGBoost.
+
+&lt;img src="rmd_gfx/20-boosting/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+Neural networks and deep learning, the beginning
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
