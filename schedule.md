@@ -149,13 +149,13 @@ Optional reading
 ## 5 Unsupervised learning
 
 Topics  
-: clustering and dimension reduction
+: dimension reduction and clustering
 
 Required reading  
 : \[ISLR\] 10
 
 Video lectures  
-: Lectures 24-28
+: Lectures 24-29
 
 Optional reading
 : \[ESL\] 8.5, 13.2, 14.3, 14.5.1, 14.8, 14.9

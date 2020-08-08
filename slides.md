@@ -54,3 +54,9 @@ the quizzes and exams cover my material not theirs.
 
 ## 5 Unsupervised learning
 
+* [Intro to PCA](lecture-slides/24-pca-intro.html)
+* [Issues with PCA](lecture-slides/25-pca-issues.html)
+* [Manifold learning](lecture-slides/26-manifolds.html)
+* [K means clustering](lecture-slides/27-kmeans.html)
+* [Hierarchical clustering](lecture-slides/28-hclust.html)
+* [Wrapping up](lecture-slides/29-conclusion.html)
