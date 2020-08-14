@@ -4,7 +4,7 @@ layout: page
 icon: "fas fa-user-shield"
 ---
 
-<center>Term 2020 Winter 1: Sep 08 &ndash Dec 03 2020</center>
+Term 2020 Winter 1: Sep 08 - Dec 03 2020  
  
 ### Course info
 __Instructor__:  
@@ -21,10 +21,10 @@ WWW: <https://ubc-stat.github.io/stat-406/>
 See also Canvas
 
 __Lectures__:  
-Tue/Thu 16:00-17:00 UTC-7 Vancouver local time
+Tue/Thu 16:00 - 17:00 UTC-7 Vancouver local time
 
 Repeated  
-Tue/Thu 20:00-21:00 UTC-7 Vancouver local time
+Tue/Thu 20:00 - 21:00 UTC-7 Vancouver local time
 
 
 __Textbooks__:  
@@ -91,6 +91,10 @@ to learn more and understand the material more deeply, this is the book for you.
 **Missed assessment policy**  
 Missed or late peer evaluations result in the student receiving no credit. All other missed
 opportunities will have their weight added to the comprehensive final exam. There are no makeup opportunities.
+
+### Group synchronous sessions
+
+Synchronous class periods will be spent working on and discussing group coding exercises, similar to lab sessions. Each student will be assigned a group for the entirety of the semester. Your group assignment will be determined by your selected Lecture time (1600 or 2000) as well as other factors. You must attend your selected Lecture time each session. If you cannot attend, missed quizzes/midterm exams will have their weight added to the comprehensive final exam. But students should be aware that their groups are counting on them. If you miss a session, your peers may give you lower peer evaluation scores.   
 
 
 
