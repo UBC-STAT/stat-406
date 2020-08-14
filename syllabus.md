@@ -3,6 +3,8 @@ title: Syllabus
 layout: page
 icon: "fas fa-user-shield"
 ---
+
+<center>Term 2020 Winter 1: Sep 08 &ndash Dec 03 2020</center>
  
 ### Course info
 __Instructor__:  
