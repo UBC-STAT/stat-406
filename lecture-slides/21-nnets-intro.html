@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 21 Neural nets
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-05
+### Last modified - 2020-08-19
 
 ---
 
@@ -41,14 +41,14 @@ predictions
 (Most commonly via least squares or logistic regression)
 
  
-Chapter 11 in ESL is a good introductory reference for neural networks
+Chapter 11 in [ESL] is a good introductory reference for neural networks
 
 ---
 
 ## Background
 
 .pull-left[
-Neural networks have come about in 3 "waves" of research
+Neural networks have come about in 3 "waves" 
 
 The first was an attempt in the 1950s to model the mechanics of the human brain
 
@@ -104,8 +104,8 @@ tasks have been accomplished via neural networks
 Today, Neural Networks/Deep Learning are the hottest...
 
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
@@ -114,7 +114,8 @@ Today, Neural Networks/Deep Learning are the hottest...
 \newcommand{\P}{\mathbb{P}}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 ---
 
@@ -150,7 +151,7 @@ The weaknesses of this approach are:
 
 -   The basis is fixed and independent of the data
 
--   If `\(p\)` is large, then nonparametrics doesn't work well at all (recall the CofD)
+-   If `\(p\)` is large, then nonparametrics doesn't work well at all (recall the Curse of Dimensionality)
 
 -   If the basis doesn't "agree" with `\(f_*\)`, then `\(K\)` will have to be
     large to capture the structure
@@ -185,10 +186,10 @@ For example:
 
 ## Terminology
 
-`$$L(\mu(X)) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {\sigma(\alpha_{k0} + \alpha_k^{\top}X)}$$`
+`$$L(\mu(x)) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {\sigma(\alpha_{k0} + \alpha_k^{\top}x)}$$`
 The main components are
 
--   The derived features `\({Z_k = \sigma(\alpha_{k0} + \alpha_k^{\top}X)}\)` and are called the __hidden units__
+-   The derived features `\({z_k = \sigma(\alpha_{k0} + \alpha_k^{\top}x)}\)` and are called the __hidden units__
 
 -   The function `\({\sigma}\)` is called the __activation function__  
 
@@ -199,6 +200,8 @@ The main components are
 -   The number of hidden units `\({K}\)` is a tuning
     parameter
     
+- `\(\beta_0\)` and `\(\alpha_{k0}\)` are usually called __biases__ (I'm not going to include them in future formulas, just for space)    
+
 ---
 
 ## High level overview
@@ -207,7 +210,7 @@ __Example:__
 
 If `\(L(\mu) = \mu\)`,
 then we are doing regression:
-`$$\mu(x) = \beta_0 + \sum_{k=1}^K \beta_k \sigma\left(\alpha_{k0} + \sum_{j=1}^p\alpha_{kj}x_j\right)$$`
+`$$\mu(x) = \sum_{k=1}^K \beta_k \sigma\left(\sum_{j=1}^p\alpha_{kj}x_j\right)$$`
 but in a transformed space
 
  
@@ -220,7 +223,7 @@ __Two observations:__
     squares
 
  
-Let's discuss each of these..
+Let's discuss each of these `\(\ldots\)`
 
 ---
 
@@ -243,7 +246,7 @@ __GLMs with a (feature)  transformation__
  
 Before feature map: 
 
-`\(L(\mu(x)) = \beta_0 + \sum_{j=1}^p \beta_j x_j\)`
+`\(L(\mu(x)) = \sum_{j=1}^p \beta_j x_j\)`
 
 After feature map:
 
@@ -255,16 +258,16 @@ After feature map:
 
 __Neural network__
 
-`\(Z_k = \sigma\left(\alpha_{k0} + \sum_{j=1}^p\alpha_{kj}x_j\right) = \sigma\left(\alpha_{k0} + \alpha_{k}^{\top}x\right)\)`
+`\(z_k = \sigma\left( \sum_{j=1}^p\alpha_{kj}x_j\right) = \sigma\left( \alpha_{k}^{\top}x\right)\)`
 
 This gives
 
-`\(\Phi(x) = (1, Z_1, \ldots,Z_K)^{\top} \in \mathbb{R}^{K+1}\)`
+`\(\Phi(x) = (z_1, \ldots,z_K)^{\top} \in \mathbb{R}^{K}\)`
 
 and
 
-`$$\begin{aligned}\mu(x) &amp;=\beta^{\top} \Phi(x)\\ 
-&amp;=  \beta_0 + \sum_{k=1}^K \beta_k \sigma\left(\alpha_{k0} + \sum_{j=1}^p\alpha_{kj}x_j\right)\end{aligned}$$`
+`$$\begin{aligned}L(\mu(x)) &amp;=\beta^{\top} \Phi(x)=\beta^\top z\\ 
+&amp;=  \sum_{k=1}^K \beta_k \sigma\left( \sum_{j=1}^p\alpha_{kj}x_j\right)\end{aligned}$$`
 
 ]
 
@@ -289,12 +292,14 @@ ReLU is the current fashion
 .pull-right[
 
 
-`\(Z_k   = \sigma(\alpha_{k0} + \alpha_k^{\top}x) \quad  ( k = 1, \ldots K)\)`
-`\(W_g  = \beta_{g0} + \beta_g^{\top}Z \quad  ( g = 1, \ldots G)\)`
-`\(\mu_g(x) = L^{-1}(W_g)\)`
+`\(z_k   = \sigma(\alpha_k^{\top}x) \quad  ( k = 1, \ldots K)\)`
+
+`\(w_g  = \beta_g^{\top}z \quad  ( g = 1, \ldots G)\)`
+
+`\(\mu_g(x) = L^{-1}(w_g)\)`
 
 
-The output depends on the application. the goal is to map `\(W_g\)` to the appropriate space
+The output depends on the application. the goal is to map `\(w_g\)` to the appropriate space
 
 -   .hand[Regression]:  The link
     function is `\(L(u) = u\)` (here, `\(G=1\)`)
@@ -302,8 +307,10 @@ The output depends on the application. the goal is to map `\(W_g\)` to the appro
 -   .hand[Classification]:  With `\(G\)`
     classes, we are modeling `\(\pi_g = P(Y = g\given X=x)\)` and
     `\(L = \textrm{logit}\)`:
-    `\(\hat{\pi}_g(X) = \frac{e^{W_g}}{\sum_{g'=1}^Ge^{W_{g'}}}\)`
-    `\(\hat{Y} = \widehat{g}(X) = \argmax_g \hat{\pi}_g(X)\)`
+    
+    `\(\hat{\pi}_g(x) = \frac{e^{w_g}}{\sum_{g'=1}^G e^{w_{g'}}}\)`
+    
+    `\(\hat{y} = \widehat{g}(x) = \argmax_g \hat{\pi}_g(x)\)`
     
     This is called the __softmax__  function for
     historical reasons

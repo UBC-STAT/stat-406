@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 18 The bootstrap
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-03
+### Last modified - 2020-08-19
 
 ---
 
@@ -26,17 +26,18 @@ class: middle, center
 background-image: url("https://i1.wp.com/bdtechtalks.com/wp-content/uploads/2018/12/artificial-intelligence-deep-learning-neural-networks-ai.jpg?w=1392&amp;ssl=1")
 background-size: cover
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
 \newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
+\newcommand{\P}{Pr}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 
 
@@ -69,11 +70,11 @@ The "bootstrap" works. And well.
 
 It's good for "second-level" analysis.
 
-* "First-level" analyses are things like `\(\hat\beta\)`, `\(\hat y\)`, an estimator of the center (a median), etc.
+* "First-level" analyses are things like `\(\hat\beta\)`, `\(\hat \y\)`, an estimator of the center (a median), etc.
 
-* "Second-level" are things like `\(\Var{\hat\beta}\)`, a confidence interval for `\(\hat y\)`, or a median, etc.
+* "Second-level" are things like `\(\Var{\hat\beta}\)`, a confidence interval for `\(\hat \y\)`, or a median, etc.
 
-You usual get these "second-level" properties from "the sampling distribution of an estimator"
+You usually get these "second-level" properties from "the sampling distribution of an estimator"
 
 But what if you don't know the sampling distribution? Or you're skeptical of the CLT argument?
 
@@ -83,21 +84,24 @@ But what if you don't know the sampling distribution? Or you're skeptical of the
 
 I estimate a classification tree on some data.
 
-I get a new `\(x_0\)` and produce `\(\widehat{P}(y_0 =1 \given x_0)\)`.
+I get a new `\(x_0\)` and produce `\(\widehat{Pr}(y_0 =1 \given x_0)\)`.
 
-Can I get a 95% confidence interval for `\(P(y_0=1 \given x_0)\)`?
+Can I get a 95% confidence interval for `\(Pr(y_0=1 \given x_0)\)`?
 
 The bootstrap gives this to you. 
 
 --
 
+.emphasis[
 __Procedure__
 
 1. Resample your training data w/ replacement.
 2. Calculate a new tree on this sample.
-3. Produce a new prediction, call it `\(\widehat{P}_b(y_0 =1 \given x_0)\)`.
+3. Produce a new prediction, call it `\(\widehat{Pr}_b(y_0 =1 \given x_0)\)`.
 4. Repeat 1-3 `\(B\)` times.
-5. CI: `\(\left[2\widehat{P}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha),\ 2\widehat{P}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha)\right]\)`
+5. CI: `\(\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha)\right]\)`
+]
+
 
 ---
 

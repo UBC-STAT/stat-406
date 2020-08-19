@@ -16,37 +16,27 @@ class: center, middle, inverse, title-slide
 # 20 Boosting
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-08
+### Last modified - 2020-08-19
 
 ---
 
 
 ## Last time
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\argmin}{\arg\min}
-\newcommand{\argmax}{\arg\max}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
-\renewcommand{\hat}{\widehat}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
 
 
 
 
 We learned about bagging, for averaging low-bias estimators.
 
-Today, we examine it's opposite: Boosting.
+Today, we examine it's opposite: __Boosting__.
 
 __Boosting__ also combines estimators, but it combines __high-bias__ (low-variance) estimators.
 
 Boosting has a number of flavors. And if you Google descriptions, most are wrong.
 
 For a deep (and accurate) treatment, see [ESL] Chapter 10
+
 
 --
 
@@ -55,6 +45,20 @@ We'll discuss 2 flavors: AdaBoost and Gradient Boosting
 Neither requires a tree, but that's the typical usage.
 
 Boosting needs a "weak learner", so small trees (called stumps) are natural.
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
 
 ---
 
@@ -83,6 +87,17 @@ __Algorithm (AdaBoost):__
 
 ---
 
+## AdaBoost intuition
+
+At each iteration, we weight the __observations__.
+
+Observations that are currently misclassified, get __higher__ weights.
+
+So on the next iteration, we'll try harder to correctly classify our mistakes.
+
+The number of iterations must be chosen.
+---
+
 ## Using mobility data again
 
 
@@ -92,7 +107,8 @@ __Algorithm (AdaBoost):__
 library(gbm)
 adab = gbm(mobile~., data=train, n.trees = 500, distribution = "adaboost")
 preds$adab = as.numeric(predict(adab, test)&gt;0)
-summary(adab)
+par(mar=c(5,15,0,1))
+summary(adab, las=1)
 ```
 
 &lt;img src="rmd_gfx/20-boosting/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
@@ -175,7 +191,7 @@ Here are some other loss functions for 0-1 classification
 
 &lt;img src="rmd_gfx/20-boosting/loss-funs-1.svg" style="display: block; margin: auto;" /&gt;
 
-???
+--
 
 Want losses which penalize negative margin a lot, but not positive margins.
 
@@ -215,7 +231,7 @@ Gradient boosting goes only part of the way toward the minimum at each `\(m\)`. 
 
 __Algorithm:__
 
-1. Set initial predictor `\(f_0(x)=\overline{y}\)`
+1. Set initial predictor `\(f_0(x)=\overline{\y}\)`
 
 2. Until we quit ( `\(m&lt;M\)` iterations )
     

@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 26 Manifold learning
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-06
+### Last modified - 2020-08-19
 
 ---
 
@@ -48,7 +48,7 @@ We examined kernel PCA:
 \newcommand{\V}{\mathbf{V}}$$`
 
 
-1.  Specify a kernel `\(k\)`, e.g. `\(k(x,x') = \exp\left( -\gamma^{-1}\norm{x - x'}_2^2\right)\)`
+1.  Specify a kernel `\(k\)`, for example `\(k(x,x') = \exp\left( -\norm{x - x'}_2^2/\gamma\right)\)`
 
 2.  Form `\(\mathbf{K}_{i,i'} = k(X_i,X_{i'})\)`
 
@@ -65,15 +65,17 @@ __Classical Multidimensional Scaling__
 
 1. Calculate a matrix of distances (or dissimilarities) between data points `\(\Delta\)`, and square them `\(\Delta^2\)`
 
-3. "Double center" `\(\mathbf{B}: \mathbf{B} = (I-\frac{1}{n}11^\top)\mathbf{B}(I-\frac{1}{n}11^\top)\)`
+3. .hand[Double center] `\(\mathbf{B} = (I-\frac{1}{n}11^\top)\Delta^2(I-\frac{1}{n}11^\top)\)`
 
 3. Write `\(\mathbf{B} = \U\D^2 \U^\top\)` (find the eigendecomposition)
 
 4. Approximate your data with `\(\U_{M}\D_{M}\)`, "the first `\(M\)` columns"
 
-CMDS is embedding "dissimilarities" by using the eigendecomposition.
+CMDS is embedding .hand[dissimilarities] by using the eigendecomposition.
 
-KPCA applies CMDS  `\(\mathbf{K} = \Delta^2\)`
+KPCA `==` CMDS if `\(\mathbf{K}\)` is a matrix of dissimilarities
+
+
 
 ---
 
@@ -87,7 +89,7 @@ I could use kernel PCA, but there's another way to think of the problem
 
 How good of an approximation is Euclidean distance to the distance along the data?
 
-This question is equivalent to how asking: how quickly does the
+This question is equivalent to asking: how quickly does the
 tangent (space) change?
 
 
@@ -131,7 +133,7 @@ __Key Idea:__   We can get the eigenvectors/eigenvalues of `\(\mathbf{L}\)`. Ana
 
 1. Center and scale the data matrix `\(\X\)`
 2. Compute `\(\mathbf{K}\)` where
-    `\(\mathbf{K}_{ij} = \exp\left(-\frac{\|x_i-x_j\|_2^2}{\epsilon}\right)\)`
+    `\(\mathbf{K}_{ij} = \exp\left(-\|x_i-x_j\|_2^2/\gamma\right)\)`
 4. Optionally, allow only the `\(k\)` nearest neighbors `\(j\)` to `\(i\)` to have `\(K_{ij}\)` nonzero.
 3. Form the Laplacian `\(\mathbf{L} = \mathbf{I} -\mathbf{G}^{-1}\mathbf{K}\)` where `\(\mathbf{G} =\)` `diag(rowSums(` `\(\mathbf{K}\)` `))`
 4. Compute the SVD of `\(\mathbf{L} = \U\D\U^\top\)`.
@@ -174,14 +176,13 @@ To name a few
 * Diffusion maps
 * Local tangent space alignment
 * Isomap
-* Diffusion map
 
 Issues with nonlinear techniques:
 
 1. Need to choose `\(M\)` (also with linear)
 2. Also other tuning parameters.
 3. These others can have __huge__ effects
-4. The difference between the data lying "on" the manifold and the data lying "near" the manifold is large
+4. The difference between the data lying .hand[on] the manifold and the data lying .hand[near] the manifold is important
 
 ---
 class: inverse, center, middle

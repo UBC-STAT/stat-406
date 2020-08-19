@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 24 Principal components, introduction
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-06
+### Last modified - 2020-08-19
 
 ---
 
@@ -55,19 +55,19 @@ background-size: cover
 
 ## Unsupervised learning
 
-In Machine Learning, rather than calling `\(\y\)` the "response", people call it the "supervisor"
+In Machine Learning, rather than calling `\(\y\)` the .hand[response], people call it the .hand[supervisor]
 
-So "unsupervised" learning means "learning without `\(\y\)`".
+So .hand[unsupervised] learning means .hand[learning without] `\(\y\)`
 
-The only data you get are the "features" `\(\{x_1,\ldots,x_n\}\)`.
+The only data you get are the .hand[features] `\(\{x_1,\ldots,x_n\}\)`.
 
-This type of analysis is more often "exploratory".
+This type of analysis is more often .hand[exploratory]
 
 We're not necessarily using this for prediction (but we could)
 
 So now, we get `\(\X\)`
 
-The two main activities are "representation learning" and "clustering"
+The two main activities are __representation learning__ and __clustering__
 
 ---
 
@@ -90,11 +90,9 @@ However, the idea is constantly revisited in a variety of fields and
 contexts
 
 
-Commonly, these learned representations capture 'low level' information
+Commonly, these learned representations capture low-level information
 like overall shape types
 
-
-Other sharp features, such as images, aren't captured
 
 
 It is possible to quantify this intuition for PCA at least
@@ -109,7 +107,7 @@ reduction technique
 
 It solves various equivalent optimization problems
 
-(Maximize variance, minimize `\(L_2\)` distortions, find closest subspace of a given rank,\ldots)
+(Maximize variance, minimize `\(L_2\)` distortions, find closest subspace of a given rank, `\(\ldots\)`)
 
 At its core, we are finding linear combinations of the original
 (centered) covariates `$$z_{ij} = \alpha_j^{\top} x_i$$`
@@ -125,7 +123,7 @@ This is expressed via the SVD: `\(\X - \overline{\X} = \U\D\V^{\top}\)` as
 
 Suppose we have predictors `\(\x_1\)` and `\(\x_2\)`
 
--   We more faithfully preserve the structure of the data by keeping
+-   We more faithfully preserve the structure of this data by keeping
     `\(\x_1\)` and setting `\(\x_2\)` to zero than the opposite
 
 &lt;img src="rmd_gfx/24-pca-intro/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
@@ -166,16 +164,17 @@ __PCA__ gives us exactly this rotation
 
 .pull-right[
 
+.emphasis[
 1. Center and (scale) the data matrix `\(\X\)`
 2. Compute the SVD of `\(\X = \U\D \V^\top\)` or `\(\X\X^\top = \U\D^2\U^\top\)` or `\(\X^\top \X = \V\D^2 \V^\top\)`
 3. Return `\(\U_M\D_M\)`, where `\(\D_M\)` is the largest `\(M\)`
     eigenvalues of `\(\X\)`
-]
+]]
 
 
 ```r
 data(leaf)
-X = leaf %&gt;% select(Eccentricity:Entropy)
+X = leaf %&gt;% dplyr::select(Eccentricity:Entropy)
 pca = prcomp(X, scale=TRUE) ## DON'T USE princomp()
 ```
 

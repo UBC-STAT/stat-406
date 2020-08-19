@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 22 Neural nets - estimation
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-05
+### Last modified - 2020-08-19
 
 ---
 
@@ -25,14 +25,14 @@ class: center, middle, inverse, title-slide
 
 ## Training neural networks
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
 \newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
+\newcommand{\P}{Pr}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
 \newcommand{\X}{\mathbf{X}}
@@ -42,7 +42,7 @@ class: center, middle, inverse, title-slide
 Neural networks have _many_
 ( __MANY__ ) unknown parameters
 
-They are usually called __weights__ in this dialect
+They are usually called __weights__ in this dialect and __biases__
 
  
 These are
@@ -70,11 +70,11 @@ __Classification:__
     `$$\hat{R} = -\sum_{i = 1}^n \sum_{g=1}^G y_{ig} \log( \hat{\pi}_g(x_i))$$`
 
 -   Here, `\(y_{ig}\)` is an indicator variable for the `\(g^{th}\)` class.
-    In other words `\(Y_i \in \mathbb{R}^G\)`
+    In other words `\(Y_i \in \{0,1\}^G\)`
 
-- Neural networks very seamlessly incorporate multivariate response variables, even in regression
+- Neural networks seamlessly incorporate multivariate response variables, even in regression
 
-- With the softmax `\(+\)` cross-entropy, a neural networks is a linear multinomial logistic regression model in the hidden units
+- With the softmax `\(+\)` cross-entropy, a neural network is a linear multinomial logistic regression model in the hidden units
 
 ---
 
@@ -125,7 +125,7 @@ For squared error, let `\(\hat{R}_i = (y_i - \hat{y}_i)^2\)`
 \frac{\partial \hat{R}_i}{\partial \beta_k} 
 &amp; = -2(y_i - \hat{y}_i)z_{ik} \\
 \frac{\partial \hat{R}_i}{\partial \alpha_{kj}}  
-&amp; = -2(y_i - \hat{y}_i)\beta_k \sigma'(\alpha_{k0} + \alpha_k^{\top} x_i)x_{ij}\end{aligned}$$`
+&amp; = -2(y_i - \hat{y}_i)\beta_k \sigma'(\alpha_k^{\top} x_i)x_{ij}\end{aligned}$$`
 Given these derivatives, a gradient descent update can be found
 `$$\begin{aligned}
 \hat{\beta}_k^{t+1} 
@@ -145,7 +145,7 @@ Given current `\(\beta,\ {\alpha}\)`, we want to get new, `\(\tilde\beta,\ \tild
 .pull-left[
 __Feed forward__ &lt;svg style="height:0.8em;top:.04em;position:relative;fill:#00af64;" viewBox="0 0 448 512"&gt;&lt;path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"/&gt;&lt;/svg&gt;
 
-`\(\mathbf{a}_k = X \alpha_k \in \R^n\)`
+`\(\mathbf{a}_k = \X \alpha_k \in \R^n\)`
 
 `\(\mathbf{z}_k = \sigma(a_k)\)` (component wise)
 

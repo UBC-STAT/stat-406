@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 25 Principal components, the troubles
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-06
+### Last modified - 2020-08-19
 
 ---
 
@@ -33,8 +33,7 @@ __PCA__ gives us exactly this rotation
 
 
 
-PCA "works" when the data can be represented (in a lower dimension) as
-'lines' (or planes, or hyperplanes). 
+PCA works when the data can be represented (in a lower dimension) as .hand[lines] (or planes, or hyperplanes). 
 
 
 So, in two dimensions:  
@@ -66,7 +65,7 @@ So, in two dimensions:
 ## PCA reduced
   
 Here, we can capture a lot of the variation and underlying
-'structure' with just 1 dimension, 
+structure with just 1 dimension, 
 
 instead of the original 2 (the coloring is for visualizing). 
 
@@ -103,20 +102,16 @@ all the points are all "mixed up".
 PCA wants to minimize distances (equivalently maximize
     variance).  
     
-This means it "slices" through the data at the __meatiest__ point, and then the next one, and so on.  
+This means it .hand[slices] through the data at the __meatiest__ point, and then the next one, and so on.  
 
 If the data are .secondary[curved] this is going to induce artifacts.  
 
-PCA also looks at things as being "close" if they are near each
-    other in a Euclidean sense.  
+PCA also looks at things as being .hand[close] if they are near each other in a Euclidean sense.  
 
 
-On the spiral, our intuition says
-    that things are "close" only if the distance is constrained to go
-    along the curve.  
+On the spiral, our intuition says that things are close only if the distance is constrained to go along the curve.  
     
-In other words, purple and blue are close, blue and
-    yellow are not. 
+In other words, purple and blue are close, blue and yellow are not. 
 ]    
     
 .pull-right[
@@ -136,25 +131,28 @@ However, we can just as easily get it from the outer product
 
 
 The intuition behind KPCA is that `\(\mathbf{K}\)` is an expansion into a
-"kernel space", where
+.hand[kernel space], where
 `$$\mathbf{K}_{i,i'} = k(x_i,\ x_{i'}) = \langle x_i,x_{i'} \rangle$$`
 
 We saw this trick before with feature expansion.
 
 --
 
+.emphasis[
 Following this intuition, the approach is simple:
 
-1.  Specify a kernel `\(k\)`, e.g. `\(k(x,x') = \exp\left( -\gamma^{-1}\norm{x - x'}_2^2\right)\)`
+1.  Specify a kernel function `\(k\)`,  many people use `\(k(x,x') = \exp\left( -\norm{x - x'}_2^2/\gamma\right)\)`
 
-2.  Form `\(\mathbf{K}_{i,i'} = k(X_i,X_{i'})\)`
+2.  Form `\(\mathbf{K}_{i,i'} = k(x_i,x_{i'})\)`
 
 3.  Standardize and take eigendecomposition `\(\mathbf{K} = \U\D^2\U^{\top}\)`
+]
 
-The scores are still `\(Z = UD\)`
+The scores are still `\(\mathbf{Z} = \U\D\)`
 
-__Note:__ As we don't explicitly
-generate the feature map, there are no loadings
+
+__Note:__ We don't explicitly
+generate the feature map `\(\longrightarrow\)` there are no loadings
 
 ---
 
@@ -166,7 +164,7 @@ in classical PCA, we solve
 
 
 In the kernel setting we solve
-`$$\max_{g \in \mathcal{H}_k} \Var{g(X)} \textrm{ subject to } \left|\left| g \right|\right|_{\mathcal{H}_k} = 1$$`
+`$$\max_{g \in \mathcal{H}_k} \Var{g(X)} \quad \textrm{ subject to } \quad\left|\left| g \right|\right|_{\mathcal{H}_k} = 1$$`
 
 Here `\(\mathcal{H}_k\)` is a function space determined by `\(k(x,x')\)`.
 
@@ -176,7 +174,7 @@ __Examples:__
 
 `\(k(x,x') = (1+x^\top x')^d\)` gives a function space which contains all `\(d^{th}\)`-order polynomials.
 
-`\(k(x,x') = \exp(\norm{x-x'}^2/\gamma)^d\)` gives a function space spanned by the infinite Fourier basis
+`\(k(x,x') = \exp(-\norm{x-x'}^2/\gamma)^d\)` gives a function space spanned by the infinite Fourier basis
 
 For more details see [ESL 14.5] 
 
@@ -197,7 +195,7 @@ similarity using a kernel map
 
 
 This can be interpreted as finding smooth,
-orthogonal directions in a RKHS
+orthogonal directions in an RKHS
 
 
 This can allow us to start picking up nonlinear (in the original feature

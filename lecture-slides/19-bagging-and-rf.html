@@ -16,22 +16,11 @@ class: center, middle, inverse, title-slide
 # 19 Bagging and random forests
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-05
+### Last modified - 2020-08-19
 
 ---
 
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\argmin}{\arg\min}
-\newcommand{\argmax}{\arg\max}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
-\renewcommand{\hat}{\widehat}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
 
 
 
@@ -54,6 +43,20 @@ In contrast, a low variance estimator would yield similar results if applied rep
 __Bagging__, short for __bootstrap aggregation__, is a general purpose procedure for reducing variance. 
 
 We'll use it specifically in the context of trees, but it can be applied much more broadly.
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
 
 ---
 
@@ -90,11 +93,11 @@ Suppose we have data `\(Z_1, \ldots, Z_n\)`
 1. Choose some large number of samples, `\(B\)`. 
 2. For each `\(b = 1,\ldots,B\)`, draw a resample from `\(Z_1, \ldots, Z_n\)`, call it 
 `\(\widetilde{Z}_1, \ldots, \widetilde{Z}_n\)`. 
-3. Compute `\(\widehat{f}_b = \widehat{f}(\widetilde{Z}_1, \ldots, \widetilde{Z}_n)\)`.
+3. Compute `\(\widehat{f}^b = \widehat{f}(\widetilde{Z}_1, \ldots, \widetilde{Z}_n)\)`.
 
 Then average them:
 
-`$$\widehat{f}_{\textrm{bag}}(x) = \frac{1}{B} \sum_{b=1}^B \widehat{f}_b(x)$$`
+`$$\widehat{f}_{\textrm{bag}}(x) = \frac{1}{B} \sum_{b=1}^B \widehat{f}^b(x)$$`
 
 This process is known as Bagging
 
@@ -124,7 +127,8 @@ Each tree, since it is unpruned, will have
 .primary[low]/.secondary[high] bias
 
 
-Therefore averaging many trees results in an estimator that has lower variance and still low bias.
+
+Therefore averaging many trees results in an estimator that has .primary[lower]/.secondary[higher] variance and .primary[low]/.secondary[high] bias.
 
 ]
 
@@ -133,20 +137,22 @@ Therefore averaging many trees results in an estimator that has lower variance a
 ## Bagging trees: Variable importance measures
 
 
-Though bagging can improve predictive performance of trees 
+Bagging can improve predictive performance of trees 
 
-We sacrificed some interpretability. 
+We sacrificed some .hand[interpretability]. 
 
 We no longer have that nice diagram that shows the segmentation of the predictor space 
 
-(or, more accurately, we have `\(B\)` of them).  
+(more accurately, we have `\(B\)` of them).  
 
 To recover some information, we can do the following:
+
+.emphasis[
 
 1. For each of the `\(b\)` trees and each of the `\(p\)` variables, we record the amount that the Gini index is reduced
 by the addition of that variable 
 2. Report the average reduction over all `\(B\)` trees.
-
+]
 
 ---
 
@@ -168,7 +174,7 @@ Usually, we use about `\(m = \sqrt{p}\)`
 
 
 
-In other words, at each split, we .fourth-color[aren't even allowed to consider the majority of possible predictors!]
+In other words, at each split, we .hand-blue[aren't even allowed to consider the majority of possible predictors!]
 
 ---
 
@@ -238,10 +244,10 @@ varImpPlot(rf)
 
 ## One last thing...
 
-On average, drawing `\(n\)` samples from `\(n\)` observations with replacement (also known as bootstrap) results in about 2/3 of the observations being selected. (Can you show this?)
+On average, drawing `\(n\)` samples from `\(n\)` observations with replacement (bootstrapping) results in .hand-blue[~ 2/3] of the observations being selected. (Can you show this?)
 
 
-The remaining one-third of the observations not used on that tree.
+The remaining ~ 1/3 of the observations not used on that tree.
 
 These are referred to as __out-of-bag (OOB)__.
 
