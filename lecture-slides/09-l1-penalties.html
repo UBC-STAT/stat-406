@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 09 L1 penalties
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -38,13 +38,14 @@ class: center, middle, inverse, title-slide
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 
 
-Ridge regression: `\(\min ||Y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq t\)` 
+Ridge regression: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq t\)` 
 
-Best linear regression model: `\(\min ||Y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t\)`
+Best linear regression model: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t\)`
 
 `\(||\beta||_0\)` is the number of nonzero elements in `\(\beta\)`
 
@@ -88,12 +89,12 @@ Known as
 
 The estimator satisfies
 
-`$$\blt = \arg\min_{ ||\beta||_1 \leq t}  ||Y-\X\beta||_2^2$$`
+`$$\blt = \arg\min_{ ||\beta||_1 \leq t}  ||\y-\X\beta||_2^2$$`
 
 
 In its corresponding Lagrangian dual form:
 
-`$$\bll = \arg\min_{\beta} ||Y-\X\beta||_2^2 + \lambda ||\beta||_1$$`
+`$$\bll = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_1$$`
 
 ---
 
@@ -101,13 +102,13 @@ In its corresponding Lagrangian dual form:
 
 While the ridge solution can be easily computed
 
-`$$\brl = \arg\min_{\beta} ||Y-\X\beta||_2^2 + \lambda ||\beta||_2^2 = (\X^{\top}\X + \lambda I)^{-1} \X^{\top}Y$$`
+`$$\brl = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_2^2 = (\X^{\top}\X + \lambda I)^{-1} \X^{\top}\y$$`
 
 
 the lasso solution
 
 
-`$$\bll = \arg\min_{\beta} ||Y-\X\beta||_2^2 + \lambda ||\beta||_1 = \; ??$$`
+`$$\bll = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_1 = \; ??$$`
 
 doesn't have a closed form solution.
 
@@ -143,7 +144,7 @@ There are two main `R` implementations for finding lasso
 1. `lars` (this one came first)
 2. `glmnet` (this one is faster)
 
-Use different algorithms, but both compute the for a range of `\(\lambda\)`.
+Use different algorithms, but both compute the solution for a range of `\(\lambda\)`.
 
 `lars` starts with an empty model and adds coefficients until saturated. The sequence of `\(\lambda\)`'s comes from the nature of the optimization problem.
 

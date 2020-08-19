@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 13 GAMs and Trees
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -28,13 +28,14 @@ class: center, middle, inverse, title-slide
 
 Last time we discussed smoothing in multiple dimensions.
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 
 Here we introduce the concept of GAMs (__G__eneralized __A__dditive __M__odels)
@@ -53,12 +54,14 @@ Note that OLS __is__ a GAM (take `\(f_j(x_{ij})=\beta_j x_{ij}\)`):
 These work by estimating each `\(f_i\)` using basis expansions in predictor `\(i\)`
 
 The algorithm for fitting these things is called "backfitting":
-    
-1. Center `\(Y\)` and `\(X\)`.
+
+.emphasis[    
+1. Center `\(\y\)` and `\(\X\)`.
 2. Hold `\(f_k\)` for all `\(k\neq j\)` fixed, and regress `\(f_j\)` on the partial residuals using your favorite smoother.
 3. Repeat for `\(1\leq j\leq p\)`.
 4. Repeat steps 2 and 3 until the estimated functions "stop moving" (iterate)
 5. Return the results.
+]
 
 ---
 
@@ -132,11 +135,6 @@ Smooth two coordinates together
 
 ---
 
-
-![](https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png)
-
----
-
 ## Regression trees
 
 Trees involve stratifying or segmenting the predictor space into a number of simple regions.
@@ -151,17 +149,24 @@ Modern methods that use trees are much better (Module 4)
 
 Regression trees estimate piece-wise constant functions
 
-The slabs are axis-parallel rectangles `\(R_1,\ldots,R_K\)` based on `\(X\)`
+The slabs are axis-parallel rectangles `\(R_1,\ldots,R_K\)` based on `\(\X\)`
 
-In each region, we average the `\(Y\)`'s: `\(\hat\mu_1,\ldots,\hat\mu_k\)`
+In each region, we average the `\(y_i\)`'s: `\(\hat\mu_1,\ldots,\hat\mu_k\)`
 
-Minimize `\(\sum_{k=1}^K \sum_{i=1}^n (Y_i-\mu_k)^2\)` over `\(R_k,\mu_k\)` for `\(k\in \{1,\ldots,K\}\)`
+Minimize `\(\sum_{k=1}^K \sum_{i=1}^n (y_i-\mu_k)^2\)` over `\(R_k,\mu_k\)` for `\(k\in \{1,\ldots,K\}\)`
 
 --
 
 This sounds more complicated than it is.
 
 The minimization is performed __greedily__ (like forward stepwise regression).
+
+
+
+---
+
+
+![](https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png)
 
 
 
@@ -221,12 +226,31 @@ The interior nodes lead to branches.
 
 &lt;svg style="height:0.8em;top:.04em;position:relative;fill:#ff4900;" viewBox="0 0 512 512"&gt;&lt;path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/&gt;&lt;/svg&gt; Full trees badly overfit, so we "prune" them using CV 
 
+
 ---
-class: middle, inverse, center
+class: middle
+background-image: url("gfx/proforhobo.png")
+background-size: cover
 
-# Next time...
+.pull-left[
+.hand[.secondary[.larger[Next time...]]]
 
-Module 3: Classification
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+]
+
+.pull-right[.center[
+.fourth-color[.hand[.large[classification: 
+
+Professor or Hobo? 
+
+You decide.]]]
+
+
+.small[.fourth-color[
+Source: proforhobo.com
+]]
+]]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

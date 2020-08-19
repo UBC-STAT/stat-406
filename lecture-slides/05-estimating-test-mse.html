@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 05 Estimating test MSE
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -28,17 +28,17 @@ class: center, middle, inverse, title-slide
 
 Last time, we saw
 
-prediction risk  =  `\(textrm{bias}^2\)`  +  variance  +  irreducible error 
+prediction risk  =  `\(\mathrm{bias}^2\)`  +  variance  +  irreducible error 
 
-`\(R_n(\widehat{f}) = \mathbb{E}[(Y-\widehat{f}(X))^2]\)`
+`\(R_n(\widehat{f}) = E[(Y-\widehat{f}(X))^2]\)`
 
 We argued that we want procedures that produce `\(\widehat{f}\)` with small `\(R_n\)`.
 
 __How do we estimate `\(R_n\)`?__
 
 $$
-\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 $$
@@ -98,26 +98,26 @@ Of course, we don't have actually have new data.
 
 ...or do we?
 
-What if we set aside one observation, say the first one `\((Y_1, X_1)\)`.
+What if we set aside one observation, say the first one `\((y_1, x_1)\)`.
 
 We estimate `\(\widehat{f}^{(1)}\)` without using the first observation.
 
 Then we test our prediction:
 
 
-`$$\widetilde{R}_1(\widehat{f}^{(1)}) = \ell(Y_1, \widehat{f}^{(1)}(X_1)).$$`
+`$$\widetilde{R}_1(\widehat{f}^{(1)}) = \ell(y_1, \widehat{f}^{(1)}(x_1)).$$`
 
 
 ---
 
 ## Keep going
 
-But that was only one data point `\((Y_1, X_1)\)`. Why stop there?
+But that was only one data point `\((y_1, x_1)\)`. Why stop there?
 
-Do the same with `\((Y_2, X_2)\)`! Get an estimate `\(\widehat{f}^{(2)}\)` 
+Do the same with `\((y_2, x_2)\)`! Get an estimate `\(\widehat{f}^{(2)}\)` 
 without using it, then
 
-`$$\widetilde{R}_2(\widehat{f}^{(2)}) = \ell(Y_2, \widehat{f}^{(2)}(X_2)).$$`
+`$$\widetilde{R}_2(\widehat{f}^{(2)}) = \ell(y_2, \widehat{f}^{(2)}(x_2)).$$`
 
 We can keep doing this until we try it for every data point.
 
@@ -125,7 +125,7 @@ And then average them! (Averages are good)
 
 
 `$$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_i(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n 
-\ell(Y_i - \widehat{f}^{(i)}(X_i))$$`
+\ell(y_i - \widehat{f}^{(i)}(x_i))$$`
 
 --
 
@@ -152,12 +152,13 @@ This is __leave-one-out cross validation__
 .pull-left[
 To alleviate some of these problems, people usually use `\(K\)`-fold cross validation.
 
-The idea of `\(K\)`-fold is 
+.emphasis[The idea of `\(K\)`-fold is 
   1. Divide the data into `\(K\)` groups. 
   2. Leave a group out and estimate with the rest.
   3. Test on the held-out group. Calculate an average risk over these `\(\sim n/K\)` data.
   4. Repeat for all `\(K\)` groups.
   5. Average the average risks.
+]
 ]
 
 --
@@ -234,8 +235,6 @@ cv_nice &lt;- function(mdl) mean((residuals(mdl)/(1-hatvalues(mdl)))^2)
 class: middle, inverse, center
 
 # Next time...
-
-??? 
 
 More tricks and what's up with the name "hatvalues"
     </textarea>

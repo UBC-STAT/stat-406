@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 14 Classification
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -26,12 +26,28 @@ class: center, middle, inverse, title-slide
 
 
 
+class: middle, center
+background-image: url("gfx/proforhobo.png")
+background-size: cover
+
+
+
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+
+
+.fourth-color[.hand[.larger[
+Professor or Hobo? 
+]]]
+
+
+---
 
 
 ## An Overview of Classification
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
@@ -40,7 +56,8 @@ class: center, middle, inverse, title-slide
 \newcommand{\P}{\mathbb{P}}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 
 
@@ -64,7 +81,7 @@ problems. They are __classification__ problems.
 ## The Set-up
 
 It begins just like regression: suppose we have observations
-`$$\{(X_1,Y_1),\ldots,(X_n,Y_n)\}$$`
+`$$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$`
 
 Again, we want to estimate a function that maps `\(X\)` to `\(Y\)` to
 predict as yet observed data.
@@ -84,10 +101,10 @@ variance and better predictions.
 
 ## How do we measure quality?
 
-Before in regression, we have `\(Y_i \in \mathbb{R}\)` and use squared error loss
+Before in regression, we have `\(y_i \in \mathbb{R}\)` and use squared error loss
 
 
-Instead, let `\(Y \in \mathcal{K} = \{1,\ldots, K\}\)`
+Instead, let `\(y \in \mathcal{K} = \{1,\ldots, K\}\)`
 
 (This is arbitrary, sometimes other numbers, such as `\(\{-1,1\}\)` will be
 used)
@@ -95,7 +112,7 @@ used)
 We can always take "factors": `\(\{\textrm{cat},\textrm{dog}\}\)` and convert to integers, which is what we assume.
 
 
-We again make predictions `\(\hat{Y}\)` based on the data
+We again make predictions `\(\hat{y}=k\)` based on the data
 
 
 * We get zero loss if we predict the right class
@@ -110,11 +127,11 @@ We're going to use `\(g\)` to be our classifier. It takes values in `\(\mathcal{
 ## How do we measure quality?
 
 Again, we appeal to risk
-`$$R(g) = \mathbb{E}_{(X,Y)} \ell(Y,g(X))$$` If we use the law of
+`$$R(g) = E_{(X,Y)} \ell(Y,g(X))$$` If we use the law of
 total probability, this can be written
-`$$R(g) = \mathbb{E}_X \sum_{y=1}^K \ell(y,\; g(X)) \mathbb{P}(Y = y \given X)$$`
+`$$R(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$`
 This can be minimized over `\(X\)`, to produce
-`$$g_*(X) = \arg\min_{g \in \mathcal{G}} \sum_{y=1}^K \ell(y,g(X)) \mathbb{P}(Y = y \given X)$$`
+`$$g_*(X) = \arg\min_{g \in \mathcal{G}} \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$`
 
 
 `\(g_*\)` is the __Bayes' classifier__. 
@@ -129,22 +146,22 @@ But we don't, so we'll try to do our best to estimate it.
 
 ## Best classifier
 
-If we make specific choices for `\(\ell\)`, we can find `\(g_*\)` exactly (pretending we know `\(\P\)`)
+If we make specific choices for `\(\ell\)`, we can find `\(g_*\)` exactly (pretending we know the distribution)
 
 Define (for convenience)
 `$$\ell_g(Z) = \ell(Y,g(X))$$` 
 
 As `\(Y\)` takes only a few values, __zero-one__
 prediction risk is natural
-`$$\ell_g(Z) = \begin{cases}0 &amp; Y=g(X)\\1 &amp; Y\neq g(X) \end{cases} \Longrightarrow R(g) = \mathbb{E}[\ell_g(Z)] = \mathbb{P}(g(X) \neq Y),$$`
+`$$\ell_g(Z) = \begin{cases}0 &amp; Y=g(X)\\1 &amp; Y\neq g(X) \end{cases} \Longrightarrow R(g) = \Expect{\ell_g(Z)} = Pr(g(X) \neq Y),$$`
 
 This means we want to __label__ or
-__classify__ a new observation `\((X,Y)\)` such that
-`\(g(X) = Y\)` as often as possible
+__classify__ a new observation `\((x_0,y_0)\)` such that
+`\(g(x_0) = y_0\)` as often as possible
 
 
 Under this loss, we have
-`$$g_*(X) = \argmin_{g \in\mathcal{G}} \mathbb{P}(g(X) \neq Y) = \argmin_{g \in \mathcal{G}} \left[ 1 - \mathbb{P}(Y = g(x) | X=x)\right]  = \argmax_{g \in \mathcal{G}} \mathbb{P}(Y = g(x) | X=x )$$`
+`$$g_*(X) = \argmin_{g \in\mathcal{G}} Pr(g(X) \neq Y) = \argmin_{g \in \mathcal{G}} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g \in \mathcal{G}} Pr(Y = g(x) | X=x )$$`
 
 ---
 
@@ -158,13 +175,13 @@ Let's try using __squared error loss__ instead:
 
 
 Then, the Bayes' rule is
-`$$f_*(X) = \mathbb{E}[ Y | X] = \mathbb{P}(Y = 1 | X)$$` 
+`$$f_*(X) = E[ Y \given X] = Pr(Y = 1 \given X)$$` 
 (note that `\(f_* \in [0,1]\)` is the regression function)
 
 Hence, we achieve the same Bayes' rule/limit with squared error
 classification by discretizing the probability:
 
-`$$g_*(X) = \begin{cases}0 &amp; f_*(X) &lt; 1/2\\1 &amp; else\end{cases}$$`
+`$$g_*(X) = \begin{cases}0 &amp; f_*(X) &lt; 1/2\\1 &amp; \textrm{else}\end{cases}$$`
 
 ---
 
@@ -178,9 +195,9 @@ Let `\(\widehat g (X) = \begin{cases}0 &amp; f_*(X) &lt; 1/2\\1 &amp; else\end{c
 
 It can be shown that 
 `$$\begin{aligned}
-  &amp;\mathbb{P}(Y \neq \hat{g}(X) | X) - \mathbb{P}(Y \neq g_*(X) | X)  \\
+  &amp;Pr(Y \neq \hat{g}(X) \given X) - Pr(Y \neq g_*(X) \given X)  \\
   &amp;= \cdots =\\
-&amp; =  2\left|f_*(X) - \frac{1}{2}\right|\mathbf{1}(g_*(X)\neq \hat{g}(X)) \end{aligned}$$`
+&amp; =  2\left|f_*(X) - \frac{1}{2}\right|\mathbf{1}\left(g_*(X)\neq \hat{g}(X)\right) \end{aligned}$$`
 
 
 --
@@ -192,15 +209,15 @@ __Can you show this?__
 ## Classification is easier than regression
 
 Now
-`$$g_*(X)\neq \hat{g}(X) \Rightarrow |\hat{f}(X) - f_*(X)| \geq |\hat{f}(X) - 1/2|$$`
+`$$g_*(X)\neq \widehat{g}(X) \Rightarrow |\hat{f}(X) - f_*(X)| \geq |\hat{f}(X) - 1/2|$$`
 Therefore
 
 `$$\begin{aligned}
- &amp;\mathbb{P}(Y \neq \hat{g}(X)) - \mathbb{P}(Y \neq g_*(X)) \\
-&amp; =  \int(\mathbb{P}(Y \neq \hat{g}(X) | X) - \mathbb{P}(Y \neq g_*(X) | X))d\mathbb{P}_X   \\
-&amp; =  \int 2\left|\hat{f}(X) - \frac{1}{2}\right|\mathbf{1}(g_*(X)\neq \hat{g}(X))d\mathbb{P}_X  \\
-&amp; \leq  2\int |\hat{f}(X) - f_*(X)| \mathbf{1}(g_*(X)\neq \hat{g}(X))d\mathbb{P}_X \\
-&amp; \leq  2\int |\hat{f}(X) - f_*(X)|d\mathbb{P}_X \end{aligned}$$`
+ &amp;Pr(Y \neq \hat{g}(X)) - Pr(Y \neq g_*(X)) \\
+&amp; =  \int\left(Pr(Y \neq \hat{g}(X) \given X=x) - Pr(Y \neq g_*(X) \given X=x)\right)dx   \\
+&amp; =  \int 2\left|\hat{f}(x) - \frac{1}{2}\right|\mathbf{1}(g_*(x)\neq \hat{g}(x))dx  \\
+&amp; \leq  2\int |\hat{f}(x) - f_*(x)| \mathbf{1}(g_*(x)\neq \hat{g}(x))dx \\
+&amp; \leq  2\int |\hat{f}(x) - f_*(x)|dx \end{aligned}$$`
 
 
 
@@ -211,7 +228,7 @@ Therefore
 Using Bayes' theorem 
 
 `$$\begin{aligned}
-f_*(X) &amp; = \mathbb{P}(Y = 1 | X) \\ &amp; =\frac{\P(X|Y = 1) \mathbb{P}(Y = 1)}{\sum_{g \in \{0,1\}} \P(X|Y = g) \mathbb{P}(Y = g)} \\ &amp; = \frac{f_1(X) \pi}{ f_1(X)\pi + f_0(X)(1-\pi)}\end{aligned}$$`
+f_*(X) &amp; = Pr(Y = 1 \given X) \\ &amp; =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{g \in \{0,1\}} Pr(X\given Y = g) Pr(Y = g)} \\ &amp; = \frac{f_1(X) \pi}{ f_1(X)\pi + f_0(X)(1-\pi)}\end{aligned}$$`
 
 We call `\(f_g(X)\)` the __class densities__
 
@@ -240,7 +257,7 @@ __Regression:__ Find an
 estimate `\(\hat{f}\)` and plug it in to the Bayes' rule
 
 __Density estimation:__
-Estimate `\(\hat{\pi}\)` and `\(f_g\)` from `\(\mathcal{D}\)` where `\(Y =g\)` and
+Estimate `\(\hat{\pi}\)` and `\(f_g\)`
 
 --
 

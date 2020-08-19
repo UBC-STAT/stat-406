@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
-    <meta name="date" content="2020-07-31" />
+    <meta name="date" content="2020-08-17" />
     <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
     <link rel="stylesheet" href="slides-style.css" type="text/css" />
@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # 01 Linear model review
 ### STAT 406
 ### Daniel J. McDonald
-### 2020-07-31
+### 2020-08-17
 
 ---
 
@@ -41,7 +41,7 @@ $$
 
 --
 
-4. What is the notation `\(X\)` or `\(y\)`?
+4. What is the notation `\(\mathbf{X}\)` or `\(\mathbf{y}\)`?
 
 ---
 
@@ -68,7 +68,7 @@ sigma = 2
 ```r
 epsilon = rnorm(n,sd=sigma) # this is random
 X = matrix(runif(n*p), n, p) # treat this as fixed, but I need numbers
-beta = rpois(p+1, 5) # also fixed, but I again need numbers
+beta = rpois(p+1, 5) # parameter, also fixed, but I again need numbers
 Y = cbind(1,X) %*% beta + epsilon # epsilon is random, so this is
 ## Equiv: Y = beta[1] + X %*% beta[-1] + epsilon
 ```
@@ -88,19 +88,21 @@ Y = cbind(1,X) %*% beta + epsilon # epsilon is random, so this is
 
 Suppose I want to find an estimator `\(\widehat\beta\)` which makes small errors on my data.
 
-I measure errors with the difference between predictions `\(X\widehat\beta\)` and the responses `\(Y\)`.
+I measure errors with the difference between predictions `\(\mathbf{X}\widehat\beta\)` and the responses `\(\mathbf{y}\)`.
 
 I don't care if the differences are positive or negative, so I try to measure the total error with
-\[
-\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.
-\]
+
+
+`$$\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.$$`
+
 
 This is fine, but hard to minimize (what is the derivative of `\(|\cdot|\)`?)
 
 So I use 
-\[
-\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.
-\]
+
+
+`$$\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.$$`
+
 
 ---
 
@@ -143,9 +145,9 @@ We differentiate and set to zero
 
 ...this is 
 
-\[
-\hat\beta = (X^\top X)^{-1} X^\top Y.
-\]
+
+`$$\hat\beta = ( \mathbf{X}^\top  \mathbf{X})^{-1} \mathbf{X}^\top\mathbf{y}.$$`
+
 
 The `\(\beta\)` which "minimizes the sum of squared errors"
 
@@ -159,20 +161,20 @@ AKA, the SSE.
 Method 2 didn't use anything about the distribution of `\(\epsilon\)`.
 
 But if we know that `\(\epsilon\)` has a normal distribution, we can write down the joint distribution
-of `\(Y=(y_1,\ldots,y_n)\)`:
+of `\(\mathbf{y}=(y_1,\ldots,y_n)^\top\)`:
 
 
 `\begin{aligned}
-f_Y(y ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
+f_Y(\mathbf{y} ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
   &amp;= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
   &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
 \end{aligned}`
 
 --
 
-In probability courses, we think of `\(f_Y\)` as a function of `\(y\)` with `\(\beta\)` fixed:
+In probability courses, we think of `\(f_Y\)` as a function of `\(\mathbf{y}\)` with `\(\beta\)` fixed:
 
-1. If we integrate over `\(y\)` from `\(-\infty\)` to `\(\infty\)`, it's `\(1\)`.
+1. If we integrate over `\(\mathbf{y}\)`, it's `\(1\)`.
 2. If we want the probability of `\((a,b)\)`, we integrate from `\(a\)` to `\(b\)`.
 3. etc.
 
@@ -214,6 +216,13 @@ But we can ignore constants, so this gives
 
 
 The same as before!
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+Recall how to do this in `R`
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

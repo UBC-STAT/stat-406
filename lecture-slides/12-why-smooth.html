@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 12 To(o) smooth or not to(o) smooth?
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -26,13 +26,14 @@ class: center, middle, inverse, title-slide
 
 ## Last time...
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}$$`
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
 
 We've been discussing smoothing methods in 1-dimension:
 
@@ -44,7 +45,7 @@ We looked at basis expansions, e.g.:
 
 We looked at local methods, e.g.:
 
-`$$f(x_i) \approx  s_i^\top Y$$`
+`$$f(x_i) \approx  s_i^\top \y$$`
 
 --
 
@@ -73,7 +74,7 @@ More complicated functions (smooth Kernel regressions vs. linear models) tend to
 
 For `\(d=1\)`, one can show that for kernels 
 
-`$$\textrm{MSE}(\hat{f}) = \frac{C}{n^{4/5}} + \sigma^2$$` 
+`$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$` 
 
 How does this compare to just using a linear model?
 
@@ -82,12 +83,12 @@ How does this compare to just using a linear model?
 __Bias__  
     
 1. The bias of using a linear model when it is wrong is a number `\(b(\theta_0)\)` which doesn't depend on `\(n\)`.
-2. The bias of using kernel regression is `\(C/n^{4/5}\)`. This goes to 0 as `\(n\rightarrow\infty\)`.
+2. The bias of using kernel regression is `\(C_1/n^{4/5}\)`. This goes to 0 as `\(n\rightarrow\infty\)`.
   
 __Variance__
 
 1. The variance of using a linear model is `\(C/n\)`
-2. The variance of using kernel regression is `\(C/n^{4/5}\)`.
+2. The variance of using kernel regression is `\(C_2/n^{4/5}\)`.
 
 ---
 
@@ -108,13 +109,13 @@ Compare of the kernel version with CV-selected tuning parameter with the estimat
 For `\(d&gt;1\)`, there is more trouble.
 
 First, lets look again at 
-`$$\textrm{MSE}(\hat{f}) - \sigma^2 = \frac{C}{n^{4/5}}$$` 
+`$$\textrm{MSE}(\hat{f}) - \sigma^2 = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}}$$` 
 
 That is for `\(d=1\)`. It's not __that much__ slower than `\(C/n\)`, the variance for linear models.
 
 If `\(d&gt;1\)` similar calculations show,
 
-`$$\textrm{MSE}(\hat f)-\sigma^2 = \frac{C}{n^{4/(4+d)}} \hspace{2em} \textrm{MSE}(\theta_0) -\sigma^2 = b(\theta_0) + \frac{Cd}{n}.$$`
+`$$\textrm{MSE}(\hat f)-\sigma^2 = \frac{C_1+C_2}{n^{4/(4+d)}} \hspace{2em} \textrm{MSE}(\theta_0) -\sigma^2 = b(\theta_0) + \frac{Cd}{n}.$$`
 
 --
 

@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 06 Information criteria
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -49,9 +49,9 @@ Last time we saw a nice trick
 
 ### This is another nice trick.
 
-Idea: replace `\(h_{ii}\)` with `\(\frac{1}{n}\sum_{i=1}^n h_{ii} = \frac{1}{n}\textrm{tr}(H)\)`
+Idea: replace `\(h_{ii}\)` with `\(\frac{1}{n}\sum_{i=1}^n h_{ii} = \frac{1}{n}\textrm{tr}(\mathbf{H})\)`
 
-Let's call `\(\textrm{tr}(H)\)` the __effective degrees-of-freedom__ (or just __df__)
+Let's call `\(\textrm{tr}(\mathbf{H})\)` the __effective degrees-of-freedom__ (or just __df__)
 
 `$$\textrm{GCV} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-\textrm{df}/n)^2} = \frac{MSE}{(1-\textrm{df}/n)^2}$$`
 
@@ -60,10 +60,13 @@ Let's call `\(\textrm{tr}(H)\)` the __effective degrees-of-freedom__ (or just __
 .hand[Where does this stuff come from?]
 
 $$
-\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\H}{\mathbf{H}}
 $$
 
 ---
@@ -75,11 +78,11 @@ $$
 cv_nice &lt;- function(mdl) mean((residuals(mdl)/(1-hatvalues(mdl)))^2)
 ```
 
-In OLS, `\(\widehat{Y} = X\widehat{\beta} = X(X^\top X)^{-1}X^\top Y\)`
+In OLS, `\(\widehat{\y} = \X\widehat{\beta} = \X(\X^\top \X)^{-1}\X^\top \y\)`
 
-We often call `\(H = X(X^\top X)^{-1}X^\top\)` the Hat matrix, because it .hand[puts the hat] on `\(Y\)`
+We often call `\(\H = \X(\X^\top \X)^{-1}\X^\top\)` the Hat matrix, because it .hand[puts the hat] on `\(\y\)`
 
-GCV uses `\(\textrm{tr}(H)\)`. For `lm`, this is just `d`, the number of predictors (Why?)
+GCV uses `\(\textrm{tr}(\H)\)`. For `lm`, this is just `d`, the number of predictors (Why?)
 
 This is one way of understanding the name __effective degrees-of-freedom__
 
@@ -99,9 +102,9 @@ Let `\(\widehat{Y}\)` be an estimator of `\(\mu\)`.
 
 --
 
-Now, if `\(\hat Y = H Y\)` for some matrix `\(H\)`,
+Now, if `\(\widehat{Y} = \H Y\)` for some matrix `\(\H\)`,
 
-`\(\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top H Y} = \sigma^2 \textrm{tr}(H)\)`
+`\(\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top \H Y} = \sigma^2 \textrm{tr}(\H)\)`
 
 --
 
@@ -158,6 +161,13 @@ This material is more challenging than the level of this course, and is easily a
 --
 
 .hand-blue[My recommendation: Use CV]
+
+---
+class: middle, inverse, center
+
+# Next time ...
+
+Greedy selection
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

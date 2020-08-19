@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 16 Logistic regression
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -25,14 +25,14 @@ class: center, middle, inverse, title-slide
 
 ## Last time
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
 \newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
+\newcommand{\P}{Pr}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
 \newcommand{\X}{\mathbf{X}}$$`
@@ -44,17 +44,17 @@ We showed that with two classes, the __Bayes' classifier__ is
 0  &amp;  \textrm{ otherwise}
 \end{cases}$$`
 
-where `\(f_1(X) = p(X \given Y=1)\)` and `\(f_0(X) = p(X \given Y=0)\)`
+where `\(f_1(X) = Pr(X \given Y=1)\)` and `\(f_0(X) = Pr(X \given Y=0)\)`
 
-We then looked at what happens if we assume `\(p(X \given Y=y)\)` is Normally distributed.
+We then looked at what happens if we assume `\(Pr(X \given Y=y)\)` is Normally distributed.
 
-We then used this distribution and the class prior `\(\pi\)` to find the __posterior__ `\(p(Y=1 \given X=x)\)`.
+We then used this distribution and the class prior `\(\pi\)` to find the __posterior__ `\(Pr(Y=1 \given X=x)\)`.
 
 Instead, let's directly model the posterior
 
 `$$\begin{aligned}
-\mathbb{P}(Y = 1 | X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
-\mathbb{P}(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\end{aligned}$$`
+Pr(Y = 1 \given X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
+\P(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\end{aligned}$$`
 
 This is logistic regression.
 
@@ -66,7 +66,7 @@ Like LDA, logistic regression is a linear classifier
 
 The _logit_ (i.e.: log odds) transformation
 gives a linear decision boundary
-`$$\log\left( \frac{\mathbb{P}(Y = 1 | X=x)}{\mathbb{P}(Y = 0 | X=x) } \right) = \beta_0 + \beta^{\top} x$$`
+`$$\log\left( \frac{\P(Y = 1 \given X=x)}{\P(Y = 0 \given X=x) } \right) = \beta_0 + \beta^{\top} x$$`
 The decision boundary is the hyperplane
 `\(\{x : \beta_0 + \beta^{\top} x = 0\}\)`
 
@@ -147,15 +147,15 @@ While the `R` formula for logistic regression is straightforward, it's not as ea
 
 Logistic regression for two classes simplifies to a likelihood:
 
-(Using `\(\pi_i(\beta) = \mathbb{P}(Y = 1 | X = X_i,\beta)\)`)
+(Using `\(\pi_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)\)`)
 `$$\begin{aligned}
 \ell(\beta) 
 &amp; = 
-\sum_{i=1}^n \left( Y_i\log(\pi_i(\beta)) + (1-Y_i)\log(1-\pi_i(\beta))\right) \\
+\sum_{i=1}^n \left( y_i\log(\pi_i(\beta)) + (1-y_i)\log(1-\pi_i(\beta))\right) \\
 &amp; = 
-\sum_{i=1}^n \left( Y_i\log(e^{\beta^{\top}X_i}/(1+e^{\beta^{\top}X_i})) - (1-Y_i)\log(1+e^{\beta^{\top}X_i})\right) \\
+\sum_{i=1}^n \left( y_i\log(e^{\beta^{\top}x_i}/(1+e^{\beta^{\top}x_i})) - (1-y_i)\log(1+e^{\beta^{\top}x_i})\right) \\
 &amp; = 
-\sum_{i=1}^n \left( Y_i\beta^{\top}X_i -\log(1 + e^{\beta^{\top} X_i})\right)\end{aligned}$$`
+\sum_{i=1}^n \left( y_i\beta^{\top}x_i -\log(1 + e^{\beta^{\top} x_i})\right)\end{aligned}$$`
 
 This gets optimized via Newton-Raphson updates and iteratively reweighed
 least squares.
@@ -198,10 +198,10 @@ Both are linear in `\(x\)`:
 
 But the parameters are estimated differently.
 
-Examine the joint distribution of `\((X,y)\)`:  
+Examine the joint distribution of `\((X,\ Y)\)`:  
 
-- LDA `\(\prod_i f(x_i,y_i) = \underbrace{\prod_i f(X_i | y_i)}_{\textrm{Gaussian}}\underbrace{\prod_i f(y_i)}_{\textrm{Bernoulli}}\)`
-- Logistic `\(\prod_i f(x_i,y_i) = \underbrace{\prod_i f(y_i | X_i)}_{\textrm{Logistic}}\underbrace{\prod_i f(X_i)}_{\textrm{Ignored}}\)`
+- LDA `\(\prod_i f(X_i,\ Y_i) = \underbrace{\prod_i f(X_i \given Y_i)}_{\textrm{Gaussian}}\underbrace{\prod_i f(Y_i)}_{\textrm{Bernoulli}}\)`
+- Logistic `\(\prod_i f(X_i,Y_i) = \underbrace{\prod_i f(Y_i\given X_i)}_{\textrm{Logistic}}\underbrace{\prod_i f(X_i)}_{\textrm{Ignored}}\)`
   
 LDA estimates the joint, but Logistic estimates only the conditional distribution. But this is really all we need.
 
@@ -228,7 +228,7 @@ LDA works even if the conditional isn't normal, but works poorly if any X is qua
     - LDA: 1376
     - QDA: 2651
   
-* QDA doesn't get used much: there are better nonlinear versions with way "fewer" parameters
+* QDA doesn't get used much: there are better nonlinear versions with way fewer parameters
 
 * LDA only really depends on `\(\Sigma^{-1}(\mu_1-\mu_0)\)` and `\((\mu_1+\mu_0)\)`, so appropriate algorithms use `\(&lt;2p\)` parameters.
 

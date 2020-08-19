@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 17 Nonlinear classifiers
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -25,14 +25,14 @@ class: center, middle, inverse, title-slide
 
 ## Last time
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
 \newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
+\newcommand{\P}{Pr}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
 \newcommand{\X}{\mathbf{X}}$$`
@@ -40,8 +40,8 @@ class: center, middle, inverse, title-slide
 We reviewed logistic regression
 
 `$$\begin{aligned}
-\mathbb{P}(Y = 1 | X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
-\mathbb{P}(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\end{aligned}$$`
+\P(Y = 1 \given X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
+\P(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\end{aligned}$$`
 
 --
 
@@ -51,7 +51,7 @@ Say:
 
 __Polynomials__
 
-`\((x_1, x_2) \mapsto \left(1,\ x_1,\ x_1^2,\ x_2,\ x_2^2, x_1 x_2\right)\)`
+`\((x_1, x_2) \mapsto \left(1,\ x_1,\ x_1^2,\ x_2,\ x_2^2,\ x_1 x_2\right)\)`
 
 
 
@@ -99,29 +99,19 @@ Like with regression trees, classification trees operate by greedily splitting t
 .pull-left[
 
 ```r
-glimpse(gbbakeoff)
+names(gbbakeoff)
 ```
 
 ```
-## Rows: 94
-## Columns: 17
-## $ winners                   &lt;lgl&gt; FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FA…
-## $ series                    &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2…
-## $ baker_full                &lt;chr&gt; "Annetha Mills", "David Chambers", "Edward …
-## $ age                       &lt;dbl&gt; 30, 31, 24, 45, 25, 51, 44, 37, 31, 31, 31,…
-## $ occupation                &lt;chr&gt; "Single mother", "Entrepreneur", "Debt coll…
-## $ hometown                  &lt;chr&gt; "Essex", "Milton Keynes", "Bradford", "Birm…
-## $ percent_star              &lt;dbl&gt; 0.0000000, 0.0000000, 0.0000000, 0.0000000,…
-## $ percent_technical_wins    &lt;dbl&gt; 0.0000000, 0.0000000, 0.3333333, 0.0000000,…
-## $ percent_technical_bottom3 &lt;dbl&gt; 0.5000000, 0.7500000, 0.1666667, 0.4000000,…
-## $ percent_technical_top3    &lt;dbl&gt; 50.00000, 25.00000, 66.66667, 40.00000, 33.…
-## $ technical_highest         &lt;dbl&gt; 2, 3, 1, 2, 1, 10, 4, 1, 2, 1, 1, 2, 1, 1, …
-## $ technical_lowest          &lt;dbl&gt; 7, 8, 6, 5, 9, 10, 4, 8, 5, 5, 6, 10, 8, 7,…
-## $ technical_median          &lt;dbl&gt; 4.5, 4.5, 2.0, 3.0, 6.0, 10.0, 4.0, 3.0, 3.…
-## $ judge1                    &lt;chr&gt; "Paul Hollywood", "Paul Hollywood", "Paul H…
-## $ judge2                    &lt;chr&gt; "Merry Berry", "Merry Berry", "Merry Berry"…
-## $ viewers_7day              &lt;dbl&gt; 2.77000, 2.77000, 2.77000, 2.77000, 2.77000…
-## $ viewers_28day             &lt;dbl&gt; 3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3…
+##  [1] "winners"                   "series"                   
+##  [3] "baker_full"                "age"                      
+##  [5] "occupation"                "hometown"                 
+##  [7] "percent_star"              "percent_technical_wins"   
+##  [9] "percent_technical_bottom3" "percent_technical_top3"   
+## [11] "technical_highest"         "technical_lowest"         
+## [13] "technical_median"          "judge1"                   
+## [15] "judge2"                    "viewers_7day"             
+## [17] "viewers_28day"
 ```
 ]
 
@@ -172,11 +162,11 @@ decision tree is successful.
 1. Divide the predictor space into
 `\(J\)` non-overlapping regions `\(R_1, \ldots, R_J\)` 
 
-&gt; this is done via greedy, recursive binary splitting
+  &gt; this is done via greedy, recursive binary splitting
 
 2. Every observation that falls into a given region `\(R_j\)` is given the same prediction
 
-&gt;determined by majority (or plurality) vote in that region.
+  &gt; determined by majority (or plurality) vote in that region.
 
 
 
@@ -258,7 +248,7 @@ We do this next module
 
 ## KNN classifiers
 
-* We saw `\(k\)`-nearest neighbors at the very beginning of the course.
+* We saw `\(k\)`-nearest neighbors in the last module.
 
 
 ```r

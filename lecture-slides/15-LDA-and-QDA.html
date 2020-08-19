@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 15 LDA and QDA
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -25,14 +25,14 @@ class: center, middle, inverse, title-slide
 
 ## Last time
 
-`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
 \newcommand{\argmin}{\arg\min}
 \newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
+\newcommand{\P}{Pr}
 \renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
 \newcommand{\X}{\mathbf{X}}$$`
@@ -44,7 +44,7 @@ We showed that with two classes, the __Bayes' classifier__ is
 0  &amp;  \textrm{ otherwise}
 \end{cases}$$`
 
-where `\(f_1(X) = p(X \given Y=1)\)` and `\(f_0(X) = p(X \given Y=0)\)`
+where `\(f_1(X) = Pr(X \given Y=1)\)` and `\(f_0(X) = Pr(X \given Y=0)\)`
 
 --
 
@@ -53,13 +53,13 @@ More generally
 `$$g_*(X) = 
 \argmax_k \frac{\pi_k f_k(X)}{\sum_k \pi_k f_k(X)}$$`
 
-where `\(f_k(X) = p(X \given Y=k)\)` and `\(\pi_k = P(Y=k)\)`
+where `\(f_k(X) = Pr(X \given Y=k)\)` and `\(\pi_k = P(Y=k)\)`
 
 --
  
 Let's make some assumptions:
 
-1. `\(p(X\given Y=k) = \mbox{N}(\mu_k,\Sigma_k)\)`
+1. `\(Pr(X\given Y=k) = \mbox{N}(\mu_k,\Sigma_k)\)`
 2. `\(\Sigma_k = \Sigma_{k'} = \Sigma\)`
 
 --
@@ -72,10 +72,12 @@ This leads to __Linear Discriminant Analysis__ (LDA), one of the oldest classifi
 
 Super simple:
 
-1. Split your training data into `\(K\)` subsets based on `\(Y=k\)`.
+.emphasis[
+1. Split your training data into `\(K\)` subsets based on `\(y_i=k\)`.
 2. In each subset, estimate the mean of `\(X\)`: `\(\hat\mu_k = \overline{X}_k\)`
-3. Estimate the pooled variance: `$$\hat\Sigma = \frac{1}{n-K} \sum_{k \in \mathcal{K}} \sum_{i \in k} (X_i - \overline{X}_k) (X_i - \overline{X}_k)^{\top}$$`
+3. Estimate the pooled variance: `$$\hat\Sigma = \frac{1}{n-K} \sum_{k \in \mathcal{K}} \sum_{i \in k} (x_i - \overline{X}_k) (x_i - \overline{X}_k)^{\top}$$`
 4. Estimate the class proportion: `\(\hat\pi_k = n_k/n\)`
+]
 
 --
 
@@ -89,13 +91,13 @@ If `\(\delta_1(x) &gt; \delta_0(x)\)`, we set `\(\hat g(x)=1\)`
 
 ## What is linear?
 
-Look closely at the equation for `\(\delta_1\)`:
+Look closely at the equation for `\(\delta_1(x)\)`:
 
-`$$\delta_1=x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1$$`
+`$$\delta_1(x)=x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1$$`
 
-We can write this as `\(\delta_1 = x^\top a_1 + b_1\)` with `\(a_1 = \hat\Sigma^{-1}\overline X_1\)` and `\(b_1=-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1\)`.
+We can write this as `\(\delta_1(x) = x^\top a_1 + b_1\)` with `\(a_1 = \hat\Sigma^{-1}\overline X_1\)` and `\(b_1=-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1\)`.
 
-We can do the same for `\(\delta_0\)` (in terms of `\(a_0\)` and `\(b_0\)`)
+We can do the same for `\(\delta_0(x)\)` (in terms of `\(a_0\)` and `\(b_0\)`)
 
 Therefore, 
 

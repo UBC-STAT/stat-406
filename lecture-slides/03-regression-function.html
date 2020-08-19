@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 03 The regression function
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-07-31
+### Last modified - 2020-08-17
 
 ---
 
@@ -25,6 +25,16 @@ class: center, middle, inverse, title-slide
 
 
 
+
+class: middle, center
+background-image: url("https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG")
+background-size: cover
+
+.secondary[.larger[Module]] .huge-orange-number[1]
+
+.secondary[.large[selecting models]]
+
+---
 
 ## Mean squared error (MSE)
 
@@ -40,11 +50,14 @@ How do we estimate `\(f\)`?
 What is `\(f\)`?
 
 $$
-\newcommand{\E}{\mathbb{E}}
+\newcommand{\E}{E}
 \newcommand{\Expect}[1]{\E\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
 $$
 
 
@@ -56,12 +69,12 @@ $$
 Let's try to minimize the __expected__ sum of squared errors (MSE)
 
 `\begin{aligned}
-\mathbb{E}\left[(Y-f(X))^2\right] 
-&amp;= \mathbb{E}\left[\mathbb{E}\left[(Y-f(X))^2 \ \vert\  X\right]\right]\\
-&amp;= \mathbb{E}\left[\mathrm{Var}\left[Y\ \vert\  X\right] + 
-  \mathbb{E}\left[(Y-f(X)) \ \vert\  X\right]^2\right]\\
-&amp;= \mathbb{E}\left[\mathrm{Var}\left[Y\ \vert\  X\right]\right] + 
-  \mathbb{E}\left[\mathbb{E}\left[(Y-f(X)) \ \vert\  X\right]^2\right]\\
+\Expect{(Y-f(X))^2}
+&amp;= \Expect{\Expect{(Y-f(X))^2 \ \vert\  X }}\\
+&amp;= \Expect{\Var{Y\ \vert\  X} + 
+  \Expect{(Y-f(X)) \ \vert\  X}^2}\\
+&amp;= \Expect{\Var{Y\ \vert\  X}} + 
+  \Expect{\Expect{(Y-f(X)) \ \vert\  X}^2}\\
 \end{aligned}`
 
 
@@ -72,10 +85,10 @@ The first part doesn't depend on `\(f\)`, it's constant, and we toss it.
 To minimize the rest, take derivatives and set to 0.
 
 `\begin{aligned}
-0 &amp;=\frac{\partial}{\partial f} \mathbb{E}\left[\mathbb{E}\left[(Y-f(X))^2 \ \vert\  X\right]\right]\\
-  &amp;=-\mathbb{E}\left[\mathbb{E}\left[ 2(Y - f(X)) \ \vert\  X\right]\right]\\
-&amp;\Rightarrow 2\mathbb{E}\left[f(X) \ \vert\  X\right] = 2\mathbb{E}\left[Y \ \vert\  X\right]\\
-&amp;\Rightarrow f(X) = \mathbb{E}\left[Y \ \vert\  X\right]
+0 &amp;=\frac{\partial}{\partial f} \Expect{\Expect{(Y-f(X))^2 \ \vert\  X}}\\
+  &amp;=-\Expect{\Expect{ 2(Y - f(X)) \ \vert\  X}}\\
+&amp;\Rightarrow 2\Expect{f(X) \ \vert\  X} = 2\Expect{Y \ \vert\  X}\\
+&amp;\Rightarrow f(X) = \Expect{Y \ \vert\  X}
 \end{aligned}`
 
 
@@ -86,12 +99,12 @@ To minimize the rest, take derivatives and set to 0.
 We call this solution:
 
 
-`$$\mu(X) = \mathbb{E}\left[Y \ \vert\  X\right]$$`
+`$$\mu(X) = \Expect{Y \ \vert\  X}$$`
 
 
 the regression function.
 
-If we __assume__ that `\(\mu(x) = \mathbb{E}\left[Y \ \vert\  X=x\right] = x^\top \beta\)`, then we get back exactly OLS.
+If we __assume__ that `\(\mu(x) = \Expect{Y \ \vert\  X=x} = x^\top \beta\)`, then we get back exactly OLS.
 
 --
 
@@ -102,7 +115,7 @@ But why should we assume `\(\mu(x) = x^\top \beta\)`?
 ## The regression function
 
 
-In mathematics: `\(\mu(x) = \mathbb{E}\left[Y \ \vert\  X=x\right]\)`.
+In mathematics: `\(\mu(x) = \Expect{Y \ \vert\  X=x}\)`.
 
 In words: 
 
@@ -122,7 +135,7 @@ For any two variables `\(Y\)` and `\(X\)`, we can __always__ write
 
 `$$Y \ \vert\  X = \mu(X) + \eta(X)$$`
 
-such that `\(\mathbb{E}\left[\eta(X)\right]=0\)`.
+such that `\(\Expect{\eta(X)}=0\)`.
 
 --
 
@@ -159,9 +172,9 @@ I want to know how well I can predict __on average__
 
 Let `\(\widehat{f}\)` be some way of making predictions `\(\widehat{Y}\)` of `\(Y\)` using covariates `\(X\)`
 
-In fact, suppose I observe a dataset `\(\mathcal{D}_n = \{(Y_1,X_1,),\ldots,(Y_n,X_n)\}\)`.  
+In fact, suppose I observe a dataset `\(\{(y_1,x_1,),\ldots,(y_n,x_n)\}\)`.  
 
-Then I want to __choose__ some `\(\widehat{f}\)` using `\(\mathcal{D}_n\)`.
+Then I want to __choose__ some `\(\widehat{f}\)` using the data
 
 Is `\(\widehat{f}\)` good on average?
   
@@ -173,7 +186,7 @@ Is `\(\widehat{f}\)` good on average?
   
 Choose some __loss function__ that measures prediction quality.
 
-We predict `\(Y\)` with `\(\widehat{Y}\)`
+We predict `\(y\)` with `\(\widehat{y}\)`
 
 --
 
@@ -190,7 +203,7 @@ Examples:
 
 --
   
-Can be generalized to `\(Y\)` in arbitrary spaces.
+Can be generalized to `\(y\)` in arbitrary spaces.
 
 ---
 
@@ -199,13 +212,15 @@ Can be generalized to `\(Y\)` in arbitrary spaces.
 
 For __regression__ applications, we will use squared-error loss:
 
-`\(R_n(\widehat{f}) = \mathbb{E}[(Y-\widehat{f}(X))^2]\)`
+`\(R_n(\widehat{f}) = \Expect{(Y-\widehat{f}(X))^2}\)`
 
 --
 
 I'm giving this a name, `\(R_n\)` for ease. 
 
 Different than text.
+
+This is __expected test MSE__.
 
 
 ---
@@ -215,7 +230,7 @@ Different than text.
 
 Suppose we know that we want to predict a quantity `\(Y\)`, 
 
-where `\(\mathbb{E}[Y]= \mu \in \mathbb{R}\)` and `\(\textrm{Var}[Y] = 1\)`.  
+where `\(\Expect{Y}= \mu \in \mathbb{R}\)` and `\(\Var{Y} = 1\)`.  
 
 
 Our data is `\(\mathcal{D}_n = \{Y_1,\ldots,Y_n\}\)`
@@ -315,8 +330,6 @@ But what about unintuitive things...
 class: inverse, center, middle
 
 # Next time...
-
-???
 
 Trading bias and variance
     </textarea>
