@@ -4,10 +4,10 @@ layout: home
 
 <div class="jumbotron">
   <h1 class="display-3">STAT 406</h1>
-  <p class="lead">Elements of Statistical Learning</p>
+  <p class="lead">Methods for Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
-  <a class="btn btn-danger btn-lg" href="/schedule.html" role="button">Jump to Schedule.</a>
+  <a class="btn btn-danger btn-lg" href="schedule.html" role="button">Jump to Schedule.</a>
   </p>
 </div>
 

@@ -7,8 +7,8 @@ icon: "fas fa-laptop-code"
 This page allows you to look at the slides for the video lectures. Simply
 click the appropriate link below. 
 
-__Note:__ If you don't like my slides/videos, check out those made by the authors on [YouTube](https://www.r-bloggers.com/in-depth-introduction-to-machine-learning-in-15-hours-of-expert-videos/). Unfortunately for you, 
-the quizzes and exams cover my material not theirs.
+__Note:__ If you want to see additional slides/videos, check out those made by the authors on [YouTube](https://www.r-bloggers.com/in-depth-introduction-to-machine-learning-in-15-hours-of-expert-videos/). Unfortunately for you, 
+the quizzes and exams cover my material, not theirs.
 
 ## 0 Introduction and Review
 
@@ -29,7 +29,7 @@ the quizzes and exams cover my material not theirs.
 
 * [Ridge regression](lecture-slides/08-ridge-regression.html)
 * [l1 penalties](lecture-slides/09-l1-penalties.html)
-* [Basis expansions](lecture-slides/10-basis-expansions.htmll)
+* [Basis expansions](lecture-slides/10-basis-expansions.html)
 * [Kernel smoothers](lecture-slides/11-kernel-smoothers.html)
 * [To smooth or not to smooth](lecture-slides/12-why-smooth.html)
 * [GAMs and Trees](lecture-slides/13-gams-trees.html)
