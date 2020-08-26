@@ -99,7 +99,7 @@ to learn more and understand the material more deeply, this is the book for you.
 
 
 **Alternative asynchronous syllabus**  
-If for any reason, you wish to complete the course asynchronously, you may email my by midnight on 30 September to request to complete the course "asynchronously". The intention behind this option is to accomodate internet connectivity, family, work, life, or other issues which may arise. In this case, the grading scale will be modified. Note that all exams must still be taken during the scheduled time (1530h-1700h Vancouver local time) through Canvas. Changes requested after this date will be made at the discretion of the instructor.
+If for any reason, you wish to complete the course asynchronously, you may email my by midnight on 30 September to request to complete the course "asynchronously". The intention behind this option is to accomodate internet connectivity, family, work, life, mental health, or other issues which may arise. In this case, the grading scale will be modified. Note that all exams must still be taken during the scheduled time (1530h-1700h Vancouver local time) through Canvas. Changes requested after this date will be made at the discretion of the instructor.
 
 1 Mini pre quiz (1%)  
 5 In-class mini quizzes (2% each)    
