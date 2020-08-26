@@ -21,10 +21,18 @@ WWW: <https://ubc-stat.github.io/stat-406/>
 See also Canvas
 
 __Lectures__:  
-Tue/Thu 16:00 - 17:00 UTC-7 Vancouver local time
+Tue/Thu 1600h - 1700h UTC-7 Vancouver local time (class ends at 1645h)
 
 Repeated  
-Tue/Thu 20:00 - 21:00 UTC-7 Vancouver local time
+Tue/Thu 2000h - 2100h UTC-7 Vancouver local time (class ends at 2045h)
+
+All students should plan to attend the following dates during the standard time (1530h-1700h) for exams:
+* 10 September (no exam, first day of class)
+* 29 September
+* 15 October
+* 3 November
+* 19 November
+* UBC scheduled Final Exam Period (TBA)
 
 
 __Textbooks__:  
@@ -86,15 +94,30 @@ to learn more and understand the material more deeply, this is the book for you.
 5 In-class group quizzes (1% each)  
 5 Peer evaluations (1% each)  
 5 Midterm exams (14% each)  
-1 Comprehensive final exam (14%)
+1 Comprehensive final exam (14%)  
+1 Discussion opportunity (+/- 1%)
+
+
+**Alternative asynchronous syllabus**  
+If for any reason, you wish to complete the course asynchronously, you may email my by midnight on 30 September to request to complete the course "asynchronously". The intention behind this option is to accomodate internet connectivity, family, work, life, or other issues which may arise. In this case, the grading scale will be modified. Note that all exams must still be taken during the scheduled time (1530h-1700h Vancouver local time) through Canvas. Changes requested after this date will be made at the discretion of the instructor.
+
+1 Mini pre quiz (1%)  
+5 In-class mini quizzes (2% each)    
+5 Midterm exams (15% each)  
+1 Comprehensive final exam (14%)  
+1 Discussion opportunity (+/- 1%)
+
 
 **Missed assessment policy**  
 Missed or late peer evaluations result in the student receiving no credit. All other missed
-opportunities will have their weight added to the comprehensive final exam. There are no makeup opportunities.
+opportunities will have their weight added to the comprehensive final exam. There are no other makeup opportunities. If you miss more than 2 midterm exams, you must request an academic concession through your academic advising office. 
+
+
+
 
 ### Group synchronous sessions
 
-Synchronous class periods will be spent working on and discussing group coding exercises, similar to lab sessions. Each student will be assigned a group for the entirety of the semester. Your group assignment will be determined by your selected Lecture time (1600 or 2000) as well as other factors. You must attend your selected Lecture time each session. If you cannot attend, missed quizzes/midterm exams will have their weight added to the comprehensive final exam. But students should be aware that their groups are counting on them. If you miss a session, your peers may give you lower peer evaluation scores.   
+Synchronous class periods will be spent working on and discussing group coding exercises, similar to lab sessions. Each student will be assigned a group for the entirety of the semester. Your group assignment will be determined by your selected Lecture time (1600h or 2000h) as well as other factors. You must attend your selected Lecture time each session. If you cannot attend, missed quizzes will have their weight added to the comprehensive final exam. But students should be aware that their groups are counting on them. If you miss a session, your peers may give you lower peer evaluation scores.   
 
 
 
