@@ -11,7 +11,7 @@ This package is intended to be a one-stop install for students. The
     to download/install various dependencies all at once, ensuring full compliance.
 }
 \author{
-\strong{Maintainer}: Daniel McDonald \email{daniel@stat.ubc.ca}
+\strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca}
 
 }
 \keyword{internal}
