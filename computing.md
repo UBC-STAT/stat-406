@@ -57,5 +57,8 @@ install everything you need all at once. Simply start Rstudio and copy the follo
 
 ```
 if(!require("remotes")) install.packages("remotes")
-remotes::install_github("ubc-stat/stat-406/stat406labs", depend=TRUE)
+remotes::install_github("ubc-stat/stat-406/Rpackage", depend=TRUE)
 ```
+
+* `R` will likely ask you to install lots of other things. ANSWER YES!
+* While I tried my best to have everything ready on day 1, you may occasionally need to install the most recent version later in the semester. Sorry!
