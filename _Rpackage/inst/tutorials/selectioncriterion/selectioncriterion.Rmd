@@ -1,0 +1,426 @@
+---
+title: "Comparing AIC, BIC, and CV"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 week5.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+library(knitr)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Lasso Regression (small p)
+
+### Generating the Data
+
+Generate data from a linear model without intercept. Let $X_{ij}$ and $\epsilon_i$ be iid standard Gaussian. Set $p=30$ and $n=100$. Set the first 5 $\beta_j = 1$ ($j=1,\ldots,5$), the rest are zero.
+
+```{r generatedata, exercise=TRUE, message=FALSE, warning=FALSE}
+library(glmnet)
+set.seed(20181023)
+n = ___
+p = ___
+X = matrix(rnorm(n*p),n)
+beta = _______________
+Y = ________________
+Y
+```
+
+```{r generatedata-check}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=30
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+
+grade_result(
+  pass_if(~ mean(abs(.result-Y))<1e-8, "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Analysis
+
+Fit LASSO to this data set. Calculate CV, AIC, and BIC. One can show that an unbiased estimator of the degrees of freedom is the number of selected covariates. Use the "unknown variance" version, ($\log(RSS)$)
+
+###
+
+```{r functions-setup}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=30
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+```
+
+```{r functions, exercise=TRUE, exercise.lines=16}
+aic <- function(cvglmnetobj, Y,  X){
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  result = _______________________________
+  return(result)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  result = ________________________________
+  return(result)
+}
+```
+
+###
+
+If done correctly, your functions should look like:
+
+```{r functionssolution, echo=TRUE}
+aic <- function(cvglmnetobj, Y,  X){
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+```
+
+These have been preloaded for you to use for the rest of the exercises.
+
+### Compute AIC, BIC, and CV
+
+Run the following code that finds the best model using AIC, BIC, and CV.
+
+```{r selections-setup}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=30
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+rss <- function(cvglmnetobj, Y, X){
+  colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+}
+
+aic <- function(cvglmnetobj, Y,  X){
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+```
+
+```{r selections, exercise=TRUE}
+out = cv.glmnet(X,Y, intercept=FALSE)
+bestmodels = list(
+  AIC = out$glmnet.fit$beta[,which.min(aic(out, Y, X))],
+  BIC = out$glmnet.fit$beta[,which.min(bic(out, Y, X))],
+  CV = c(coef(out, s='lambda.min')[-1,])
+)
+```
+
+For each model selection criterion, how many of the correct coefficients do you select? How many incorrect?  Fill in the missing code. 
+
+```{r errorrate-setup}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=30
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+rss <- function(cvglmnetobj, Y, X){
+  colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+}
+
+aic <- function(cvglmnetobj, Y,  X){
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+out = cv.glmnet(X,Y, intercept=FALSE)
+bestmodels = list(
+  AIC = out$glmnet.fit$beta[,which.min(aic(out, Y, X))],
+  BIC = out$glmnet.fit$beta[,which.min(bic(out, Y, X))],
+  CV = c(coef(out, s='lambda.min')[-1,])
+)
+```
+
+```{r errorrate, exercise=TRUE, warning=FALSE, message=FALSE}
+errs <- function(b,beta){
+  TP = _________________ # True Positives
+  FP = _________________ # False Positives
+  c(TP,FP)
+}
+```
+
+###
+
+Your function should look similar to the following function:
+
+```{r errorratechecking, echo=TRUE}
+errs <- function(b,beta){
+  TP = sum((abs(b) > 0 & abs(beta)>0)) # True Positives
+  FP = sum((abs(b)>0 & beta==0)) # False Positives
+  c(TP,FP)
+}
+```
+
+```{r prettytablelow-setup}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=30
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+rss <- function(cvglmnetobj, Y, X){
+  colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+}
+
+aic <- function(cvglmnetobj, Y,  X){
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+out = cv.glmnet(X,Y, intercept=FALSE)
+bestmodels = list(
+  AIC = out$glmnet.fit$beta[,which.min(aic(out, Y, X))],
+  BIC = out$glmnet.fit$beta[,which.min(bic(out, Y, X))],
+  CV = c(coef(out, s='lambda.min')[-1,])
+)
+errs <- function(b,beta){
+  TP = sum((abs(b) > 0 & abs(beta)>0)) # True Positives
+  FP = sum((abs(b)>0 & beta==0)) # False Positives
+  c(TP,FP)
+}
+```
+
+The following code will create a nice table showing the accuracy of each of the methods.
+
+```{r prettytablelow, exercise=TRUE, exercise.lines=4}
+tab = sapply(bestmodels,errs,beta=beta)
+rownames(tab) = c('true positives','false positives')
+kable(tab)
+```
+
+###
+
+```{r quiz1-quiz}
+quiz(caption="Questions",
+  question("Which method had the lowest number of false positives?",
+    answer("AIC"),
+    answer("BIC", correct=TRUE),
+    answer("CV"),
+    answer("All the same"),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  ),
+  question("Which method had the highest number of true positives?",
+    answer("AIC"),
+    answer("BIC"),
+    answer("CV"),
+    answer("All the same.",correct = TRUE),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  )
+)
+```
+
+## Lasso Regression (large p)
+
+Repeat the same exercise but using $p=300$.  The following functions have been saved and preloaded for your convenience:
+
+```{r functionsforbigdata, echo=TRUE}
+aic <- function(cvglmnetobj, Y,  X){
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+errs <- function(b,beta){
+  TP = sum((abs(b) > 0 & abs(beta)>0))
+  FP = sum((abs(b)>0 & beta==0))
+  c(TP,FP)
+}
+```
+
+```{r generatedatabig-setup}
+rss <- function(cvglmnetobj, Y, X){
+  colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+}
+
+aic <- function(cvglmnetobj, Y,  X){
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = rss(cvglmnetobj, Y,  X)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+errs <- function(b,beta){
+  TP = sum((abs(b) > 0 & abs(beta)>0))
+  FP = sum((abs(b)>0 & beta==0))
+  c(TP,FP)
+}
+```
+
+###
+
+```{r generatedatabig, exercise=TRUE, exercise.lines=9, message=FALSE, warning=FALSE}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=300
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+Y
+```
+
+```{r generatedatabig-check}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=_____
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+
+grade_result(
+  pass_if(~ identical(.result, Y), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+###
+
+```{r bigdataanalysis-setup}
+aic <- function(cvglmnetobj, Y,  X){
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)/length(Y)
+}
+
+bic <- function(cvglmnetobj, Y,  X){
+  n = length(Y)
+  like = colMeans( (Y - predict(cvglmnetobj$glmnet.fit, newx=X))^2)
+  df = colSums(abs(out$glmnet.fit$beta) > 0 )
+  log(like) + 2*(df+1)*log(n)/n
+}
+errs <- function(b,beta){
+  TP = sum((abs(b) > 0 & abs(beta)>0))
+  FP = sum((abs(b)>0 & beta==0))
+  c(TP,FP)
+}
+library(glmnet)
+set.seed(20181023)
+n=100
+p=300
+X = matrix(rnorm(n*p),n)
+beta = c(rep(1,5),rep(0,p-5))
+Y = c(X %*% beta + rnorm(n))
+```
+
+Run the following code to produce a table of values that shows the accuracy of the AIC, BIC, and CV methods.
+
+```{r bigdataanalysis, exercise=TRUE, warning=FALSE, message=FALSE}
+out = cv.glmnet(X,Y, intercept=FALSE)
+bestmodels = list(
+  AIC = out$glmnet.fit$beta[,which.min(aic(out, Y, X))],
+  BIC = out$glmnet.fit$beta[,which.min(bic(out, Y, X))],
+  CV = c(coef(out, s='lambda.min')[-1,])
+)
+tab = sapply(bestmodels,errs,beta=beta)
+rownames(tab) = c('true positives','false positives')
+kable(tab)
+```
+
+###
+
+```{r quiz2-quiz}
+quiz(caption="Questions",
+  question("Which method had the lowest number of false positives?",
+    answer("AIC"),
+    answer("BIC", correct=TRUE),
+    answer("CV"),
+    answer("All the same"),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  ),
+  question("Which method had the highest number of true positives?",
+    answer("AIC"),
+    answer("BIC"),
+    answer("CV"),
+    answer("All the same.",correct = TRUE),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  )
+)
+```
+
+### What do you notice?
+
+Did you notice any difference between the low and large number of predictors?  
+
+###
+
+There's not a huge difference in low dimensions. AIC and CV are essentially the same, picking slightly larger models than BIC. With $p=300$, AIC drastically over-selects (it chooses the largest model it can, based on the path). BIC does quite well, CV slightly over-selects. In all cases, the true coefficients are always included (the signal-to-noise ratio is pretty large).

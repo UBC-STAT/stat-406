@@ -1,0 +1,220 @@
+---
+title: "R-squared and garbage predictors"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+
+
+<!--
+Derived from IU Stat 432 ic3.Rmd
+css: "/css/tutorials.css"
+-->
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## The linear model
+
+You have seen the equation
+
+\[
+y_i = x_i^\top\beta + \epsilon_i
+\]
+
+many times while learning about linear models. 
+
+* In the first part of this lab, we're going to generate data from this model. 
+
+* Why generate data? Because it forces us to think about where these objects _come from_.
+
+###
+
+First let's talk about notation.
+
+```{r lin-mod-notation-quiz}
+quiz(caption = "Notation",
+  question("What does the $i$ subscript indicate?",
+    answer("the ith predictor"),
+    answer("the ith observation", correct=TRUE),
+    answer("the ith covariate"),
+    answer("the ith random noise draw"),
+    allow_retry = TRUE
+  ),
+  question("Under standard assumptions, what distribution does $y_i$ have?",
+    answer("Normal with mean 0 and variance 1"),
+    answer("the same as $\\epsilon_i$"),
+    answer("Normal with mean 0 and variance $\\sigma^2$"),
+    answer("Normal with mean $x_i^\\top\\beta$ and variance $\\sigma^2$", correct = TRUE),allow_retry = TRUE
+  )
+)
+```
+
+### Where does the data come from?
+
+We almost always think of the design matrix $X=[x_1\ x_2\ \cdots]^\top$ as fixed and
+$\beta$ as a **population** parameter. This means that the only randomness comes from $\epsilon$.
+Unfortunately, in order to _create_ data, we need numbers in $X$ and in $\beta$.
+
+
+Write the R code required to generate a sequence of integers from 1 to 10.
+```{r sequential, exercise=TRUE}
+
+```
+
+```{r sequential-check}
+grade_result(pass_if(~identical(.result, 1:10), "Nicely done."))
+```
+
+Think of those integers as your population $\beta$, if we had 10 predictors.
+What if we had 20? Or $p$?
+
+```{r sequential-beta-p, exercise=TRUE}
+p = ___
+beta = ___
+beta
+```
+
+### What about the design matrix
+
+Now what if we create our design matrix $X$. How big should it be? 
+Write code to create $X$ with $n=10$ rows and $p=5$ columns. Generate each entry as
+random uniform between -1 and 1.
+```{r design-matrix, exercise=TRUE}
+n = ___
+p = ___
+X = ___
+X
+```
+
+```{r design-matrix-check}
+grade_result(
+  fail_if(~ !is.matrix(.result), "Oops, is X actually a matrix?"),
+  fail_if(~ all(.result>0), "Did you accidentally use U(0,1)?"),
+  pass_if(~ nrow(.result)==10L && ncol(.result)==5L && all(.result < 1) && all(.result > -1)),
+  fail_if(~ any(.result>1), "Whoops, some xij are too big."),
+  fail_if(~ ncol(.result)!=5L, "Not the right number of predictors"),
+  fail_if(~ nrow(.result)!=10L, "Wrong number of observations")
+)
+```
+
+### Putting it all together 
+
+Finally, let's write a function that generates data from a linear model.
+Our function should take 3 arguments
+
+* `n` the number of observations
+* `p` the number of predictors
+* `sigma` the standard deviation of `epsilon`
+
+The starter code below has a *default* value for `sigma=`. Set that to `1`.
+
+Make $\beta$ a sequence of integers from 1 to `p`.
+
+Make $X$ random uniform numbers between -1 and 1.
+
+Make $\epsilon$ satisfy our usual assumptions with the correct standard deviation.
+
+Return a `data.frame` that contains `y` and `X`.
+
+
+```{r lin-mod-data, exercise=TRUE}
+generate_data <- function(___, ___, sigma = ___){
+  beta = ___
+  ___ = matrix(runif(___, -1, 1), nrow=n)
+  epsilon = ___
+  y = ___ %*% ___ + ___
+  df = data.frame(___, ___)
+  return(___)
+}
+```
+
+```{r lin-mod-nointercept}
+quiz(
+  question("Does the linear model you just created have an intercept?",
+    answer("Yes."),
+    answer("No.", correct=TRUE)
+  )
+)
+```
+
+`r fontawesome::fa('exclamation-triangle', fill="#ff4900", height=25)` For discussion, how would you estimate the linear model without intercept in R?
+
+
+## How does R-squared behave?
+
+
+The graphic below uses the function you wrote before:
+
+```{r our-data-generator, echo=TRUE}
+generate_data <- function(n, p, sigma = 1){
+  beta = 1:p
+  X = matrix(runif(n*p, -1, 1), nrow = n)
+  epsilon = rnorm(n, 0, sigma)
+  y = X %*% beta + epsilon
+  df = data.frame(y, X)
+  return(df)
+}
+```
+
+We want to know what happens to $R^2$ if we add more predictors __that are useless__. That is, predictors whose coefficient is 0. Use the sliders
+to see what happens when you change the parameters to our `generate_data()` function. 
+
+* The __true__ predictors have non-zero $\beta_j=j$.
+* The __garbage__ predictors have $\beta_j=0$
+
+
+```{r, echo=FALSE}
+sliderInput("n", "Number of observations:", min = 40, max = 150, value = 50)
+sliderInput("p", "Number of true predictors:", min = 1, max = 10, value = 5)
+sliderInput("fakep", "Number of garbage predictors:", min = 1, max=30, value=10)
+sliderInput("sig", "sigma-squared = ", min = .01, max=10, value=1)
+plotOutput("rsq_plot")
+```
+
+```{r, context="server"}
+library(ggplot2)
+output$rsq_plot <- renderPlot({
+  generate_data <- function(n, p1, p2, sigma = 1){
+    beta = 1:p1
+    X = matrix(runif(n*(p1+p2), -1, 1), nrow = n)
+    epsilon = rnorm(n, 0, sqrt(sigma))
+    y = X[,1:p1,drop=FALSE] %*% beta + epsilon
+    cbind(y,X)
+  }
+  df = generate_data(input$n, input$p, input$fakep, input$sig)
+  totp = input$p+input$fakep
+  rsq = sapply(1:totp, function(x) summary(lm(df[,1]~df[,1:x+1,drop=FALSE]-1))$r.sq)
+  ggplot(data.frame(nvars=1:totp, rsq), aes(x=nvars,y=rsq)) + xlab("number of predictors")+
+    ylab("R-squared") + 
+    geom_path() + geom_point(color='orange') + cowplot::theme_cowplot()
+})
+```
+
+`r fontawesome::fa('exclamation-triangle', fill="#ff4900", height=25)` For discussion:
+
+* What happens if we make $\sigma$ really small and there are no fake predictors?
+* What happens if we make $\sigma$ large? Is this problem easier or harder?
+* What happens if there are lots of fake predictors?
+* Does $R^2$ ever decrease?
+
+###
+
+Congratulations! You've finished the lab.

@@ -1,0 +1,359 @@
+---
+title: "Quadratic Discriminant Analysis "
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 week4.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+library(MASS)
+library(nnet)
+
+decisionplot <- function(model, predict_type = "class",
+  resolution = 100, showgrid = TRUE, ...) {
+  cl = iris[,5]
+  k <- length(unique(cl))
+  plot(iris[,1:2], col = as.integer(cl)+1L, pch = as.integer(cl)+1L, ...)
+  # make grid
+  r <- sapply(iris[,1:2], range, na.rm = TRUE)
+  xs <- seq(r[1,1], r[2,1], length.out = resolution)
+  ys <- seq(r[1,2], r[2,2], length.out = resolution)
+  g <- cbind(rep(xs, each=resolution), rep(ys, time = resolution))
+  colnames(g) <- colnames(r)
+  g <- as.data.frame(g)
+  ### guess how to get class labels from predict
+  ### (unfortunately not very consistent between models)
+  p <- predict(model, g, type = predict_type)
+  if(is.list(p)) p <- p$class
+  p <- as.factor(p)
+
+  if(showgrid) points(g[[1]],g[[2]], col = as.integer(p)+1L, pch = ".")
+
+  z <- matrix(as.integer(p), nrow = resolution, byrow = TRUE)
+  contour(xs, ys, z, add = TRUE, drawlabels = FALSE,
+    lwd = 2, levels = (1:(k-1))+.5)
+  invisible(z)
+}
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## "iris" data
+
+###
+
+This is a very old, and by now canonical data set. It's in base `R`. Load it with `data(iris)`. 
+
+```{r loaddataestimate, exercise=TRUE}
+data("iris")
+head(iris)
+```
+
+## Analysis
+
+###
+
+In this section, you'll be performing LDA, QDA, and lasso-logit.  The libraries `MASS` and `nnet` have been preloaded for this module.
+
+
+### LDA
+
+Using this data, perform LDA using only the first 2 variables.
+
+```{r calculateLDA, exercise=TRUE}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = __________________
+coef(lind)
+```
+
+```{r calculateLDA-check}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+sol <- coef(lind)
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### QDA
+
+Using this data, perform QDA using only the first 2 variables.
+
+```{r calculateQDA, exercise=TRUE}
+form = formula(Species~Sepal.Length+Sepal.Width)
+quadd = __________________
+quadd$means
+```
+
+```{r calculateQDA-check}
+form = formula(Species~Sepal.Length+Sepal.Width)
+quadd = qda(form, data=iris)
+sol <- quadd$means
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Lasso-Logit
+
+Using this data, perform lasso-logit using only the first 2 variables.
+
+```{r calculateLasso, exercise=TRUE}
+form = formula(Species~Sepal.Length+Sepal.Width)
+logit = __________________
+coef(logit)
+```
+
+```{r calculateLasso-check}
+form = formula(Species~Sepal.Length+Sepal.Width)
+logit = multinom(form, data=iris, trace=FALSE)
+sol <- coef(logit)
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Plotting
+
+Use the following pre-loaded function to view the discriminant boundaries for each of the methods above.
+
+```{r decisionboundary, echo=TRUE, eval=FALSE}
+decisionplot <- function(model, predict_type = "class",
+  resolution = 100, showgrid = TRUE, ...) {
+  cl = iris[,5]
+  k <- length(unique(cl))
+  plot(iris[,1:2], col = as.integer(cl)+1L, pch = as.integer(cl)+1L, ...)
+  # make grid
+  r <- sapply(iris[,1:2], range, na.rm = TRUE)
+  xs <- seq(r[1,1], r[2,1], length.out = resolution)
+  ys <- seq(r[1,2], r[2,2], length.out = resolution)
+  g <- cbind(rep(xs, each=resolution), rep(ys, time = resolution))
+  colnames(g) <- colnames(r)
+  g <- as.data.frame(g)
+  ### guess how to get class labels from predict
+  ### (unfortunately not very consistent between models)
+  p <- predict(model, g, type = predict_type)
+  if(is.list(p)) p <- p$class
+  p <- as.factor(p)
+
+  if(showgrid) points(g[[1]],g[[2]], col = as.integer(p)+1L, pch = ".")
+
+  z <- matrix(as.integer(p), nrow = resolution, byrow = TRUE)
+  contour(xs, ys, z, add = TRUE, drawlabels = FALSE,
+    lwd = 2, levels = (1:(k-1))+.5)
+  invisible(z)
+}
+```
+
+Use the analysis output above for `model` input.  Simply use the the default inputs for all other inputs.
+
+```{r plotting-setup}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+```
+
+```{r plotting, exercise=TRUE, fig.width=9,fig.height=4}
+par(mfrow=c(1,3),mar=c(5,4,0,0),bty='n',las=1,family='serif')
+decisionplot(model = ________)    #LDA
+decisionplot(model = ________)   #QDA
+decisionplot(model = ________)   #Lasso-Logit
+```
+
+## Classification Error
+
+### Classification Error with 2 Covariates
+
+Start by calculating the classification error for your 3 original analyses.  Remember your objects for each analysis are saved as `lind`, `quadd`, and `logit`.
+
+```{r classerrors1-setup}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+```
+
+```{r classerrors1, exercise=TRUE}
+errs = list()
+errs$lda2 = __________________
+errs$qda2 = __________________
+errs$logit2 = __________________
+errs
+```
+
+```{r classerrors1-check}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+
+sol <- errs
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Analysis with all 4 Covariates
+
+Next, redo the analysis using all four covariates.
+
+```{r reestimateall4-setup}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+```
+
+```{r reestimateall4, exercise=TRUE}
+form = formula(Species~.)
+lind = __________________
+quadd = __________________
+logit = __________________
+```
+
+### Classification Error with 4 Covariates
+
+Now calculate the classification error of each method with four covariates.
+
+```{r classerrors2-setup}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+
+form = formula(Species~.)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+```
+
+```{r classerrors2, exercise=TRUE}
+errs$lda4 = __________________
+errs$qda4 = __________________
+errs$logit4 = __________________
+cbind(errs$lda4,errs$qda4,errs$logit4)
+```
+
+```{r classerrors2-check}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+
+form = formula(Species~.)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs$lda4 = mean(iris[,5] != predict(lind)$class)
+errs$qda4 = mean(iris[,5] != predict(quadd)$class)
+errs$logit4 = mean(iris[,5] != predict(logit))
+
+sol <- cbind(errs$lda4,errs$qda4,errs$logit4)
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Compare
+
+```{r classerrorsFINAL-setup}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+
+form = formula(Species~.)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+
+errs$lda4 = mean(iris[,5] != predict(lind)$class)
+errs$qda4 = mean(iris[,5] != predict(quadd)$class)
+errs$logit4 = mean(iris[,5] != predict(logit))
+```
+
+```{r classerrorsFINAL, exercise=TRUE}
+errs = matrix(unlist(errs),3)
+rownames(errs) = c('lda','qda','logit')
+colnames(errs) = c('p=2', 'p=4')
+knitr::kable(errs, digits = 3)
+```
+
+###
+
+```{r quiz1-quiz}
+quiz(caption="Questions",
+  question("Which model performed the best?",
+    answer("LDA"),
+    answer("QDA"),
+    answer("Lasso-Logit",correct = TRUE),
+    answer("Can't tell."),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  ),
+  question("Did Adding more Covariates improve the classification error?",
+    answer("Yes, for all 3 models.", correct=TRUE),
+    answer("No, the classification error increased."),
+    answer("Yes, but only slightly"),
+    answer("It improved QDA and LDA, but the classificaiton error for Lasso-Logit increased."),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  )
+)
+```
+
+

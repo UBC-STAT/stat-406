@@ -1,0 +1,348 @@
+---
+title: "Bootstrapping"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 ic7.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Generate the Data
+
+```{r generate-data-and-fit, exercise=TRUE, exercise.lines = 12}
+## Note: this is the same data as in Lecture 8.
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+library(ggplot2)
+ggplot(wiggly, aes(x, y)) + geom_point() + xlim(0,2*pi) + ylim(0,max(wiggly$y)) +
+  stat_function(fun=trueFunction, color='red')
+```
+
+
+## Function 1: Linear Model
+
+Write a function that estimates the linear model of $y$ on $x$ for any data set. Call your function `wiggly.estimator.lm`. It should return the slope and intercept. 
+
+```{r estimator-setup}
+## Note: this is the same data as in Lecture 8.
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+```
+
+```{r estimator, exercise = TRUE, exercise.lines = 6}
+wiggly.estimator.lm <- function(newdata=wiggly){
+    lm.coef = _________________________
+    lm.coef
+} 
+wiggly.estimator.lm()
+```
+
+```{r estimator-check}
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+wiggly.estimator.lm <- function(newdata){
+    lm.coef = coef(lm(y~x, data=newdata))
+    lm.coef
+} 
+sol <- wiggly.estimator.lm(wiggly)
+
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+## Function 2: Residual Resampling
+
+###
+
+Write a function that computes the residuals, resamples from those residuals, and then outputs a data.frame with the original $x$'s but new $y$'s.  Call it `wiggly.resids.resamp`.
+
+```{r residsampler-setup}
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+
+```
+
+```{r residsampler, exercise=TRUE, exercise.lines=12}
+wiggly.resids.resamp <- function(newdata=wiggly){
+  newdata.ml = lm(y~x, data=newdata)
+  resids    = __________________ # compute the residuals from the linear model
+  newResids = __________________ # resample the residuals from the original model
+  new.wiggles = data.frame( # create a new dataframe 
+    x = ______________, # with the original x's
+    y = fitted(newdata.ml)+newResids)  # but new y's
+  return(new.wiggles)
+}
+set.seed(1234)
+wiggly.resids.resamp()
+```
+
+```{r residsampler-check}
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+
+wiggly.resids.resamp <- function(newdata=wiggly){
+  newdata.ml = lm(y~x, data=newdata)
+  resids = residuals(newdata.ml)
+  newResids = sample(resids, replace=TRUE) # resample the residuals from the original model
+  new.wiggles = data.frame( # create a new dataframe 
+    x = newdata$x, # with the original x's but new y's
+    y = fitted(newdata.ml)+newResids) 
+  return(new.wiggles)
+}
+set.seed(1234)
+wiggles = wiggly.resids.resamp(wiggly)
+
+grade_result(
+  pass_if(~ identical(.result, wiggles), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+###
+Check your code with the following.  They should be similar.
+
+```{r resid-sampler,echo=TRUE}
+wiggly.resids.resamp <- function(newdata=wiggly){
+  newdata.ml = lm(y~x, data=newdata)
+  resids = residuals(newdata.ml)
+  newResids = sample(resids, replace=TRUE) # resample the residuals from the original model
+  new.wiggles = data.frame( # create a new dataframe 
+    x = wiggly$x, # with the original x's but new y's
+    y = fitted(newdata.ml)+newResids) 
+  return(new.wiggles)
+}
+```
+
+## Function 3: Resample Data.Frame
+
+Write a function called `new.wiggly.resamp` to resample the data frame.  The following functions from your book can be referenced: `resample()`, `resample.data.frame()`, `rboot()`, `bootstrap()`, `equitails()`, `bootstrap.ci()`.
+
+Hint: To write this function, it can be as easy as calling one of the functions above.
+
+```{r dataframesampler-setup, echo=FALSE}
+resample <- function(x) {
+    sample(x, replace = TRUE)
+}
+resample.data.frame <- function(data) {
+    sample.rows <- resample(1:nrow(data))
+    return(data[sample.rows, ])
+}
+rboot <- function(statistic, simulator, B) {
+    tboots <- replicate(B, statistic(simulator()))
+    if (is.null(dim(tboots))) {
+        tboots <- array(tboots, dim = c(1, B))
+    }
+    return(tboots)
+}
+bootstrap <- function(tboots, summarizer, ...) {
+    summaries <- apply(tboots, 1, summarizer, ...)
+    return(t(summaries))
+}
+equitails <- function(x, alpha) {
+    lower <- quantile(x, alpha/2)
+    upper <- quantile(x, 1 - alpha/2)
+    return(c(lower, upper))
+}
+bootstrap.ci <- function(statistic = NULL, simulator = NULL, tboots = NULL,
+    B = if (!is.null(tboots)) {
+        ncol(tboots)
+    }, t.hat, level) {
+    if (is.null(tboots)) {
+        stopifnot(!is.null(statistic))
+        stopifnot(!is.null(simulator))
+        stopifnot(!is.null(B))
+        tboots <- rboot(statistic, simulator, B)
+    }
+    alpha <- 1 - level
+    intervals <- bootstrap(tboots, summarizer = equitails, alpha = alpha)
+    upper <- t.hat + (t.hat - intervals[, 1])
+    lower <- t.hat + (t.hat - intervals[, 2])
+    CIs <- cbind(lower = lower, upper = upper)
+    return(CIs)
+}
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+```
+
+```{r dataframesampler, exercise=TRUE, exercise.lines=4}
+new.wiggly.resamp <- function(newdata=wiggly){
+  __________________________ #resample the data frame
+} 
+new.wiggly.resamp()
+```
+
+```{r dataframesampler-check}
+resample <- function(x) {
+    sample(x, replace = TRUE)
+}
+resample.data.frame <- function(data) {
+    sample.rows <- resample(1:nrow(data))
+    return(data[sample.rows, ])
+}
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+new.wiggly.resamp <- function(newdata){
+  resample.data.frame(newdata) #resample the data frame
+} 
+wiggles = new.wiggly.resamp(wiggly)
+
+grade_result(
+  pass_if(~ identical(.result, wiggles), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+## The Bootstrap
+
+###
+
+Use both samplers to get model-based and nonparametric confidence intervals for your linear model.
+
+```{r bootstrap-setup}
+resample <- function(x) {
+    sample(x, replace = TRUE)
+}
+resample.data.frame <- function(data) {
+    sample.rows <- resample(1:nrow(data))
+    return(data[sample.rows, ])
+}
+rboot <- function(statistic, simulator, B) {
+    tboots <- replicate(B, statistic(simulator()))
+    if (is.null(dim(tboots))) {
+        tboots <- array(tboots, dim = c(1, B))
+    }
+    return(tboots)
+}
+bootstrap <- function(tboots, summarizer, ...) {
+    summaries <- apply(tboots, 1, summarizer, ...)
+    return(t(summaries))
+}
+equitails <- function(x, alpha) {
+    lower <- quantile(x, alpha/2)
+    upper <- quantile(x, 1 - alpha/2)
+    return(c(lower, upper))
+}
+bootstrap.ci <- function(statistic = NULL, simulator = NULL, tboots = NULL,
+    B = if (!is.null(tboots)) {
+        ncol(tboots)
+    }, t.hat, level) {
+    if (is.null(tboots)) {
+        stopifnot(!is.null(statistic))
+        stopifnot(!is.null(simulator))
+        stopifnot(!is.null(B))
+        tboots <- rboot(statistic, simulator, B)
+    }
+    alpha <- 1 - level
+    intervals <- bootstrap(tboots, summarizer = equitails, alpha = alpha)
+    upper <- t.hat + (t.hat - intervals[, 1])
+    lower <- t.hat + (t.hat - intervals[, 2])
+    CIs <- cbind(lower = lower, upper = upper)
+    return(CIs)
+}
+
+trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
+set.seed(1234)
+n = 100
+x = 1:n/n*2*pi
+wiggly = data.frame(x = x,
+                 y = trueFunction(x) + rnorm(n, 0, .75))
+wiggly.estimator.lm <- function(newdata=wiggly){
+    lm.coef = coef(lm(y~x, data=newdata))
+    lm.coef
+} 
+wiggly.resids.resamp <- function(newdata=wiggly){
+  newdata.ml = lm(y~x, data=newdata)
+  resids = residuals(newdata.ml)
+  newResids = sample(resids, replace=TRUE) # resample the residuals from the original model
+  new.wiggles = data.frame( # create a new dataframe 
+    x = wiggly$x, # with the original x's but new y's
+    y = fitted(newdata.ml)+newResids) 
+  return(new.wiggles)
+}
+new.wiggly.resamp <- function(newdata=wiggly){
+  resample.data.frame(newdata) #resample the data frame
+} 
+
+```
+
+```{r bootstrap, exercise=TRUE, exercise.lines=13}
+mbb.wiggly = bootstrap.ci(
+  statistic = wiggly.estimator.lm,
+  simulator = wiggly.resids.resamp,
+  B = 1000, t.hat = wiggly.estimator.lm(wiggly),
+  level = 0.95)
+npb.wiggly = bootstrap.ci(
+  statistic = wiggly.estimator.lm,
+  simulator = new.wiggly.resamp,
+  B = 1000, t.hat = wiggly.estimator.lm(wiggly),
+  level = 0.95)
+mbb.wiggly
+npb.wiggly
+```
+
+### Quiz
+
+Which bootstrap is more appropriate to use in this case? Why?
+
+###
+
+Answer: The model-based bootstrap is wrong. Data did not actually come from this linear model. So resampling rows is a more accurate measure of uncertainty.
+
+
+
+
+
+
+

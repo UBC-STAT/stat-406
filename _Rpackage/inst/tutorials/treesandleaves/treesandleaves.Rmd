@@ -1,0 +1,128 @@
+---
+title: "Trees and Leaves"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 ic12.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+library(learnr)
+library(gradethis)
+leaf <- UBCstat406labs::leaf
+library(tree)
+library(maptree)
+my_tree = tree(lobes ~. -Species-Specimen_Number, data = leaf)
+tree_cv = cv.tree(my_tree, K=5)
+pruned_tree = prune.tree(my_tree, k=tree_cv$k[which.min(tree_cv$dev)])
+
+tutorial_options(exercise.timelimit = 25, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center',fig.width=10,
+               fig.height=6)
+```
+
+
+## The Data
+
+###
+
+This activity uses the `leaf` dataset which is already loaded into the module.  This dataset contains information about 340 leaves over the following 16 attributes:
+
+**Species** - A number from 1 to 36 indicating which species the leaf represents
+
+**Specimen Number** - Numbered sequentially within species
+
+**Eccentricity** - Eccentricity of the ellipse with identical second moments to the image. This value ranges from 0 to 1.
+
+**Aspect Ratio** - Values close to 0 indicate an elongated shape.
+
+**Elongation** - The minimum is achieved for a circular region.
+
+**Solidity** - It measures how well the image fits a convex shape.
+
+**Stochastic Convexity** - This variable extends the usual notion of convexity in topological sense, using sampling to perform the calculation.
+
+**Isoperimetric Factor** - The maximum value of 1 is reached for a circular region. Curvy intertwined con- tours yield low values.
+
+**Maximal Indentation Depth** - How deep indentations are
+
+**Lobedness** - This feature characterizes how lobed a leaf is.
+
+**Average Intensity** - Average intensity is defined as the mean of the intensity image
+
+**Average Contrast** - Average contrast is the the standard deviation of the intensity im- age
+
+**Smoothness** - For a region of constant intensity, this takes the value 0 and approaches 1 as regions exhibit larger disparities in intensity values.
+
+**Third moment** - a measure of the intensity histogram’s skewness
+
+**Uniformity** - uniformity’s maximum value is reached when all intensity levels are equal.
+
+**Entropy** - A measure of intensity randomness.
+
+### Visualizing the Data
+
+Begin by producing a pairs plot of all continuous predictors. Color the points by `lobes`. Be patient as it may take some time to run.
+
+```{r visualplot, exercise=TRUE}
+library(GGally)
+ggpairs(data=leaf, aes(color=lobes), columns = 3:16)
+```
+
+
+## Tree Classifier
+
+Train a tree classifier based on this data for predicting complexity. Use all predictors (not `Species` or `Specimen_number` obvs). Prune your tree using cross validation to choose the depth and plot the tree.
+
+```{r treepredictions, exercise=TRUE}
+library(tree)
+library(maptree)
+my_tree = tree(lobes ~. -Species-Specimen_Number, data = leaf)
+tree_cv = cv.tree(my_tree, K=5)
+pruned_tree = prune.tree(my_tree, k=tree_cv$k[which.min(tree_cv$dev)])
+draw.tree(pruned_tree)
+```
+
+Produce a confusion matrix and find the tree's in-sample error rate.
+
+```{r confusionmatrix-setup, message=FALSE, warning=FALSE}
+library(tree)
+library(maptree)
+my_tree = tree(lobes ~. -Species-Specimen_Number, data = leaf)
+tree_cv = cv.tree(my_tree, K=5)
+pruned_tree = prune.tree(my_tree, k=tree_cv$k[which.min(tree_cv$dev)])
+draw.tree(pruned_tree)
+```
+
+```{r confusionmatrix, exercise=TRUE, exercise.lines=3, exercise.setup="confusionmatrix-setup"}
+tree_conf <- table(predict(pruned_tree, type='class'), leaf$lobes)
+1 - sum(diag(tree_conf))/sum(tree_conf)
+```
+
+## Random Forest
+
+Train a random forest using 400 trees. Produce a variable importance plot, a confusion matrix, and find the in-sample error rate.
+
+```{r forestpredictions, exercise=TRUE, message=FALSE}
+library(randomForest)
+my_forest = randomForest(lobes ~. -Species-Specimen_Number, data = leaf, ntree=400)
+varImpPlot(my_forest)
+(forest_conf <- table(predict(my_forest), leaf$lobes))
+1 - sum(diag(forest_conf))/sum(forest_conf)
+```
+
+
+

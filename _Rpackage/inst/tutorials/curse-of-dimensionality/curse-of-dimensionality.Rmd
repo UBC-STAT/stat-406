@@ -1,0 +1,126 @@
+---
+title: "The curse..."
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 ic11.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+library(learnr)
+library(gradethis)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## The Curse of Dimensionality
+
+![](https://img.particlenews.com/img/id/30GeCk_0P114shb00?type=thumbnail_1024x576)
+
+When the number of features $p$ is large, there tends to be a deterioration in the performance of prediction approaches, mainly because fewer observations  are _near_ the test observation for which a prediction must be made. 
+
+This phenomenon is known as the __curse of dimensionality__. We will now investigate this curse.
+
+## Exercises
+
+###
+
+Answer the following questions:
+
+```{r gen4-quiz}
+quiz(
+  question("Suppose that we have a set of observations, each with measurements on $p = 1$ feature, `X`. We assume that `X` is uniformly distributed on $[0,1]$. Associated with each observation is a response value. Suppose that we wish to predict a test observation’s response using only observations that are within 10 % of the range of `X` closest to that test observation. For instance, in order to predict the response for a test observation with `X = 0.6`, we will use observations in the range `[0.55,0.65]`. On average, what fraction of the available observations will we use to make the prediction?",
+    answer("10%", correct=TRUE),
+    answer("100%"),
+    answer("1%"),
+    answer("20%"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+   question("Now suppose that we have a set of observations, each with measurements on $p = 2$ features, `X1` and `X2`. We assume that `(X1,X2)` are uniformly distributed on $[0,1] \\times [0,1]$. We wish to predict a test observation’s response using only observations that are within 10 % of the range of `X1` _and_ within 10 % of the range of `X2` closest to that test observation. For instance, in order to predict the response for a test observation with `X1 = 0.6` and `X2 = 0.35`, we will use observations in the range `[0.55, 0.65]` for `X1` and in the range `[0.3, 0.4]` for `X2`. On average, what fraction of the available observations will we use to make the prediction?",
+    answer("10%"),
+    answer("100%"),
+    answer("1%", correct=TRUE),
+    answer("20%"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+  question("Now suppose that we have a set of observations on $p = 100$ features. Again the observations are uniformly distributed on each feature, and again each feature ranges in value from 0 to 1. We wish to predict a test observation’s response using observations within the 10 % of each feature’s range that is closest to that test observation. What fraction of the available observations will we use to make the prediction?",
+    answer("$0.1^{100} \\approx 0$%", correct=TRUE),
+    answer(".01%"),
+    answer(".1%"),
+    answer("1%"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+###
+
+Take a minute to think about the following question before clicking to continue.
+
+Using your answers to parts (1)–(3), argue that a of prediction when $p$ is large is that there are very few training observations "near" any given test observation.
+
+###
+
+Solution: As $p$ increases, the number of "near" neighbors decreases exponentially. So, "neighbors" of a test point will not actually be that similar to it.
+
+###
+
+Now suppose that we wish to make a prediction for a test observation by creating a $p$-dimensional hypercube centered around the test observation that contains, on average, 10 % of the training observations. For $p = 1,2,$ and 100, what is the length of each side of the hypercube? 
+
+Discuss your answer within your group. Note: A hypercube is a generalization of a cube to an arbitrary number of dimensions. When $p = 1$, a hypercube is simply a line segment, when $p = 2$ it is a square, and when $p = 100$ it is a 100-dimensional cube.
+
+```{r gen5-quiz}
+quiz(
+  question("When p=1,",
+    answer(".1", correct=TRUE),
+    answer("1"),
+    answer(".01"),
+    answer(".05"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+   question("When p=2,",
+    answer("$\\sqrt{.1}$=0.316", correct=TRUE),
+    answer("$.1^2$=0.01"),
+    answer("$\\sqrt{.05}$=0.224"),
+    answer("1"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  ),
+  question("When p=100,",
+    answer("$\\sqrt[100]{.1}$=0.977", correct=TRUE),
+    answer("$.1^{100}$"),
+    answer("$.05^{100}$"),
+    answer("$\\sqrt[100]{.05}$=0.970"),
+    allow_retry = TRUE,
+    random_answer_order = TRUE
+  )
+)
+```
+
+###
+
+Explanation: The volume of the hypercube is equal to it's probability. A $p$-dimensional hypercube with sides of length $l$ will have volume $l^p$. Therefore, if we want volume equal to 10%, we need $l= .1, \sqrt{.1},$ and $\sqrt[100]{.1}$. That is $l=.1$, `r signif(sqrt(.1),3)`, and `r signif(.1^(1/100),3)`.
+
+###
+
+You've finished the lab!
+
+![](https://img.particlenews.com/img/id/30GeCk_0P114shb00?type=thumbnail_1024x576)

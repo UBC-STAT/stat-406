@@ -1,0 +1,324 @@
+---
+title: "Weighted Least Squares"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 ic8.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+s301gradedist <- UBCstat406labs::s301gradedist
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Generated Data Example
+
+### 
+
+Generate 250 observations from a linear model as follows: $x_i$ should uniform between -2 and 2, the $\epsilon_i$ should be normally distributed with mean zero and variance $x_i^2$, $y_i=3 + 2x_i + \epsilon_i$.
+
+```{r generatedata,exercise=TRUE, message=FALSE, warning=FALSE, exercise.lines=10}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x   = ______________,
+  eps = ______________,
+  y   = ______________)
+df
+```
+
+```{r generatedata-check, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+grade_result(
+  pass_if(~ identical(.result, df), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+
+### Plot
+
+Next, let's plot $y$ against $x$.
+
+```{r plotgenerateddata-setup, message=FALSE,warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+
+```
+
+```{r plotgenerateddata, exercise=TRUE, exercise.lines=2}
+ggplot(df, aes(x,y)) + geom_point() + theme_cowplot()
+```
+
+###
+
+Notice how the variance of $y$ is larger at the extremes.
+
+### Estimating the Model
+Estimate the model using OLS and WLS (with appropriate weights). This is easy to do. Try `?lm` if you're lost.
+
+```{r estimatingmodels-setup, message=FALSE,warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+```
+
+```{r estimatingmodels, exercise=TRUE, exercise.lines=3}
+ls  = _________________
+wls = _________________
+rbind(ls=coef(ls),ws=coef(wls))
+```
+
+```{r estimatingmodels-check, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+ls = lm(y~x, data=df)
+wls = lm(y~x, data=df, weights = 1/x^2)
+sol <- rbind(ls=coef(ls),ws=coef(wls))
+
+wls2 = lm(y~x, data=df, weights = x^2)
+wrong2 <-  rbind(ls=coef(ls),ws=coef(wls2))
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ identical(.result, wrong2), "Your weights need to be inversed!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### Plot
+Produce a plot that shows the original data and both estimated regression lines. 
+
+```{r plotregressionlines-setup, message=FALSE,warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+ls = lm(y~x, data=df)
+wls = lm(y~x, data=df, weights = 1/x^2)
+```
+
+```{r plotregressionlines, exercise=TRUE, exercise.lines=7, message=FALSE, warning=FALSE}
+df$ls = fitted(ls)
+df$wls = fitted(wls)
+ggplot(pivot_longer(select(df, x, ls, wls), -x), aes(x,value,color=name)) +
+  geom_line(size=2) +
+  scale_color_brewer(palette = 'Set1') +
+  geom_point(data=df, aes(x,y), color='purple', size=.5) + theme_cowplot()
+```
+
+
+### Confidence Intervals
+Produce confidence intervals for both methods. What do you notice?
+
+```{r confintervals-setup, message=FALSE,warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+ls = lm(y~x, data=df)
+wls = lm(y~x, data=df, weights = 1/x^2)
+```
+
+```{r confintervals, exercise=TRUE, exercise.lines=3, message=FALSE, warning=FALSE}
+rbind(ls=_____________,ws=_____________)
+```
+
+```{r confintervals-check, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(cowplot)
+set.seed(12032020)
+n = 250
+df = tibble(
+  x = runif(n, -2, 2),
+  eps = rnorm(n, 0, sqrt(x^2)),
+  y = 3 + 2*x + eps)
+ls = lm(y~x, data=df)
+wls = lm(y~x, data=df, weights = 1/x^2)
+confint(ls)
+confint(wls)
+
+sol <- rbind(ls=confint(ls),ws=confint(wls))
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+###
+
+What do you notice?  Specifically, what happens to the standard errors when weighted least squares is used?
+
+## Grade Distribution Example
+
+### Call in the Data
+
+The grade distribution data for the Business Statistics Course at Indiana University from 2015-2019 is loaded into this exercise and can be called by referencing `s301gradedist`.  Run the code below and take a look at the first five entries.
+
+
+```{r s301gradedistloading, exercise=TRUE}
+head(s301gradedist)
+```
+
+There are 34 columns so you may need to click the arrow to see all the columns.
+
+### Estimating the Model
+Regress `avg_grade` on `instructor` and `avg_student_gpa` using OLS __without intercept__. Perform the same regression using `n_student` as the weights. Why is this an appropriate weighting? Again, I suggest you consult the documentation `?lm`. 
+
+```{r s301models, exercise=TRUE, message=FALSE}
+ls301  = _____________________________________ 
+wls301 = _____________________________________
+rbind(ls = coef(ls301), wls = coef(wls301))
+```
+
+```{r s301models-check, message=FALSE, warning=FALSE}
+ls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist)
+wls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist, weights = n_students)
+sol <- rbind(ls = coef(ls301), wls = coef(wls301))
+
+grade_result(
+  pass_if(~ identical(.result, sol), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+###
+
+How do you interpret the coefficients on the instructor?
+
+```{r quiz1-quiz}
+quiz(caption="Question 1",
+  question("Which instructor seems to be the best (in the sense of their students getting the highest grades)?",
+    answer("Instructor 13", correct = TRUE),
+    answer("Instructor 8"),
+    answer("Instructor 4"),
+    answer("Instructor 1"),
+    allow_retry = TRUE,
+    correct = paste0("Good, the instructor with the highest mean (in this case the least negative value)!")
+  )
+)
+```
+
+### Plot
+
+The following code creates a single plot that shows all the data and the regression line (from WLS) for each instructor.  Look carefully through the code.
+
+```{r s301preds-setup}
+ls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist)
+wls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist, weights = n_students)
+```
+
+```{r s301preds, exercise=TRUE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(cowplot)
+s301gradedist$preds = predict(wls301)
+ggplot(s301gradedist, aes(avg_student_gpa, avg_grade, color=instructor)) +
+  geom_point() + geom_line(aes(y=preds)) + scale_color_viridis_d() +
+  theme_cowplot() 
+```
+
+### Confidence Intervals
+
+Produce confidence intervals for the weighted least squares version. What have you learned? Are there other variables you would want to include? Why did I have you do this without an intercept?
+
+```{r s301intervals-setup}
+ls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist)
+wls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist, weights = n_students)
+```
+
+```{r s301intervals, exercise=TRUE}
+cis = _____________
+cis
+```
+
+```{r s301intervals-check}
+ls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist)
+wls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist, weights = n_students)
+cis = confint(wls301)
+grade_result(
+  pass_if(~ identical(.result, cis), "Correct!"),
+  fail_if(~ TRUE, "Incorrect.")
+)
+```
+
+### 
+
+This many confidence intervals are best displayed in a graphic. The following code produces such a graphic for the different instructors.
+
+```{r s301confintplot-setup, message=FALSE, warning=FALSE}
+ls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist)
+wls301 = lm(avg_grade ~ instructor + avg_student_gpa-1, data=s301gradedist, weights = n_students)
+cis = confint(wls301)
+library(ggplot2)
+library(cowplot)
+library(tidyverse)
+```
+
+```{r s301confintplot, exercise=TRUE, message=FALSE, warning=FALSE}
+conf301 = tibble(
+  lower = cis[-nrow(cis),1],
+  upper = cis[-nrow(cis),2],
+  ests = coef(wls301)[-nrow(cis)],
+  instructor = str_replace(names(ests), "instructor", "")
+) %>% mutate(instructor = fct_reorder(instructor, ests))
+ggplot(conf301, aes(instructor,ests,color=instructor)) + 
+  geom_segment(aes(xend=instructor,y=lower,yend=upper)) +
+  geom_point(color='black') + coord_flip() +
+  scale_color_viridis_d() +
+  theme_cowplot() + theme(legend.position = 'none')
+```
+
+
+

@@ -1,0 +1,129 @@
+---
+title: "Laplacian Eigenmaps"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 week9.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+library(knitr)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Laplacian Eigenmaps 
+
+### Generate the Data
+
+Run the following code that generates a set of points in 2-dimension space.  You should see what appears to be a smaller circle inside a larger circle.
+
+```{r circlesdata, exercise=TRUE, warning=FALSE, message=FALSE}
+library(tidyverse)
+tt = seq(0,2*pi,len=50)
+tt2 = seq(0,2*pi,len=75)
+c1 = data.frame(x=cos(tt),y=sin(tt),grp=1)
+c2 = data.frame(x=1.5*cos(tt2),y=1.5*sin(tt2),grp=2)
+circles = bind_rows(c1,c2)
+n = nrow(circles)
+ggplot(circles,aes(x=x,y=y,color=as.factor(grp))) + geom_point() + 
+   theme_minimal(base_family = 'serif') + theme(legend.position = 'none')
+```
+
+### K-means
+
+The goal is to identify the inner points from the outer points.  Let's perform K means with $K=2$. Plot your clusters.
+
+```{r kmeans-setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+tt = seq(0,2*pi,len=50)
+tt2 = seq(0,2*pi,len=75)
+c1 = data.frame(x=cos(tt),y=sin(tt),grp=1)
+c2 = data.frame(x=1.5*cos(tt2),y=1.5*sin(tt2),grp=2)
+circles = bind_rows(c1,c2)
+n = nrow(circles)
+```
+
+```{r kmeans, exercise=TRUE}
+raw_kmeans = kmeans(circles[,1:2], 2, nstart = 10)
+circles$kmeans = raw_kmeans$cluster
+ggplot(circles,aes(x=x,y=y,color=as.factor(kmeans))) + geom_point() + 
+   theme_minimal(base_family = 'serif') + theme(legend.position = 'none')
+```
+
+How well did you do?
+
+### Laplacian Eigenmaps
+
+Use Laplacian Eigenmaps with Gaussian Kernel and $\gamma=0.01$. Use two eigenvectors. Plot the data in the new coordinate system and color by the original groups. (I believe you can use the last 2 eigenvectors here.)
+
+```{r kpca-setup, warning=FALSE, message=FALSE}
+library(tidyverse)
+tt = seq(0,2*pi,len=50)
+tt2 = seq(0,2*pi,len=75)
+c1 = data.frame(x=cos(tt),y=sin(tt),grp=1)
+c2 = data.frame(x=1.5*cos(tt2),y=1.5*sin(tt2),grp=2)
+circles = bind_rows(c1,c2)
+n = nrow(circles)
+raw_kmeans = kmeans(circles[,1:2], 2, nstart = 10)
+circles$kmeans = raw_kmeans$cluster
+```
+
+```{r kpca, exercise=TRUE, warning=FALSE, message=FALSE}
+Delta = as.matrix(dist(as.matrix(scale(circles[,1:2]))))
+K = exp(-Delta^2/.01)
+L = diag(n) - diag(1/rowSums(K)) %*% K
+EE = eigen(L, symmetric = TRUE)
+KernCoords = EE$vectors[,124:125] %*% diag(EE$values[124:125])
+LapEigenmaps = tibble(x=KernCoords[,1], y=KernCoords[,2],grp = circles$grp)
+ggplot(LapEigenmaps, aes(x=x,y=y,color=as.factor(grp))) + geom_point() + 
+   theme_minimal(base_family = 'serif') + theme(legend.position = 'none') 
+```
+
+### K-means on Laplacian Eigenmaps
+
+Now apply kmeans to the data in the new coordinate system. 
+
+```{r kernelkmeans-setup, warning=FALSE,message=FALSE}
+library(tidyverse)
+tt = seq(0,2*pi,len=50)
+tt2 = seq(0,2*pi,len=75)
+c1 = data.frame(x=cos(tt),y=sin(tt),grp=1)
+c2 = data.frame(x=1.5*cos(tt2),y=1.5*sin(tt2),grp=2)
+circles = bind_rows(c1,c2)
+n = nrow(circles)
+raw_kmeans = kmeans(circles[,1:2], 2, nstart = 10)
+circles$kmeans = raw_kmeans$cluster
+Delta = as.matrix(dist(as.matrix(scale(circles[,1:2]))))
+K = exp(-Delta^2/.01)
+L = diag(n) - diag(1/rowSums(K)) %*% K
+EE = eigen(L, symmetric = TRUE)
+KernCoords = EE$vectors[,124:125] %*% diag(EE$values[124:125])
+LapEigenmaps = tibble(x=KernCoords[,1], y=KernCoords[,2],grp = circles$grp)
+```
+
+```{r kernelkmeans, exercise=TRUE}
+circles$kern_kmeans = kmeans(KernCoords, 2, nstart = 10)$cluster
+ggplot(circles, aes(x=x,y=y,color=as.factor(kern_kmeans))) + geom_point() + 
+   theme_minimal(base_family = 'serif') + theme(legend.position = 'none')
+```
+
+How well did you do?
+
