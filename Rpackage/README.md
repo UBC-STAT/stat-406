@@ -17,7 +17,7 @@ with:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("ubc-stat/stat-406/_Rpackage", dependencies = TRUE)
+remotes::install_github("ubc-stat/stat-406/Rpackage", dependencies = TRUE)
 ```
 
 ## Example
