@@ -33,6 +33,9 @@ This is a combination of two datasets in Allison Hill's \href{https://bakeoff.ne
 gbbakeoff
 }
 \description{
+
+}
+\details{
 Results for individual bakers across all GBBO series
 }
 \keyword{datasets}

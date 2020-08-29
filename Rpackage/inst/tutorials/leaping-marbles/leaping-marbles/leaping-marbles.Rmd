@@ -1,0 +1,285 @@
+---
+title: "Leaping marbles"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+    includes:
+      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
+runtime: shiny_prerendered
+---
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gradethis)
+library(UBCstat406labs)
+marbles = UBCstat406labs::marbles
+library(leaps)
+
+loocv <- function(mdl) mean( residuals(mdl)^2 / (1-hatvalues(mdl))^2)
+
+tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Background
+
+We begin today with a short 4 minute video. 
+
+Before you click, you should be aware that there is a profanity in the first 10 seconds.
+
+<p align=center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/z4gBMw64aqk?start=1067" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
+
+## Winning marbles
+
+Our goal is to predict the finish times for the marbles in Jelle's Marble Racing!
+
+Data for last year is available in the course package as `marbles`. 
+
+Before proceding, check out the [documentation on the website](https://ubc-stat.github.io/stat-406/package-docs/reference/marbles.html)
+or try `?marbles`.
+
+### Workflow
+
+Today's exercise is more free-form than some of the others. Your goal is to explore
+the `leaps` package and examine some model selection criteria. You will
+
+
+0. Fit the full model using `lm`.
+1. Choose a model with both Cp and BIC by forward selection.
+2. Choose a model with both Cp and BIC by backward selection.
+3. WE WON'T choose a model with both Cp and BIC by best-subset selection. This is too slow.
+4. Compare the Loo CV scores among the 5 models.
+
+Let's begin.
+
+## The full model
+
+First, we want to fit the "full" model. Unfortunately, we can't actually use all 
+the variables.
+
+Why not? Think about which variables are related to others and how they might interact. (I'm deliberately avoiding a certain statistical word here that you should recall.)
+
+Try a few specifications and see what happens
+
+```{r fullmodel, exercise=TRUE}
+full = lm(Race_Time ~ . ____, data=marbles)
+coef(full)
+
+```
+
+Do you see any NAs? Should you?
+
+### Cross validation
+
+Now let's calculate the Leave-One-Out CV score. This should be easy.
+
+It requires 1 line of code.
+
+```{r cvfull-setup}
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
+```
+
+```{r cvfull, exercise=TRUE}
+loocv <- function(mdl) mean( (____)^2 / (1 - ____)^2)
+loocv(full)
+```
+
+
+### The hard way
+
+Before moving on, think about how to actually calculate leave-one-out CV (or K-fold) here. Would it work? What challenges would arise?
+
+`r fontawesome::fa("exclamation-triangle", fill="red")`
+
+Be prepared to discuss this issue!
+
+## Forward selection
+
+The correct full model formula should look like 
+
+```{r echo=TRUE, eval=FALSE}
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
+```
+
+__We'll use this from here on out.__
+
+Try doing forward selection.  
+Try `?regsubsets` if you need help.   
+Try using `plot` and `summary` on the result.  
+What code can you use to find the size of the best model?  
+
+Don't simply fill in the blanks below and click "Run". Use this time to play around with the object. Make sure you can describe the data usefully.
+
+```{r forward-sel, exercise=TRUE}
+stepup = regsubsets(
+  ____,
+  data = marbles,
+  method = ____,
+  nvmax = 30 # Largest model considered
+  )
+
+plot(summary(stepup)$bic)
+plot(summary(stepup)$cp)
+```
+
+Keep track somewhere of the best model chosen by each method. You'll need these
+numbers later. (I mean the index in the sequence of fits.)
+
+
+## Backward selection
+
+In case you forgot, the correct full model formula should look like 
+
+```{r echo=TRUE, eval=FALSE}
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
+```
+
+
+Try doing __backward__ selection.  
+Try `?regsubsets` if you need help.   
+Try using `plot` and `summary` on the result.  
+What code can you use to find the size of the best model?  
+
+```{r backward-sel, exercise=TRUE}
+stepdown = regsubsets(
+  ____,
+  data = marbles,
+  method = ____,
+  nvmax = 30 # Largest model considered
+  )
+
+plot(summary(stepdown)$bic)
+plot(summary(stepdown)$cp)
+```
+
+Again, keep track somewhere of the best model chosen by each method. You'll need these
+numbers later.
+
+
+## Doing CV on them
+
+```{r cvprep}
+stepup = regsubsets(
+  Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg,
+  data=marbles,
+  method="forward", nvmax=30)
+stepdown= regsubsets(
+  Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg,
+  data=marbles,
+  method="backward", nvmax=30)
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
+```
+
+Unfortunately, the `regsubsets` objects don't work easily with our CV formula.
+
+Recall what the hat matrix is. And the values we need. 
+
+What does `coef(stepup,id=4)` do?
+
+We want to extract the CV score from 4 different models. So we should write
+a function.
+
+When we write new functions, we should test them.
+
+```{r cv, exercise=TRUE, exercise.setup="cvprep"}
+new_cv <- function(regss_obj, full, y, id=NULL){
+  y = y[-full$na.action] # get rid of missing values
+  X = model.matrix(full) # grabs the X matrix dealing with any factors
+  if(is.null(id)){ 
+    bhat = coef(full)
+    columns = names(bhat)
+  } else {
+    bhat = coef(regss_obj, id)
+    columns = names(bhat)
+  }
+  X = X[,columns]
+  hatvals = ______
+  resids = ______
+  cv = mean( resids^2 / (1- hatvals)^2)
+  cv
+}
+
+
+new_cv(stepup, full, marbles$Race_Time, NULL) # CV on the full model
+loocv(full) # Are these the same???
+```
+
+Now, I made you write down the indexes of the best model. Calculate CV for those models using your function!
+
+```{r cvsetup}
+new_cv <- function(regss_obj, full, y, id=NULL){
+  y = y[-full$na.action] # get rid of missing values
+  X = model.matrix(full) # grabs the X matrix dealing with any factors
+  if(is.null(id)){ 
+    bhat = coef(full)
+    columns = names(bhat)
+  } else {
+    bhat = coef(regss_obj, id)
+    columns = names(bhat)
+  }
+  X = X[,columns]
+  hatvals = diag(X %*% solve(crossprod(X)) %*% t(X))
+  resids = y - X %*% bhat
+  cv = mean( resids^2 / (1- hatvals)^2)
+  cv
+}
+
+stepup = regsubsets(
+  Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg,
+  data=marbles,
+  method="forward", nvmax=30)
+stepdown= regsubsets(
+  Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg,
+  data=marbles,
+  method="backward", nvmax=30)
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
+```
+
+```{r allcvs, exercise=TRUE, exercise.setup="cvprep"}
+loocv(full)
+new_cv(stepup, full, marbles$Race_Time, ___)
+new_cv(stepup, full, marbles$Race_Time, ___)
+new_cv(stepdown, full, marbles$Race_Time, ___)
+new_cv(stepdown, full, marbles$Race_Time, ___)
+```
+
+### Which is best
+
+Of the five models you tried, which one was the best? Which predictors are most important?
+
+
+To examine them, try typing code here
+
+
+```{r finishup, exercise=TRUE, exercise.setup="cvprep"}
+
+```
+
+
+###
+
+And with that, you're done! __Go Minty Maniacs!__
+
+Just for fun, here's a plot of the effect of starting position on final time:
+
+```{r, echo=TRUE}
+library(ggplot2)
+data.frame(
+  coef = coefficients(full)[34:48],
+  low = confint(full)[34:48,1],
+  high = confint(full)[34:48,2],
+  position = as.numeric(substr(names(coef(full)[34:48]),19,20))
+) %>% ggplot(aes(position)) + 
+  geom_ribbon(aes(ymin=low, ymax=high), alpha=.2) +
+  geom_point(aes(y=coef), color="blue") + 
+  geom_line(aes(y=coef), color="blue") + cowplot::theme_cowplot()
+```

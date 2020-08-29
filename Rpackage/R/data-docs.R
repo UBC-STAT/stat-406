@@ -138,6 +138,8 @@
 #' Great British bakeoff results
 #'
 #' Results for individual bakers across all GBBO series
+#' 
+#' @description 
 #'
 #' @format A data frame with 95 rows representing individual bakers and 24 variables:
 #' \describe{
@@ -162,3 +164,33 @@
 #' 
 #' @source This is a combination of two datasets in Allison Hill's [bakeoff](https://bakeoff.netlify.app) package.
 "gbbakeoff"
+
+#' Race results from [Jelle's Marble Runs](https://www.youtube.com/channel/UCYJdpnjuSWVOLgGT9fIzL0g) 
+#' 
+#' Which marbles are most likely to win? This data contains race and qualifier results
+#' for Season 1.
+#' 
+#' @description 
+#' 
+#' Included variables (some are self explanatory):
+#' 
+#' * `Marble_Name` 
+#' * `Race_number` number of the race in Series 1
+#' * `Qualifier_Time` the marble's time in a 1-lap qualification (in seconds)
+#' * `Race_Time` final time for the race (also in seconds)
+#' * `Starting_position` based on qualifier outcome
+#' * `Race_points` allocated to the race winners
+#' * `Qualifier_Lap_Avg`
+#' * `Race_Lap_Avg`
+#' * `Site` which race track?
+#' * `Team_Name` the marbles are on different teams
+#' * `Track_length` in meters
+#' * `Host` binary, did this marble's team host the race
+#' * `Race_laps` how many laps in the race
+#' 
+#' @source
+#' This data is
+#' courtesy of [Randy Olson](http://www.randalolson.com/2020/05/24/a-data-driven-look-at-marble-racing/).
+#' See also Randy's [blogpost](http://www.randalolson.com/2020/05/24/a-data-driven-look-at-marble-racing/) which 
+#' covers some additional analysis.
+"marbles"
