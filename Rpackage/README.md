@@ -39,6 +39,7 @@ show_labs()
 #>   - irisqda                 : "Quadratic Discriminant Analysis "
 #>   - knn                     : "K-Nearest Neighbors"
 #>   - laplacianeigenmaps      : "Laplacian Eigenmaps"
+#>   - leaping-marbles         : "Leaping marbles"
 #>   - logtransformations      : "Log Transformations on Linear Regression"
 #>   - rsquared                : "R-squared and garbage predictors"
 #>   - selectioncriterion      : "Comparing AIC, BIC, and CV"
