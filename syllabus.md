@@ -27,7 +27,7 @@ Repeated
 Tue/Thu 2000h - 2100h UTC-7 Vancouver local time (class ends at 2045h)
 
 All students should plan to attend the following dates during the standard time (1530h-1700h) for exams:
-* 10 September (no exam, first day of class)
+* 10 September (no exam, first day of class, class starts at 1600h, but I will be there early)
 * 29 September
 * 15 October
 * 3 November
