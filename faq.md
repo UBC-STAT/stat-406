@@ -12,8 +12,6 @@ icon: "fas fa-question-circle"
 
 * Come to office hours. Again, I like explaining things.
 
-* Do the WeBWork practice --- start early and make sure you attempt and understand all questions. I can't emphasize this enough. The biggest mistake you can make is to convince yourself that you know something because a classmate did it in the Lab. Make sure you understand every step and how to get there. 
-
 * Try the tutorials again without the help of your classmates. 
 
 * Read the examples at the end of the \[ISLR\] chapters. Try the exercises.
@@ -54,7 +52,7 @@ This one is a little difficult. The first stuff before the colon is telling me w
 
 3. Google!! If the first few steps didn't help, copy the error message into Google. This almost always helps. Best to remove any overly specific information first.
 
-4. Ask your classmates on Piazza. In order to ask most effectively, you should probably provide them some idea of how the error happened. See the section on [MWEs](#minimal-working-examples) for how to do this.
+4. Ask your classmates MSTeams. In order to ask most effectively, you should probably provide them some idea of how the error happened. See the section on [MWEs](#minimal-working-examples) for how to do this.
 
 5. See me or the TA. Note that it is highly likely that I will ask if you did the above steps first. And I will want to see your minimal working example (MWE). 
 
@@ -96,3 +94,11 @@ garbage = with(ChickWeight,
                by(weight, Chick, 
                   function(x) (x^2+23)/length(x))) ## WTF???
 ```
+
+### Resources for learning to code better
+
+* [R for Data Science](http://r4ds.had.co.nz), a nice textbook from Hadley Wickham
+* The official intro, "An Introduction to R", available online in [html](http://cran.r-project.org/doc/manuals/R-intro.html) and [pdf](http://cran.r-project.org/doc/manuals/R-intro.pdf)
+* My (very brief) introduction to [programming](htttps://dajmcdon.github.io/assets/code-links/programming.pdf)
+* My (very brief) introduction to [statistical graphics](htttps://dajmcdon.github.io/assets/code-links/graphics.pdf)
+
