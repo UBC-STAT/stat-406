@@ -21,7 +21,7 @@ Vittorio: Mon 0900h - 1000h
 Lily: Thu 0800h - 0900h  
 Grace: Tue 2100h - 2200h  
 David: Tue 1700h - 1800h  
-Shannon: ???
+Shannon: Wed 1600h - 1700h
 
 __Course webpage__:    
 WWW: <https://ubc-stat.github.io/stat-406/>  
