@@ -19,7 +19,7 @@ library(leaps)
 
 loocv <- function(mdl) mean( residuals(mdl)^2 / (1-hatvalues(mdl))^2)
 
-tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+tutorial_options(exercise.timelimit = 5)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -66,7 +66,7 @@ Why not? Think about which variables are related to others and how they might in
 
 Try a few specifications and see what happens
 
-```{r fullmodel, exercise=TRUE, eval=FALSE, include=FALSE}
+```{r fullmodel, exercise=TRUE}
 full = lm(Race_Time ~ . ____, data=marbles)
 coef(full)
 
@@ -84,7 +84,7 @@ It requires 1 line of code.
 full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 ```
 
-```{r cvfull, exercise=TRUE, eval=FALSE, include=FALSE}
+```{r cvfull, exercise=TRUE}
 loocv <- function(mdl) mean( (____)^2 / (1 - ____)^2)
 loocv(full)
 ```
@@ -108,13 +108,13 @@ full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles
 __We'll use this from here on out.__
 
 Try doing forward selection.  
-Try `?regsubsets` if you need help.   
+Try `?regsubsets` if you need help (in the `{leaps}` package, and in the course package).  
 Try using `plot` and `summary` on the result.  
 What code can you use to find the size of the best model?  
 
 Don't simply fill in the blanks below and click "Run". Use this time to play around with the object. Make sure you can describe the data usefully.
 
-```{r forward-sel, exercise=TRUE, eval=FALSE, include=FALSE}
+```{r forward-sel, exercise=TRUE}
 stepup = regsubsets(
   ____,
   data = marbles,
@@ -144,7 +144,7 @@ Try `?regsubsets` if you need help.
 Try using `plot` and `summary` on the result.  
 What code can you use to find the size of the best model?  
 
-```{r backward-sel, exercise=TRUE, eval=FALSE, include=FALSE}
+```{r backward-sel, exercise=TRUE}
 stepdown = regsubsets(
   ____,
   data = marbles,
@@ -185,7 +185,7 @@ a function.
 
 When we write new functions, we should test them.
 
-```{r cv, exercise=TRUE, exercise.setup="cvprep", eval=FALSE, include=FALSE}
+```{r cv, exercise=TRUE, exercise.setup="cvprep"}
 new_cv <- function(regss_obj, full, y, id=NULL){
   y = y[-full$na.action] # get rid of missing values
   X = model.matrix(full) # grabs the X matrix dealing with any factors
@@ -239,7 +239,7 @@ stepdown= regsubsets(
 full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 ```
 
-```{r allcvs, exercise=TRUE, exercise.setup="cvprep", eval=FALSE, include=FALSE}
+```{r allcvs, exercise=TRUE, exercise.setup="cvprep"}
 loocv(full)
 new_cv(stepup, full, marbles$Race_Time, ___)
 new_cv(stepup, full, marbles$Race_Time, ___)
