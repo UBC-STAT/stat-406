@@ -16,7 +16,7 @@ class: center, middle, inverse, title-slide
 # 08 Ridge regression
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-17
+### Last modified - 2020-09-21
 
 ---
 
@@ -223,15 +223,15 @@ Model selection: means __choose__ some `\(\lambda=\)` vertical line on the path.
 
 * This is easy to calculate in `R` for any `\(\lambda\)`.
 
-* However, computations and interpretation are simplified if we examine the Singular Value Decomposition of `\(\X = UDV^\top\)`.
+* However, computations and interpretation are simplified if we examine the Singular Value Decomposition of `\(\X = \mathbf{UDV}^\top\)`.
 
-* Here `\(D\)` is diagonal and `\(U\)` and `\(V\)` are orthonormal
+* Here `\(\mathbf{D}\)` is diagonal and `\(\mathbf{U}\)` and `\(\mathbf{V}\)` are orthonormal
 
 * Then,
 
 
-`$$\brl = (\X^\top \X + \lambda I)^{-1}\X^\top \y = (VD^2V^\top + \lambda I)^{-1}VDU^\top Y 
-= V(D^2+\lambda I)^{-1} DU^\top \y.$$`
+`$$\brl = (\X^\top \X + \lambda I)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top + \lambda \mathbf{I})^{-1}\mathbf{VDU}^\top \y
+= \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.$$`
 
 * For computations, now we only need to invert `\(D\)`.
 
@@ -240,9 +240,9 @@ Model selection: means __choose__ some `\(\lambda=\)` vertical line on the path.
 ## Comparing with OLS
 
 
-`$$\bls = (\X^\top\X)^{-1}\X^\top \y = (VD^2V^\top)^{-1}VDU^\top Y = VD^{-2}DU^\top \y = VD^{-1}U^\top \y$$`
+`$$\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{VD}^{-2}\mathbf{DU}^\top \y = \mathbf{VD}^{-1}\mathbf{U}^\top \y$$`
 
-`$$\brl = (\X^\top \X + \lambda I)^{-1}\X^\top \y = V(D^2+\lambda I)^{-1} DU^\top \y.$$`
+`$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.$$`
 
 
 * Notice that `\(\bls\)` depends on `\(d_j/d_j^2\)` while `\(\brl\)` depends on `\(d_j/(d_j^2 + \lambda)\)`.
@@ -262,9 +262,9 @@ Some comments:
 
 * A better phrase: `\(\X\)` is ill-conditioned
 * AKA "(numerically) rank-deficient".
-* `\(\X = U D V^\top\)` ill-conditioned `\(\Longleftrightarrow\)` some elements of `\(D \approx 0\)`
-* `\(\bls= V D^{-1} U^\top \y\)`, so small entries of `\(D\)` `\(\Longleftrightarrow\)` huge elements of `\(D^{-1}\)`
-* Means huge variance: `\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 V D^{-2} V^\top\)`
+* `\(\X = \mathbf{U D V}^\top\)` ill-conditioned `\(\Longleftrightarrow\)` some elements of `\(D \approx 0\)`
+* `\(\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y\)`, so small entries of `\(D\)` `\(\Longleftrightarrow\)` huge elements of `\(D^{-1}\)`
+* Means huge variance: `\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top\)`
 
 
 Ridge Regression fixes this problem by preventing the division by a near-zero number
