@@ -87,8 +87,8 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|1 Oct 20  |Mini Quiz |
-|6 Oct 20  |Lab       |
+|1 Oct 20  |Lab |
+|6 Oct 20  |Mini Quiz       |
 |8 Oct 20  |Lab       |
 |13 Oct 20 |Lab       |
 |15 Oct 20 |Midterm  2 |
@@ -137,8 +137,8 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|5 Nov 20  |Mini Quiz |
-|10 Nov 20 |Lab       |
+|5 Nov 20  |Lab       |
+|10 Nov 20 |Mini Quiz |
 |12 Nov 20 |Lab       |
 |17 Nov 20 |Lab       |
 |19 Nov 20 |Midterm 4  |
