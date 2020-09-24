@@ -101,7 +101,7 @@ Be prepared to discuss this issue!
 
 The correct full model formula should look like 
 
-```{r echo=TRUE, eval=FALSE}
+```{r full-model1, echo=TRUE, eval=FALSE}
 full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 ```
 
@@ -134,7 +134,7 @@ numbers later. (I mean the index in the sequence of fits.)
 
 In case you forgot, the correct full model formula should look like 
 
-```{r echo=TRUE, eval=FALSE}
+```{r full-model2, echo=TRUE, eval=FALSE}
 full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 ```
 
@@ -239,7 +239,7 @@ stepdown= regsubsets(
 full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 ```
 
-```{r allcvs, exercise=TRUE, exercise.setup="cvprep"}
+```{r allcvs, exercise=TRUE, exercise.setup="cvsetup"}
 loocv(full)
 new_cv(stepup, full, marbles$Race_Time, ___)
 new_cv(stepup, full, marbles$Race_Time, ___)
@@ -255,7 +255,7 @@ Of the five models you tried, which one was the best? Which predictors are most 
 To examine them, try typing code here
 
 
-```{r finishup, exercise=TRUE, exercise.setup="cvprep"}
+```{r finishup, exercise=TRUE, exercise.setup="cvsetup"}
 
 ```
 
@@ -266,14 +266,16 @@ And with that, you're done! __Go Minty Maniacs!__
 
 Just for fun, here's a plot of the effect of starting position on final time:
 
-```{r, echo=TRUE}
+```{r plot-them, echo=TRUE}
 library(ggplot2)
+full = lm(Race_Time~.-Race_number-Site-Team_Name-Qualifier_Lap_Avg, data=marbles)
 data.frame(
   coef = coefficients(full)[34:48],
   low = confint(full)[34:48,1],
   high = confint(full)[34:48,2],
   position = as.numeric(substr(names(coef(full)[34:48]),19,20))
-) %>% ggplot(aes(position)) + 
+) %>% 
+  ggplot(aes(position)) + 
   geom_ribbon(aes(ymin=low, ymax=high), alpha=.2) +
   geom_point(aes(y=coef), color="blue") + 
   geom_line(aes(y=coef), color="blue") + cowplot::theme_cowplot()
