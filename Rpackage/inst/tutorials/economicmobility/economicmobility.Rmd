@@ -8,8 +8,6 @@ output:
     theme: journal
     highlight: kate
     ace_theme: solarized_dark
-    includes:
-      in_header: !expr system.file("tutorials/tutorials-css.html",package="UBCstat406labs")
 runtime: shiny_prerendered
 ---
 
@@ -25,7 +23,7 @@ library(knitr)
 library(tidyverse)
 mobility <- UBCstat406labs::mobility
 
-tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
+tutorial_options(exercise.timelimit = 5)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -133,20 +131,6 @@ linmod = __________________
 coef(linmod)
 ```
 
-```{r modelfitting-check, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-linmodWRONG = lm(Mobility~., data=mobility, y=TRUE)
-sol <- coef(linmod)
-wrong <- coef(linmodWRONG)
-
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ identical(.result, wrong), "Did you forget to remove ID, Name, and State?"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
 
 ### Ridge Regression
 
@@ -163,21 +147,6 @@ ridge = cv.glmnet(x=_____, y=______, alpha=______, lambda.min.ratio=1e-6)
 coef(ridge)
 ```
 
-```{r modelfittingridge-check, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-set.seed(1234)
-ridge = cv.glmnet(X, y, alpha=0, lambda.min.ratio=1e-6)
-sol <- coef(ridge)
-
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
 
 ### Lasso Regression
 
@@ -194,21 +163,6 @@ lasso = cv.glmnet(x=_____, y=_______, alpha=_______)
 coef(lasso)
 ```
 
-```{r modelfittinglasso-check, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-set.seed(1234)
-lasso = cv.glmnet(X, y)
-sol <- coef(lasso)
-
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
 
 ### Elastic Net
 
@@ -225,21 +179,6 @@ enet = cv.glmnet(x=_____,y=_____,alpha=_____)
 coef(enet)
 ```
 
-```{r modelfittingenet-check, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-set.seed(1234)
-enet = cv.glmnet(X,y,alpha=.5)
-sol <- coef(enet)
-
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
 
 ### Plotting
 
