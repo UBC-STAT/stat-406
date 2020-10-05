@@ -16,8 +16,7 @@ icon: "fas fa-flask"
 ### Module 2
 
 * [The curse...](https://stat406.stat.ubc.ca/labs/curse-of-dimensionality/) `run_lab("curse-of-dimensionality")`
-* Economic mobility 
-* Selection criteria
+* [Economic mobility](https://stat406.stat.ubc.ca/labs/economic-mobility/) `run_lab("economic-mobility")`
 
 ### Module 3
 

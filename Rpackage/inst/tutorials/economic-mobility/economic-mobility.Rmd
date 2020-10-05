@@ -130,98 +130,131 @@ linmod = __________________
 coef(linmod)
 ```
 
+```{r ridge, echo=FALSE}
+question("Are any of the coefficients EXACTLY zero?",
+  answer("Yes"),
+  answer("No", correct = TRUE),
+  answer("Maybe")
+)
+```
+
+
 
 ### Ridge Regression
 
-```{r modelfittingridge-setup, message=FALSE, warning=FALSE}
+```{r modelfittinreg-setup, message=FALSE, warning=FALSE}
 library(glmnet)
 linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-```
-
-```{r modelfittingridge, exercise=TRUE, message=FALSE, warning=FALSE}
 X = model.matrix(linmod)[,-1]
 y = linmod$y
 set.seed(1234)
+```
+
+```{r modelfittingridge, exercise=TRUE, message=FALSE, warning=FALSE, setup="modelfittinreg-setup"}
+X = model.matrix(linmod)[,-1]
+y = linmod$y
 ridge = cv.glmnet(x=_____, y=______, alpha=______, lambda.min.ratio=1e-6)
 coef(ridge)
 ```
 
+```{r ridgeq, echo=FALSE}
+question("Are any of the coefficients EXACTLY zero?",
+  answer("Yes"),
+  answer("No", correct = TRUE),
+  answer("Maybe")
+)
+```
+
+###
+
+```{r trace, message=FALSE, warning=FALSE,setup="modelfittinreg-setup"}
+ridge = cv.glmnet(x=X, y=y, alpha=0, lambda.min.ratio=1e-6)
+lasso = cv.glmnet(x=X, y=y, alpha=1)
+enet = cv.glmnet(x=X,y=y,alpha=0.5)
+```
+
+```{r ridgetrace-plot, exercise=TRUE, exercise.setup="trace"}
+plot(ridge$glmnet.fit)
+```
+
+Examine the coefficient trace plot above. Discuss the following questions:
+
+1. What does "L1 norm" on the x-axis mean?
+2. What are the 39's on the top of the plot?
+3. Are any coefficients ever 0?
+4. As $\lambda \rightarrow 0$, which way do I move on the x-axis?
+
 
 ### Lasso Regression
 
-```{r modelfittinglasso-setup, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-```
 
-```{r modelfittinglasso, exercise=TRUE, message=FALSE, warning=FALSE}
-set.seed(1234)
+```{r modelfittinglasso, exercise=TRUE, message=FALSE, warning=FALSE,setup="modelfittinreg-setup"}
 lasso = cv.glmnet(x=_____, y=_______, alpha=_______)
 coef(lasso)
 ```
 
+```{r lassotrace-plot, exercise=TRUE, exercise.setup="trace"}
+plot(lasso$glmnet.fit)
+```
+
+Examine the coefficient trace plot above. Discuss the same questions:
+
+1. What does "L1 norm" on the x-axis mean?
+2. What are the numbers on the top of the plot?
+3. Are any coefficients ever 0?
+4. As $\lambda \rightarrow 0$, which way do I move on the x-axis?
+
 
 ### Elastic Net
 
-```{r modelfittingenet-setup, message=FALSE, warning=FALSE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-```
 
-```{r modelfittingenet, exercise=TRUE, message=FALSE, warning=FALSE}
-set.seed(1234)
+Use `alpha=0.5`.
+
+```{r modelfittingenet, exercise=TRUE, message=FALSE, warning=FALSE,setup="modelfittinreg-setup"}
 enet = cv.glmnet(x=_____,y=_____,alpha=_____)
 coef(enet)
 ```
+
+```{r enettrace-plot, exercise=TRUE, exercise.setup="trace"}
+plot(enet$glmnet.fit)
+```
+
+Examine the coefficient trace plot above. Discuss the same questions:
+
+1. What does "L1 norm" on the x-axis mean?
+2. What are the numbers on the top of the plot?
+3. Are any coefficients ever 0?
+4. As $\lambda \rightarrow 0$, which way do I move on the x-axis?
+
 
 
 ### Plotting
 
 Plot the CV curves for each of the three regularized models.
 
-```{r CVcurves-setup, warning=TRUE, message=TRUE}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-lasso = cv.glmnet(X, y)
-ridge = cv.glmnet(X, y, alpha=0, lambda.min.ratio=1e-6)
-enet = cv.glmnet(X,y,alpha=.5)
-```
 
-```{r CVcurves, exercise=TRUE, warning=TRUE, message=TRUE}
+```{r CVcurves, exercise=TRUE, warning=TRUE, message=TRUE, exercise.setup="trace"}
 par(mfrow=c(2,2))
 plot(lasso)
 plot(ridge)
 plot(enet)
 ```
 
+1. What do the dotted lines represent?
+2. How do these figures compare to the coefficient trace plots?
+3. Which coefficients have been printing? Do they correspond to particular values of $\lambda$?
+
 
 ###
 
 For `enet` and `lasso`, `lambda.1se` gives sparser models. For `ridge`, use `lambda.min` (more like GCV).
 
-```{r modelssparse-setup}
-library(glmnet)
-linmod = lm(Mobility~.-ID-Name-State, data=mobility, y=TRUE)
-X = model.matrix(linmod)[,-1]
-y = linmod$y
-lasso = cv.glmnet(X, y)
-ridge = cv.glmnet(X, y, alpha=0, lambda.min.ratio=1e-6)
-enet = cv.glmnet(X,y,alpha=.5)
-```
 
-```{r modelssparse, exercise=TRUE, message=FALSE, warning=FALSE}
-lasso1 = as.numeric(coef(lasso, 'lambda.min'))
-enet1 = as.numeric(coef(enet, 'lambda.min'))
-ridge1 = as.numeric(coef(ridge, 'lambda.min'))
-lasso1
-enet1
-ridge1
+```{r modelssparse, exercise=TRUE, message=FALSE, warning=FALSE, exercise.setup="trace"}
+lasso1 = coef(lasso, 'lambda.1se')
+enet1 = coef(enet, 'lambda.1se')
+ridge1 =coef(ridge, 'lambda.min')
+cbind(lasso1, enet1, ridge1)
 ```
 
 ## Plot the coefficients
@@ -236,24 +269,30 @@ y = linmod$y
 lasso = cv.glmnet(X, y)
 ridge = cv.glmnet(X, y, alpha=0, lambda.min.ratio=1e-6)
 enet = cv.glmnet(X,y,alpha=.5)
-lasso1 = as.numeric(coef(lasso, 'lambda.min'))
-enet1 = as.numeric(coef(enet, 'lambda.min'))
+lasso1 = as.numeric(coef(lasso, 'lambda.1se'))
+enet1 = as.numeric(coef(enet, 'lambda.1se'))
 ridge1 = as.numeric(coef(ridge, 'lambda.min'))
-```
-
-```{r plotcoefs, exercise=TRUE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8, exercise.lines=13}
 ord = order(coef(linmod))
 df = data.frame(lm = coef(linmod)[ord], lasso = lasso1[ord],
                 elnet = enet1[ord], ridge = ridge1[ord])
 df$var = rownames(df) 
-df %>% mutate(var = str_replace_all(var, "_"," ")) %>%
-  pivot_longer(names_to='method',values_to ='estimate', -var) %>%
-  ggplot(aes(y=var,x=estimate,color=method)) + geom_point() + 
-  geom_vline(xintercept = 0) +
-  cowplot::theme_cowplot() + 
-  scale_color_viridis_d(direction = -1) +
-  theme(axis.title.y = element_blank())
-  #scale_x_continuous(trans = scales::pseudo_log_trans(sigma=.1))
+df = df %>% mutate(var = str_replace_all(var, "_"," ")) %>%
+  pivot_longer(names_to='method',values_to ='estimate', -var) 
 ```
 
+```{r plotcoefs, exercise=TRUE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
+ggplot(df, aes(y=var,x=estimate,color=method)) + geom_point() + 
+  geom_vline(xintercept = 0) +
+  theme(axis.title.y = element_blank())
+```
 
+1. What do you notice about the coeffecients for the three regualrized methods relative to `lm`?
+2. Which predictors are most important according to lasso? What about according to ridge? You may have to look back at the values earlier.
+
+
+## Lasso
+
+
+You're done!!
+
+<div class="tenor-gif-embed" data-postid="16500837" data-share-method="host" data-width="100%" data-aspect-ratio="2.128205128205128"><a href="https://tenor.com/view/lasso-yeehaw-youre-mine-chase-down-cowboy-gif-16500837">Lasso Yeehaw GIF</a> from <a href="https://tenor.com/search/lasso-gifs">Lasso GIFs</a></div><script type="text/javascript" async src="https://tenor.com/embed.js"></script>
