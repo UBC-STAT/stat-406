@@ -20,9 +20,6 @@ css: "/css/tutorials.css"
 
 ```{r setup, include=FALSE}
 library(learnr)
-library(gradethis)
-
-tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -66,26 +63,6 @@ wiggly.estimator.lm <- function(newdata=wiggly){
 wiggly.estimator.lm()
 ```
 
-```{r estimator-check}
-trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
-set.seed(1234)
-n = 100
-x = 1:n/n*2*pi
-wiggly = data.frame(x = x,
-                 y = trueFunction(x) + rnorm(n, 0, .75))
-wiggly.estimator.lm <- function(newdata){
-    lm.coef = coef(lm(y~x, data=newdata))
-    lm.coef
-} 
-sol <- wiggly.estimator.lm(wiggly)
-
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
-
 ## Function 2: Residual Resampling
 
 ###
@@ -114,32 +91,6 @@ wiggly.resids.resamp <- function(newdata=wiggly){
 }
 set.seed(1234)
 wiggly.resids.resamp()
-```
-
-```{r residsampler-check}
-trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
-set.seed(1234)
-n = 100
-x = 1:n/n*2*pi
-wiggly = data.frame(x = x,
-                 y = trueFunction(x) + rnorm(n, 0, .75))
-
-wiggly.resids.resamp <- function(newdata=wiggly){
-  newdata.ml = lm(y~x, data=newdata)
-  resids = residuals(newdata.ml)
-  newResids = sample(resids, replace=TRUE) # resample the residuals from the original model
-  new.wiggles = data.frame( # create a new dataframe 
-    x = newdata$x, # with the original x's but new y's
-    y = fitted(newdata.ml)+newResids) 
-  return(new.wiggles)
-}
-set.seed(1234)
-wiggles = wiggly.resids.resamp(wiggly)
-
-grade_result(
-  pass_if(~ identical(.result, wiggles), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
 ```
 
 ###
@@ -217,31 +168,6 @@ new.wiggly.resamp <- function(newdata=wiggly){
   __________________________ #resample the data frame
 } 
 new.wiggly.resamp()
-```
-
-```{r dataframesampler-check}
-resample <- function(x) {
-    sample(x, replace = TRUE)
-}
-resample.data.frame <- function(data) {
-    sample.rows <- resample(1:nrow(data))
-    return(data[sample.rows, ])
-}
-trueFunction <- function(x) sin(x) + 1/sqrt(x) + 3
-set.seed(1234)
-n = 100
-x = 1:n/n*2*pi
-wiggly = data.frame(x = x,
-                 y = trueFunction(x) + rnorm(n, 0, .75))
-new.wiggly.resamp <- function(newdata){
-  resample.data.frame(newdata) #resample the data frame
-} 
-wiggles = new.wiggly.resamp(wiggly)
-
-grade_result(
-  pass_if(~ identical(.result, wiggles), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
 ```
 
 ## The Bootstrap

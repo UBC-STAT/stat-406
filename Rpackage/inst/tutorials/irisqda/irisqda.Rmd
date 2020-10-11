@@ -20,7 +20,6 @@ css: "/css/tutorials.css"
 
 ```{r setup, include=FALSE}
 library(learnr)
-library(gradethis)
 library(MASS)
 library(nnet)
 
@@ -49,8 +48,6 @@ decisionplot <- function(model, predict_type = "class",
     lwd = 2, levels = (1:(k-1))+.5)
   invisible(z)
 }
-
-tutorial_options(exercise.timelimit = 5, exercise.checker = gradethis::grade_learnr)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -84,17 +81,6 @@ lind = __________________
 coef(lind)
 ```
 
-```{r calculateLDA-check}
-form = formula(Species~Sepal.Length+Sepal.Width)
-lind = lda(form, data=iris)
-sol <- coef(lind)
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
-
 ### QDA
 
 Using this data, perform QDA using only the first 2 variables.
@@ -105,17 +91,6 @@ quadd = __________________
 quadd$means
 ```
 
-```{r calculateQDA-check}
-form = formula(Species~Sepal.Length+Sepal.Width)
-quadd = qda(form, data=iris)
-sol <- quadd$means
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
-
 ### Lasso-Logit
 
 Using this data, perform lasso-logit using only the first 2 variables.
@@ -124,17 +99,6 @@ Using this data, perform lasso-logit using only the first 2 variables.
 form = formula(Species~Sepal.Length+Sepal.Width)
 logit = __________________
 coef(logit)
-```
-
-```{r calculateLasso-check}
-form = formula(Species~Sepal.Length+Sepal.Width)
-logit = multinom(form, data=iris, trace=FALSE)
-sol <- coef(logit)
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
 ```
 
 ### Plotting
@@ -206,25 +170,6 @@ errs$logit2 = __________________
 errs
 ```
 
-```{r classerrors1-check}
-form = formula(Species~Sepal.Length+Sepal.Width)
-lind = lda(form, data=iris)
-quadd = qda(form, data=iris)
-logit = multinom(form, data=iris, trace=FALSE)
-
-errs = list()
-errs$lda2 = mean(iris[,5] != predict(lind)$class)
-errs$qda2 = mean(iris[,5] != predict(quadd)$class)
-errs$logit2 = mean(iris[,5] != predict(logit))
-
-sol <- errs
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
-```
-
 ### Analysis with all 4 Covariates
 
 Next, redo the analysis using all four covariates.
@@ -273,34 +218,6 @@ errs$lda4 = __________________
 errs$qda4 = __________________
 errs$logit4 = __________________
 cbind(errs$lda4,errs$qda4,errs$logit4)
-```
-
-```{r classerrors2-check}
-form = formula(Species~Sepal.Length+Sepal.Width)
-lind = lda(form, data=iris)
-quadd = qda(form, data=iris)
-logit = multinom(form, data=iris, trace=FALSE)
-
-errs = list()
-errs$lda2 = mean(iris[,5] != predict(lind)$class)
-errs$qda2 = mean(iris[,5] != predict(quadd)$class)
-errs$logit2 = mean(iris[,5] != predict(logit))
-
-form = formula(Species~.)
-lind = lda(form, data=iris)
-quadd = qda(form, data=iris)
-logit = multinom(form, data=iris, trace=FALSE)
-
-errs$lda4 = mean(iris[,5] != predict(lind)$class)
-errs$qda4 = mean(iris[,5] != predict(quadd)$class)
-errs$logit4 = mean(iris[,5] != predict(logit))
-
-sol <- cbind(errs$lda4,errs$qda4,errs$logit4)
-
-grade_result(
-  pass_if(~ identical(.result, sol), "Correct!"),
-  fail_if(~ TRUE, "Incorrect.")
-)
 ```
 
 ### Compare
