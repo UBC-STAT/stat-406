@@ -10,7 +10,7 @@ click the appropriate link below.
 __Note:__ If you want to see additional slides/videos, check out those made by the authors on [YouTube](https://www.r-bloggers.com/in-depth-introduction-to-machine-learning-in-15-hours-of-expert-videos/). Unfortunately for you, 
 the quizzes and exams cover my material, not theirs.
 
-__Another Note:__ If you want to see all the `R` code for these slides, go to <https://github.com/ubc-stat/stat-406/lecture-code/>
+__Another Note:__ If you want to see all the `R` code for these slides, go [here](https://github.com/UBC-STAT/stat-406/tree/master/lecture-code).
 
 ## 0 Introduction and Review
 
