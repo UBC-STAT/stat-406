@@ -20,8 +20,8 @@ icon: "fas fa-flask"
 
 ### Module 3
 
-* [Iris classifiers](https://stat406.stat.ubc.ca/labs/iris-classifiers/) `run_lab("iris-classifiers")
-* [Gradient descent: logistic regression](https://stat406.stat.ubc.ca/labs/grad-descent-logit/) `run_lab("grad-descent-logit")
+* [Iris classifiers](https://stat406.stat.ubc.ca/labs/iris-classifiers/) `run_lab("iris-classifiers")`
+* [Gradient descent: logistic regression](https://stat406.stat.ubc.ca/labs/grad-descent-logit/) `run_lab("grad-descent-logit")`
 
 ### Module 4
 
