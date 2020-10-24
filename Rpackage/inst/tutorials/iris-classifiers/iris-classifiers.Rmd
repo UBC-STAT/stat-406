@@ -1,0 +1,250 @@
+---
+title: "Comparing classifiers of boring data"
+author: DJM
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  learnr::tutorial:
+    progressive: true
+    theme: journal
+    highlight: kate
+    ace_theme: solarized_dark
+runtime: shiny_prerendered
+---
+
+<!--
+Derived from IU Stat 432 week4.Rmd
+css: "/css/tutorials.css"
+-->
+
+```{r setup, include=FALSE}
+library(learnr)
+library(MASS)
+library(nnet)
+library(UBCstat406labs)
+data(iris)
+attach(iris)
+```
+
+
+## "iris" data
+
+###
+
+This is a very old, and by now canonical data set. It's in base `R`. Load it with `data(iris)`. 
+
+The goal is to predict the `Species` of iris given some covariates about their petals.
+
+```{r loaddataestimate, exercise=TRUE}
+data("iris")
+head(iris)
+```
+
+* Examine the data. You should notice that there are 4 covariates.
+
+* How many different Species are there? Type code in the block to find out.
+
+## Analysis
+
+###
+
+In this section, you'll be performing LDA, QDA, and multinomial-logistic regression. As you saw in the slides, LDA/QDA are in the `{MASS}` library. More on multinomial-logistic regression in a moment.
+
+
+### LDA
+
+Using this data, perform LDA using only the first 2 variables.
+
+I'm giving you the formula you should use. That way you don't have to keep typing it in.
+
+```{r formula1}
+form = formula(Species ~ Sepal.Length + Sepal.Width)
+```
+
+```
+form = formula(Species ~ Sepal.Length + Sepal.Width)
+```
+
+```{r calculateLDA, exercise=TRUE, exercise.setup="formula1"}
+lind = __________________
+coef(lind)
+lind$means
+```
+
+### QDA
+
+Try using QDA.
+
+```{r calculateQDA, exercise=TRUE, exercise.setup="formula1"}
+quadd = __________________
+quadd$means
+```
+
+* Why didn't I show the coefficients?
+
+### Multinomial-Logit
+
+Using this data, perform logistic regression using only the first 2 variables.
+
+With 3 classes (instead of 2) we can't use `glm()` anymore. Instead we use `multinom()`.
+
+The multinomial distribution is just like the binomial, but with two __or more__ bins (instead of only two).
+
+With logistic regression, you looked at the log-odds of class 1 to class 0. This log-odds was assumed to be linear in $\mathbf{X}$.
+
+Here, if there are $K$ classes, you need $K-1$ linear models for the log-odds. Why only $K-1$? Because probabilities sum to 1.
+
+Everything else is the same (almost). 
+
+The obvious difference is that it also prints annoying garbage to the screen. 
+
+```{r calculateLasso, exercise=TRUE, exercise.setup="formula1"}
+logit = __________________
+coef(logit)
+```
+
+* Note how there are 2 sets of coefficients.
+
+For more, see <a href="https://en.wikipedia.org/wiki/Multinomial_logistic_regression#As_a_set_of_independent_binary_regressions" target="_blank">Wikipedia</a>
+
+
+### Plotting
+
+The decision boundaries I showed in the lecture doesn't really work with 3 classes.
+
+But I wrote a function for you in `UBCstat406labs`: `decision_boundary()`.
+
+See the documentation <a href="https://ubc-stat.github.io/stat-406/package-docs/reference/decision_boundary.html" target=_blank>here</a>. 
+
+Or install the package and type `?decision_boundary` for help.
+
+Use the estimated models above for the `model` input. 
+
+`y`, `x1`, and `x2`, should be obvious.
+
+Simply use the the default inputs for all other inputs.
+
+```{r pred2}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+```
+
+```{r plotting, exercise=TRUE, fig.width=9, fig.height=4, exercise.setup="pred2"}
+par(mfrow=c(1,3), mar=c(5,4,0,0), bty='n', las=1)
+decision_boundary( )    #LDA
+decision_boundary( )   #QDA
+decision_boundary( )   #Logit
+```
+
+* What do you notice?
+* How do the three figures compare?
+
+## Classification Error
+
+### Classification Error with 2 Covariates
+
+Start by calculating the classification error for your 3 original analyses.  Remember your objects for each analysis are saved as `lind`, `quadd`, and `logit`.
+
+To get the predictions from `multinom()`, it's just the same as with everything else we've seen. 
+
+For `lda()` and `qda()`, it's annoyingly different. The easiest way is to use (for example):  
+`predict(lind)$class`
+
+Using `predict()` alone produces lots of other stuff. Try it!!
+
+
+```{r classerrors1, exercise=TRUE, exercise.setup="pred2"}
+errs = list()
+errs$lda2 = __________________
+errs$qda2 = __________________
+errs$logit2 = __________________
+errs
+```
+
+### Analysis with all 4 Covariates
+
+Next, redo the analysis using all four covariates.
+
+```{r reestimateall4}
+form = formula(Species~Sepal.Length+Sepal.Width)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+errs = list()
+errs$lda2 = mean(iris[,5] != predict(lind)$class)
+errs$qda2 = mean(iris[,5] != predict(quadd)$class)
+errs$logit2 = mean(iris[,5] != predict(logit))
+form = formula(Species~.)
+lind = lda(form, data=iris)
+quadd = qda(form, data=iris)
+logit = multinom(form, data=iris, trace=FALSE)
+```
+
+```{r reestimateall4-doit, exercise=TRUE, exercise.setup="reestimateall4"}
+form = formula(Species~.)
+lind = __________________
+quadd = __________________
+logit = __________________
+```
+
+### Classification Error with 4 Covariates
+
+Now calculate the classification error of each method with four covariates.
+
+
+
+```{r classerrors2, exercise=TRUE, exercise.setup="reestimateall4"}
+errs$lda4 = __________________
+errs$qda4 = __________________
+errs$logit4 = __________________
+errs
+```
+
+### Compare
+
+```{r classerrorsFINAL-setup, exercise.setup="reestimateall4"}
+errs$lda4 = mean(iris[,5] != predict(lind)$class)
+errs$qda4 = mean(iris[,5] != predict(quadd)$class)
+errs$logit4 = mean(iris[,5] != predict(logit))
+```
+
+Here's what all that looks like. (Unfortunately, no plotting in 4D)
+
+
+```{r classerrorsFINAL, exercise=TRUE}
+errs = matrix(unlist(errs),3)
+rownames(errs) = c('lda','qda','logit')
+colnames(errs) = c('p=2', 'p=4')
+knitr::kable(errs, digits = 3)
+```
+
+###
+
+```{r quiz1-quiz, echo=FALSE}
+quiz(caption="Questions",
+  question("Which model performed the best?",
+    answer("LDA"),
+    answer("QDA"),
+    answer("multinomial logit",correct = TRUE),
+    answer("Can't tell."),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  ),
+  question("Did Adding more Covariates improve the classification error?",
+    answer("Yes, for all 3 models.", correct=TRUE),
+    answer("No, the classification error increased."),
+    answer("Yes, but only slightly"),
+    answer("It improved QDA and LDA, but the classificaiton error for multinomial logit increased."),
+    allow_retry = TRUE,
+    correct = paste0("Correct!")
+  )
+)
+```
+
+
+###
+
+![](https://s3.amazonaws.com/finegardening.s3.tauntoncloud.com/app/uploads/2018/06/13164906/17.jpg)
+
+Hopefully, you now feel calm.
