@@ -137,10 +137,10 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|5 Nov 20  |Lab       |
-|10 Nov 20 |Mini Quiz |
-|12 Nov 20 |Lab       |
-|17 Nov 20 |Lab       |
+|5 Nov 20  | Lecture 18  (Bootstrap)     |
+|10 Nov 20 | Lecture 19-20 (Bagging and Boosting) |
+|12 Nov 20 | Lecture 21-22  (NNets Intro and Estimation)   |
+|17 Nov 20 | Lecture 23 (NNest wrapup) QA session      |
 |19 Nov 20 |Midterm 4  |
 {: .table .table-striped}
 
