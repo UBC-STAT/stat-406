@@ -18,7 +18,7 @@ class: center, middle, inverse, title-slide
 # 18 The bootstrap
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-11-03
+### Last modified - 2020-11-05
 
 ---
 
@@ -104,6 +104,141 @@ __Procedure__
 5. CI: `\(\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha)\right]\)`
 ]
 
+---
+
+## Very basic example
+
+* Let `\(X_i\sim Exponential(1/5)\)`. The pdf is `\(f(x) = \frac{1}{5}e^{-x/5}\)`
+
+
+* I know if I estimate the mean with `\(\bar{X}\)`, then by the CLT (if `\(n\)` is big), 
+
+`$$\frac{\sqrt{n}(\bar{X}-E[X])}{s} \approx N(0, 1).$$`
+
+
+* This gives me a 95% confidence interval like
+`$$\bar{X} \pm 2*s/\sqrt{n}$$`
+
+
+* But I don't want to estimate the mean, I want to estimate the median.
+
+---
+
+
+```r
+ggplot(data.frame(x=c(0,12)), aes(x)) + 
+  stat_function(fun=function(x) dexp(x, 1/5), color=blue) +
+  geom_vline(xintercept = 5, color=blue) + # mean
+  geom_vline(xintercept = qexp(.5,1/5), color=red) # median
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Now what
+
+
+
+* I give you a sample of size 500, you give me the sample median.
+
+* How do you get a CI?
+
+* You can use the bootstrap!
+
+---
+
+
+```r
+set.seed(2020-10-05)
+x = rexp(n, 1/5)
+(med = median(x))
+```
+
+```
+## [1] 3.652976
+```
+
+```r
+B = 100
+alpha = 0.05
+bootMed &lt;- function(x) median(sample(x, replace=TRUE))
+bootDist = replicate(B, bootMed(x))
+bootCI = 2* med - quantile(bootDist, probs = c(1-alpha/2, alpha/2))
+ggplot(data.frame(bootDist), aes(bootDist)) + geom_density(color=blue) +
+  geom_vline(xintercept = bootCI, col=blue, linetype=2) + 
+  geom_vline(xintercept = med, col=blue) + 
+  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## An alternative
+
+* In that bootstrap, I didn't use any information about the data-generating process. It's called the "non-parametric bootstrap"
+
+* What if I told you that the data came from an Exponential, but I didn't tell you the mean (parameter)?
+
+* You could try a "parametric" bootstrap:
+
+---
+
+
+```r
+xbar = mean(x)
+s = sd(x)
+ParaBootSamp &lt;- function(B, xbar, s){
+  means = rnorm(B, mean=xbar, sd=s/sqrt(n))
+  meds = qexp(.5, 1/means)
+  return(meds)
+}
+ParaBootDist = ParaBootSamp(B, xbar, s)
+ParaBootCI = 2*med - quantile(ParaBootDist, probs = c(1-alpha/2, alpha/2))
+ggplot(data.frame(ParaBootDist), aes(ParaBootDist)) + 
+  geom_density(color=blue) +
+  geom_vline(xintercept = ParaBootCI, col=blue, linetype=2) + 
+  geom_vline(xintercept = med, col=blue) + 
+  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## In truth
+
+* Let's compare these intervals
+
+* The nonparametric bootstrap (first one) had a width of
+
+```r
+bootCI[2] - bootCI[1]
+```
+
+```
+##      2.5% 
+## 0.8317969
+```
+
+* The parametric bootstrap (second one) had a width of
+
+```r
+ParaBootCI[2] - ParaBootCI[1]
+```
+
+```
+##      2.5% 
+## 0.5524611
+```
+
+* Using theory, we could find the exact CI. In this case, it has a width of 0.4382613. 
+
+&lt;!-- med \pm z_alpha/2/\sqrt(n) 1/4/ F'(pop med)^2 --&gt;
+
+
+
 
 ---
 
@@ -138,12 +273,12 @@ __Procedure__
 
 ---
 
-## Dumb example
+## Slightly harder example
 
 
 
 .pull-left[
-&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -160,17 +295,17 @@ summary(cats.lm)
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -6.7267 -0.7113  0.1474  0.7654  3.2780 
+## -6.5525 -0.8584 -0.0010  0.7439  9.0568 
 ## 
 ## Coefficients:
 ##     Estimate Std. Error t value Pr(&gt;|t|)    
-## Bwt  3.98867    0.04203    94.9   &lt;2e-16 ***
+## Bwt  3.91931    0.05086   77.06   &lt;2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.395 on 143 degrees of freedom
-## Multiple R-squared:  0.9844,	Adjusted R-squared:  0.9843 
-## F-statistic:  9005 on 1 and 143 DF,  p-value: &lt; 2.2e-16
+## Residual standard error: 1.688 on 143 degrees of freedom
+## Multiple R-squared:  0.9765,	Adjusted R-squared:  0.9763 
+## F-statistic:  5939 on 1 and 143 DF,  p-value: &lt; 2.2e-16
 ```
 
 ```r
@@ -178,8 +313,8 @@ confint(cats.lm)
 ```
 
 ```
-##        2.5 %   97.5 %
-## Bwt 3.905587 4.071754
+##        2.5 %  97.5 %
+## Bwt 3.818774 4.01984
 ```
 ]
 
@@ -196,7 +331,7 @@ qqnorm(residuals(cats.lm))
 qqline(residuals(cats.lm))
 ```
 
-&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 .pull-right[
@@ -220,7 +355,7 @@ for(b in 1:B){
 
 ```
 ##    97.5%     2.5% 
-## 3.907037 4.066914
+## 3.802997 4.035466
 ```
 
 ```r
@@ -228,8 +363,8 @@ confint(cats.lm)
 ```
 
 ```
-##        2.5 %   97.5 %
-## Bwt 3.905587 4.071754
+##        2.5 %  97.5 %
+## Bwt 3.818774 4.01984
 ```
 ]
 
