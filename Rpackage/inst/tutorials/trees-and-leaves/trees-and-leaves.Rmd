@@ -18,15 +18,20 @@ css: "/css/tutorials.css"
 
 ```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
 library(learnr)
+library(randomForest)
 leaf <- UBCstat406labs::leaf
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center',fig.width=10,
+               fig.height=6)
 library(tree)
 library(maptree)
 my_tree = tree(lobes ~. -Species-Specimen_Number, data = leaf)
 tree_cv = cv.tree(my_tree, K=5)
 pruned_tree = prune.tree(my_tree, k=tree_cv$k[which.min(tree_cv$dev)])
-
-knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center',fig.width=10,
-               fig.height=6)
+my_forest = randomForest(lobes ~. -Species-Specimen_Number, 
+                         data = leaf, ntree=400)
+m = ncol(leaf)-3
+my_bagged_trees = randomForest(lobes ~. -Species-Specimen_Number, 
+                               data = leaf, ntree=400, mtry=m)
 ```
 
 
@@ -70,9 +75,13 @@ This activity uses the `leaf` dataset which is already loaded into the module.  
 
 ### Visualizing the Data
 
-Begin by producing a pairs plot of all continuous predictors. Color the points by `lobes`. Be patient as it may take some time to run.
+* Begin by producing a pairs plot of all continuous predictors. 
+* Color the points by `lobes`. 
+
+_Be patient as it may take some time to run._
 
 ```{r visualplot, exercise=TRUE}
+leaf <- UBCstat406labs::leaf
 library(GGally)
 ggpairs(data=leaf, aes(color=lobes), columns = 3:16)
 ```
@@ -80,7 +89,9 @@ ggpairs(data=leaf, aes(color=lobes), columns = 3:16)
 
 ## Tree Classifier
 
-Train a tree classifier based on this data for predicting complexity. Use all predictors (not `Species` or `Specimen_number` obvs). Prune your tree using cross validation to choose the depth and plot the tree.
+1. Train a tree classifier based on this data for predicting complexity. 
+1. Use all predictors (not `Species` or `Specimen_number` obvs). 
+1. Prune your tree using cross validation to choose the depth and plot the tree.
 
 ```{r treepredictions, exercise=TRUE}
 library(tree)
@@ -93,31 +104,65 @@ draw.tree(pruned_tree)
 
 Produce a confusion matrix and find the tree's in-sample error rate.
 
-```{r confusionmatrix-setup, message=FALSE, warning=FALSE}
-library(tree)
-library(maptree)
-my_tree = tree(lobes ~. -Species-Specimen_Number, data = leaf)
-tree_cv = cv.tree(my_tree, K=5)
-pruned_tree = prune.tree(my_tree, k=tree_cv$k[which.min(tree_cv$dev)])
-draw.tree(pruned_tree)
-```
-
-```{r confusionmatrix, exercise=TRUE, exercise.lines=3, exercise.setup="confusionmatrix-setup"}
+```{r confusionmatrix, exercise=TRUE}
 tree_conf <- table(predict(pruned_tree, type='class'), leaf$lobes)
+tree_conf
 1 - sum(diag(tree_conf))/sum(tree_conf)
 ```
 
 ## Random Forest
 
-Train a random forest using 400 trees. Produce a variable importance plot, a confusion matrix, and find the in-sample error rate.
+1. Train a random forest using 400 trees. 
+1. Produce a variable importance plot, a confusion matrix, and find the out-of-bag error rate.
 
 ```{r forestpredictions, exercise=TRUE, message=FALSE}
 library(randomForest)
-my_forest = randomForest(lobes ~. -Species-Specimen_Number, data = leaf, ntree=400)
+my_forest = randomForest(lobes ~. -Species-Specimen_Number, 
+                         data = leaf, ntree=400)
+```
+
+
+Produce 
+1. a variable importance plot, 
+1. a confusion matrix, 
+1. and find the in-sample error rate.
+
+```{r forest-eval, exercise=TRUE}
 varImpPlot(my_forest)
 (forest_conf <- table(predict(my_forest), leaf$lobes))
 1 - sum(diag(forest_conf))/sum(forest_conf)
 ```
+
+## Bagging
+
+1. Perform bagging using 400 trees. 
+1. Produce a variable importance plot, a confusion matrix, and find the out-of-bag error rate.
+
+```{r baggedpredictions, exercise=TRUE, message=FALSE}
+m = ncol(leaf)-3
+my_bagged_trees = randomForest(lobes ~. -Species-Specimen_Number, 
+                               data = leaf, ntree=400, mtry=m)
+```
+
+
+Produce 
+1. a variable importance plot, 
+1. a confusion matrix, 
+1. and find the in-sample error rate.
+
+```{r bagged-eval, exercise=TRUE}
+varImpPlot(my_bagged_trees)
+(bagged_conf <- table(predict(my_bagged_trees), leaf$lobes))
+1 - sum(diag(bagged_conf))/sum(bagged_conf)
+```
+
+
+## Discussion points
+
+* Out-of-bag error vs CV vs training error
+* Interpretability
+* Tuning parameters?
+* Intuition for bias vs variance in RFs vs Bagging
 
 
 
