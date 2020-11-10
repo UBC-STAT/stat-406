@@ -54,6 +54,8 @@ __Another Note:__ If you want to see all the `R` code for these slides, go [here
 * [Estimating neural nets](lecture-slides/22-nnets-estimation.html)
 * [Neural nets wrapup](lecture-slides/23-nnets-other.html)
 
+[__Zoom Poll Q/As__](lecture-slides/module4-poll-qs.pdf)
+
 ## 5 Unsupervised learning
 
 * [Intro to PCA](lecture-slides/24-pca-intro.html)
