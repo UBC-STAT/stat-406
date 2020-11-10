@@ -25,9 +25,8 @@ icon: "fas fa-flask"
 
 ### Module 4
 
-* Bootstrapping
-* Trees and leaves
-* Keras
+* [Trees and leaves](https://stat406.stat.ubc.ca/labs/trees-and-leaves/)
+* [NNets with Keras](https://stat406.stat.ubc.ca/labs/keras-nnets/)
 
 ### Module 5
 

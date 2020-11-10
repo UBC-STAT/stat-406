@@ -18,7 +18,7 @@ class: center, middle, inverse, title-slide
 # 21 Neural nets
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-11-03
+### Last modified - 2020-11-10
 
 ---
 
@@ -165,11 +165,11 @@ __tell__ us what kind of basis to use
 
 ---
 
-## High level overview
+## Specialize to logistic regression (2 classes)
 
 Let `\(\mu(x) = \Expect{Y \given X=x}\)`
 
-Write `\(L\)` as the __link function__, for example, `\(L(p)=\log\left(\frac{p}{1-p}\right)\)` 
+Write `\(L\)` (the __link function__) as `\(L(\mu)=\log\left(\frac{\mu}{1-\mu}\right)\)` 
 
 A single layer neural network is
 `$$L(\mu(x)) = \beta_0 + \sum_{k=1}^K \beta_k \ \sigma(\alpha_{k0} + \alpha_k^{\top}x)$$`
@@ -177,12 +177,9 @@ A single layer neural network is
 --
 
 __Compare:__  
-A nonparametric GLM would have the form
+A nonparametric logistic regression would have the form
 `$$L(\mu(x)) = \beta_0 + \sum_{k=1}^K \beta_k {\phi_k(x)}$$`
 
-For example:
-
-`$$\log\left(\frac{\mu(x)}{1-\mu(x)}\right)=\beta_0 + \sum_{k=1}^K \beta_k {\phi_k(x)}$$`
 
 ---
 
@@ -206,23 +203,21 @@ The main components are
 
 ---
 
-## High level overview
+## Simplification for regression
 
 __Example:__
 
-If `\(L(\mu) = \mu\)`,
-then we are doing regression:
-`$$\mu(x) = \sum_{k=1}^K \beta_k \sigma\left(\sum_{j=1}^p\alpha_{kj}x_j\right)$$`
+To do rergression, then `\(L(\mu)=\mu\)`
+
+`$$L(\mu(x)) = \mu(x) = \sum_{k=1}^K \beta_k \sigma\left(\sum_{j=1}^p\alpha_{kj}x_j\right)$$`
 but in a transformed space
 
  
 __Two observations:__
 
--   The `\(\sigma\)` function generates a __feature
-    map__
+-   The `\(\sigma\)` function generates a __feature map__
 
--   If `\(\sigma(u) = u\)`, then neural networks reduce to classic least
-    squares
+-   If additionally, `\(\sigma(u) = u\)`, then neural networks reduce to classic least squares
 
  
 Let's discuss each of these `\(\ldots\)`
@@ -236,7 +231,7 @@ We start with `\(p\)` covariates and we generate `\(K\)` features
 
 .pull-left[
 
-__GLMs with a (feature)  transformation__
+__Logistic/Least-squares with a (feature)  transformation__
 `$$\begin{aligned}
 &amp;\Phi(x) \\
 &amp; = 
@@ -285,7 +280,7 @@ ReLU is the current fashion
 
 ---
 
-## Hierarchical model
+## Grabbing the output
 
 .pull-left[.center[
 ![:scale 75%](https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Colored_neural_network.svg/1280px-Colored_neural_network.svg.png)]
@@ -293,15 +288,16 @@ ReLU is the current fashion
 
 .pull-right[
 
+$$
+`\begin{aligned}
+z_k   &amp;= \sigma(\alpha_k^{\top}x) \quad  ( k = 1, \ldots K)\\
+K &amp;= \textrm{# hidden units}\\
+w_g  &amp;= \beta_g^{\top}z \quad  ( g = 1, \ldots G)\\
+G &amp;= \textrm{# of outputs}\\
+\mu_g(x) &amp;= L^{-1}(w_g)
+\end{aligned}`
+$$
 
-`\(z_k   = \sigma(\alpha_k^{\top}x) \quad  ( k = 1, \ldots K)\)`
-
-`\(w_g  = \beta_g^{\top}z \quad  ( g = 1, \ldots G)\)`
-
-`\(\mu_g(x) = L^{-1}(w_g)\)`
-
-
-The output depends on the application. The goal is to map `\(w_g\)` to the appropriate space
 
 -   .hand[Regression]:  The link
     function is `\(L(u) = u\)` (here, `\(G=1\)`)
