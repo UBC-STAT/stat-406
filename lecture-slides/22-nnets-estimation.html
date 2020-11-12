@@ -5,6 +5,8 @@
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
+    <link href="libs/anchor-sections/anchor-sections.css" rel="stylesheet" />
+    <script src="libs/anchor-sections/anchor-sections.js"></script>
     <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
     <link rel="stylesheet" href="slides-style.css" type="text/css" />
@@ -16,7 +18,7 @@ class: center, middle, inverse, title-slide
 # 22 Neural nets - estimation
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2020-08-19
+### Last modified - 2020-11-12
 
 ---
 
@@ -45,7 +47,7 @@ Neural networks have _many_
 They are usually called __weights__ in this dialect and __biases__
 
  
-These are
+For our simple network (1 hidden layer) these are
 
 -   `\(\alpha_{k0}, \alpha_k \textrm{ for } k = 1,\ldots,K\)` (total of
     `\(K(p+1)\)` parameters)
@@ -130,14 +132,14 @@ Given these derivatives, a gradient descent update can be found
 `$$\begin{aligned}
 \hat{\beta}_k^{t+1} 
 &amp; = 
-\hat{\beta}_k^{t} - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \beta_k} \right|_{\hat{\beta}_k^{t}} \\
+\hat{\beta}_k^{t} - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \beta_k} \right|_{\hat{\beta}_k^{t},\ \hat{\alpha}_k^t} \\
 \hat{\alpha}_{kj}^{t+1} 
 &amp; = 
-\hat{\alpha}_{kj}^{t}  - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \alpha_{kj}} \right|_{\hat{\alpha}_{kj}^{t}} \end{aligned}$$`
+\hat{\alpha}_{kj}^{t}  - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \alpha_{kj}} \right|_{\hat{\beta}^t_k,\ \hat{\alpha}_{kj}^{t}} \end{aligned}$$`
 
 ---
 
-## Mapping it out
+## Mapping it out (regression)
 
 Given current `\(\beta,\ {\alpha}\)`, we want to get new, `\(\tilde\beta,\ \tilde\alpha\)` 
 
@@ -147,9 +149,9 @@ __Feed forward__ &lt;svg style="height:0.8em;top:.04em;position:relative;fill:#0
 
 `\(\mathbf{a}_k = \X \alpha_k \in \R^n\)`
 
-`\(\mathbf{z}_k = \sigma(a_k)\)` (component wise)
+`\(\mathbf{z}_k = \sigma(\mathbf{a}_k)\)` (component wise)
 
-`\(\mathbf{z}'_k = \sigma'(a_k)\)`
+`\(\mathbf{z}'_k = \sigma'(\mathbf{a}_k)\)`
 
 `\(\mu_k = \beta_k \mathbf{z}_k \in \R^n\)`
 
@@ -235,7 +237,7 @@ class: middle,center,inverse
 
 # Next time...
 
-Some considerations, Keras/TensorFlow
+Other considerations
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

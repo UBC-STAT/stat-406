@@ -46,7 +46,7 @@ tensorflow::install_tensorflow()
 
 Then restart `R`
 
-```{r, eval=FALSE, echo=TRUE}
+```{r, eval=TRUE, echo=TRUE}
 reticulate::use_condaenv(condaenv = "r-reticulate",
                          conda = "~/opt/miniconda3/bin/conda",
                          required = TRUE)
@@ -54,11 +54,24 @@ library(tensorflow)
 tf$constant("Hellow Tensorflow") ## checks that it points to the right thing
 ```
 
+## Thoughts on R vs. Python
+
+I'm doing this in R because it's easier to walk through an R notebook than a Jupyter notebook (for me). 
+
+Most deep learning infrastructure is written in Python. So everything here is running python under the hood. 
+
+Once configured, it doesn't matter which you use: do what you're comfortable with.
+
+There's nothing special about Python (nor R). Consider this quote from Yann Lecun, head of AI at Facebook and one of the three fathers of deep learning (posted on Facebook on 26 October 2020):
+
+<iframe src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fyann.lecun%2Fposts%2F10157251192782143&show_text=true&width=552&height=576&appId" width="552" height="576" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+
+
 
 ## Overview
 
 
-In this guide, we will train a neural network model to classify images of clothing, like sneakers and shirts. It's fine if you don't understand all the details, this is a fast-paced overview of a complete Keras program with the details explained as we go.
+In this guide, we will train a neural network model to classify images of clothing, like sneakers and shirts. 
 
 ```{r}
 library(keras)
@@ -72,9 +85,9 @@ This guide uses the [Fashion MNIST](https://github.com/zalandoresearch/fashion-m
 ![Figure 1. Fashion-MNIST samples (by Zalando, MIT License).](https://github.com/zalandoresearch/fashion-mnist/blob/master/doc/img/fashion-mnist-sprite.png)
 
 
-Fashion MNIST is intended as a drop-in replacement for the classic [MNIST](http://yann.lecun.com/exdb/mnist/) dataset—often used as the "Hello, World" of machine learning programs for computer vision. The MNIST dataset contains images of handwritten digits (0, 1, 2, etc) in an identical format to the articles of clothing we'll use here.
+Fashion MNIST is intended as a drop-in replacement for the classic [MNIST](http://yann.lecun.com/exdb/mnist/) dataset. The MNIST dataset contains images of handwritten digits (0, 1, 2, etc) in an identical format to the articles of clothing we'll use here. The original MNIST was curated by Yann Lecun, and he maintained a [database of performance results](http://yann.lecun.com/exdb/mnist/) for many years.
 
-This guide uses Fashion MNIST for variety, and because it's a slightly more challenging problem than regular MNIST. Both datasets are relatively small and are used to verify that an algorithm works as expected. They're good starting points to test and debug code.
+Here, we use Fashion MNIST for variety, and because it's a slightly more challenging problem than regular MNIST. Both datasets are relatively small and are used to verify that an algorithm works as expected. They're good starting points to test and debug code.
 
 We will use 60,000 images to train the network and 10,000 images to evaluate how accurately the network learned to classify images. You can access the Fashion MNIST directly from Keras.
 
@@ -161,7 +174,7 @@ dim(test_labels)
 
 ## Preprocess the data
 
-The data must be preprocessed before training the network. If you inspect the first image in the training set, you will see that the pixel values fall in the range of 0 to 255:
+The data should be preprocessed before training the network. If you inspect the first image in the training set, you will see that the pixel values fall in the range of 0 to 255:
 
 ```{r show-boot, exercise=TRUE}
 image1 <- as.data.frame(train_images[1, , ])
@@ -180,7 +193,7 @@ ggplot(image1, aes(x, y, fill = value)) +
 ```
 
 
-We scale these values to a range of 0 to 1 before feeding to the neural network model. For this, we simply divide by 255. 
+We scale these values to a range of 0 to 1 before feeding to the neural network model. For this, we simply divide by 255. The main implications here are for starting values, learning rate, and regularization. The defaults like inputs in [0,1].
 
 It's important that the training set and the testing set are preprocessed in the same way:
 
@@ -191,6 +204,7 @@ test_images <- test_images / 255
 
 
 Display the first 25 images from the training set and display the class name above each image. 
+
 Verify that the data is in the correct format and we're ready to build and train the network.
 
 
@@ -234,9 +248,9 @@ After the pixels are flattened, the network consists of a sequence of two 'dense
 
 Before the model is ready for training, it needs a few more settings. These are added during the model's compile step:
 
- - Loss function — This measures how accurate the model is during training. We want to minimize this function to "steer" the model in the right direction.
- - Optimizer — This is how the model is updated based on the data it sees and its loss function.
-  - Metrics —Used to monitor the training and testing steps. The following example uses accuracy, the fraction of the images that are correctly classified.
+* Loss function: This measures how accurate the model is during training. We want to minimize this function to "steer" the model in the right direction.
+* Optimizer: This is how the model is updated based on the data it sees and its loss function.
+* Metrics: Used to monitor the training and testing steps. The following example uses accuracy, the fraction of the images that are correctly classified.
 
 
 ```{r compile-model}
@@ -285,7 +299,7 @@ test_score
 
 
 
-It turns out, the accuracy on the test dataset is a little less than the accuracy on the training dataset. This gap between training accuracy and test accuracy is an example of overfitting. Overfitting is when a machine learning model performs worse on new data than on their training data.
+It turns out, the accuracy on the test dataset is a little less than the accuracy on the training dataset. 
 
 
 ### Make predictions
