@@ -155,7 +155,7 @@ Required reading
 : \[ISLR\] 10
 
 Video lectures  
-: Lectures 24-29
+: Lectures 24-29 (Lecture 29 will be a asynchronous)
 
 Optional reading
 : \[ESL\] 8.5, 13.2, 14.3, 14.5.1, 14.8, 14.9
@@ -163,9 +163,9 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|24 Nov 20 |Lecture |
-|26 Nov 20 |Lecture       |
-|1 Dec 20  |Lecture       |
+|24 Nov 20 |Lecture 24-25 (PCA)|
+|26 Nov 20 |Lecture 26 (Manifolds)   |
+|1 Dec 20  |Lecture 27-28 (Clustering)  |
 |3 Dec 20  |Ask me anything   |
 {: .table .table-striped}
 

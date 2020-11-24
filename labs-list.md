@@ -25,13 +25,11 @@ icon: "fas fa-flask"
 
 ### Module 4
 
-* [Trees and leaves](https://stat406.stat.ubc.ca/labs/trees-and-leaves/)
-* [NNets with Keras](https://stat406.stat.ubc.ca/labs/keras-nnets/)
+* [Trees and leaves](https://stat406.stat.ubc.ca/labs/trees-and-leaves/)  `run_lab("trees-and-leaves")`
+* [NNets with Keras](https://stat406.stat.ubc.ca/labs/keras-nnets/) `run_nb("keras-nnet")`
 
 ### Module 5
 
-* Laplacian eigenmaps
-* ???
-* ???
+* [Manifold exploration](https://stat406.stat.ubc.ca/labs/visualizing-manifolds/) `run_shiny("visualizing-manifolds")`
 
 

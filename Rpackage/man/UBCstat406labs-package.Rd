@@ -10,6 +10,13 @@ This package is intended to be a one-stop install for students. The
     package contains all interactive labs for the semester. It also forces students
     to download/install various dependencies all at once, ensuring full compliance.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/ubc-stat/stat-406/Rpackage/}
+}
+
+}
 \author{
 \strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca}
 

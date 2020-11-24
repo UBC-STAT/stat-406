@@ -38,3 +38,30 @@ run_lab <- function(name = NULL){
   learnr::run_tutorial(name, "UBCstat406labs")
 }
 
+#' Load a notebook in RStudio
+#'
+#' @param name the name of the notebook to load 
+#' 
+#' @details 
+#' The intention is to make it easier to run notebooks
+#'
+#' @return
+#' @export
+run_nb <- function(name = NULL){
+  path = system.file(name, paste0(name, "-nb.Rmd"), package = "UBCstat406labs")
+  rstudioapi::navigateToFile(path)
+}
+
+#' Run a shiny app in your browser
+#'
+#' @param name the name of the app to run.
+#' 
+#' @details 
+#' The intention is to make it easier to run apps.
+#'
+#' @export
+run_shiny <- function(name = NULL){
+  path <- system.file(name, package="UBCstat406labs")
+  shiny::runApp(appDir = path)
+}
+
