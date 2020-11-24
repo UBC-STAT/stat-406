@@ -48,12 +48,12 @@ $$
     function is `\(L(u) = u\)` (here, `\(G=1\)`)
 
 -   .hand[Classification]:  With `\(G\)`
-    classes, we are modeling `\(\pi_g = P(Y = g\given X=x)\)` and
+    classes, we are modeling `\(\pi_g = P(Y = g\ \vert\ X=x)\)` and
     `\(L = \textrm{logit}\)`:
     
     `\(\hat{\pi}_g(x) = \frac{e^{w_g}}{\sum_{g'=1}^G e^{w_{g'}}}\)`
     
-    `\(\hat{y} = \widehat{g}(x) = \argmax_g \hat{\pi}_g(x)\)`
+    `\(\hat{y} = \widehat{g}(x) = \arg\max_g \hat{\pi}_g(x)\)`
     
     This is called the __softmax__  function for
     historical reasons
@@ -161,18 +161,18 @@ __Derivatives__
 For squared error, let `\(\hat{R}_i = (y_i - \hat{y}_i)^2\)`
 
 `$$\begin{aligned}
-\frac{\partial \hat{R}_i}{\partial \beta_k} 
+\frac{\partial \hat{R}_i}{\partial \beta_{gk}} 
 &amp; = -2(y_i - \hat{y}_i)z_{ik} \\
 \frac{\partial \hat{R}_i}{\partial \alpha_{kj}}  
-&amp; = -2(y_i - \hat{y}_i)\beta_k \sigma'(\alpha_k^{\top} x_i)x_{ij}\end{aligned}$$`
+&amp; = -2(y_i - \hat{y}_i)\beta_{gk} \sigma'(\alpha_k^{\top} x_i)x_{ij}\end{aligned}$$`
 Given these derivatives, a gradient descent update can be found
 `$$\begin{aligned}
-\hat{\beta}_k^{t+1} 
+\hat{\beta}_{gk}^{t+1} 
 &amp; = 
-\hat{\beta}_k^{t} - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \beta_k} \right|_{\hat{\beta}_k^{t},\ \hat{\alpha}_k^t} \\
+\hat{\beta}_{gk}^{t} - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \vec\beta_{gk}} \right|_{\hat{\beta}_k^{t},\ \hat{\alpha}_k^t} \\
 \hat{\alpha}_{kj}^{t+1} 
 &amp; = 
-\hat{\alpha}_{kj}^{t}  - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \alpha_{kj}} \right|_{\hat{\beta}^t_k,\ \hat{\alpha}_{kj}^{t}} \end{aligned}$$`
+\hat{\alpha}_{kj}^{t}  - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \alpha_{kj}} \right|_{\hat{\beta}^t_k,\ \hat{\alpha}_{k}^{t}} \end{aligned}$$`
 
 ---
 
