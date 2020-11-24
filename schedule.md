@@ -163,10 +163,10 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|24 Nov 20 |Mini Quiz |
-|26 Nov 20 |Lab       |
-|1 Dec 20  |Lab       |
-|3 Dec 20  |Lab       |
+|24 Nov 20 |Lecture |
+|26 Nov 20 |Lecture       |
+|1 Dec 20  |Lecture       |
+|3 Dec 20  |Ask me anything   |
 {: .table .table-striped}
 
 
@@ -175,4 +175,6 @@ Optional reading
 ## F Midterm 5 and Final exam
 
 
-TBA – During University Scheduled Final Exam Period
+14 December 0830h – During University Scheduled Final Exam Period  
+Midterm 5 (0830h - 1000h)  
+Final (0900h - 1100h, start when ready)
