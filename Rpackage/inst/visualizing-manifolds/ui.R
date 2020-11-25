@@ -30,8 +30,8 @@ ui <- shinyUI(fluidPage(
                    ),
                    hr(),
                    fluidRow(
-                       column(8, fileInput("file_input", "Upload .Rdata File", 
-                                           accept = c('.rdata'))
+                       column(8, fileInput("file_input", "Upload .RDS File", 
+                                           accept = c('.rds'))
                        )
                    ),
                    textOutput("file_text")
@@ -60,7 +60,8 @@ ui <- shinyUI(fluidPage(
                ),
                wellPanel(
                    style = "background-color: #6ec4e8;",
-                   h3("Parameters"),
+                   h3("Some Parameters"),
+                   p("for some algorithms"),
                    fluidRow(
                        column(6, 
                               numericInput(

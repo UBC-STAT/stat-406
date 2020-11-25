@@ -18,7 +18,17 @@ dr_demo <- function(sim_data, algor, k, d=2, kernel = 'rbfdot') {
         LLE = LLE2(sim_data$data, dim = d, k = k),
         DIFFUSIONMAP = diffusionMap::diffuse(dist(sim_data$data), neigen = d)$X,
         TSNE = tsne::tsne(sim_data$data, k = d),
-        KPCA = kernlab::kpca(sim_data$data, kernel = kernel, features = d)@pcv,
+        KPCA = {
+            kpar <- switch(kernel,
+                           rbfdot = list(sigma=.1),
+                           polydot = list(degree=2, scale=1, offset=1),
+                           vanilladot = list(),
+                           tanhdot = list(scale=1, offset=1),
+                           splinedot = list()
+            )
+            kernlab::kpca(sim_data$data, kernel = kernel, 
+                          kpar=kpar, features = d)@pcv
+            },
         SPE = spe::spe(sim_data$data, edim = d)$x,
         LE = Laplacian_Eigenmaps(sim_data$data, k = k, d = d)$eigenvectors,
         HLLE = Hessian_LLE(sim_data$data, k = k, d = d)$projection,
@@ -39,13 +49,18 @@ server <- shinyServer(function(input, output) {
     data_from_file <- reactive({
         inFile <- input$file_input
         if (is.null(inFile)) return(NULL)
-        sim_data <- load( inFile$datapath)
-        if (ncol(sim_data) >= 4) {
-            scale <- sim_data[,4]
+        ext <- tools::file_ext(inFile$datapath)
+        
+        req(inFile)
+        validate(need(toupper(ext) == "RDS", "Please upload an RDS file."))
+        sim_data <- readRDS(inFile$datapath)
+        if (!is.na(col <- pmatch("col",names(sim_data)))) {
+            colors <- sim_data[,col]
+            sim_data <- sim_data[,-col]
         } else {
-            scale <- z
+            colors <- sim_data[,3]
         }
-        list(data = as.matrix(sim_data), colors = scale)
+        list(data = as.matrix(sim_data), colors = colors)
     })
     
     reduce_to_3d <- reactive({
