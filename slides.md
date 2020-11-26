@@ -60,7 +60,8 @@ __Another Note:__ If you want to see all the `R` code for these slides, go [here
 
 * [Intro to PCA](lecture-slides/24-pca-intro.html)
 * [Issues with PCA](lecture-slides/25-pca-issues.html)
+* [PCA v KPCA](lecture-slides/00-pca-v-kpca.html)
 * [Manifold learning](lecture-slides/26-manifolds.html)
 * [K means clustering](lecture-slides/27-kmeans.html)
 * [Hierarchical clustering](lecture-slides/28-hclust.html)
-* [Wrapping up](lecture-slides/29-conclusion.html)
+* [Wrapping up](lecture-slides/29-conclusion.html) 

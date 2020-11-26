@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>26 Manifold learning</title>
+    <title>00 PCA v KPCA</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -13,7 +13,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 26 Manifold learning
+# 00 PCA v KPCA
 ### STAT 406
 ### Daniel J. McDonald
 ### Last modified - 2020-11-26
@@ -25,9 +25,9 @@ class: center, middle, inverse, title-slide
 
 
 
-## Last time
+## PCA v KPCA
 
-We examined kernel PCA:
+
 
 `$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
 \newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
@@ -47,174 +47,164 @@ We examined kernel PCA:
 \newcommand{\D}{\mathbf{D}}
 \newcommand{\V}{\mathbf{V}}$$`
 
+(We assume `\(\X\)` is already centered, `\(n\)` rows, `\(p\)` columns)
 
-1.  Specify a kernel `\(k\)`, for example `\(k(x,x') = \exp\left( -\norm{x - x'}_2^2/\gamma\right)\)`
-
-2.  Form `\(\mathbf{K}_{i,i'} = k(x_i,x_{i'})\)`
-
-3.  Standardize and take eigendecomposition `\(\mathbf{K} = \U\D^2\U^{\top}\)`
-
-Why `\((i,\ i')\)`? These are two rows of `\(\X\)`. Rows of `\(\X\)` denoted by `\(i\)`, columns by `\(j\)`
-
-Closely related to this is
-
-__Classical Multidimensional Scaling__
-
----
-
-## CMDS
-
-
-1. Calculate a matrix of distances (or dissimilarities) between data points `\(\Delta\)`, and square them `\(\Delta^2\)`
-
-3. .hand[Double center] `\(\mathbf{B} = (I-\frac{1}{n}11^\top)\Delta^2(I-\frac{1}{n}11^\top)\)`
-
-3. Write `\(\mathbf{B} = \U\D^2 \U^\top\)` (find the eigendecomposition == SVD of square symmetric matrix)
-
-4. Approximate your data with `\(\U_{M}\D_{M}\)`, "the first `\(M\)` columns"
-
-CMDS is embedding .hand[dissimilarities] by using the eigendecomposition.
-
---
-
-__Distances v. Dissimilarities__
-
-Euclidean distance: `\(d(x,y) = \sqrt{\sum_{j=1}^p (x_j-y_j)^2} = \sqrt{(x-y)^\top(x-y)} =\sqrt{x^\top x + y^\top y - 2x^\top y}\)`
-
-Euclidean dissimilarity: `\(\delta(x,y) = x^\top y\)`
-
---
 
 .pull-left[
+__PCA:__
 
-&lt;img src="rmd_gfx/26-manifolds/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+0. Start with data.
+1. Decompose `\(\X=\U\D\V^\top\)` (SVD). 
+2. Embed into `\(M&lt;p\)` dimensions: 
+`$$\U_M \D_M = \X\V_M$$`
+
+The "embedding" is `\(\U_M \D_M\)`.
+
+(called the "Principal Components" or the "scores" or occasionally the "factors")
+
+The "loadings" are `\(\V_M\)`
 ]
-
 
 --
 
 .pull-right[
+__KPCA:__
 
-&lt;img src="rmd_gfx/26-manifolds/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+0. Choose `\(k(x_i, x_{i'})\)`. Create `\(\mathbf{K}\)`.
+1. Decompose `\(\mathbf{K} = \U \D^2 \U^\top\)` (eigendecomposition)
+2. Embed into `\(M&lt;p\)` dimensions:
+`$$\U_M \D_M$$`
 
-]
+The "embedding" is `\(\U_M \D_M\)`.
 
-
----
-
-## Manifold learning
-
-.pull-left[
-
-Suppose my data don't lie on hyperplanes (so I don't want to use PCA)
-
-I could use kernel PCA, but there's another way to think of the problem
-
-How good of an approximation is Euclidean distance to the distance along the data?
-
-This question is equivalent to asking: how quickly does the
-tangent (space) change?
-
-
-Therefore, the quality of the (local) Euclidean distance, depends on the
-second derivative (ie: how fast does the first derivative change?)
-
-
-In higher dimensions, the second derivative is known as the
-__Laplacian__:
-`\(\sum_{j} \frac{\partial^2 f}{\partial x_j^2}\)` (Note: This is also
-known as the divergence of the gradient)
-]
-
-.pull-right[
-
-In 1-D, the tangent space is just the first derivative at that point:
-`$$f(x) = x^2 \Rightarrow f'(x) = 2x.$$`
-
-
-
-&lt;img src="rmd_gfx/26-manifolds/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
-
+There are no "loadings"  
+(there exists no matrix `\(\mathbf{B}\)` such that `\(\X\mathbf{B} = \U_M \D_M\)`)
 ]
 
 ---
 
-## What are Laplacian Eigenmaps, then?
-
-Imagine the operator `\(\mathbf{L}\)` that performs this operation:
-`$$\mathbf{L} f = \sum_{j} \frac{\partial^2 f}{\partial x_j^2}$$`
-
-Then `\(\mathbf{L}\)` is the __Laplacian__, mapping
-a function to the divergence of its gradient
-
-
-__Key Idea:__   We can get the eigenvectors/eigenvalues of `\(\mathbf{L}\)`. Analogously to PCA, we can now do inference with these eigenvectors.
-
-
-
-.emphasis[Collect data: `\(x_1,\ldots,x_n\)` where `\(x_i\in\R^p\)`.
-
-1. Center and scale the data matrix `\(\X\)`
-2. Compute `\(\mathbf{K}\)` where
-    `\(\mathbf{K}_{i,i'} = \exp\left(-\|x_i-x_{i'}\|_2^2/\gamma\right)\)`
-4. __Optionally__: (a) allow only the `\(k\)` nearest neighbors `\(i'\)` to `\(i\)` to have `\(\mathbf{K}_{i,i'}\)` nonzero (b) set `\(\mathbf{K}_{i,i'}=1\)` if nonzero.
-3. Form the Laplacian `\(\mathbf{L} = \mathbf{I} -\mathbf{G}^{-1}\mathbf{K}\)` where `\(\mathbf{G} =\)` `diag(rowSums(` `\(\mathbf{K}\)` `))`
-4. Compute the Eigendecomposition of `\(\mathbf{L} = \U\D\U^\top\)`.
-5. Return `\(\mathbf{U}_M\D_M^{-1}\)`, where `\(\D_M\)` contains the __smallest__ `\(M\)` nonzero
-    eigenvalues of `\(\mathbf{L}\)`
-]
-
----
-
-## Here's our manifold
-
-&lt;img src="rmd_gfx/26-manifolds/elephant-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## PCA, CMDS, and Laplacian eigenmaps
+## Example (not real unless there's code)
 
 
 ```r
-library(maniTools)
-elef = noisy_ele[,1:2]
-pca = elef %&gt;% center_and_standardise() %&gt;% prcomp()
-pca = as.matrix(elef) %*% pca$rotation[,1] 
-cmds = cmdscale(dist(elef), k = 1) 
-le = Laplacian_Eigenmaps(elef, 5, 1)$eigenvectors 
+X = UBCstat406labs::mobility %&gt;% select(Black:Married) %&gt;% as.matrix()
+not_missing = X %&gt;% complete.cases()
+X = scale(X[not_missing,], center = TRUE, scale = TRUE)
+colors = UBCstat406labs::mobility$Mobility[not_missing] 
+M = 2 # embedding dimension
 ```
 
-&lt;img src="rmd_gfx/26-manifolds/mani-plots-1.svg" style="display: block; margin: auto;" /&gt;
+--
+
+.pull-left[
+__PCA:__
+
+
+```r
+s = svd(X)
+pca_loadings = s$v[,1:2]
+pca_scores = X %*% pca_loadings
+```
+
+or
+
+
+```r
+s = eigen(t(X) %*% X) # V D^2 V'
+pca_loadings = s$vectors[,1:2]
+pca_scores = X %*% pca_loadings
+```
+
+or
+
+
+```r
+s = eigen(X %*% t(X)) # U D^2 U'
+D = sqrt(diag(s$values[1:2]))
+U = s$vectors[,1:2]
+pca_scores = U %*% D
+pca_loadings = (1/D) %*% t(U) %*% X
+```
+
+
+
+]
+
+.pull-right[
+__KPCA:__
+
+
+```r
+d = 2
+K = (1 + X %*% t(X))^d
+e = eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U = e$vectors[,1:2]
+D = diag(sqrt(e$values[1:2]))
+kpca_scores = U %*% D
+```
+
+]
 
 ---
 
-## Scratching the Laplacian
+## Plotting
 
-There are lots of other manifold learning techniques
-
-To name a few
-
-* Hessian maps
-* Locally linear embeddings
-* Diffusion maps
-* Local tangent space alignment
-* Isomap
-
-Issues with nonlinear techniques:
-
-1. Need to choose `\(M\)` (also with linear)
-2. Also other tuning parameters.
-3. These others can have __huge__ effects
-4. The difference between the data lying .hand[on] the manifold and the data lying .hand[near] the manifold is important
-
-&lt;img src="rmd_gfx/26-manifolds/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="rmd_gfx/00-pca-v-kpca/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
-class: inverse, center, middle
 
-# Next time...
+## PCA loadings
 
-Clustering
+Showing the first 10 PCA loadings:
+
+* First column are the weights on the first score
+* each number corresponds to a variable in the original data
+* How much does that variable contribute to that score?
+
+
+```r
+head(round(pca_loadings,2), 10)
+```
+
+```
+##        [,1]  [,2]
+##  [1,]  0.25  0.07
+##  [2,]  0.13 -0.14
+##  [3,]  0.17 -0.34
+##  [4,]  0.18 -0.33
+##  [5,]  0.16 -0.34
+##  [6,] -0.24  0.11
+##  [7,] -0.04 -0.35
+##  [8,]  0.28  0.00
+##  [9,]  0.13 -0.14
+## [10,]  0.29  0.10
+```
+
+---
+
+## KPCA, feature map version
+
+
+```r
+p = ncol(X)
+width = p*(p-1)/2 + p # ~630
+Z = matrix(NA, nrow(X), width)
+k = 0
+for(i in 1:p){
+  for(j in i:p){
+    k = k + 1
+    Z[,k] = X[,i] * X[,j]
+  }
+}
+wideX = scale(cbind(X, Z), center=TRUE, scale=TRUE)
+s = RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores = s$u %*% diag(s$d)
+```
+
+* Unfortunately, can't easily compare to check whether the result is the same
+* Also can cause numerical issues
+* But should be the "same" (assuming I didn't screw up...)
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
