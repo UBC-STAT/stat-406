@@ -64,4 +64,3 @@ __Another Note:__ If you want to see all the `R` code for these slides, go [here
 * [Manifold learning](lecture-slides/26-manifolds.html)
 * [K means clustering](lecture-slides/27-kmeans.html)
 * [Hierarchical clustering](lecture-slides/28-hclust.html)
-* [Wrapping up](lecture-slides/29-conclusion.html) 
