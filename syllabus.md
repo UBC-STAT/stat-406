@@ -102,7 +102,7 @@ to learn more and understand the material more deeply, this is the book for you.
 
 These are two different components intended to keep you on track. Both are to be submitted via pull requests in your personal `worksheets-<username>` repo (see the [computing tab](/computing/) for descriptions on how to do this**. 
 
-**Reading checks** are simply extracts of the code from the online [course notes](https://ubc-stat.github.io/stat-406-worksheets). The code for each topic has two lines removed. You should read the notes and work through the code you have, executing the commands and examining the output. The purpose is for you to engage in _active_ rather than _passive** reading. When you discover the missing lines, simply copy the correct lines into your file. That's it. These are simple and worth 1 point each up to a maximum of 20 points.
+**Reading checks** are simply extracts of the code from the online [course notes](https://ubc-stat.github.io/stat-406-worksheets). The code for each topic has two lines removed. You should read the notes and work through the code you have, executing the commands and examining the output. The purpose is for you to engage in _active_ rather than _passive_ reading. When you discover the missing lines, simply copy the correct lines into your file. That's it. These are simple and worth 1 point each up to a maximum of 20 points.
 
 **Worksheets** are more thorough. They typically have a few questions for you to answer or code to implement. These will often be done _during class_ or _lab_ periods. But you can do them on your own as well. These are worth 2 points each up to a maximum of 20 points.
 
