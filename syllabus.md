@@ -4,41 +4,33 @@ layout: page
 icon: "fas fa-user-shield"
 ---
 
-Term 2020 Winter 1: Sep 08 - Dec 03 2020  
+Term 2021 Winter 1: Sep 07 - Dec 07 2021  
  
 ### Course info
 __Instructor__:  
 Daniel McDonald  
-Office: Earth Sciences Building  
+Office: Earth Sciences Building 3106  
 Website: <https://dajmcdon.github.io/>  
 Email: <daniel@stat.ubc.ca>  
 
 __Office hours__:    
-Daniel: Tue/Thu 1530h - 1600h and Thu 2045h - 2130h   
+Daniel: TBD   
 
 TAs  
-Vittorio: Mon 0900h - 1000h  
-Lily: Thu 0800h - 0900h  
-Grace: Tue 2100h - 2200h  
-David: Tue 1700h - 1800h  
-Shannon: Wed 1600h - 1700h
+TBD: TBD  
+TBD: TBD  
+TBD: TBD  
+
 
 __Course webpage__:    
 WWW: <https://ubc-stat.github.io/stat-406/>  
 See also Canvas
 
 __Lectures__:  
-Tue/Thu 1600h - 1700h UTC-7 Vancouver local time (class ends at 1645h)
+Tue/Thu 1230h - 1400h UTC-7 Vancouver local time
 
-Repeated  
-Tue/Thu 2000h - 2100h UTC-7 Vancouver local time (class ends at 2045h)
 
 All students should plan to attend the following dates during the standard time (1530h-1700h) for exams:
-* 10 September (no exam, first day of class, class starts at 1600h, but I will be there early)
-* 29 September
-* 15 October
-* 3 November
-* 19 November
 * UBC scheduled Final Exam Period (TBA)
 
 
@@ -47,7 +39,7 @@ __Textbooks__:
 [\[ESL\]](https://web.stanford.edu/~hastie/ElemStatLearn/)
 
 __Prerequisite__:  
-STAT 306 or CPSC 340 
+STAT 306 or CPSC 340   
 
 
 ### Course objectives
@@ -63,6 +55,8 @@ statistical properties. The focus will be on practical aspects of methodology an
 to help students develop tools for selecting appropriate methods and
 approaches to problems in their own lives. 
 
+This is not a "how to program" course, nor a "tour of machine learning methods". Rather, this course is about how to understand some ML methods. STAT 306 tends to give background in many of the tools of understanding as well as working with already-written `R` packages. On the other hand, CPSC 340 focuses introduces many methods with a focus on "from-scratch" implementation (in Julia or Python). This course will try to bridge this gap. Depending on which course you took, you may be more or less skilled in some aspects than in others. That's ok and expected.
+
 #### Learning outcomes
 
 1. assess the prediction properties of the supervised learning methods covered in class; 
@@ -72,7 +66,8 @@ difference between predictions obtained with parametric and non-parametric metho
 4. select and construct appropriate ensembles to obtain improved predictions in different contexts; 
 5. select sensible clustering methods and correctly interpret their output; 
 6. correctly utilize and interpret principal components and other dimension reduction techniques;
-7. employ reasonable coding practices and understand basic R syntax and function.
+7. employ reasonable coding practices and understand basic `R` syntax and function;
+8. write reports and use proper version control; engage with standard software
 
 
 
@@ -96,49 +91,103 @@ to learn more and understand the material more deeply, this is the book for you.
 
 ### Course assesssment opportunities
 
-**Default synchronous syllabus**
 
-1 Mini pre quiz (1%)  
-5 In-class mini quizzes (1% each)  
-5 In-class group quizzes (1% each)  
-5 Peer evaluations (1% each)  
-5 Midterm exams (14% each)  
-1 Comprehensive final exam (14%)  
-1 Discussion opportunity (+/- 1%)
+15 Reading checks and worksheets  
+30 Assignments  
+20 Project  
+35 Final exam
 
 
-**Alternative asynchronous syllabus**  
-If for any reason, you wish to complete the course asynchronously, you may email my by midnight on 30 September to request to complete the course "asynchronously". The intention behind this option is to accomodate internet connectivity, family, work, life, mental health, or other issues which may arise. In this case, the grading scale will be modified. Note that all exams must still be taken during the scheduled time (1530h-1700h Vancouver local time) through Canvas. Changes requested after this date will be made at the discretion of the instructor.
+#### Reading checks and worksheets
 
-1 Mini pre quiz (1%)  
-5 In-class mini quizzes (2% each)    
-5 Midterm exams (15% each)  
-1 Comprehensive final exam (14%)  
-1 Discussion opportunity (+/- 1%)
+These are two different components intended to keep you on track. Both are to be submitted via pull requests in your personal `worksheets-<username>` repo (see the [computing tab](/computing/) for descriptions on how to do this**. 
 
+**Reading checks** are simply extracts of the code from the online [course notes](https://ubc-stat.github.io/stat-406-worksheets). The code for each topic has two lines removed. You should read the notes and work through the code you have, executing the commands and examining the output. The purpose is for you to engage in _active_ rather than _passive** reading. When you discover the missing lines, simply copy the correct lines into your file. That's it. These are simple and worth 1 point each up to a maximum of 20 points.
 
-**Missed assessment policy**  
-Missed or late peer evaluations result in the student receiving no credit. All other missed
-opportunities will have their weight added to the comprehensive final exam. There are no other makeup opportunities. If you miss more than 2 midterm exams, you must request an academic concession through your academic advising office. 
+**Worksheets** are more thorough. They typically have a few questions for you to answer or code to implement. These will often be done _during class_ or _lab_ periods. But you can do them on your own as well. These are worth 2 points each up to a maximum of 20 points.
 
+**Rules** To get all 15%, you need to accumulate 30 total points during the semester. This can be done in any combination of reading check points and worksheets (respecting the limit). Of course you can (and should!) do more, but this isn't required. You may submit up to 5 points at a time in a pull request and you may submit only 5 points per week. In your PR, there must be as many commits as points. So a PR with 2 reading checks and 1 worksheet should have at least 4 commits (probably one for each check and 2 for the worksheet). This will be lightly enforced initially. The last day to open a PR is December 5.  
 
+**Marking** Reading checks get 1 if correct and 0 otherwise. If you get 0, you can't resubmit this check (but you can submit others). Worksheets get 2 points when correct. Sometimes the graders will ask for changes in their PR review. If they do, implement the corrections, make another commit, and re-request the review. Once correct, you receive 2 points. Only one additional review will be allowed per submission. If egregious errors remain (in the opinion of the grader) then you will not receive credit (but you can submit another worksheet). The overriding theme here is "if you put in the effort, you'll get all the points**.
 
-
-### Group synchronous sessions
-
-Synchronous class periods will be spent working on and discussing group coding exercises, similar to lab sessions. They will also be used for individual and group quizzes and individual exams.
-
-Each student will be assigned a group for the entirety of the semester. Your group assignment will be determined by your selected Lecture time (1600h or 2000h) as well as other factors. You must attend your selected Lecture time each session. If you cannot attend, missed quizzes (or exams0 will have their weight added to the comprehensive final exam. But students should be aware that their groups are counting on them. If you miss a session, your peers may give you lower peer evaluation scores.   
-
-It's important here to recognize just how important active participation in these activities is. You learn by doing, and this is your opportunity to learn in a low-stakes, moderated environment. One thing you'll learn, for example, is that [all animals urinate in 21 seconds](https://arxiv.org/abs/1310.3737).[^note]
+It's important here to recognize just how important active participation in these activities is. You learn by doing, and this is your opportunity to learn in a low-stakes environment. One thing you'll learn, for example, is that [all animals urinate in 21 seconds](https://arxiv.org/abs/1310.3737).[^note]
 
 [^note]: A careful reading of the linked paper with the provocative title "Law of Urination: all mammals empty their bladders over the same duration" reveals that the authors actually mean something far less precise. In fact, their claim is more accurately stated as "mammals over 3kg in body weight urinate in 21 seconds with a standard deviation of 13 seconds". But the accurate charactization is far less publicity-worthy. 
+
+
+#### Assignments
+
+There will be 5 assignments, you should complete 4. These are submitted via pull request similar to the worksheets. You are allowed _one late class period_. This means that of the 4 assignments you submit, one can be submitted late, up until the next class meeting. This policy (drop 1, submit 1 late) is intended to accommodate any and all issues. It is not a "pad your mark" policy. If you submit the first 4 assignments, we won't mark the fifth. The TAs have a lot on their plate and "marking dropped assignments" takes a lot of work. Both policies are "no questions asked". Simply turn it in late or not at all and we'll take care of the rest. You don't need to justify anything.
+
+**Policy on collaboration**
+
+Discussing assignments with your classmates is allowed and encouraged, but it is important that every student get practice working on these problems. This means that **all the work you turn in must be your own**. The general policy on homework collaboration is:
+1. You must first make a serious effort to solve the problem.
+1. If you are stuck after doing so, you may ask for help from another student. You may discuss strategies to solve the problem, but you may not look at their code, nor may they spell out the solution to you step-by-step.
+1. Once you have gotten help, you must write your own solution individually. You must disclose, in your GitHub pull request, the names of anyone from whom you got help.
+1. This also applies in reverse: if someone approaches you for help, you must not provide it unless they have already attempted to solve the problem, and you may not share your code or spell out the solution step-by-step.
+
+These rules also apply to getting help from other people such as friends not in the course (try the problem first, discuss strategies, not step-by-step solutions, acknowledge those from whom you received help). 
+
+You may not use homework help websites, Stack Overflow, and so on under any circumstances.
+
+You can always, of course, ask me for help on Slack. And public Slack **questions** are allowed and encouraged. 
+
+You may also use external sources (books, websites, papers, ...) to
+* Look up programming language documentation, find useful packages, find explanations for error messages, or remind yourself about the syntax for some feature. I do this all the time in the real world. Wikipedia is your friend.
+* Read about general approaches to solving specific problems (e.g. a guide to dynamic programming or a tutorial on unit testing in your programming language), or
+* Clarify material from the course notes or assignments.
+
+But external sources must be used to **support** your solution, not to **obtain** your solution. You may **not** use them to
+* Find solutions to the specific problems assigned as homework (in words or in code)—you must independently solve the problem assigned, not translate a solution presented online or elsewhere.
+* Find course materials or solutions from this or similar courses from previous years, or
+* Copy text or code to use in your submissions without attribution.
+
+If you use code from online or other sources, you must include code comments identifying the source. It must be clear what code you wrote and what code is from other sources. This rule also applies to text, images, and any other material you submit.
+
+Please talk to me if you have any questions about this policy. Any form of plagiarism or cheating will result in sanctions to be determined by me, including grade penalties (such as negative points for the assignment or reductions in letter grade) or course failure. I am obliged to report violations to the appropriate University authorities. See also the text below.
+
+
+#### Group/individual project
+
+There will be a project. You may choose to complete it in a group of your choosing or individually. The group can contain at most 4 individuals. The group project has two intermediate checkpoints (see [schedule](/schedule/)).
+
+Similar policies on plagiarism as for the homework apply.
+
+More details are available on the project page.
 
 
 
 
 
 ### Important considerations
+
+#### Covid Safety 
+
+For our in-person meetings in this class, it is important that all of us feel as comfortable as possible engaging in class activities while sharing an indoor space.  Non-medical masks that cover our noses and mouths are a primary tool to make it harder for Covid-19 to find a new host.  Please wear a non-medical mask during our class meetings, for your own protection, and the safety and comfort of everyone else in the class. If you have not yet had a chance to get vaccinated against Covid-19, vaccines are available to you, free [and on campus [insert info if/when available]]. The higher the rate of vaccination in our community overall, the lower the chance of spreading this virus.  You are an important part of the UBC community. Please arrange to get vaccinated if you have not already done so.
+
+#### If you're sick...
+
+If you’re sick, it’s important that you stay home – no matter what you think you may be sick with (e.g., cold, flu, other). If you think you might have Covid symptoms and/or have tested positive for Covid and/or are required to quarantine: You can do a self-assessment for Covid symptoms here < https://bc.thrive.health/covid19/en>
+
+Do not come to class if you are sick, have Covid symptoms, have recently tested positive for Covid, or are required to quarantine. This precaution will help reduce risk and keep everyone safer.  In this class, the marking scheme is intended to provide flexibility so that you can prioritize your health and still be able to succeed.
+
+* Videos from last year are available on Canvas.
+* Any work done during class/lab can be completed remotely.
+* The only required day to attend is the final exam.
+
+If you do miss class because of illness (or for any reason)
+
+* Make a connection early in the term to another student or a group of students in the class.  You can help each other by sharing notes.  If you don’t yet know anyone in the class, post on the discussion forum to connect with other students.
+* Consult the class resources on Canvas and on Github.  We will post all the slides, readings, and recordings from last year. 
+* Use the discussion forum for help 
+* Come to office hours (they’re online, so you can join from anywhere**.
+* See the marking scheme for reassurance about what flexibility you have.
+
+
+
+**Please talk with me if you have any concerns or ask me if you are worried about falling behind.** 
+
 
 #### University policies
 
@@ -196,6 +245,15 @@ Students who miss the final exam must report to their Faculty advising office wi
 #### Censorship
 
 During this pandemic, the shift to online learning has greatly altered teaching and studying at UBC, including changes to health and safety considerations. Keep in mind that some UBC courses might cover topics that are censored or considered illegal by non-Canadian governments. This may include, but is not limited to, human rights, representative government, defamation, obscenity, gender or sexuality, and historical or current geopolitical controversies. If you are a student living abroad, you will be subject to the laws of your local jurisdiction, and your local authorities might limit your access to course material or take punitive action against you. UBC is strongly committed to academic freedom, but has no control over foreign authorities (please visit [this link](http://www.calendar.ubc.ca/vancouver/index.cfm?tree=3,33,86,0) for an articulation of the values of the University conveyed in the Senate Statement on Academic Freedom). Thus, we recognize that students will have legitimate reason to exercise caution in studying certain subjects. If you have concerns regarding your personal situation, consider postponing taking a course with manifest risks, until you are back on campus or reach out to your academic advisor to find substitute courses. For further information and support, please visit [this link](http://academic.ubc.ca/support-resources/freedom-expression).
+
+#### Take care of yourself
+
+Course work at this level can be intense, and I encourage you to take care of yourself. Do your best to maintain a healthy lifestyle this semester by eating well, exercising, avoiding drugs and alcohol, getting enough sleep and taking some time to relax. This will help you achieve your goals and cope with stress. I struggle with these issues too, and I try hard to set aside time for things that make me happy (cooking, playing/listening to music, exercise, going for walks).
+
+All of us benefit from support during times of struggle. If you are having any problems or concerns, do not hesitate to speak with me. There are also many resources available on campus that can provide help and support. Asking for support sooner rather than later is almost always a good idea.
+
+If you or anyone you know experiences any academic stress, difficult life events, or feelings like anxiety or depression, I strongly encourage you to seek support. UBC Counseling Services is here to help: call 604 822 3811 or visit their [website](https://students.ubc.ca/health/counselling-services). Consider also reaching out to a friend, faculty member, or family member you trust to help get you the support you need.
+
 
 
 <br>

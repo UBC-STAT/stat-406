@@ -16,7 +16,7 @@ Readings from [\[ISLR\]](http://faculty.marshall.usc.edu/gareth-james/ISL/index.
   <a role="button" class="btn btn-secondary" href="#3-classification">3 Classification</a>
   <a role="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</a>
   <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
-  <a role="button" class="btn btn-secondary" href="#f-midterm-5-and-final-exam">F Final</a>
+  <a role="button" class="btn btn-secondary" href="#f-final-exam">F Final</a>
 </div>
 </div>
 
@@ -38,8 +38,8 @@ Optional reading
 
 |Date      |Activity    |
 |:---------|:-----------|
-|8 Sep 20  |Imagine UBC |
-|10 Sep 20 |Special     |
+|7 Sep 21  |Imagine UBC |
+|9 Sep 21  |Syllabus, Git, Github |
 {: .table .table-striped}
 
 
@@ -61,11 +61,11 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|15 Sep 20 |Lab       |
-|17 Sep 20 |Mini Quiz |
-|22 Sep 20 |Lab       |
-|24 Sep 20 |Lab       |
-|29 Sep 20 |Midterm 1  |
+|14 Sep 21 |          |
+|16 Sep 21 |          |
+|21 Sep 21 |PC 1      |
+|23 Sep 21 |HW 1 due  |
+|28 Sep 21 |           |
 {: .table .table-striped}
 
 
@@ -87,11 +87,12 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|1 Oct 20  |Lab |
-|6 Oct 20  |Mini Quiz       |
-|8 Oct 20  |Lab       |
-|13 Oct 20 |Lab       |
-|15 Oct 20 |Midterm  2 |
+|30 Sep 21 |(no class ?) |
+|5 Oct 21  |          |
+|7 Oct 21  |          |
+|12 Oct 21 |          |
+|14 Oct 21 |HW 2 due  |
+|19 Oct 21 |          |
 {: .table .table-striped}
 
 
@@ -112,11 +113,11 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|20 Oct 20 |Special   |
-|22 Oct 20 |Mini Quiz |
-|27 Oct 20 |Lab       |
-|29 Oct 20 |Lab       |
-|3 Nov 20  |Midterm   3|
+|21 Oct 21 |PC 2      |
+|26 Oct 21 |          |
+|28 Oct 21 |HW 3 due  |
+|2 Nov 21  |          |
+|4 Nov 21  |           |
 {: .table .table-striped}
 
 
@@ -135,13 +136,13 @@ Video lectures
 Optional reading
 : \[ESL\] 10.1-10.10 (skip 10.7), 11.2, 11.5, 11.6
 
-|Date      |Activity  |
-|:---------|:---------|
-|5 Nov 20  | Lecture 18  (Bootstrap)     |
-|10 Nov 20 | Lecture 19-20 (Bagging and Boosting) |
-|12 Nov 20 | Lecture 21-22  (NNets Intro and Estimation)   |
-|17 Nov 20 | Lecture 23 (NNest wrapup) QA session      |
-|19 Nov 20 |Midterm 4  |
+| Date       | Activity                                    |
+| :--------- | :---------                                  |
+| 9 Nov 21   |                      |
+| 11 Nov 21  | (no class, Midterm Break) |
+| 16 Nov 21  |  |
+| 18 Nov 21  | HW 4 due |
+| 23 Nov 21  |  |
 {: .table .table-striped}
 
 
@@ -163,18 +164,15 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|24 Nov 20 |Lecture 24-25 (PCA)|
-|26 Nov 20 |Lecture 26 (Manifolds)   |
-|1 Dec 20  |Lecture 27-28 (Clustering)  |
-|3 Dec 20  |Ask me anything   |
+|25 Nov 20 |  |
+|30 Nov 20 |       |
+|2 Dec 20  | HW 5 due |
+|7 Dec 20  |PC 3              |
 {: .table .table-striped}
 
 
 
 
-## F Midterm 5 and Final exam
+## F Final exam
 
-
-14 December 0830h – During University Scheduled Final Exam Period  
-Midterm 5 (0830h - 1000h)  
-Final (0900h - 1100h, start when ready)
+TBA – During University Scheduled Final Exam Period  
