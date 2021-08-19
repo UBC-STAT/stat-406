@@ -38,7 +38,7 @@ Optional reading
 
 |Date      |Activity    |
 |:---------|:-----------|
-|7 Sep 21  |Imagine UBC |
+|7 Sep 21  |(no class, Imagine UBC) |
 |9 Sep 21  |Syllabus, Git, Github |
 {: .table .table-striped}
 
@@ -87,7 +87,7 @@ Optional reading
 
 |Date      |Activity  |
 |:---------|:---------|
-|30 Sep 21 |(no class ?) |
+|30 Sep 21 |(no class, National Day for Truth and Reconciliation) |
 |5 Oct 21  |          |
 |7 Oct 21  |          |
 |12 Oct 21 |          |
