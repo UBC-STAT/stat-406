@@ -51,6 +51,8 @@ To see if you were successful, try opening RStudio by clicking on its icon.
 
 In many cases, you likely already have it installed. See the book [Happy Git with R](https://happygitwithr.com/install-git.html) for help.
 
+Many other git issues can also be resolved by examining that book. 
+
 ### Homework/Readings workflow
 
 **Command line version**  
@@ -69,7 +71,7 @@ In many cases, you likely already have it installed. See the book [Happy Git wit
 1. Create a new branch by clicking the think that looks kinda like <i class="fas fa-code-branch" style="color:purple"></i>.
 1. Work on your documents and save frequently.
 1. Stage your changes by clicking the check boxes.
-1. Commit your changes by clicking `Commit**. 
+1. Commit your changes by clicking **Commit**. 
 1. Repeat 2-4 as necessary.
 1. Push to Github <i class="fas fa-arrow-up" style="color:green"></i>
 1. When done, go to Github and open a PR.
@@ -77,23 +79,27 @@ In many cases, you likely already have it installed. See the book [Happy Git wit
 
 ### Fixing common problems
 
-**master/main**
-"master" has some pretty painful connotations for some people. So as part of an effort to remove racist names from code, the default branch is now "main" on new versions of Git. But old versions still have "master". Below, I'll use "main", but if you see "master" on what you're doing, that's the one to use.
+**master/main**  
+"master" has some pretty painful connotations. So as part of an effort to remove racist names from code, the default branch is now "main" on new versions of Git. But old versions still have "master". Below, I'll use "main", but if you see "master" on what you're doing, that's the one to use.
 
 
 **Start from main**  
 Branches should be created from the `main` branch, not the one you used for the last assignment.  
-`git checkout main`  
-This switches to `main`. Then pull and start the new assignment following the workflow above.
+```
+git checkout main
+```
+This switches to `main`. Then pull and start the new assignment following the workflow above. (In Rstudio, use the dropdown menu.)
 
 **You forgot to work on a new branch**  
 Ugh, you did 5 points of worksheets before realizing you forgot to create a new branch. Don't stress. There are some things below to try. But if you're confused ASK. We've had practice with this, and soon you will too!  
 
-If you started from `main` and haven't made any commits:  
-`git branch -b <new-branch-name>`  
+_(1) If you started from `main` and haven't made any commits:_  
+```
+git branch -b <new-branch-name>
+```
 This keeps everything you did and puts you on a new branch. No problem. Commit and proceed as usual.
 
-If you are on `main` and made some commits:  
+_(2) If you are on `main` and made some commits:_
 ```
 git branch <new-branch-name>
 git log
@@ -109,13 +115,13 @@ git checkout <new-branch-name>
 ```
 and continue working.
 
-If you started from `<some-branch>`  
+_(3) If you started from `<some-branch>`:_  
 This one is harder, and I would suggest getting in touch with the TAs. Here's the procedure.
 ```
 git commit -am "uhoh, I need to be on a different branch"
 git branch <new-branch-name>
 ```
-Commit your work, then create a new branch and switch to it. It's got all your stuff.
+Commit your work, then create a new branch. It's got all your stuff.
 ```
 git log
 ```
@@ -124,4 +130,4 @@ Locate the most recent commit before you started working. It's a long string lik
 git rebase --onto master ac2a8 <new-branch-name>
 git checkout <new-branch-name>
 ```
-This makes the new branch look like the `master` but without the differences from master that are on `ac2a8`. It's pretty cool. And should work.
+This makes the new branch look like the `master` but without the differences from master that are on `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.
