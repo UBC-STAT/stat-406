@@ -100,7 +100,7 @@ to learn more and understand the material more deeply, this is the book for you.
 
 #### Reading checks and worksheets
 
-These are two different components intended to keep you on track. Both are to be submitted via pull requests in your personal `worksheets-<username>` repo (see the [computing tab](/computing/) for descriptions on how to do this**. 
+These are two different components intended to keep you on track. Both are to be submitted via pull requests in your personal `worksheets-<username>` repo (see the [computing tab](/computing/) for descriptions on how to do this. 
 
 **Reading checks** are simply extracts of the code from the online [course notes](https://ubc-stat.github.io/stat-406-worksheets). The code for each topic has two lines removed. You should read the notes and work through the code you have, executing the commands and examining the output. The purpose is for you to engage in _active_ rather than _passive_ reading. When you discover the missing lines, simply copy the correct lines into your file. That's it. These are simple and worth 1 point each up to a maximum of 20 points.
 
@@ -108,7 +108,7 @@ These are two different components intended to keep you on track. Both are to be
 
 **Rules** To get all 15%, you need to accumulate 30 total points during the semester. This can be done in any combination of reading check points and worksheets (respecting the limit). Of course you can (and should!) do more, but this isn't required. You may submit up to 5 points at a time in a pull request and you may submit only 5 points per week. In your PR, there must be as many commits as points. So a PR with 2 reading checks and 1 worksheet should have at least 4 commits (probably one for each check and 2 for the worksheet). This will be lightly enforced initially. The last day to open a PR is December 5.  
 
-**Marking** Reading checks get 1 if correct and 0 otherwise. If you get 0, you can't resubmit this check (but you can submit others). Worksheets get 2 points when correct. Sometimes the graders will ask for changes in their PR review. If they do, implement the corrections, make another commit, and re-request the review. Once correct, you receive 2 points. Only one additional review will be allowed per submission. If egregious errors remain (in the opinion of the grader) then you will not receive credit (but you can submit another worksheet). The overriding theme here is "if you put in the effort, you'll get all the points**.
+**Marking** Reading checks get 1 if correct and 0 otherwise. If you get 0, you can't resubmit this check (but you can submit others). Worksheets get 2 points when correct. Sometimes the graders will ask for changes in their PR review. If they do, implement the corrections, make another commit, and re-request the review. Once correct, you receive 2 points. Only one additional review will be allowed per submission. If egregious errors remain (in the opinion of the grader) then you will not receive credit (but you can submit another worksheet). The overriding theme here is "if you put in the effort, you'll get all the points.
 
 It's important here to recognize just how important active participation in these activities is. You learn by doing, and this is your opportunity to learn in a low-stakes environment. One thing you'll learn, for example, is that [all animals urinate in 21 seconds](https://arxiv.org/abs/1310.3737).[^note]
 
