@@ -8,7 +8,7 @@ all: $(htmls)
 %.html: %.Rmd rmd_config.R materials/slides-style.css\
 		materials/load-fa.html materials/macros.js\
 		materials/xaringan-themer.css
-	Rscript -e 'rmarkdown::render("$<", output_dir = "../assets/slides/")'
+	Rscript -e 'rmarkdown::render("$<", output_dir = "../schedule/")'
 	
 materials/xaringan-themer.css: xaringan-themer.R
 	Rscript -e "source('xaringan-themer.R')"
@@ -21,8 +21,8 @@ clean:
 
 .PHONY: webcp
 webcp:
-	rsync -avz $(htmls) ../assets/slides/
-	rsync -avz materials ../assets/slides/
-	rsync -avz gfx ../assets/slides/
-	rsync -avz libs ../assets/slides/
-	rsync -avz rmd_gfx ../assets/slides/
+	rsync -avz $(htmls) ../schedule/
+	rsync -avz materials ../schedule/
+	rsync -avz gfx ../schedule/
+	rsync -avz libs ../schedule/
+	rsync -avz rmd_gfx ../schedule/
