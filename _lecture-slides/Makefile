@@ -8,7 +8,7 @@ all: $(htmls)
 %.html: %.Rmd rmd_config.R materials/slides-style.css\
 		materials/load-fa.html materials/macros.js\
 		materials/xaringan-themer.css
-	Rscript -e 'rmarkdown::render("$<")'
+	Rscript -e 'rmarkdown::render("$<", output_dir = "../assets/slides/")'
 	
 materials/xaringan-themer.css: xaringan-themer.R
 	Rscript -e "source('xaringan-themer.R')"
