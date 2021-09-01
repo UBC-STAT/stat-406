@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>00 Git, Github, and Slack</title>
+    <title>06 Information criteria</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -14,7 +14,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 00 Git, Github, and Slack
+# 06 Information criteria
 ### STAT 406
 ### Daniel J. McDonald
 ### Last modified - 2021-09-01
@@ -24,280 +24,160 @@ class: center, middle, inverse, title-slide
 
 
 
+## Over-fitting vs. Under-fitting
 
-## Course communication
+.emphasis[Over-fitting means estimating a really complicated function when you don't have enough data.]
 
-**Website:**
+This is likely a low-bias/high-variance situation.
 
-&lt;https://ubc-stat.github.io/stat-406/&gt;
+.emphasis[Under-fitting means estimating a really simple function when you have lots of data. ]
 
-* Hosted on Github.
+This is likely a high-bias/low-variance situation.
 
-* Links to slides and all materials
+Both of these outcomes are bad (they have high risk).
 
-* Syllabus is there. Be sure to read it.
-
-
-**Slack:**
-
-* Link to join on Canvas. This is our discussion board.
-
-* Note that this data is hosted on servers outside of Canada. You may wish to use a pseudonym to protect your privacy.
-
-* Anything super important will be posted to Slack and Canvas. 
-
-* Be sure you get Canvas email.
-
-* If I am sick, I will cancel class or arrange a substitute.
+The best way to avoid them is to use a reasonable estimate of __prediction risk__ to choose how complicated your model should be.
 
 ---
 
-**Github organization**
+## Generalized CV
 
-* Linked from the website.
+Last time we saw a nice trick
 
-* This is where you complete/submit assignments/projects/in-class-work
-
-* This is hosted by UBC &lt;https://learning.github.ubc.ca/STAT-406-101-2021W/&gt;
-
----
-
-## Why these?
-
-* Yes, some data is hosted on servers in the US.
-
-* But in the real world, no one uses Canvas/Piazza, so why not learn things they do use?
-
-* Much easier to communicate, "mark" or comment on your work
-
-* Much more DS friendly
-
-* Note that MDS uses both of these, the department uses both, Google/Amazon/Facebook use things like these, etc.
+`$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.$$`
 
 --
 
-Slack help from MDS [features](https://ubc-mds.github.io/resources_pages/slack/) and [rules](https://ubc-mds.github.io/resources_pages/slack_asking_for_help/)
+### This is another nice trick.
 
----
-class: middle, center, inverse
+Idea: replace `\(h_{ii}\)` with `\(\frac{1}{n}\sum_{i=1}^n h_{ii} = \frac{1}{n}\textrm{tr}(\mathbf{H})\)`
 
-# Git and Github
+Let's call `\(\textrm{tr}(\mathbf{H})\)` the __effective degrees-of-freedom__ (or just __df__)
 
----
-
-
-## Why version control?
-
-.center[
-
-![:scale 30%](http://www.phdcomics.com/comics/archive/phd101212s.gif)
-
-]
-
-* Much of this lecture is borrowed/stolen from Colin Rundel and Karl Broman
-
----
-
-## Why version control?
-
-* Simple formal system for tracking all changes to a project
-
-* Time machine for your projects
-    + Track blame and/or praise
-    + Remove the fear of breaking things
-
-* Learning curve is steep, but when you need it you REALLY need it
-
-&gt; Your closest collaborator is you six months ago, but you don’t reply to emails.
-&gt; -- _Paul Wilson_
-
----
-
-## Why Git
-
-* You could use something like Box or Dropbox
-
-* These are poor-man's version control
-
-* Git is much more appropriate
-
-* It works with large groups
-
-* It's very fast
-
-* It's much better at fixing mistakes
-
-* Tech companies use it (so it's in your interest to have some experience)
-
-&gt; This will hurt, but what doesn't kill you, makes you stronger.
-
----
-
-## Overview
-
-* `git` is a command line program that lives on your machine
-
-* If you want to track changes in a directory, you type `git init`
-
-* This creates a (hidden) directory called `.git`
-
-* The `.git` directory contains a history of all changes made to "versioned" files
-
-* This top directory is referred to as a "repository" or "repo"
-
-* `github.com` is a service that hosts a repo  remotely and has other features: issues, project boards, pull requests, renders `.ipynb` &amp; `.md`
-
-* Some IDEs (pycharm, RStudio, VScode) have built in `git` (I don’t use this) 
-
-* `git`/`github.com` is broad and complicated. Here, just what you **need**
-
----
-
-## Typical workflow
-
-
-.pull-left[
-1. Download a repo from Github
-```
-git clone https://github.com/UBC-STAT/stat-535-convexopt.git
-```
-2. Create a **branch**
-```
-git branch &lt;branchname&gt;
-```
-3. Make changes to your files.
-4. Add your changes to be tracked ("stage" them)
-```
-git add &lt;name/of/tracked/file&gt;
-```
-5. Commit your changes
-```
-git commit -m "Some explanatory message"
-```
-
-
-**Repeat 3--5 as needed. Once you're satisfied**
-
-* Push to Github
-```
-git push
-```
-]
-
-.pull-right[.center[
-![:scale 70%](gfx/git-clone.png)
-]]
-
-
----
-## What should be tracked?
-
-**Definitely** code, markdown documentation, tex files, bash scripts/makefiles, ...
-
-**Possibly** logs, jupyter notebooks, images (that won’t change), ...
-
-**Questionable** processed data, static pdfs, ...
-
-**Definitely not** full data, continually updated pdfs (other things compiled from source code), ...
-
----
-
-## What things to track
-
-
-
-* You decide what is "versioned". 
-
-* A file called `.gitignore` tells `git` files or types to never track
-
-```
-# History files
-.Rhistory
-.Rapp.history
-
-# Session Data files
-.RData
-
-# User-specific files
-.Ruserdata
-```
-
-* Shortcut to track everything (use carefully):
-
-```
-git add .
-```
-
-
-
-
----
-
-## Rules
-
-**In class work**
-* Everyone shares a repo
-* Each group makes a branch (with a creative name)
-* Rename files that you clone.
-* You push your changes and make a PR against `master`
-* I review your work and merge the PR (I may ask for changes)
-
-**Homework**
-* You each have your own repo
-* You make a branch
-* No need to rename files
-* You must make at **least 5 commits**
-* Push your changes (at anytime) and make a PR against `master`
-* I review your work and merge the PR (I may ask for changes)
-
-
-**Project**
-* Each team gets a repo.
-* Make other branches as you wish to divide up work
-* When ready to submit, make a PR against `master`
-
----
-
-## What's a PR?
-
-* This exists on Github (not git)
-
-* Demonstration
+`$$\textrm{GCV} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-\textrm{df}/n)^2} = \frac{MSE}{(1-\textrm{df}/n)^2}$$`
 
 --
 
-.pull-left[.center[
-![:scale 100%](gfx/pr1.png)
-]]
+.hand[Where does this stuff come from?]
 
-.pull-right[.center[
-![:scale 80%](gfx/pr2.png)
-]]
+$$
+\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\H}{\mathbf{H}}
+$$
 
 ---
 
-## Practice
+## What are `hatvalues`?
 
-.pull-left[
 
-[Website](https://ubc-stat.github.io/stat-535-convexopt/)
-
-Do you have `git`?
+```r
+cv_nice &lt;- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)
 ```
-git --version
-```
-If it's there, you're done.
 
-Help on `git/github`:
+In OLS, `\(\widehat{\y} = \X\widehat{\beta} = \X(\X^\top \X)^{-1}\X^\top \y\)`
 
-https://happygitwithr.com/install-git.html
+We often call `\(\H = \X(\X^\top \X)^{-1}\X^\top\)` the Hat matrix, because it .hand[puts the hat] on `\(\y\)`
 
+GCV uses `\(\textrm{tr}(\H)\)`. For `lm`, this is just `p`, the number of predictors (Why?)
+
+This is one way of understanding the name __effective degrees-of-freedom__
+
+---
+
+## Alternative interpretation:
+
+Suppose, `\(Y_i\)` comes (independently) from some distribution and has mean `\(\mu_i\)` and variance `\(\sigma^2\)`
+
+Let `\(\widehat{Y}\)` be an estimator of `\(\mu\)`.
+
+`\begin{aligned}
+\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} &amp;= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
+&amp;= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
+&amp;= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
+\end{aligned}`
+
+--
+
+Now, if `\(\widehat{Y} = \H Y\)` for some matrix `\(\H\)`,
+
+`\(\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top \H Y} = \sigma^2 \textrm{tr}(\H)\)`
+
+--
+
+This gives __Mallow's `\(C_p\)`__ aka __Stein's Unbiased Risk Estimator__:
+
+`\(MSE + 2\hat{\sigma}^2\textrm{df}/n\)`
+
+---
+
+## AIC and BIC
+
+These have a very similar flavor to `\(C_p\)`, but their genesis is different.
+
+Without going into too much detail, they look like
+
+`\(\textrm{AIC}/n = -2\textrm{loglikelihood}/n + 2\textrm{df}/n\)`
+
+`\(\textrm{BIC}/n = -2\textrm{loglikelihood}/n + 2\log(n)\textrm{df}/n\)`
+
+--
+
+In the case of a linear model with Gaussian errors, 
+
+`\(\textrm{AIC} = -n + 2n\log(2\pi) - 2 + 2\log(n) - 2\log(RSS) + 2(p+2) \propto -2\log(RSS) + 2(p+2)\)`
+
+( `\(p+2\)` because of the intercept and the unknown variance)
+--
+
+.alert[
+Unfortunately, different books/software/notes define these differently. Even different R packages. This is __super annoying__. 
+
+Forms above are in [ESL] eq. (7.29) and (7.35). [ISLR] gives special cases in Section 6.1.3. Remember the generic form here.
 ]
 
-.pull-right[.center[
-![:scale 60%](https://imgs.xkcd.com/comics/git.png)
-]]
+---
 
+.emphasis[
+When comparing models, choose one criterion: CV/AIC/BIC/Cp/GCV. 
+
+CV is usually easiest to make sense of and doesn't depend on other unknown parameters.
+
+But requires refitting the model.
+
+Also, can be strange in cases with discrete data, time series, replications, etc.
+]
+
+High-level discussion of these:
+
+* GCV tends to choose "dense" models.
+
+* AIC should choose the "best predictor" asymptotically
+
+* BIC should choose the "true model" asymptotically, tends to select fewer predictors
+
+* In some special cases, AIC = Cp = SURE
+
+--
+
+For more information: see [ESL] Chapter 7. And also &lt;https://arxiv.org/abs/1602.01522&gt;.
+
+This material is more challenging than the level of this course, and is easily and often misunderstood.
+
+--
+
+.hand-blue[My recommendation: Use CV]
+
+---
+class: middle, inverse, center
+
+# Next time ...
+
+Greedy selection
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
