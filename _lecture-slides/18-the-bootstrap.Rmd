@@ -1,0 +1,310 @@
+---
+title: "18 The bootstrap"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      beforeInit: materials/macros.js
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+
+class: middle, center
+background-image: url("https://i1.wp.com/bdtechtalks.com/wp-content/uploads/2018/12/artificial-intelligence-deep-learning-neural-networks-ai.jpg?w=1392&ssl=1")
+background-size: cover
+
+$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+
+.secondary[.larger[Module]] .huge-orange-number[4]
+
+.secondary[.large[bagging, random forests, boosting, and neural nets]]
+
+
+---
+
+## A small detour...
+
+.center[
+![](https://www.azquotes.com/picture-quotes/quote-i-believe-in-pulling-yourself-up-by-your-own-bootstraps-i-believe-it-is-possible-i-saw-stephen-colbert-62-38-03.jpg)
+]
+
+---
+
+.center[
+![:scale 80%](http://rackjite.com/wp-content/uploads/rr11014aa.jpg)
+]
+
+---
+
+## In statistics...
+
+The "bootstrap" works. And well.
+
+It's good for "second-level" analysis.
+
+* "First-level" analyses are things like $\hat\beta$, $\hat \y$, an estimator of the center (a median), etc.
+
+* "Second-level" are things like $\Var{\hat\beta}$, a confidence interval for $\hat \y$, or a median, etc.
+
+You usually get these "second-level" properties from "the sampling distribution of an estimator"
+
+But what if you don't know the sampling distribution? Or you're skeptical of the CLT argument?
+
+---
+
+## An example
+
+I estimate a classification tree on some data.
+
+I get a new $x_0$ and produce $\widehat{Pr}(y_0 =1 \given x_0)$.
+
+Can I get a 95% confidence interval for $Pr(y_0=1 \given x_0)$?
+
+The bootstrap gives this to you. 
+
+--
+
+.emphasis[
+__Procedure__
+
+1. Resample your training data w/ replacement.
+2. Calculate a new tree on this sample.
+3. Produce a new prediction, call it $\widehat{Pr}_b(y_0 =1 \given x_0)$.
+4. Repeat 1-3 $B$ times.
+5. CI: $\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha/2),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha/2)\right]$
+]
+
+---
+
+## Very basic example
+
+* Let $X_i\sim Exponential(1/5)$. The pdf is $f(x) = \frac{1}{5}e^{-x/5}$
+
+
+* I know if I estimate the mean with $\bar{X}$, then by the CLT (if $n$ is big), 
+
+$$\frac{\sqrt{n}(\bar{X}-E[X])}{s} \approx N(0, 1).$$
+
+
+* This gives me a 95% confidence interval like
+$$\bar{X} \pm 2*s/\sqrt{n}$$
+
+
+* But I don't want to estimate the mean, I want to estimate the median.
+
+---
+
+```{r, fig.align='center', fig.height=4}
+ggplot(data.frame(x=c(0,12)), aes(x)) + 
+  stat_function(fun=function(x) dexp(x, 1/5), color=blue) +
+  geom_vline(xintercept = 5, color=blue) + # mean
+  geom_vline(xintercept = qexp(.5,1/5), color=red) # median
+```
+
+---
+
+## Now what
+
+```{r, echo=FALSE}
+n = 500
+```
+
+* I give you a sample of size `r n`, you give me the sample median.
+
+* How do you get a CI?
+
+* You can use the bootstrap!
+
+---
+
+```{r, fig.align='center', fig.height=3, fig.width=8}
+set.seed(2020-10-05)
+x = rexp(n, 1/5)
+(med = median(x))
+B = 100
+alpha = 0.05
+bootMed <- function(x) median(sample(x, replace=TRUE))
+bootDist = replicate(B, bootMed(x))
+bootCI = 2* med - quantile(bootDist, probs = c(1-alpha/2, alpha/2))
+ggplot(data.frame(bootDist), aes(bootDist)) + geom_density(color=blue) +
+  geom_vline(xintercept = bootCI, col=blue, linetype=2) + 
+  geom_vline(xintercept = med, col=blue) + 
+  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
+```
+
+---
+
+## An alternative
+
+* In that bootstrap, I didn't use any information about the data-generating process. It's called the "non-parametric bootstrap"
+
+* What if I told you that the data came from an Exponential, but I didn't tell you the mean (parameter)?
+
+* You could try a "parametric" bootstrap:
+
+---
+
+```{r, fig.align='center', fig.height=3}
+xbar = mean(x)
+s = sd(x)
+ParaBootSamp <- function(B, xbar, s){
+  means = rnorm(B, mean=xbar, sd=s/sqrt(n))
+  meds = qexp(.5, 1/means)
+  return(meds)
+}
+ParaBootDist = ParaBootSamp(B, xbar, s)
+ParaBootCI = 2*med - quantile(ParaBootDist, probs = c(1-alpha/2, alpha/2))
+ggplot(data.frame(ParaBootDist), aes(ParaBootDist)) + 
+  geom_density(color=blue) +
+  geom_vline(xintercept = ParaBootCI, col=blue, linetype=2) + 
+  geom_vline(xintercept = med, col=blue) + 
+  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
+```
+
+---
+
+## In truth
+
+* Let's compare these intervals
+
+* The nonparametric bootstrap (first one) had a width of
+```{r}
+bootCI[2] - bootCI[1]
+```
+
+* The parametric bootstrap (second one) had a width of
+```{r}
+ParaBootCI[2] - ParaBootCI[1]
+```
+
+* Using theory, we could find the exact CI. In this case, it has a width of `r 2*qnorm(.975) / (4*dexp(qexp(.5,1/5), 1/5)*sqrt(n))`. 
+
+<!-- med \pm z_alpha/2/\sqrt(n) 1/4/ F'(pop med)^2 -->
+
+
+
+
+---
+
+## How does this work?
+
+.center[
+![:scale 70%](gfx/boot1.png)
+]
+
+---
+
+## Approximations
+
+.center[
+![:scale 70%](gfx/boot2.png)
+]
+
+---
+
+## Bootstrap error sources
+
+.center[
+![:scale 30%](gfx/boot2.png)
+]
+
+
+1. Simulation error: using only $B$ samples to estimate $F$ with $\hat{F}$.
+
+2. Statistical error: our data depended on a sample from the population. We don't have the whole population so we make an error by using a sample (Note: this part is what __always__ happens with data, and what the science of statistics analyzes.)
+
+3. Specification error: If we use the model-based bootstrap (we're ignoring this), and our model is wrong, then we are overconfident.
+
+---
+
+## Slightly harder example
+
+```{r, echo=FALSE}
+library(MASS)
+fatcats = cats
+fatcats$Hwt = fitted(lm(Hwt~Bwt, data=cats)) + rt(nrow(fatcats), 3)
+```
+
+.pull-left[
+```{r, fig.width=8, fig.height=6, fig.align='center', echo=FALSE}
+ggplot(fatcats, aes(Bwt, Hwt)) + geom_point(color=blue) + theme_cowplot() +
+  xlab("Cat body weight") + ylab("Cat heart weight")
+```
+]
+
+.pull-right[
+```{r}
+cats.lm = lm(Hwt ~ 0+Bwt,data=fatcats)
+summary(cats.lm)
+confint(cats.lm)
+```
+]
+
+
+---
+
+## I think that that CI is wrong...
+
+
+.pull-left[
+```{r, fig.align='center', fig.width=7, fig.height=5}
+qqnorm(residuals(cats.lm))
+qqline(residuals(cats.lm))
+```
+]
+
+.pull-right[
+```{r}
+B = 500
+bhats = double(B)
+alpha = .05
+for(b in 1:B){
+  samp = sample.int(
+    nrow(fatcats), replace = TRUE)
+  newcats = fatcats[samp,]
+  bhats[b] = coef(
+    lm(Hwt~0+Bwt,data=newcats))
+}
+2*coef(cats.lm) - 
+  quantile(
+    bhats, 
+    probs = c(1-alpha/2, alpha/2))
+confint(cats.lm)
+```
+]
+
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Bootstrap for bagging and random forests

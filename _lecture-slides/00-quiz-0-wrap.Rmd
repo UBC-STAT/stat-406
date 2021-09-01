@@ -1,0 +1,130 @@
+---
+title: "00 Quiz 0 fun"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+## Why this class?
+
+* Most say requirements.
+* Interest in ML/Stat learning
+* Some cracks about preferring to code in other languages (not R)
+* Expressions of love/affection for Stats/CS/ML
+* Enjoyment of past similar classes
+
+--
+
+More idiosyncratic:
+
+--
+
+"Machine Learning Hype / It is magical"
+
+--
+
+"YOU"
+
+--
+
+Some is hoping to learn "NLP & NLU"
+
+--
+ 
+ "MACHINE LEARNING *DABS*"
+
+
+---
+
+## Syllabus Q
+
+```{r setup, include=FALSE}
+source("rmd_config.R")
+quiz = readr::read_csv("../grade-processing/quiz0-for-R.csv")
+```
+
+```{r, echo=FALSE, fig.height=6, fig.align='center'}
+quiz %>% ggplot(aes(str_wrap(syllabus,20))) + geom_bar(fill=blue) + 
+  xlab("") + theme_cowplot()
+```
+
+---
+
+## Programming languages
+
+```{r, echo=FALSE, fig.height=6, fig.width=12, fig.align='center'}
+quiz %>% ggplot(aes(str_wrap(R,20))) + geom_bar(fill=blue) + 
+  xlab("") + theme_cowplot()
+library(MASS)
+```
+
+---
+
+## Matrix inversion
+
+```{r}
+X = matrix(c(5,3,1,-1), nrow=2)
+X
+solve(X)
+ginv(X)
+X^(-1)
+```
+
+---
+
+## Linear models
+
+```{r}
+y = X %*% c(2,-1) + rnorm(2)
+coefficients(lm(y~X))
+coef(lm(y~X))
+solve(t(X) %*% X) %*% t(X) %*% y
+# X \ y this it Matlab
+```
+
+---
+
+## Pets and plans
+
+```{r, echo=FALSE, fig.height=6, fig.width=12, fig.align='center'}
+p1 = quiz %>% 
+  ggplot(aes(str_wrap(pets,30))) + geom_bar(fill=blue) + 
+  coord_flip() + 
+  xlab("") + theme_cowplot()
+p2 = quiz %>% 
+  ggplot(aes(str_wrap(plans,20))) + geom_bar(fill=orange) + 
+  coord_flip() + 
+  xlab("") + theme_cowplot()
+plot_grid(p1,p2)
+```
+
+---
+
+## Grade predictions
+
+```{r, echo=FALSE, fig.height=6, fig.width=12, fig.align='center'}
+s406 = as.factor(rep(c("50-54%","55-59%","60-63%","64-67%","68-71%","72-75%","76-79%","80-84%","85-89%","90-100%"), times=c(3,1,3,9,5,13,10,11,20,27)))
+preds = cut(quiz$grade[!is.na(quiz$grade)], 
+            c(0,50,54,59,63,67,71,75,79,84,89,101),
+            c("<50%","50-54%","55-59%","60-63%","64-67%","68-71%","72-75%","76-79%","80-84%","85-89%","90-100%"))
+data.frame(name=rep(c("2018 distribution", "your predictions"), 
+                    times=c(length(s406),length(preds))), 
+           value=fct_c(s406,preds)) %>%
+  mutate(value = fct_relevel(value, "<50%")) %>%
+  ggplot(aes(value, fill=name)) + geom_bar(position = position_dodge()) +
+  scale_fill_manual(values=c(blue,orange)) + theme_cowplot()
+
+```

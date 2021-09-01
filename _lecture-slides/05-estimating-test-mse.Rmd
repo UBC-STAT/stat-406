@@ -1,0 +1,245 @@
+---
+title: "05 Estimating test MSE"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+
+## Estimating prediction risk
+
+Last time, we saw
+
+prediction risk  =  $\mathrm{bias}^2$  +  variance  +  irreducible error 
+
+$R_n(\widehat{f}) = E[(Y-\widehat{f}(X))^2]$
+
+We argued that we want procedures that produce $\widehat{f}$ with small $R_n$.
+
+__How do we estimate $R_n$?__
+
+$$
+\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+$$
+
+
+---
+
+## Don't use training error
+
+
+Although
+
+$$\widehat{R}_n(\widehat{f})  \approx R_n(\widehat{f}),$$
+
+this approximation can be very bad.
+
+We saw this with the lab about $R^2$.
+
+So we should __never__ use it.
+
+--
+
+You should not use `anova` or the $p$-values from the `lm` output for this purpose.
+
+Why? These things are to determine whether those __parameters__ are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.
+
+Not the same as "are they useful for prediction = do they help me get smaller MSE"
+
+---
+
+## Held out sets
+
+One option is to have a separate "held out" or "test set".
+
+`r pro` Estimates the test error
+
+`r pro` Fast computationally
+
+`r con` Estimate is random
+
+`r con` Estimate has high variance
+
+`r con` Estimate has some bias because we only used some of the data
+
+---
+
+## Intuition for CV
+
+
+One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
+
+Test-set fixes this, but holds out a particular, fixed block of data we treat as "new"
+
+Of course, we don't have actually have new data.
+
+--
+
+...or do we?
+
+What if we set aside one observation, say the first one $(y_1, x_1)$.
+
+We estimate $\widehat{f}^{(1)}$ without using the first observation.
+
+Then we test our prediction:
+
+
+$$\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.$$
+
+
+---
+
+## Keep going
+
+But that was only one data point $(y_1, x_1)$. Why stop there?
+
+Do the same with $(y_2, x_2)$! Get an estimate $\widehat{f}^{(2)}$ 
+without using it, then
+
+$$\widetilde{R}_2(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.$$
+
+We can keep doing this until we try it for every data point.
+
+And then average them! (Averages are good)
+
+
+$$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_i(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n 
+(y_i - \widehat{f}^{(i)}(x_i))^2$$
+
+--
+
+This is __leave-one-out cross validation__
+
+---
+
+## Problems with LOO-CV
+
+`r con` Each held out set is small $(n=1)$. Therefore, the variance of my predictions is high.
+
+`r con` The training sets overlap. This is bad. 
+  * Usually, averaging reduces variance: $\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.$
+  * But only if the variables are independent. If not, then
+    $\Var{\overline{X}} = \frac{1}{n^2}\Var{ \sum_{i=1}^n X_i} = \frac{1}{n}\Var{X_1} + \frac{1}{n^2}\sum_{i\neq j} \Cov{X_i}{X_j}.$
+  * Since the training sets overlap a lot, that covariance can be pretty big.
+    
+`r con` We have to estimate this model $n$ times.
+
+---
+  
+## K-fold CV
+
+.pull-left[
+To alleviate some of these problems, people usually use $K$-fold cross validation.
+
+.emphasis[The idea of $K$-fold is 
+  1. Divide the data into $K$ groups. 
+  2. Leave a group out and estimate with the rest.
+  3. Test on the held-out group. Calculate an average risk over these $\sim n/K$ data.
+  4. Repeat for all $K$ groups.
+  5. Average the average risks.
+]
+]
+
+--
+
+.pull-right[  
+`r pro` Less overlap, smaller covariance.
+
+`r pro` Larger hold-out sets, smaller variance.
+
+`r pro` Less computations (only need to estimate $K$ times)
+
+`r con` LOO-CV is (nearly) unbiased. 
+
+`r con` The risk depends on how much data you use to estimate the model. 
+
+`r con` LOO-CV uses almost all the data.
+]
+
+---
+
+## A picture
+
+```{r, fig.align='center',echo=FALSE,fig.height=6, fig.width=10}
+par(mar=c(0,0,0,0))
+plot(NA, NA, ylim=c(0,5), xlim=c(0,10), bty='n', yaxt='n', xaxt='n')
+rect(0,.1+c(0,2,3,4),10,.9+c(0,2,3,4), col=blue, density=10)
+rect(c(0,1,2,9),rev(.1+c(0,2,3,4)),c(1,2,3,10),rev(.9+c(0,2,3,4)),col=red, density=10)
+points(c(5,5,5),1+1:3/4,pch=19)
+text(.5+c(0,1,2,9),.5+c(4,3,2,0),c("1","2","3","K"), cex=3, col=red)
+text(6,4.5,'Training data',cex=3, col=blue)
+text(2,1.5,'Testing data',cex=3,col=red)
+```
+
+---
+
+## Pseudocode
+
+
+```{r, eval=FALSE}
+kfold_cv <- function(data, estimator, predictor, kfolds = 5, responsename="y") {
+  n <- nrow(data)
+  fold.labels <- sample(rep(1:kfolds, length.out = n))
+  mses <- double(kfolds)
+  for (fold in 1:kfolds) {
+    test.rows <- which(fold.labels == fold)
+    train <- data[-test.rows, ]
+    test <- data[test.rows, ]
+    current_model <- estimator(..., data = train)
+    predictions <- predictor(current.model, ..., newdata = test)
+    test_responses <- test[, responsename]
+    test_errors <- test_responses - predictions
+    mses[fold] <- mean(test_errors^2)
+  }
+  mean(mses)
+}
+```
+
+---
+
+## Trick
+
+.emphasis[ 
+__For nice models__, one can show 
+
+(after pages of tedious algebra which I wouldn't wish on my worst enemy, but might, in a fit of rage assign to a beligerant graduate student) 
+
+if $\widehat{f}(x_i) = \widehat{y}_i = h_i^\top \mathbf{y}$, for some vector $h_i(\mathbf{X})$
+]
+
+$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.$$
+
+* This trick means that you only have to fit the model once rather than $n$ times!
+
+* You still have to calculate this for each model!
+
+```{r}
+cv_nice <- function(mdl) mean((residuals(mdl)/(1-hatvalues(mdl)))^2)
+```
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+More tricks and what's up with the name "hatvalues"

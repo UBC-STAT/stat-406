@@ -1,0 +1,260 @@
+---
+title: "27 Kmeans clustering"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      beforeInit: materials/macros.js
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+## Clustering
+
+So far, we've looked at ways of reducing the dimension.
+
+Either linearly or nonlinearly, usually with the goal of visualization or possibly for an input to supervised learning.
+
+Now we try to find groups or clusters in our data.
+
+Think of __clustering__ as classification without the labels.
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$
+
+
+---
+
+## K-means (ideally)
+
+.emphasis[
+1.  Select a number of clusters $K$.
+
+2.  Let $C_1,\ldots,C_K$ partition $\{1,2,3,\ldots,n\}$ such that
+    - All observations belong to some set $C_k$.
+    - No observation belongs to more than one set.
+
+3.  K-means attempts to form these sets by making __within-cluster
+    variation__, $W(C_k)$, as small as
+    possible. $$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$
+
+4.  To Define $W$, we need a concept of distance. By far the most common is Euclidean $$W(C_k) =  \frac{1}{|C_k|} \sum_{i,i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$
+That is, the average (Euclidean) distance between all cluster
+members.
+]
+
+---
+
+## K-means (in reality)
+
+It turns out $$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$ is too challenging
+computationally ( $K^n$ partitions!).
+
+
+So, we make a greedy approximation:
+
+.emphasis[
+
+1.  Randomly assign observations to the $K$ clusters
+
+2.  Iterate until the cluster assignments stop changing:
+    -   For each of $K$ clusters, compute the
+        centroid, which is the $p$-length
+        vector of the means in that cluster.
+    -   Assign each observation to the cluster whose centroid is closest
+        (in Euclidean distance).
+]
+
+This procedure is guaranteed to decrease $\sum_{k=1}^K W(C_k)$ at each step.
+
+But being greedy, it finds a local, rather than a global optimum. 
+
+---
+
+## Best practices
+
+To fit K-means, you need to
+
+1.  Pick $K$ (inherent in the method)
+
+2.  Convince yourself you have found a good solution (due to the
+    randomized approach to the algorithm).
+
+For 2., a commonly used approach is to run
+K-means many times with different starting points. Pick the solution
+that has the smallest value for
+$$\sum_{k=1}^K W(C_k)$$
+
+
+It turns out that __1.__ is difficult to do in a
+principled way.
+
+---
+
+## Choosing the Number of Clusters
+
+Why is it important?
+
+-   It might make a big difference (concluding there are $K = 2$ cancer
+    sub-types versus $K = 3$).
+
+-   One of the major goals of statistical learning is automatic
+    inference. A good way of choosing $K$ is certainly a part of this.
+
+
+$$W(K) = \sum_{k=1}^K  \sum_{i \in C_k}  \norm{x_i - \overline{x}_k}_2^2,$$
+
+
+
+Within-cluster variation measures how tightly grouped the clusters are. 
+
+
+How spread apart the groups?
+are $B(K) = \sum_{k=1}^K |C_k| \norm{\overline{x}_k - \overline{x} }_2^2,$
+where $|C_k|$ is the number of points in $C_k$, and $\overline{x}$ is
+the grand mean
+
+.pull-left[.center[
+$W$ `r fa("arrow-down",fill=green)` when $K$ `r fa("arrow-up",fill=blue)`  ]]
+
+.pull-right[.center[
+$B$ `r fa("arrow-up",fill=blue)` when $K$ `r fa("arrow-up",fill=blue)`]]
+
+
+---
+
+## CH index
+
+Ideally: as K grows, want small $W$ and small $B$
+
+
+__CH index__
+
+$$\textrm{CH}(K) = \frac{B(K)/(K-1)}{W(K)/(n-K)}$$ 
+
+To choose $K$, pick some
+maximum number of clusters to be considered, $K_{\max} = 20$, for
+example
+
+
+$$\hat K = \arg\max_{K \in \{ 2,\ldots, K_{\max} \}} CH(K).$$
+
+__Note:__ CH is undefined for $K =1$
+
+
+
+---
+
+## Dumb example
+
+
+```{r}
+library(mvtnorm)
+set.seed(406406406)
+X1 = rmvnorm(50,c(-1,2),sigma=matrix(c(1,.5,.5,1),2))
+X2 = rmvnorm(40,c(2,-1),sigma=matrix(c(1.5,.5,.5,1.5),2))
+```
+
+```{r plotting-dumb-clusts, echo=FALSE, fig.align="center", fig.width=10,fig.height=5}
+clust_raw = rbind(X1,X2)
+clust = tibble(x1=clust_raw[,1], x2=clust_raw[,2],
+               true = as.factor(rep(c(1,2), times=c(50,40))))
+clust %>% ggplot(aes(x=x1,y=x2,color=true)) + geom_point() +
+  theme_cowplot() + scale_color_manual(values = c(orange,blue)) +
+  theme(legend.position = "none")
+```
+
+---
+
+## Dumb example
+
+* We would __maximize__ CH
+
+```{r, echo=FALSE, fig.align='center',fig.width=10,fig.height=5}
+K = 2:40
+all_clusters <- lapply(K, FUN = function(x){
+  out = kmeans(clust_raw, x)
+  list(assignments = out$cluster, withinss = out$tot.withinss,
+              betweenss = out$betweenss)
+})
+all_assignments = sapply(all_clusters, FUN = function(x) as.factor(x$assignments))
+summaries = sapply(all_clusters, FUN = function(x) c(x$withinss, x$betweenss))
+summaries = tibble('within'=summaries[1,],'between'=summaries[2,],'K'=K) %>% 
+  mutate(CH = (between/(K-1))/(within/(nrow(clust_raw)-K)))
+summaries %>% gather(key='key',value='value',-K) %>%
+  ggplot(aes(K,value)) + geom_line(color=blue) + ylab('')+
+  coord_cartesian(c(1,20)) +
+  facet_wrap(~key,ncol=3,scales='free_y') + theme_cowplot()
+```
+
+---
+
+## Dumb example
+
+* Various solutions
+
+```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=5}
+all_assignments = all_assignments %>% as_tibble()
+names(all_assignments) = paste0('K = ',K)
+small_assignments = all_assignments[,c(1,2,4,9,14,19,29,39)]
+bind_cols(small_assignments, clust) %>% 
+  gather(key='key',value='value',-x1,-x2) %>%
+  ggplot(aes(x1,x2,color=value)) + geom_point() + facet_wrap(~key) +
+  theme_cowplot() + theme(legend.position = 'none') +
+  scale_color_viridis_d()
+```
+
+---
+
+## Dumb example
+
+* $K = 2$
+
+```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=5}
+k2 = bind_cols(all_assignments[,1], clust)
+centers = kmeans(clust_raw, 2)$centers
+centers = tibble(x1 = centers[,1], x2 = centers[,2])
+ggplot(k2, aes(x1,x2)) + geom_point(aes(color=`K = 2`)) +
+  geom_point(data=centers, color="blue", size=3, shape=10) +
+  theme_cowplot() + theme(legend.position = 'none') +
+  scale_color_viridis_d()
+```
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Hierarchical clustering
+

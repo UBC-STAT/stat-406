@@ -1,0 +1,231 @@
+---
+title: "15 LDA and QDA"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+## Last time
+
+$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$
+
+We showed that with two classes, the __Bayes' classifier__ is
+
+$$g_*(X) = \begin{cases}
+1 & \textrm{ if } \frac{f_1(X)}{f_0(X)} > \frac{1-\pi}{\pi} \\
+0  &  \textrm{ otherwise}
+\end{cases}$$
+
+where $f_1(X) = Pr(X \given Y=1)$ and $f_0(X) = Pr(X \given Y=0)$
+
+--
+
+More generally
+
+$$g_*(X) = 
+\argmax_k \frac{\pi_k f_k(X)}{\sum_k \pi_k f_k(X)}$$
+
+where $f_k(X) = Pr(X \given Y=k)$ and $\pi_k = P(Y=k)$
+
+--
+ 
+Let's make some assumptions:
+
+1. $Pr(X\given Y=k) = \mbox{N}(\mu_k,\Sigma_k)$
+2. $\Sigma_k = \Sigma_{k'} = \Sigma$
+
+--
+
+This leads to __Linear Discriminant Analysis__ (LDA), one of the oldest classifiers
+
+---
+
+## LDA
+
+Super simple:
+
+.emphasis[
+1. Split your training data into $K$ subsets based on $y_i=k$.
+2. In each subset, estimate the mean of $X$: $\hat\mu_k = \overline{X}_k$
+3. Estimate the pooled variance: $$\hat\Sigma = \frac{1}{n-K} \sum_{k \in \mathcal{K}} \sum_{i \in k} (x_i - \overline{X}_k) (x_i - \overline{X}_k)^{\top}$$
+4. Estimate the class proportion: $\hat\pi_k = n_k/n$
+]
+
+--
+
+Now we take $\log$ and simplify $(K=2)$:
+
+$$\begin{aligned}\log\left(\frac{\pi_1 f_1(x)}{\sum_{k=0,1} \pi_k f_k(x)}\right) &= \log\left(\frac{|\hat\Sigma|^{-1/2} \exp\left\{-(x - \overline{X}_1)^{\top}\hat\Sigma^{-1}(x - \overline X_1)/2\right\}}{\sum_{k=0,1} |\hat\Sigma|^{-1/2} \exp\left\{-(x - \overline X_k)^{\top}\hat\Sigma^{-1}(x - \overline X_k)/2\right\}}\right)=\cdots=\\ &=\cdots=x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1 =:\delta_1(x)\end{aligned}$$
+
+If $\delta_1(x) > \delta_0(x)$, we set $\hat g(x)=1$
+
+---
+
+## What is linear?
+
+Look closely at the equation for $\delta_1(x)$:
+
+$$\delta_1(x)=x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1$$
+
+We can write this as $\delta_1(x) = x^\top a_1 + b_1$ with $a_1 = \hat\Sigma^{-1}\overline X_1$ and $b_1=-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1$.
+
+We can do the same for $\delta_0(x)$ (in terms of $a_0$ and $b_0$)
+
+Therefore, 
+
+$$\delta_1(x)-\delta_0(x) = x^\top(a_1-a_0) + (b_1-b_0)$$
+
+This is how we discriminate between the classes.
+
+---
+
+## Baby example
+
+.pull-left[
+```{r simple-lda}
+library(mvtnorm)
+library(MASS)
+generate_lda <- function(
+  n, p=c(.5,.5), 
+  mumat=matrix(c(0,0,1,1),2),
+  Sigma=diag(2)){
+  X = rmvnorm(n, sigma=Sigma)
+  tibble(
+    y=apply(rmultinom(n,1,p) > 0, 2, which)-1,
+    x1 = X[,1] + mumat[1,y+1],
+    x2 = X[,2] + mumat[2,y+1])
+}
+dat1 = generate_lda(100, Sigma = .5*diag(2))
+lda_fit = lda(y~., dat1)
+```
+]
+
+.pull-right[
+
+```{r plot-d1, fig.align='center', fig.width=7, fig.height=7, dev='png',dvi=300,echo=FALSE}
+gr = expand_grid(x1=seq(-2.5,3,length.out = 100),x2=seq(-2.5,3,length.out=100))
+pts = predict(lda_fit, gr)
+g0=ggplot(dat1, aes(x1,x2)) + 
+  scale_shape_manual(values=c("0","1"), guide="none") +
+  geom_raster(data=tibble(gr,disc=c(pts$x)), aes(x1,x2,fill=disc)) +
+  geom_point(aes(shape=as.factor(y)), size=4) +
+  coord_cartesian(c(-2.5,3),c(-2.5,3)) +
+  scale_fill_viridis_b(n.breaks=6,alpha=.5,name=bquote(delta[1]-delta[0])) +
+  theme_cowplot() + 
+  theme(legend.position = "bottom", legend.key.width=unit(3,"cm"))
+g0
+```
+]
+
+---
+
+## Multiple classes
+
+```{r 3class-lda}
+moreclasses = generate_lda(150, p=c(.2,.3,.5), mumat=matrix(c(0,0,1,1,1,0),2), Sigma = .5*diag(2))
+separateclasses = generate_lda(150, p=c(.2,.3,.5), mumat=matrix(c(-1,-1,2,2,2,-1),2), Sigma = .1*diag(2))
+```
+
+```{r 3class-plot,echo=FALSE,fig.align='center',fig.height=6,fig.width=12,dev='png',dvi=300}
+lda_3fit = lda(y~., moreclasses)
+lda_separate = lda(y~., separateclasses)
+pts3 = predict(lda_3fit, gr)
+ptss = predict(lda_separate,gr)
+g1 = ggplot(moreclasses, aes(x1,x2)) + 
+  scale_shape_manual(values=levels(pts3$class), guide="none") +
+  geom_raster(data=tibble(gr,disc=pts3$class), aes(x1,x2,fill=disc)) +
+  geom_point(aes(shape=as.factor(y)), size=4) +
+  coord_cartesian(c(-2.5,3),c(-2.5,3)) +
+  scale_fill_viridis_d(alpha=.5,name=bquote(hat(g)(x))) +
+  theme_cowplot() + 
+  theme(legend.position = "bottom")
+g2 = ggplot(separateclasses, aes(x1,x2)) + 
+  scale_shape_manual(values=levels(ptss$class), guide="none") +
+  geom_raster(data=tibble(gr,disc=ptss$class), aes(x1,x2,fill=disc)) +
+  geom_point(aes(shape=as.factor(y)), size=4) +
+  coord_cartesian(c(-2.5,3),c(-2.5,3)) +
+  scale_fill_viridis_d(alpha=.5,name=bquote(hat(g)(x))) +
+  theme_cowplot() + 
+  theme(legend.position = "bottom")
+plot_grid(g1,g2)
+```
+
+---
+
+## QDA
+
+Just like LDA, but $\Sigma_k$ is separate for each class.
+
+Produces __Quadratic__ decision boundary.
+
+Everything else is the same.
+
+```{r fit-qda}
+qda_fit = qda(y~., dat1)
+qda_3fit = qda(y~., moreclasses)
+```
+
+```{r qda-vs-lda-2class,echo=FALSE,fig.align='center',fig.height=6,fig.width=12,dev='png',dvi=300}
+pts_qda = predict(qda_fit, gr)
+pts_qda3 = predict(qda_3fit, gr)
+z = apply(pts_qda$posterior,1, function(x) log(x[2]/x[1]))
+gq0 = ggplot(dat1, aes(x1,x2)) + 
+  scale_shape_manual(values=c("0","1"), guide="none") +
+  geom_raster(data=tibble(gr,disc=z), aes(x1,x2,fill=disc)) +
+  geom_point(aes(shape=as.factor(y)), size=4) +
+  coord_cartesian(c(-2.5,3),c(-2.5,3)) +
+  scale_fill_viridis_b(n.breaks=8,alpha=.5,name=bquote(delta[1]-delta[0])) +
+  theme_cowplot() + 
+  theme(legend.position = "bottom", legend.key.width=unit(3,"cm"))
+plot_grid(g0,gq0)
+```
+
+---
+
+## 3 class comparison
+
+```{r 3class-comparison,echo=FALSE,fig.align='center',fig.height=6,fig.width=12,dev='png',dvi=300}
+gq1 = ggplot(moreclasses, aes(x1,x2)) + 
+  scale_shape_manual(values=levels(pts_qda3$class), guide="none") +
+  geom_raster(data=tibble(gr,disc=pts_qda3$class), aes(x1,x2,fill=disc)) +
+  geom_point(aes(shape=as.factor(y)), size=4) +
+  coord_cartesian(c(-2.5,3),c(-2.5,3)) +
+  scale_fill_viridis_d(alpha=.5,name=bquote(hat(g)(x))) +
+  theme_cowplot() + 
+  theme(legend.position = "bottom")
+plot_grid(g1,gq1)
+```
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+One more linear classifier and transformations

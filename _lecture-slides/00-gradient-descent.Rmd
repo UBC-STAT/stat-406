@@ -1,0 +1,204 @@
+---
+title: "00 Gradient descent"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      beforeInit: materials/macros.js
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+## Simple optimization techniques
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+We'll see "gradient descent" a few times: 
+
+1. solving logistic regression
+
+2. gradient boosting
+
+3. Neural networks
+
+This seems like a good time to explain it.
+
+So what is it and how does it work?
+
+---
+
+## Very basic example
+
+.pull-left[
+Suppose I want to minimize $f(x)=(x-6)^2$ numerically.
+
+I start at a point (say $x_1=23$)
+
+I want to "go" in the negative direction of the gradient.
+
+The gradient (at $x_1=23$) is  
+$f'(23)=2(23-6)=34$.
+
+OK go that way by some small amount: 
+
+$x_2 = x_1 - \gamma 34$, for $\gamma$ small.
+
+In general, $x_{n+1} = x_n -\gamma f'(x_n)$.
+
+]
+  
+.pull-right[  
+  
+```{r}
+niter = 10
+gam = 0.1
+x = double(niter)
+x[1] = 23
+grad <- function(x) 2*(x-6)
+for(i in 2:niter) x[i] = x[i-1] - gam*grad(x[i-1])
+```
+
+```{r echo=FALSE, fig.height=4,fig.width=4,fig.align='center'}
+ggplot(data.frame(x=x, y=(x-6)^2)) + geom_path(aes(x,y)) + 
+  geom_point(aes(x,y)) +
+  theme_cowplot() + coord_cartesian(xlim=c(6-24,24),ylim=c(0,300)) +
+  geom_vline(xintercept = 6, color=red,linetype="dotted") +
+  geom_hline(yintercept = 0,color=red,linetype="dotted") +
+  stat_function(data=data.frame(x=c(6-24,24)),aes(x), fun=function(x) (x-6)^2, color=blue, alpha=.4) +
+  ylab(bquote(f(x)))
+```
+
+]
+
+---
+
+## Why does this work?
+
+__Interpretation 1:__
+
+* Gradient tells me the slope.
+
+* negative gradient points toward the minimum
+
+* go that way, but not too far (or we'll miss it)
+
+__Interpretation 2:__
+
+- Taylor expansion
+$$f(x) \approx f(x_0) +  f'(x_0)(x-x_0) + \frac{1}{2}f''(x_0)(x-x_0)^2$$
+- replace $f''(x_0)$ with $1/\gamma$
+- minimize the quadratic in $x$
+$$0\overset{\textrm{set}}{=}f'(x_0) + \frac{1}{\gamma}(x-x_0) \Longrightarrow x =x_0 - \gamma f'(x_0)$$
+
+---
+
+## Visually
+
+```{r, fig.height=6, fig.width=12, fig.align="center", echo=FALSE}
+f <- function(x) (x-1)^2*(x>1) + log(1+exp(-2*x))
+fp <- function(x) 2*(x-1)*(x>1) -2/(1+exp(2*x))
+quad <- function(x, x0, gam=.1) f(x0) + fp(x0)*(x-x0) + 1/(2*gam)*(x-x0)^2
+x = c(-1.75,-1,-.5)
+
+ggplot(data.frame(x=c(-2,3)), aes(x)) + 
+  stat_function(fun=f, color=blue) + 
+  theme_cowplot() + 
+  geom_point(data=data.frame(x=x,y=f(x)),aes(x,y),color=red) +
+  stat_function(fun=quad, args = list(x0=-1.75), color=red) +
+  stat_function(fun=quad, args = list(x0=-1), color=red) +
+  stat_function(fun=quad, args = list(x0=-.5), color=red) +
+  coord_cartesian(ylim=c(0,4)) + ggtitle(bquote(gamma==0.1))
+```
+
+---
+
+## What $\gamma$?
+
+__Fixed__
+
+- Only works if $\gamma$ is exactly right 
+- Usually does not work
+
+__Sequence__ 
+
+$$\gamma_k \quad s.t.\quad\sum_{k=1}^{\infty} \gamma_k = \infty ,\quad
+              \sum_{k=1}^{\infty} \gamma^{2}_k < \infty$$
+
+
+__Backtracking line search__
+
+1. Set $0 <\beta < 1 , 0 < \alpha <\frac{1}{2}$
+2. At each $k$, while
+$f\left(x^{(k)} - \gamma f'(x^{(k)})\right) > f(x^{(k)}) - \alpha \gamma  f(x^{(k)})^{2}_{2}$
+set $\gamma = \beta \gamma$ (shrink t)
+3. $x^{t+1} = x - \gamma f'(x_t)$ 
+
+
+__Exact line search__
+
+- Backtracking approximates this
+- At each $k$, solve
+$\gamma_k = \arg\min_{s >= 0} f( x^{(k)} - s f(x^{(k-1)}))$
+- Usually can't solve this.
+
+---
+
+## When do we stop?
+
+For $\epsilon>0$, small
+
+
+Check any/all of
+
+1. $|f'(x)| < \epsilon$
+2. $|x^{(k)} - x^{(k-1)}| < \epsilon$
+3. $|f(x^{(k)}) - f(x^{(k-1)})| < \epsilon$
+
+---
+
+## Stochastic gradient descent
+
+Suppose $f(x) = \frac{1}{n}\sum_{i=1}^n f_i(x)$
+
+Like if $f(\beta) = \frac{1}{n}\sum_{i=1}^n (y_i - x^\top_i\beta)^2$.
+
+Then $f'(x) = \frac{1}{n}\sum_{i=1}^n f'_i(x)$
+
+If $n$ is really big, it may take a long time to compute $f'$
+
+So, just sample some $\mathcal{M} = \{i_1,i_2,\ldots,i_m\}$
+
+And approximate
+$$f'(x) = \frac{1}{n}\sum_{i=1}^n f_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}}f'_{i}(x)$$
+
+Usually cycle through "mini-batches" $\mathcal{M}$ until we've seen all $n$ points.
+
+--
+
+This is the workhorse for neural network optimization
+

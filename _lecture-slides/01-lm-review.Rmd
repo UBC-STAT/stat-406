@@ -1,0 +1,221 @@
+---
+title: "01 Linear model review"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+```{r setup, include=FALSE}
+source("rmd_config.R")
+```
+
+## The normal linear model
+
+Assume that 
+
+$$
+y_i = x_i^\top \beta + \epsilon_i.
+$$
+
+
+2. What is the mean of $y_i$?
+
+--
+
+3. What is the distribution of $\epsilon_i$?
+
+--
+
+4. What is the notation $\mathbf{X}$ or $\mathbf{y}$?
+
+---
+
+## Drawing a sample
+
+$$
+y_i = x_i^\top \beta + \epsilon_i.
+$$
+
+How would I **create** data from this model (draw a sample)?
+
+--
+
+```{r sampling, eval=FALSE}
+p = 3
+n = 100
+sigma = 2
+```
+
+--
+
+```{r sampling-2, eval=FALSE}
+epsilon = rnorm(n,sd=sigma) # this is random
+X = matrix(runif(n*p), n, p) # treat this as fixed, but I need numbers
+beta = rpois(p+1, 5) # parameter, also fixed, but I again need numbers
+Y = cbind(1,X) %*% beta + epsilon # epsilon is random, so this is
+## Equiv: Y = beta[1] + X %*% beta[-1] + epsilon
+```
+
+---
+
+## How do we estimate beta?
+
+1. Guess.
+2. Ordinary least squares (OLS).
+3. Maximum likelihood.
+4. Do something more creative.
+
+---
+
+## Method 2. OLS
+
+Suppose I want to find an estimator $\widehat\beta$ which makes small errors on my data.
+
+I measure errors with the difference between predictions $\mathbf{X}\widehat\beta$ and the responses $\mathbf{y}$.
+
+I don't care if the differences are positive or negative, so I try to measure the total error with
+
+
+$$\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.$$
+
+
+This is fine, but hard to minimize (what is the derivative of $|\cdot|$?)
+
+So I use 
+
+
+$$\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.$$
+
+
+---
+
+## Method 2. OLS solution
+
+We write this as
+
+$$\widehat\beta = \arg\min_\beta \sum_{i=1}^n ( y_i - x_i^\top \beta )^2.$$
+
+
+"Find the $\beta$ which minimizes the sum of squared errors."
+
+--
+
+Note that this is the same as 
+
+$$\widehat\beta = \arg\min_\beta \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2.$$
+
+"Find the beta which minimizes the mean squared error."
+
+---
+
+## Method 2. Ok, do it
+
+We differentiate and set to zero
+
+\begin{aligned}
+& \frac{\partial}{\partial \beta} \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2\\
+&= \frac{2}{n}\sum_{i=1}^n x_i (y_i - x_i^\top\beta)\\
+&= \frac{2}{n}\sum_{i=1}^n - x_i x_i^\top \beta + x_i y_i\\
+0 &\equiv \sum_{i=1}^n - x_i x_i^\top \beta + x_i y_i\\
+&\Rightarrow \sum_{i=1}^n x_i x_i^\top \beta = \sum_{i=1}^n x_i y_i\\
+&\Rightarrow \beta = \left(\sum_{i=1}^n x_i x_i^\top\right)^{-1}\sum_{i=1}^n x_i y_i
+\end{aligned}
+
+
+---
+
+## In matrix notation...
+
+...this is 
+
+
+$$\hat\beta = ( \mathbf{X}^\top  \mathbf{X})^{-1} \mathbf{X}^\top\mathbf{y}.$$
+
+
+The $\beta$ which "minimizes the sum of squared errors"
+
+
+AKA, the SSE.
+
+---
+
+## Method 3: maximum likelihood
+
+Method 2 didn't use anything about the distribution of $\epsilon$.
+
+But if we know that $\epsilon$ has a normal distribution, we can write down the joint distribution
+of $\mathbf{y}=(y_1,\ldots,y_n)^\top$:
+
+
+\begin{aligned}
+f_Y(\mathbf{y} ; \beta) &= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
+  &= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
+  &= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
+\end{aligned}
+
+--
+
+In probability courses, we think of $f_Y$ as a function of $\mathbf{y}$ with $\beta$ fixed:
+
+1. If we integrate over $\mathbf{y}$, it's $1$.
+2. If we want the probability of $(a,b)$, we integrate from $a$ to $b$.
+3. etc.
+
+---
+
+## Turn it around...
+
+...instead, think of it as a function of $\beta$.
+
+We call this "the likelihood" of beta: $\mathcal{L}(\beta)$.
+
+Given some data, we can evaluate the likelihood for any value of $\beta$ (assuming $\sigma$ is known).
+
+It won't integrate to $1$ over $\beta$.
+
+But it is "convex", meaning we can maximize it (the second derivative wrt $\beta$ is everywhere negative).
+
+---
+
+## So let's maximize
+
+The derivative of this thing is kind of ugly.
+
+But if we're trying to maximize over $\beta$, we can take an increasing transformation without changing anything.
+
+I choose $\log_e$.
+
+
+\begin{aligned}
+\mathcal{L}(\beta) &= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)\\
+\ell(\beta) &=-\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2
+\end{aligned}
+
+
+But we can ignore constants, so this gives
+
+
+$$\widehat\beta = \arg\max_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2$$
+
+
+The same as before!
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+Recall how to do this in `R`

@@ -1,0 +1,214 @@
+---
+title: "00 PCA v KPCA"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      beforeInit: materials/macros.js
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+## PCA v KPCA
+
+
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$
+
+(We assume $\X$ is already centered, $n$ rows, $p$ columns)
+
+
+.pull-left[
+__PCA:__
+
+0. Start with data.
+1. Decompose $\X=\U\D\V^\top$ (SVD). 
+2. Embed into $M<p$ dimensions: 
+$$\U_M \D_M = \X\V_M$$
+
+The "embedding" is $\U_M \D_M$.
+
+(called the "Principal Components" or the "scores" or occasionally the "factors")
+
+The "loadings" are $\V_M$
+]
+
+--
+
+.pull-right[
+__KPCA:__
+
+0. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
+1. Decompose $\mathbf{K} = \U \D^2 \U^\top$ (eigendecomposition)
+2. Embed into $M<p$ dimensions:
+$$\U_M \D_M$$
+
+The "embedding" is $\U_M \D_M$.
+
+There are no "loadings"  
+(there exists no matrix $\mathbf{B}$ such that $\X\mathbf{B} = \U_M \D_M$)
+]
+
+---
+
+## Why is this the solution?
+
+The "maximize variance" version of PCA:
+
+$$\max_\alpha \Var{\X\alpha} \quad \textrm{ subject to } \quad \left|\left| \alpha \right|\right|_2^2 = 1$$
+
+( $\Var{\X\alpha} = \alpha^\top\X^\top\X\alpha$ )
+
+This is equivalent to solving (Lagrangian):
+
+$$\max_\alpha \alpha^\top\X^\top\X\alpha - \lambda\left|\left| \alpha \right|\right|_2^2$$
+
+Take derivative wrt $\alpha$ and set to 0:
+
+$$0 = 2\X^\top\X\alpha - 2\lambda\alpha$$
+
+This is the equation for an eigenproblem. The solution is $\alpha=\V_1$ and the maximum is $\D_1^2$.
+
+---
+
+## Example (not real unless there's code)
+
+```{r}
+X = UBCstat406labs::mobility %>% select(Black:Married) %>% as.matrix()
+not_missing = X %>% complete.cases()
+X = scale(X[not_missing,], center = TRUE, scale = TRUE)
+colors = UBCstat406labs::mobility$Mobility[not_missing] 
+M = 2 # embedding dimension
+```
+
+--
+
+.pull-left[
+__PCA:__
+
+```{r}
+s = svd(X)
+pca_loadings = s$v[,1:M]
+pca_scores = X %*% pca_loadings
+```
+
+or
+
+```{r, echo=TRUE, eval=FALSE}
+s = eigen(t(X) %*% X) # V D^2 V'
+pca_loadings = s$vectors[,1:M]
+pca_scores = X %*% pca_loadings
+```
+
+or
+
+```{r, echo=TRUE, eval=FALSE}
+s = eigen(X %*% t(X)) # U D^2 U'
+D = sqrt(diag(s$values[1:M]))
+U = s$vectors[,1:M]
+pca_scores = U %*% D
+pca_loadings = (1/D) %*% t(U) %*% X
+
+```
+
+
+
+]
+
+.pull-right[
+__KPCA:__
+
+```{r}
+d = 2
+K = (1 + X %*% t(X))^d
+e = eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U = e$vectors[,1:M]
+D = diag(sqrt(e$values[1:M]))
+kpca_scores = U %*% D
+```
+
+]
+
+---
+
+## Plotting
+
+```{r, echo=FALSE, fig.align="center", fig.width=10, fig.height=6}
+pca = tibble(score1=pca_scores[,1], score2=pca_scores[,2], colors=colors)
+kpca = tibble(score1=kpca_scores[,1], score2=kpca_scores[,2], colors=colors)
+bind_rows(pca=pca, kpca=kpca, .id="method") %>%
+  ggplot(aes(score1,score2,color=colors)) + 
+  facet_wrap(~method, scales = "free") + theme_cowplot() +
+  scale_color_viridis_c() + geom_point()
+```
+
+---
+
+## PCA loadings
+
+Showing the first 10 PCA loadings:
+
+* First column are the weights on the first score
+* each number corresponds to a variable in the original data
+* How much does that variable contribute to that score?
+
+```{r}
+head(round(pca_loadings,2), 10)
+```
+
+---
+
+## KPCA, feature map version
+
+```{r, echo=TRUE, eval=FALSE}
+p = ncol(X)
+width = p*(p-1)/2 + p # ~630
+Z = matrix(NA, nrow(X), width)
+k = 0
+for(i in 1:p){
+  for(j in i:p){
+    k = k + 1
+    Z[,k] = X[,i] * X[,j]
+  }
+}
+wideX = scale(cbind(X, Z), center=TRUE, scale=TRUE)
+s = RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores = s$u %*% diag(s$d)
+```
+
+* Unfortunately, can't easily compare to check whether the result is the same
+* Also can cause numerical issues
+* But should be the "same" (assuming I didn't screw up...)

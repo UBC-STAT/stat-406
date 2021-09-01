@@ -1,0 +1,276 @@
+---
+title: "14 Classification"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    includes:
+      in_header: 
+        - materials/load-fa.html
+    lib_dir: libs
+    css: ["materials/xaringan-themer.css","slides-style.css"]
+    nature:
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+class: middle, center
+background-image: url("gfx/proforhobo.png")
+background-size: cover
+
+
+
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+
+
+.fourth-color[.hand[.larger[
+Professor or Hobo? 
+]]]
+
+
+---
+
+
+## An Overview of Classification
+
+$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$
+
+
+
+* A person arrives at an emergency room with a set of symptoms that
+could be 1 of 3 possible conditions. Which one is it?
+
+* An online banking service must be able to determine whether each
+transaction is fraudulent or not, using a customer's location, past
+transaction history, etc.
+
+* Given a set of individuals sequenced DNA, can we determine whether
+various mutations are associated with different phenotypes?
+
+--
+
+These problems are __not__ regression
+problems. They are __classification__ problems.
+
+---
+
+## The Set-up
+
+It begins just like regression: suppose we have observations
+$$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$
+
+Again, we want to estimate a function that maps $X$ to $Y$ to
+predict as yet observed data.
+
+(This function is known as a __classifier__)
+
+
+The same constraints apply:
+
+* We want a classifier that predicts test data, not just the training
+data.
+
+* Often, this comes with the introduction of some bias to get lower
+variance and better predictions.
+
+---
+
+## How do we measure quality?
+
+Before in regression, we have $y_i \in \mathbb{R}$ and use squared error loss
+
+
+Instead, let $y \in \mathcal{K} = \{1,\ldots, K\}$
+
+(This is arbitrary, sometimes other numbers, such as $\{-1,1\}$ will be
+used)
+
+We can always take "factors": $\{\textrm{cat},\textrm{dog}\}$ and convert to integers, which is what we assume.
+
+
+We again make predictions $\hat{y}=k$ based on the data
+
+
+* We get zero loss if we predict the right class
+* We lose $\ell(k,k')$ on $(k\neq k')$ for incorrect predictions
+
+--
+
+We're going to use $g$ to be our classifier. It takes values in $\mathcal{K}$.
+
+---
+
+## How do we measure quality?
+
+Again, we appeal to risk
+$$R_n(g) = E \ell(Y,g(X))$$ If we use the law of
+total probability, this can be written
+$$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$
+This can be minimized over $X$, to produce
+$$g_*(X) = \arg\min_{g \in \mathcal{G}} \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
+
+
+$g_*$ is the __Bayes' classifier__. 
+
+$R_n(g_*)$ is the called the __Bayes' limit__ or __Bayes' Risk__. It's the best we could hope to do if we knew the distribution of the data.
+
+--
+
+But we don't, so we'll try to do our best to estimate it.
+
+---
+
+## Best classifier
+
+If we make specific choices for $\ell$, we can find $g_*$ exactly (pretending we know the distribution)
+
+Define (for convenience)
+$$\ell_g(Z) = \ell(Y,g(X))$$ 
+
+As $Y$ takes only a few values, __zero-one__
+prediction risk is natural
+$$\ell_g(Z) = \begin{cases}0 & Y=g(X)\\1 & Y\neq g(X) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell_g(Z)} = Pr(g(X) \neq Y),$$
+
+This means we want to __label__ or
+__classify__ a new observation $(x_0,y_0)$ such that
+$g(x_0) = y_0$ as often as possible
+
+
+Under this loss, we have
+$$g_*(X) = \argmin_{g \in\mathcal{G}} Pr(g(X) \neq Y) = \argmin_{g \in \mathcal{G}} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g \in \mathcal{G}} Pr(Y = g(x) | X=x )$$
+
+---
+
+## Best classifier
+
+Suppose we encode a two-class response as $Y \in \{0,1\}$
+
+
+Let's try using __squared error loss__ instead:
+$\ell_f(Z) = (Y - f(X))^2$
+
+
+Then, the Bayes' rule is
+$$f_*(X) = E[ Y \given X] = Pr(Y = 1 \given X)$$ 
+(note that $f_* \in [0,1]$ is the regression function)
+
+Hence, we achieve the same Bayes' rule/limit with squared error
+classification by discretizing the probability:
+
+$$g_*(X) = \begin{cases}0 & f_*(X) < 1/2\\1 & \textrm{else}\end{cases}$$
+
+---
+
+## Classification is easier than regression
+
+Let $\hat{f}$ be any estimate of $f_*$
+
+
+Let $\widehat g (X) = \begin{cases}0 & \hat f(X) < 1/2\\1 & else\end{cases}$
+
+
+It can be shown that 
+$$\begin{aligned}
+  &Pr(Y \neq \hat{g}(X) \given X) - Pr(Y \neq g_*(X) \given X)  \\
+  &= \cdots =\\
+& =  2\left|f_*(X) - \frac{1}{2}\right|\mathbf{1}\left(g_*(X)\neq \hat{g}(X)\right) \end{aligned}$$
+
+
+--
+
+__Can you show this?__
+
+---
+
+## Classification is easier than regression
+
+Now
+$$g_*(X)\neq \widehat{g}(X) \Rightarrow |\hat{f}(X) - f_*(X)| \geq |\hat{f}(X) - 1/2|$$
+Therefore
+
+$$\begin{aligned}
+ &Pr(Y \neq \hat{g}(X)) - Pr(Y \neq g_*(X)) \\
+& =  \int\left(Pr(Y \neq \hat{g}(X) \given X=x) - Pr(Y \neq g_*(X) \given X=x)\right)dx   \\
+& =  \int 2\left|\hat{f}(x) - \frac{1}{2}\right|\mathbf{1}(g_*(x)\neq \hat{g}(x))dx  \\
+& \leq  2\int |\hat{f}(x) - f_*(x)| \mathbf{1}(g_*(x)\neq \hat{g}(x))dx \\
+& \leq  2\int |\hat{f}(x) - f_*(x)|dx \end{aligned}$$
+
+
+
+---
+
+## Bayes' rule and class densities
+
+Using Bayes' theorem 
+
+$$\begin{aligned}
+f_*(X) & = Pr(Y = 1 \given X) \\ & =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{g \in \{0,1\}} Pr(X\given Y = g) Pr(Y = g)} \\ & = \frac{f_1(X) \pi}{ f_1(X)\pi + f_0(X)(1-\pi)}\end{aligned}$$
+
+We call $f_g(X)$ the __class densities__
+
+
+The Bayes' rule can be rewritten 
+
+$$g_*(X) = \begin{cases}
+1 & \textrm{ if } \frac{f_1(X)}{f_0(X)} > \frac{1-\pi}{\pi} \\
+0  &  \textrm{ otherwise}
+\end{cases}$$
+
+---
+
+## How to find a classifier
+
+All of these prior expressions for $g_*$ give rise to classifiers
+
+__Empirical risk minimization:__ Choose a set
+of classifiers $\mathcal{G}$ and find $g \in \mathcal{G}$ that minimizes
+some estimate of $R_n(g)$
+    
+> (This can be quite challenging as, unlike in regression, the
+training error is nonconvex)
+
+__Regression:__ Find an
+estimate $\hat{f}$ and plug it in to the Bayes' rule
+
+__Density estimation:__
+Estimate $\hat{\pi}$ and $f_g$
+
+--
+
+Easiest classifier when $y\in \{0,\ 1\}$:
+
+```{r eval=FALSE}
+ghat = round(predict(lm(y~., trainingdata)))
+```
+
+Think about why this may not be very good.
+
+---
+class: middle, inverse, center
+
+# Next time:
+
+Estimating the densities
