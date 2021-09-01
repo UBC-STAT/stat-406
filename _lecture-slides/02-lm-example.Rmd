@@ -4,18 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE}
@@ -26,10 +14,9 @@ knitr::opts_chunk$set(dpi=300,warning=FALSE,message=FALSE)
 
 ## Economic mobility
 
-* `mobility` in the course R package. For documentation, try `?mobility`
 
 ```{r}
-library(UBCstat406labs)
+mobility <- readRDS("data/mobility.RDS")
 library(tidyverse)
 mobility
 ```
@@ -38,7 +25,7 @@ mobility
 
 Note how many observations and predictors it has.
 
-We'll use mobility as the response
+We'll use `mobility` as the response
 
 
 ---
@@ -70,14 +57,14 @@ $$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban},
 --
 
 ```{r}
-set.seed(20200901)
-mob = mobility[complete.cases(mobility),]
-n = nrow(mob)
-mob = mob %>% select(-Name,-ID,-State)
-set = sample.int(n, floor(n*.75), FALSE)
-train = mob[set,]  #<<
-test = mob[setdiff(1:n, set),]
-full = lm(Mobility ~ ., data=train)
+set.seed(20210901)
+mob <- mobility[complete.cases(mobility),]
+n <- nrow(mob)
+mob <- mob %>% select(-Name,-ID,-State)
+set <- sample.int(n, floor(n*.75), FALSE)
+train <- mob[set,]  #<<
+test <- mob[setdiff(1:n, set),]
+full <- lm(Mobility ~ ., data=train)
 ```
 
 ???
@@ -156,12 +143,14 @@ plot(reduced, 2)
 
 
 ```{r}
-test$full = predict(full, newdata = test)
-test$reduced = predict(reduced, newdata = test)
-mses <- function(preds, obs) mean((obs-preds)^2)
+test$full <- predict(full, newdata = test)
+test$reduced <- predict(reduced, newdata = test)
+mses <- function(preds, obs)  
+  mean( (obs - preds)^2 )
 sapply(
-  test[, c("full","reduced")], mses, 
-  obs=test$Mobility)
+  test[, c("full","reduced")], 
+  mses, 
+  obs = test$Mobility)
 ```
 ]
 

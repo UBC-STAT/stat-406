@@ -30,16 +30,16 @@ the material that was covered in STAT 306 or CPSC 340. We don't presume that you
 Required reading  
 : \[ISLR\] 2.1, 2.2, and Chapter 3 (this material is review)
 
-Video lectures  
+Video lectures from last year
 : Lecture 0 (in class on Thursday), Video Lectures 1 and 2
 
 Optional reading
 : \[ESL\] 2.4 and 2.6
 
-|Date      |Activity    |
-|:---------|:-----------|
-|7 Sep 21  |(no class, Imagine UBC) |
-|9 Sep 21  |Syllabus, Git, Github |
+|Date      |Slides |Activity    |
+|:---------|:-----------|:-----------|
+|7 Sep 21  | |(no class, Imagine UBC) |
+|9 Sep 21  |[Intro to class](assets/slides/00-intro-to-class.html), [Git](assets/slides/00-version-control.html) |Syllabus, Git, Github |
 {: .table .table-striped}
 
 
@@ -53,19 +53,19 @@ Topics
 Required reading  
 : \[ISLR\] Ch 2.2 (not 2.2.3), 5.1 (not 5.1.5), 6.1, 6.4
 
-Video lectures  
+Video lectures from last year
 : Lectures 3 to 7 
 
 Optional reading
 : \[ESL\] 7.1-7.5, 7.10
 
-|Date      |Activity  |
-|:---------|:---------|
-|14 Sep 21 |          |
-|16 Sep 21 |          |
-|21 Sep 21 |PC 1      |
-|23 Sep 21 |HW 1 due  |
-|28 Sep 21 |           |
+|Date      |Slides |Activity    |
+|:---------|:-----------|:-----------|
+|14 Sep 21 | [Review LM](assets/slides/01-lm-review.html), [Example](assets/slides/02-lm-example.html) |   |
+|16 Sep 21 |          | |
+|21 Sep 21 | | PC 1 due |
+|23 Sep 21 |  |
+|28 Sep 21 |           | HW 1 due  |
 {: .table .table-striped}
 
 

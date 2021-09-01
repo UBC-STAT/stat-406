@@ -21,6 +21,7 @@ clean:
 
 .PHONY: webcp
 webcp:
+	rsync -avz $(htmls) ../assets/slides/
 	rsync -avz materials ../assets/slides/
 	rsync -avz gfx ../assets/slides/
 	rsync -avz libs ../assets/slides/
