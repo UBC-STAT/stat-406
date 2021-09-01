@@ -39,9 +39,8 @@ Optional reading
 |Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
 |7 Sep 21  | |(no class, Imagine UBC) |
-|9 Sep 21  |[Intro to class](assets/slides/00-intro-to-class.html), [Git](assets/slides/00-version-control.html) |Syllabus, Git, Github | |
+|9 Sep 21  |[Intro to class](00-intro-to-class.html), [Git](00-version-control.html) |Syllabus, Git, Github | |
 |14 Sep 21 | [Review LM](assets/slides/01-lm-review.html), [Example](assets/slides/02-lm-example.html), [Regression](assets/slides/03-regression-function.html) |   |
-
 {: .table .table-striped}
 
 
