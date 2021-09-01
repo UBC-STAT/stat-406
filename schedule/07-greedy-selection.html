@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>07 Greedy selection</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 07 Greedy selection
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-09-01
+
+---
+
+
+
+
+## Selecting predictors
+
+.pull-left[
+
+Suppose we have a pile of predictors.
+
+We estimate models with different subsets of predictors and use CV/Cp/AIC/BIC to decide which is best.
+
+Sometimes you might have a few plausible subsets. Easy enough to choose with our criterion.
+
+Sometimes you might just have a bunch of predictors, then what do you do?
+]
+
+--
+
+.pull-right[
+__All subsets__: estimate model based on every possible subset, use one with lowest AIC 
+
+__Forward selection__: start with `\(\mathcal{S}=\varnothing\)`, add predictors greedily
+
+__Backward selection__: start with `\(\mathcal{S}=\{1,\ldots,p\}\)`, remove greedily
+
+__Hybrid__: combine forward and backward smartly
+]
+
+---
+
+## Costs and benefits
+
+
+__All subsets__: 
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M104 224H24c-13.255 0-24 10.745-24 24v240c0 13.255 10.745 24 24 24h80c13.255 0 24-10.745 24-24V248c0-13.255-10.745-24-24-24zM64 472c-13.255 0-24-10.745-24-24s10.745-24 24-24 24 10.745 24 24-10.745 24-24 24zM384 81.452c0 42.416-25.97 66.208-33.277 94.548h101.723c33.397 0 59.397 27.746 59.553 58.098.084 17.938-7.546 37.249-19.439 49.197l-.11.11c9.836 23.337 8.237 56.037-9.308 79.469 8.681 25.895-.069 57.704-16.382 74.757 4.298 17.598 2.244 32.575-6.148 44.632C440.202 511.587 389.616 512 346.839 512l-2.845-.001c-48.287-.017-87.806-17.598-119.56-31.725-15.957-7.099-36.821-15.887-52.651-16.178-6.54-.12-11.783-5.457-11.783-11.998v-213.77c0-3.2 1.282-6.271 3.558-8.521 39.614-39.144 56.648-80.587 89.117-113.111 14.804-14.832 20.188-37.236 25.393-58.902C282.515 39.293 291.817 0 312 0c24 0 72 8 72 81.452z"/></svg> estimates each subset
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> takes `\(2^p\)` model fits. If `\(p=50\)`, this is about `\(10^{15}\)` models. 
+
+__Forward selection__: 
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M104 224H24c-13.255 0-24 10.745-24 24v240c0 13.255 10.745 24 24 24h80c13.255 0 24-10.745 24-24V248c0-13.255-10.745-24-24-24zM64 472c-13.255 0-24-10.745-24-24s10.745-24 24-24 24 10.745 24 24-10.745 24-24 24zM384 81.452c0 42.416-25.97 66.208-33.277 94.548h101.723c33.397 0 59.397 27.746 59.553 58.098.084 17.938-7.546 37.249-19.439 49.197l-.11.11c9.836 23.337 8.237 56.037-9.308 79.469 8.681 25.895-.069 57.704-16.382 74.757 4.298 17.598 2.244 32.575-6.148 44.632C440.202 511.587 389.616 512 346.839 512l-2.845-.001c-48.287-.017-87.806-17.598-119.56-31.725-15.957-7.099-36.821-15.887-52.651-16.178-6.54-.12-11.783-5.457-11.783-11.998v-213.77c0-3.2 1.282-6.271 3.558-8.521 39.614-39.144 56.648-80.587 89.117-113.111 14.804-14.832 20.188-37.236 25.393-58.902C282.515 39.293 291.817 0 312 0c24 0 72 8 72 81.452z"/></svg> computationally feasible
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> ignores some models, correlated predictors means bad performance
+
+__Backward selection__: 
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M104 224H24c-13.255 0-24 10.745-24 24v240c0 13.255 10.745 24 24 24h80c13.255 0 24-10.745 24-24V248c0-13.255-10.745-24-24-24zM64 472c-13.255 0-24-10.745-24-24s10.745-24 24-24 24 10.745 24 24-10.745 24-24 24zM384 81.452c0 42.416-25.97 66.208-33.277 94.548h101.723c33.397 0 59.397 27.746 59.553 58.098.084 17.938-7.546 37.249-19.439 49.197l-.11.11c9.836 23.337 8.237 56.037-9.308 79.469 8.681 25.895-.069 57.704-16.382 74.757 4.298 17.598 2.244 32.575-6.148 44.632C440.202 511.587 389.616 512 346.839 512l-2.845-.001c-48.287-.017-87.806-17.598-119.56-31.725-15.957-7.099-36.821-15.887-52.651-16.178-6.54-.12-11.783-5.457-11.783-11.998v-213.77c0-3.2 1.282-6.271 3.558-8.521 39.614-39.144 56.648-80.587 89.117-113.111 14.804-14.832 20.188-37.236 25.393-58.902C282.515 39.293 291.817 0 312 0c24 0 72 8 72 81.452z"/></svg> computationally feasible
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> ignores some models, correlated predictors means bad performance
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> doesn't work if `\(p&gt;n\)`
+
+__Hybrid__: 
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M104 224H24c-13.255 0-24 10.745-24 24v240c0 13.255 10.745 24 24 24h80c13.255 0 24-10.745 24-24V248c0-13.255-10.745-24-24-24zM64 472c-13.255 0-24-10.745-24-24s10.745-24 24-24 24 10.745 24 24-10.745 24-24 24zM384 81.452c0 42.416-25.97 66.208-33.277 94.548h101.723c33.397 0 59.397 27.746 59.553 58.098.084 17.938-7.546 37.249-19.439 49.197l-.11.11c9.836 23.337 8.237 56.037-9.308 79.469 8.681 25.895-.069 57.704-16.382 74.757 4.298 17.598 2.244 32.575-6.148 44.632C440.202 511.587 389.616 512 346.839 512l-2.845-.001c-48.287-.017-87.806-17.598-119.56-31.725-15.957-7.099-36.821-15.887-52.651-16.178-6.54-.12-11.783-5.457-11.783-11.998v-213.77c0-3.2 1.282-6.271 3.558-8.521 39.614-39.144 56.648-80.587 89.117-113.111 14.804-14.832 20.188-37.236 25.393-58.902C282.515 39.293 291.817 0 312 0c24 0 72 8 72 81.452z"/></svg> visits more models than forward/backward
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> slower
+
+---
+
+## Synthetic example
+
+
+```r
+set.seed(123)
+n &lt;- 406
+df &lt;- tibble( # like data.frame, but columns can be functions of preceding
+  x1 = rnorm(n),
+  x2 = rnorm(n, mean = 2, sd = 1),
+  x3 = rexp(n, rate = 1),
+  x4 = x2 + rnorm(n, sd = .1),
+  x5 = x1 + rnorm(n, sd = .1),
+  x6 = x1 - x2 + rnorm(n, sd = .1),
+  x7 = x1 + x3 + rnorm(n, sd = .1),
+  y = x1 * 3 + x2 / 3 + rnorm(n, sd = 2.2)
+)
+```
+
+--
+
+`\(\mathbf{x}_1\)` and `\(\mathbf{x}_2\)` are the true predictors
+
+But the rest are correlated with them
+
+---
+
+## Full model
+
+
+```r
+full &lt;- lm(y ~ ., data = df)
+```
+
+
+```
+## 
+## Call:
+## lm(formula = y ~ ., data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.7739 -1.4283 -0.0929  1.4257  7.5869 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)  0.03383    0.27700   0.122  0.90287   
+## x1           6.70481    2.06743   3.243  0.00128 **
+## x2          -0.43945    1.71650  -0.256  0.79807   
+## x3           1.37293    1.11524   1.231  0.21903   
+## x4          -1.19911    1.17850  -1.017  0.30954   
+## x5          -0.53918    1.07089  -0.503  0.61490   
+## x6          -1.88547    1.21652  -1.550  0.12196   
+## x7          -1.25245    1.10743  -1.131  0.25876   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.231 on 398 degrees of freedom
+## Multiple R-squared:  0.6411,	Adjusted R-squared:  0.6347 
+## F-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## True model
+
+
+```r
+truth &lt;- lm(y ~ x1 + x2, data = df)
+```
+
+
+```
+## 
+## Call:
+## lm(formula = y ~ x1 + x2, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.4519 -1.3873 -0.1941  1.3498  7.5533 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   0.1676     0.2492   0.673   0.5015    
+## x1            3.0316     0.1146  26.447   &lt;2e-16 ***
+## x2            0.2447     0.1109   2.207   0.0279 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.233 on 403 degrees of freedom
+## Multiple R-squared:  0.6357,	Adjusted R-squared:  0.6339 
+## F-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## All subsets
+
+
+```r
+library(leaps)
+trythemall &lt;- regsubsets(y ~ ., data = df)
+summary(trythemall)
+```
+
+```
+## Subset selection object
+## Call: regsubsets.formula(y ~ ., data = df)
+## 7 Variables  (and intercept)
+##    Forced in Forced out
+## x1     FALSE      FALSE
+## x2     FALSE      FALSE
+## x3     FALSE      FALSE
+## x4     FALSE      FALSE
+## x5     FALSE      FALSE
+## x6     FALSE      FALSE
+## x7     FALSE      FALSE
+## 1 subsets of each size up to 7
+## Selection Algorithm: exhaustive
+##          x1  x2  x3  x4  x5  x6  x7 
+## 1  ( 1 ) "*" " " " " " " " " " " " "
+## 2  ( 1 ) "*" " " " " " " " " "*" " "
+## 3  ( 1 ) "*" " " " " "*" " " "*" " "
+## 4  ( 1 ) "*" " " "*" "*" " " "*" " "
+## 5  ( 1 ) "*" " " "*" "*" " " "*" "*"
+## 6  ( 1 ) "*" " " "*" "*" "*" "*" "*"
+## 7  ( 1 ) "*" "*" "*" "*" "*" "*" "*"
+```
+
+---
+
+## BIC and Cp
+
+.pull-left[
+
+```r
+infocrit &lt;- tibble(
+  BIC = summary(trythemall)$bic, 
+  Cp = summary(trythemall)$cp,
+  size = 1:7)
+```
+
+
+```r
+info_plot &lt;- infocrit %&gt;% 
+  pivot_longer(-size, names_to="crit") %&gt;%
+  ggplot(aes(size, value, color=crit)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~crit, 2, scales = "free_y") + 
+  scale_color_brewer(palette = "Set1") +
+  theme(axis.title.y = element_blank(), 
+        legend.position = "none")
+```
+
+]
+
+.pull-right[
+![](rmd_gfx/07-greedy-selection/more-all-subsets3-1.svg)&lt;!-- --&gt;
+]
+
+---
+
+## Forward stepwise
+
+
+```r
+stepup &lt;- regsubsets(y ~ ., data = df, method = "forward")
+summary(stepup)
+```
+
+```
+## Subset selection object
+## Call: regsubsets.formula(y ~ ., data = df, method = "forward")
+## 7 Variables  (and intercept)
+##    Forced in Forced out
+## x1     FALSE      FALSE
+## x2     FALSE      FALSE
+## x3     FALSE      FALSE
+## x4     FALSE      FALSE
+## x5     FALSE      FALSE
+## x6     FALSE      FALSE
+## x7     FALSE      FALSE
+## 1 subsets of each size up to 7
+## Selection Algorithm: forward
+##          x1  x2  x3  x4  x5  x6  x7 
+## 1  ( 1 ) "*" " " " " " " " " " " " "
+## 2  ( 1 ) "*" " " " " " " " " "*" " "
+## 3  ( 1 ) "*" " " " " "*" " " "*" " "
+## 4  ( 1 ) "*" " " "*" "*" " " "*" " "
+## 5  ( 1 ) "*" " " "*" "*" " " "*" "*"
+## 6  ( 1 ) "*" " " "*" "*" "*" "*" "*"
+## 7  ( 1 ) "*" "*" "*" "*" "*" "*" "*"
+```
+
+---
+
+## BIC and Cp
+
+&lt;img src="rmd_gfx/07-greedy-selection/more-step-forward-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Randomness and prediction error
+
+All of that was for one data set
+
+If we want to know how they compare, we should repeat many times
+  1. Generate data
+  1. Estimate with different algorithms
+  1. Predict new data
+  1. Examine prediction MSE
+  
+--
+
+I'm not going to do all subsets, just the truth, forward selection, and the full model
+
+For forward selection, I'll use Cp to choose the final model
+
+---
+
+## Code for simulation
+
+
+```r
+fun &lt;- function(n = 812) {
+  df &lt;- tibble( # generate data
+    x1 = rnorm(n), 
+    x2 = rnorm(n, mean=2, sd=1), 
+    x3 = rexp(n, rate=1),
+    x4 = x2 + rnorm(n, sd=.1), 
+    x5 = x1 + rnorm(n, sd=.1),
+    x6 = x1 - x2 + rnorm(n, sd=.1), 
+    x7 = x1 + x3 + rnorm(n, sd=.1),
+    y = x1*3 + x2/3 + rnorm(n, sd=2.2)
+  )
+  train &lt;- df[1:ceiling(n / 2), ] 
+  test &lt;- df[(ceiling(n / 2) + 1):n, ]
+  truth &lt;- lm(y ~ x1 + x2, data = train)
+  full &lt;- lm(y ~ ., data = train)
+  stepup &lt;- regsubsets(y ~ ., data = train, method = "forward")
+  coefs &lt;- double(ncol(df))
+  names(coefs) &lt;- names(coef(full))
+  best &lt;- which.min(summary(stepup)$cp)
+  coefs[names(coef(stepup, best))] = coef(stepup, best)
+  out &lt;- c(
+    correct = mean( (test$y - predict(truth, newdata = test))^2 ),
+    full = mean( (test$y-predict(full, newdata = test))^2 ),
+    step = mean( (test$y - as.matrix(cbind(1,test[,-8])) %*% coefs )^2 ),
+    truth = mean( (test$y - as.matrix(test[,1:2]) %*% c(3, 1/3))^2 ),
+    nbest = best)
+  out
+}
+set.seed(12345)
+sim = t(replicate(50, fun()))
+```
+
+
+
+---
+
+## Results
+
+
+&lt;img src="rmd_gfx/07-greedy-selection/synth-results-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, center
+background-image: url("https://disher.com/wp-content/uploads/2017/02/Product-Constraints.jpg")
+background-size: cover
+
+.primary[.larger[Next time...]]
+
+.primary[.larger[Module]] .huge-blue-number[2]
+
+.primary[regularization, constraints, and nonparametrics]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

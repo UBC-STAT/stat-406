@@ -10,13 +10,13 @@ Readings from [\[ISLR\]](https://www.statlearning.com) are always required while
 
 <div class="text-center">
 <div class="btn-group" role="group">
-  <a role="button" class="btn btn-secondary" href="#0-introduction-and-review">0 Intro</a>
-  <a role="button" class="btn btn-secondary" href="#1-model-accuracy">1 Model Checks</a>
-  <a role="button" class="btn btn-secondary" href="#2-regularization-smoothing-and-trees">2 Regression</a>
-  <a role="button" class="btn btn-secondary" href="#3-classification">3 Classification</a>
-  <a role="button" class="btn btn-secondary" href="#4-modern-techniques">4 Modern</a>
-  <a role="button" class="btn btn-secondary" href="#5-unsupervised-learning">5 Unsupervised</a>
-  <a role="button" class="btn btn-secondary" href="#f-final-exam">F Final</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#0-introduction-and-review">0 Intro</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#1-model-accuracy">1 Model Checks</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#2-regularization-smoothing-and-trees">2 Regression</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#3-classification">3 Classification</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#4-modern-techniques">4 Modern</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#5-unsupervised-learning">5 Unsupervised</a>
+  <a role="button" class="btn btn-secondary" color="white" href="#f-final-exam">F Final</a>
 </div>
 </div>
 
@@ -63,7 +63,7 @@ Optional reading
 |Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
 |16 Sep 21 |[Regression function](03-regression-function.html), [Bias and Variance](04-bias-variance.html)
-|21 Sep 21 |[Risk estimation](05-estimating-test-mse.html), [IC](06-information-criteria.html)    | |
+|21 Sep 21 |[Risk estimation](05-estimating-test-mse.html), [Info Criteria](06-information-criteria.html)    | |
 |23 Sep 21 | [Greedy selection](07-greedy-selection.html) | PC 1 due |
 |28 Sep 21 |         | HW 1 due  |
 {: .table .table-striped}
@@ -79,7 +79,7 @@ Topics
 Required reading  
 : \[ISLR\] Ch 6.2, 7.1-7.7.1, 8.1, 8.1.1, 8.1.3, 8.1.4
 
-Video lectures  
+Video lectures from last year  
 : Lectures 8-13
 
 Optional reading
@@ -114,7 +114,7 @@ Optional reading
 |Date      |Slides |Deadlines    |
 |:---------|:---------|:-----|
 |21 Oct 21 |[Classification](14-classification-intro.html), [LDA and QDA](15-LDA-and-QDA.html) | PC 2 |
-|26 Oct 21 |[Logistic regression](16-logistic-regression.html),  [Gradient descent](00-gradient-descent.html)|
+|26 Oct 21 |[Gradient descent](00-gradient-descent.html), [Logistic regression](16-logistic-regression.html) |
 |28 Oct 21 |[Nonlinear](17-nonlinear-classifiers.html)  |
 |2 Nov 21  |          |
 {: .table .table-striped}
@@ -137,11 +137,11 @@ Optional reading
 
 |Date      |Slides |Deadlines    |
 |:---------|:---------|:-----|
-| 4 Nov 21   | [The bootstrap](lecture-slides/18-the-bootstrap.html) |HW 3 due |
-| 9 Nov 21   |[Bagging and random forests](lecture-slides/19-bagging-and-rf.html), [Boosting](lecture-slides/20-boosting.html)|
+| 4 Nov 21   | [The bootstrap](18-the-bootstrap.html) |HW 3 due |
+| 9 Nov 21   |[Bagging and random forests](19-bagging-and-rf.html), [Boosting](20-boosting.html)|
 | 11 Nov 21  | (no class, Midterm Break) |
-| 16 Nov 21  |[Intro to neural nets](lecture-slides/21-nnets-intro.html), [Estimating neural nets](lecture-slides/22-nnets-estimation.html)  |
-| 18 Nov 21  |[Neural nets wrapup](lecture-slides/23-nnets-other.html) | HW 4 due |
+| 16 Nov 21  |[Intro to neural nets](21-nnets-intro.html), [Estimating neural nets](22-nnets-estimation.html)  |
+| 18 Nov 21  |[Neural nets wrapup](23-nnets-other.html) | HW 4 due |
 | 23 Nov 21  |  |
 {: .table .table-striped}
 
@@ -164,9 +164,9 @@ Optional reading
 
 |Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
-|25 Nov 20 |[Intro to PCA](lecture-slides/24-pca-intro.html), [Issues with PCA](lecture-slides/25-pca-issues.html)  |
-|30 Nov 20 | [PCA v KPCA](lecture-slides/00-pca-v-kpca.html), [Manifold learning](lecture-slides/26-manifolds.html)      |
-|2 Dec 20  |[K means clustering](lecture-slides/27-kmeans.html), [Hierarchical clustering](lecture-slides/28-hclust.html) |HW 5 due |
+|25 Nov 20 |[Intro to PCA](24-pca-intro.html), [Issues with PCA](25-pca-issues.html)  |
+|30 Nov 20 | [PCA v KPCA](00-pca-v-kpca.html), [Manifold learning](26-manifolds.html) |
+|2 Dec 20  |[K means clustering](27-kmeans.html), [Hierarchical clustering](28-hclust.html) |HW 5 due |
 |7 Dec 20  | |PC 3 due |
 {: .table .table-striped}
 

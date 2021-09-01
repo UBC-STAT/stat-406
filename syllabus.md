@@ -8,11 +8,11 @@ Term 2021 Winter 1: 07 Sep - 07 Dec 2021
 
 ### COVID information TL;DR
 
-<center>
-**When you come to class, wear a mask.**  
+
+**When you come to class, wear a mask.**    
 **If you think you're sick, stay home no matter what.**  
 More details [below](#covid-safety-in-the-classroom)
-</center>
+
  
 ### Course info
 __Instructor__:  
@@ -32,7 +32,7 @@ Xiaoting: TBD
 
 __Course webpage__:    
 WWW: <https://ubc-stat.github.io/stat-406/>  
-Github: <https://learning.github.ubc.ca/STAT-535A-201-2020W/>  
+Github: <https://learning.github.ubc.ca/STAT-406-101-2021W/>  
 See also Canvas
 
 __Lectures__:  
@@ -96,7 +96,7 @@ expected.
 
 *An Introduction to Statistical Learning*, James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted \[ISLR\])
 
-Available **free** online: <http://faculty.marshall.usc.edu/gareth-james/ISL/index.html>
+Available **free** online: <https://www.statlearning.com>
 
 **Optional (but excellent)**
     
@@ -110,7 +110,7 @@ this is the book for you. With the exception of Chapter 10, all readings from
 \[ESL\] are optional.
 
 
-### Course assesssment opportunities
+### Course assessment opportunities
 
 
 15 Reading checks and worksheets  

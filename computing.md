@@ -44,6 +44,25 @@ Chose and download the Windows version of RStudio from <https://www.rstudio.com/
 
 To see if you were successful, try opening RStudio by clicking on its icon. 
 
+## Packages you need
+
+You should be able to install the vast majority of necessary packages by running
+the following code in the `R` console.
+
+```
+if (!suppressWarnings(require(remotes, quietly = TRUE)))
+  install.packages("remotes")
+tmp <- tempdir()
+dp <- file.path(tmp, "DESCRIPTION")
+download.file(
+  "https://raw.githubusercontent.com/UBC-STAT/stat-406-worksheets/main/DESCRIPTION",
+  dp
+)
+remotes::install_deps(tmp)
+unlink(tmp)
+rm(tmp, dp)
+```
+
 
 ## Git and Github
 
@@ -61,7 +80,7 @@ Many other git issues can also be resolved by examining that book.
 1. Work on your documents and save frequently.
 1. Stage your changes `git add <name-of-document1>` repeat for each changed document. `git add .` stages all changed documents.
 1. Commit your changes `git commit -m "some message that is meaningful"` 
-1. Repeat 2-4 as necessary.
+1. Repeat 3-5 as necessary.
 1. Push to Github `git push`.
 1. When done, go to Github and open a PR.
 1. Switch back to `main` to avoid future headaches. `git checkout main`.
@@ -72,7 +91,7 @@ Many other git issues can also be resolved by examining that book.
 1. Work on your documents and save frequently.
 1. Stage your changes by clicking the check boxes.
 1. Commit your changes by clicking **Commit**. 
-1. Repeat 2-4 as necessary.
+1. Repeat 3-5 as necessary.
 1. Push to Github <i class="fas fa-arrow-up" style="color:green"></i>
 1. When done, go to Github and open a PR.
 1. Use the dropdown menu to go back to `main` and avoid future headaches.
@@ -93,11 +112,11 @@ This switches to `main`. Then pull and start the new assignment following the wo
 **You forgot to work on a new branch**  
 Ugh, you did 5 points of worksheets before realizing you forgot to create a new branch. Don't stress. There are some things below to try. But if you're confused ASK. We've had practice with this, and soon you will too!  
 
-_(1) If you started from `main` and haven't made any commits:_  
+_(1) If you started from `main` and haven't made any commits (but you SAVED!!):_  
 ```
 git branch -b <new-branch-name>
 ```
-This keeps everything you did and puts you on a new branch. No problem. Commit and proceed as usual.
+This keeps everything you have and puts you on a new branch. No problem. Commit and proceed as usual.
 
 _(2) If you are on `main` and made some commits:_
 ```
@@ -115,19 +134,19 @@ git checkout <new-branch-name>
 ```
 and continue working.
 
-_(3) If you started from `<some-branch>`:_  
+_(3) If you started from `<some-branch>` instead of `main`:_  
 This one is harder, and I would suggest getting in touch with the TAs. Here's the procedure.
 ```
 git commit -am "uhoh, I need to be on a different branch"
 git branch <new-branch-name>
 ```
-Commit your work, then create a new branch. It's got all your stuff.
+Commit your work with a dumb message, then create a new branch. It's got all your stuff.
 ```
 git log
 ```
 Locate the most recent commit before you started working. It's a long string like `ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
 ```
-git rebase --onto master ac2a8 <new-branch-name>
+git rebase --onto main ac2a8 <new-branch-name>
 git checkout <new-branch-name>
 ```
-This makes the new branch look like the `master` but without the differences from master that are on `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.
+This makes the new branch look like the `master` but without the differences from master that are on `ac2a8` and WITH all the work you did after `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.

@@ -1,5 +1,6 @@
 rmds=$(wildcard *.Rmd)
 htmls=$(rmds:.Rmd=.html)
+khtmls=$(wildcard *.html)
 
 
 all: $(htmls)
@@ -21,8 +22,7 @@ clean:
 
 .PHONY: webcp
 webcp:
-	rsync -avz $(htmls) ../schedule/
+	rsync -avz $(khtmls) ../schedule/
 	rsync -avz materials ../schedule/
 	rsync -avz gfx ../schedule/
-	rsync -avz libs ../schedule/
 	rsync -avz rmd_gfx ../schedule/
