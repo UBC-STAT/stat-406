@@ -31,15 +31,17 @@ Required reading
 : \[ISLR\] 2.1, 2.2, and Chapter 3 (this material is review)
 
 Video lectures from last year
-: Lecture 0 (in class on Thursday), Video Lectures 1 and 2
+: Lectures 1 and 2
 
 Optional reading
 : \[ESL\] 2.4 and 2.6
 
-|Date      |Slides |Activity    |
+|Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
 |7 Sep 21  | |(no class, Imagine UBC) |
-|9 Sep 21  |[Intro to class](assets/slides/00-intro-to-class.html), [Git](assets/slides/00-version-control.html) |Syllabus, Git, Github |
+|9 Sep 21  |[Intro to class](assets/slides/00-intro-to-class.html), [Git](assets/slides/00-version-control.html) |Syllabus, Git, Github | |
+|14 Sep 21 | [Review LM](assets/slides/01-lm-review.html), [Example](assets/slides/02-lm-example.html), [Regression](assets/slides/03-regression-function.html) |   |
+
 {: .table .table-striped}
 
 
@@ -59,13 +61,12 @@ Video lectures from last year
 Optional reading
 : \[ESL\] 7.1-7.5, 7.10
 
-|Date      |Slides |Activity    |
+|Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
-|14 Sep 21 | [Review LM](assets/slides/01-lm-review.html), [Example](assets/slides/02-lm-example.html) |   |
-|16 Sep 21 |          | |
-|21 Sep 21 | | PC 1 due |
-|23 Sep 21 |  |
-|28 Sep 21 |           | HW 1 due  |
+|16 Sep 21 |[BV](assets/slides/04-bias-variance.html), [Risk estimation](assets/slides/05-estimating-test-mse.html), [IC](assets/slides/06-information-criteria.html)    | |
+|21 Sep 21 | [Greedy selection](assets/slides/07-greedy-selection.html), [Ridge](assets/slides/08-ridge-regression.html), [Lasso](09-l1-penalties.html)   | PC 1 due |
+|23 Sep 21 | [NP 1](assets/slides/10-basis-expansions.html), [NP 2](assets/slides/11-kernel-smoothers.html)  |
+|28 Sep 21 | [Why smoothing?](assets/slides/12-why-smooth.html), [Other](assets/slides/13-gams-trees.html)         | HW 1 due  |
 {: .table .table-striped}
 
 
@@ -85,14 +86,14 @@ Video lectures
 Optional reading
 : \[ESL\] 3.4, 3.8, 5.4, 6.3
 
-|Date      |Activity  |
-|:---------|:---------|
+|Date      |Slides |Deadlines    |
+|:---------|:---------|:-----|
 |30 Sep 21 |(no class, National Day for Truth and Reconciliation) |
-|5 Oct 21  |          |
-|7 Oct 21  |          |
-|12 Oct 21 |          |
-|14 Oct 21 |HW 2 due  |
-|19 Oct 21 |          |
+|5 Oct 21  | [Classification](assets/slides/14-classification-intro) |  |
+|7 Oct 21  |          |  |
+|12 Oct 21 |          |  |
+|14 Oct 21 |          |  |
+|19 Oct 21 |          | HW 2 due |
 {: .table .table-striped}
 
 
