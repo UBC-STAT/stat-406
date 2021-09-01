@@ -10,9 +10,9 @@ Readings from [\[ISLR\]](https://www.statlearning.com) are always required while
 
 <div class="text-center">
 <div class="btn-group" role="group">
-  <a role="button" class="btn btn-secondary" color="white" href="#0-introduction-and-review">0 Intro</a>
-  <a role="button" class="btn btn-secondary" color="white" href="#1-model-accuracy">1 Model Checks</a>
-  <a role="button" class="btn btn-secondary" color="white" href="#2-regularization-smoothing-and-trees">2 Regression</a>
+  <a role="button" class="btn btn-secondary text-white" href="#0-introduction-and-review">0 Intro</a>
+  <a role="button" class="btn btn-secondary text-white" href="#1-model-accuracy">1 Model Checks</a>
+  <a role="button" class="btn btn-secondary text-white" href="#2-regularization-smoothing-and-trees">2 Regression</a>
   <a role="button" class="btn btn-secondary" color="white" href="#3-classification">3 Classification</a>
   <a role="button" class="btn btn-secondary" color="white" href="#4-modern-techniques">4 Modern</a>
   <a role="button" class="btn btn-secondary" color="white" href="#5-unsupervised-learning">5 Unsupervised</a>
