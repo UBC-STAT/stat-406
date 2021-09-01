@@ -5,7 +5,7 @@ icon: "far fa-calendar-alt"
 ---
 
 Required readings and lecture videos are listed below for each module.
-Readings from [\[ISLR\]](http://faculty.marshall.usc.edu/gareth-james/ISL/index.html) are always required while those from [\[ESL\]](https://web.stanford.edu/~hastie/ElemStatLearn/) are optional and supplemental. The exception is the coverage of Neural Networks in Module 4 (this material does not appear in \[ISLR\]). Required readings and videos must be completed before the mini quiz at the beginning of each module.
+Readings from [\[ISLR\]](https://www.statlearning.com) are always required while those from [\[ESL\]](https://web.stanford.edu/~hastie/ElemStatLearn/) are optional and supplemental. The exception is the coverage of Neural Networks in Module 4 (this material does not appear in \[ISLR\]). Required readings and videos must be completed before the mini quiz at the beginning of each module.
 
 
 <div class="text-center">

@@ -102,6 +102,5 @@ garbage = with(ChickWeight,
 
 * [R for Data Science](http://r4ds.had.co.nz), a nice textbook from Hadley Wickham
 * The official intro, "An Introduction to R", available online in [html](http://cran.r-project.org/doc/manuals/R-intro.html) and [pdf](http://cran.r-project.org/doc/manuals/R-intro.pdf)
-* My (very brief) introduction to [programming](htttps://dajmcdon.github.io/assets/code-links/programming.pdf)
-* My (very brief) introduction to [statistical graphics](htttps://dajmcdon.github.io/assets/code-links/graphics.pdf)
-
+* My (very brief) introduction to [programming](https://dajmcdon.github.io/assets/code-links/programming.pdf)
+* My (very brief) introduction to [statistical graphics](https://dajmcdon.github.io/assets/code-links/graphics.pdf)
