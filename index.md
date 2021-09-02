@@ -3,11 +3,11 @@ layout: home
 ---
 
 <div class="jumbotron">
-  <h1 class="display-3">STAT 406</h1>
+  <h1 class="display-3">STAT 406 2021W</h1>
   <p class="lead">Methods for Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
-  <a class="btn btn-danger btn-lg" href="schedule/" role="button">Jump to Schedule.</a>
+  <a class="btn btn-danger btn-lg text-white" href="schedule/" role="button">Jump to Schedule.</a>
   </p>
 </div>
 
