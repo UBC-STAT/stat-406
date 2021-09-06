@@ -106,7 +106,7 @@ Also available **free** online: <https://web.stanford.edu/~hastie/ElemStatLearn/
 
 This second book is a more advanced treatment of a superset of the topics we
 will cover. If you want to learn more and understand the material more deeply,
-this is the book for you. With the exception of Chapter 10, all readings from
+this is the book for you. All readings from
 \[ESL\] are optional.
 
 
@@ -156,7 +156,7 @@ review. Once correct, you receive 2 points. Only one additional review will be
 allowed per submission. If egregious errors remain (in the opinion of the
 grader) then you will not receive credit (but you can submit another worksheet).
 The overriding theme here is "if you put in the effort, you'll get all the
-points.
+points."
 
 It's important here to recognize just how important active participation in
 these activities is. You learn by doing, and this is your opportunity to learn
@@ -246,8 +246,8 @@ quizzes, one to go with each Assignment. They're really "part of the
 assignment": you do them on your own and submit by the accompanying assignment
 deadline. They're just on Canvas to make grading easier for the TAs. Just like
 the Assignments, only 4 will count, but because they're on Canvas, your lowest
-score will get dropped. You can complete it anytime by the deadline (I'll try to
-make sure that they open at the start of the module), but you only get **one**
+score will get dropped. They will be open for 1 week up to the deadline. 
+You can complete it anytime by the deadline, but you only get **one**
 chance.
 
 
@@ -259,7 +259,7 @@ project has two intermediate checkpoints (see [schedule](/schedule/)).
 
 Similar policies on plagiarism as for the homework apply.
 
-More details are available on the project page.
+More details will be made available.
 
 
 
@@ -285,6 +285,9 @@ Masks
   your mask on between sips.** Please note that there are some people who cannot
   wear a mask. These individuals are equally welcome in our class.
 
+: Students who need to request an exemption to the indoor mask mandate must do so based on one of the grounds for exemption detailed in the PHO Order on Face Coverings (COVID-19). Such requests must be made through the Center for Accessibility (info.accessibility@ubc.ca).
+
+
 Vaccination
 : If you have not yet had a chance to get vaccinated against Covid-19, vaccines
   are available to you, free, and on campus. See
@@ -300,15 +303,15 @@ Seating in class
 
 #### Your personal health
 
-**If you’re sick, it’s important that you stay home – no matter what you think
+**If you are sick, it’s important that you stay home – no matter what you think
 you may be sick with (e.g., cold, flu, other).** 
-* A daily self-health assessment is **required*** before attending campus. Every
+* A daily self-health assessment is **required** before attending campus. Every
   day, before coming to class, complete the self-assessment for Covid symptoms
-  using this tool: https://bc.thrive.health/covid19/en
+  using this tool: <https://bc.thrive.health/covid19/en>
 * Do not come to class if you have Covid symptoms, have recently tested positive
   for Covid, or are required to quarantine. You can check this website to find
   out if you should self-isolate or self-monitor:
-  http://www.bccdc.ca/health-info/diseases-conditions/covid-19/self-isolation#Who.
+  <http://www.bccdc.ca/health-info/diseases-conditions/covid-19/self-isolation#Who.>
 * Your precautions will help reduce risk and keep everyone safer. In this class,
   the marking scheme is intended to provide flexibility so that you can
   prioritize your health and still be able to succeed. All work can be completed
@@ -318,17 +321,14 @@ you may be sick with (e.g., cold, flu, other).** 
       students in the class. You can help each other by sharing notes. If you
       don’t yet know anyone in the class, post on the discussion forum to
       connect with other students.
-    * Consult the class resources on Canvas. We will post all the slides,
+    * Consult the class resources on here and on Canvas. We will post all the slides,
       readings, and recordings for each class day.
+    * All recordings from last year are available on Canvas. 
     * Use Slack  for help.
     * Come to virtual office hours.
-    * See the marking scheme for reassurance about what flexibility you have. 
-* **If you are sick on a final exam day, do not attend the exam.** You must
-  apply for deferred standing (an academic concession) through Science Advising
-  no later than 48 hours after the missed final exam/assignment. Students who
-  are granted deferred standing write the final exam/assignment at a later date.
-  Learn more and find the application online:
-  https://science.ubc.ca/students/advising/concession
+    * See the marking scheme for reassurance about what flexibility you have. No part of your final grade will be directly impacted by missing class.
+* **If you are sick on a final exam day, do not attend the exam.** You must follow up with your home faculty's advising office to apply for [deferred standing](https://students.ubc.ca/enrolment/academic-learning-resources/academic-advising). Students who are granted deferred standing write the final exam/assignment at a later date. If you're a Science student, you must apply for deferred standing (an academic concession) through Science Advising no later than 48 hours after the missed final exam/assignment. Learn more and find the application [online](https://science.ubc.ca/students/advising/concession). For additional information about academic concessions, see the UBC policy [here](http://www.calendar.ubc.ca/vancouver/index.cfm?tree=3,329,0,0).
+
 
 
 **Please talk with me if you have any concerns or ask me if you are worried

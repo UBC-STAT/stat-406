@@ -6,7 +6,6 @@ icon: "fas fa-question-circle"
 
 
 
-
 ### How do I succeed in this class?
 
 * Complete readings and watch videos before the material is covered in class, and then review again afterwards.

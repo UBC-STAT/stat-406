@@ -64,8 +64,8 @@ Optional reading
 |:---------|:-----------|:-----------|
 |16 Sep 21 |[Regression function](03-regression-function.html), [Bias and Variance](04-bias-variance.html)
 |21 Sep 21 |[Risk estimation](05-estimating-test-mse.html), [Info Criteria](06-information-criteria.html)    | |
-|23 Sep 21 | [Greedy selection](07-greedy-selection.html) | PC 1 due |
-|28 Sep 21 |         | HW 1 due  |
+|23 Sep 21 | [Greedy selection](07-greedy-selection.html) | HW 1 due |
+|28 Sep 21 |         | PC 1 due  |
 {: .table .table-striped}
 
 
@@ -91,8 +91,8 @@ Optional reading
 |5 Oct 21  |[Ridge](08-ridge-regression.html), [Lasso](09-l1-penalties.html)  |  |
 |7 Oct 21  |[NP 1](10-basis-expansions.html), [NP 2](11-kernel-smoothers.html) |  |
 |12 Oct 21 |[Why smoothing?](12-why-smooth.html)  |  |
-|14 Oct 21 |[Other](13-gams-trees.html)          |  |
-|19 Oct 21 |          | HW 2 due |
+|14 Oct 21 |[Other](13-gams-trees.html)          | HW 2 due |
+|19 Oct 21 |          |  |
 {: .table .table-striped}
 
 
@@ -113,9 +113,9 @@ Optional reading
 
 |Date      |Slides |Deadlines    |
 |:---------|:---------|:-----|
-|21 Oct 21 |[Classification](14-classification-intro.html), [LDA and QDA](15-LDA-and-QDA.html) | PC 2 |
+|21 Oct 21 |[Classification](14-classification-intro.html), [LDA and QDA](15-LDA-and-QDA.html) | PC 2 due |
 |26 Oct 21 |[Gradient descent](00-gradient-descent.html), [Logistic regression](16-logistic-regression.html) |
-|28 Oct 21 |[Nonlinear](17-nonlinear-classifiers.html)  |
+|28 Oct 21 |[Nonlinear](17-nonlinear-classifiers.html)  | HW 3 due |
 |2 Nov 21  |          |
 {: .table .table-striped}
 
@@ -127,13 +127,13 @@ Topics
 : bagging; boosting; random forests; neural networks
 
 Required reading  
-: \[ISLR\] 5.2, 8.2, \[ESL\] 11.1, 11.3, 11.4, 11.7
+: \[ISLR\] 5.2, 8.2, 10.1, 10.2, 10.6, 10.7 \[ESL\] 11.1, 11.3, 11.4, 11.7
 
 Video lectures  
 : Lecture 18-23
 
 Optional reading
-: \[ESL\] 10.1-10.10 (skip 10.7), 11.2, 11.5, 11.6
+: \[ESL\] 10.1-10.10 (skip 10.7), 11.1-11.7
 
 |Date      |Slides |Deadlines    |
 |:---------|:---------|:-----|
@@ -153,7 +153,7 @@ Topics
 : dimension reduction and clustering
 
 Required reading  
-: \[ISLR\] 10
+: \[ISLR\] 12
 
 Video lectures  
 : Lectures 24-29 (Lecture 29 will be a asynchronous)
