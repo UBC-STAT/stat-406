@@ -137,8 +137,8 @@ Optional reading
 
 |Date      |Slides |Deadlines    |
 |:---------|:---------|:-----|
-| 4 Nov 21   | [The bootstrap](18-the-bootstrap.html) |HW 3 due |
-| 9 Nov 21   |[Bagging and random forests](19-bagging-and-rf.html), [Boosting](20-boosting.html)|
+| 4 Nov 21   | [The bootstrap](18-the-bootstrap.html) |  |
+| 9 Nov 21   |[Bagging and random forests](19-bagging-and-rf.html), [Boosting](20-boosting.html)| PC 2 due |
 | 11 Nov 21  | (no class, Midterm Break) |
 | 16 Nov 21  |[Intro to neural nets](21-nnets-intro.html), [Estimating neural nets](22-nnets-estimation.html)  |
 | 18 Nov 21  |[Neural nets wrapup](23-nnets-other.html) | HW 4 due |

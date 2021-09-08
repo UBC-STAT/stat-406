@@ -20,14 +20,15 @@ Daniel McDonald
 Office: Earth Sciences Building 3106  
 Website: <https://dajmcdon.github.io/>  
 Email: <daniel@stat.ubc.ca>  
+Slack: [@prof-daniel](https://stat-406-2021w.slack.com/team/U02D54WLXRT)
 
 __Office hours__:    
-Daniel: TBD   
+Daniel: Thursday 1400-1500   
 
 TAs  
-Sherry: TBD  
-Chloe: TBD  
-Xiaoting: TBD  
+Xiaoxuan: Friday 1500-1600  
+Chloe: Wednesday 0800-0900    
+Xiaoting: Monday 0900-1000  
 
 
 __Course webpage__:    
