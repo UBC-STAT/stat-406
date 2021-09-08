@@ -114,20 +114,20 @@ this is the book for you. All readings from
 ### Course assessment opportunities
 
 
-15 Reading checks and worksheets  
+15 Worksheets and labs  
 20 Assignments  
 10 Mini quizzes  
 20 Project  
 35 Final exam
 
 
-#### Reading checks and worksheets
+#### Worksheets and labs
 
 These are two different components intended to keep you on track. Both are to be
 submitted via pull requests in your personal `worksheets-<username>` repo (see
 the [computing tab](/computing/) for descriptions on how to do this.
 
-**Reading checks** are simply extracts of the code from the online [course
+**Worksheets** are simply extracts of the code from the online [course
 notes](https://ubc-stat.github.io/stat-406-worksheets). The code for each topic
 has two lines removed. You should read the notes and work through the code you
 have, executing the commands and examining the output. The purpose is for you to
@@ -135,27 +135,27 @@ engage in _active_ rather than _passive_ reading. When you discover the missing
 lines, simply copy the correct lines into your file. That's it. These are simple
 and worth 1 point each up to a maximum of 20 points.
 
-**Worksheets** are more thorough. They typically have a few questions for you to
-answer or code to implement. These will often be done _during class_ or _lab_
+**Labs** are more thorough. They typically have a few questions for you to
+answer or code to implement. These will often be done _during class_ 
 periods. But you can do them on your own as well. These are worth 2 points each
 up to a maximum of 20 points.
 
 **Rules** To get all 15%, you need to accumulate 30 total points during the
-semester. This can be done in any combination of reading check points and
-worksheets (respecting the limit). Of course you can (and should!) do more, but
+semester. This can be done in any combination of worksheet points and
+labs (respecting the limit). Of course you can (and should!) do more, but
 this isn't required. You may submit up to 5 points at a time in a pull request
 and you may submit only 5 points per week. In your PR, there must be as many
-commits as points. So a PR with 2 reading checks and 1 worksheet should have at
-least 4 commits (probably one for each check and 2 for the worksheet). This will
+commits as points. So a PR with 2 worksheets and 1 lab should have at
+least 4 commits (probably one for each worksheet and 2 for the lab). This will
 be lightly enforced initially. The last day to open a PR is December 5.
 
-**Marking** Reading checks get 1 if correct and 0 otherwise. If you get 0, you
-can't resubmit this check (but you can submit others). Worksheets get 2 points
+**Marking** Worksheets get 1 if correct and 0 otherwise. If you get 0, you
+can't resubmit this check (but you can submit others). Labs get 2 points
 when correct. Sometimes the graders will ask for changes in their PR review. If
-they do, implement the corrections, make another commit, and re-request the
+they do, implement the corrections, make another commit, push, and re-request the
 review. Once correct, you receive 2 points. Only one additional review will be
 allowed per submission. If egregious errors remain (in the opinion of the
-grader) then you will not receive credit (but you can submit another worksheet).
+grader) then you will not receive credit (but you can submit another labs).
 The overriding theme here is "if you put in the effort, you'll get all the
 points."
 
