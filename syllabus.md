@@ -464,4 +464,4 @@ help get you the support you need.
 
 <br>
 
-[A dated PDF is available at this link.](/syllabus.pdf)
+[A dated PDF is available at this link.](/assets/syllabus.pdf)
