@@ -81,19 +81,19 @@ Many other git issues can also be resolved by examining that book.
 1. Stage your changes `git add <name-of-document1>` repeat for each changed document. `git add .` stages all changed documents.
 1. Commit your changes `git commit -m "some message that is meaningful"` 
 1. Repeat 3-5 as necessary.
-1. Push to Github `git push`.
-1. When done, go to Github and open a PR.
+1. Push to Github `git push`. It may suggest a longer form of this command, obey.
+1. When done, go to Github and open a PR. Request review from the TAs.
 1. Switch back to `master` to avoid future headaches. `git checkout main`.
 
 **Rstudio version** (uses the Git tab. Usually near Environment/History in the upper right)  
-1. (Optional, but useful. Pull in remote changes.) Click <i class="fas fa-arrow-down" style="color:blue"></i>.
+1. Make sure you are on `master`. Pull in remote changes. Click <i class="fas fa-arrow-down" style="color:blue"></i>.
 1. Create a new branch by clicking the think that looks kinda like <i class="fas fa-code-branch" style="color:purple"></i>.
 1. Work on your documents and save frequently.
 1. Stage your changes by clicking the check boxes.
 1. Commit your changes by clicking **Commit**. 
 1. Repeat 3-5 as necessary.
 1. Push to Github <i class="fas fa-arrow-up" style="color:green"></i>
-1. When done, go to Github and open a PR.
+1. When done, go to Github and open a PR. Request review from the TAs.
 1. Use the dropdown menu to go back to `master` and avoid future headaches.
 
 ### Fixing common problems

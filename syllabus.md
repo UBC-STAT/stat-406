@@ -37,11 +37,8 @@ Github: <https://learning.github.ubc.ca/STAT-406-101-2021W/>
 See also Canvas
 
 __Lectures__:  
-Tue/Thu 1230h - 1400h UTC-7 Vancouver local time
-
-
-All students should plan to attend the following dates during the standard time (1530h-1700h) for exams:
-* UBC scheduled Final Exam Period (TBA)
+Tue/Thu 1230h - 1400h UTC-7 Vancouver local time  
+(In person) Leonard S. Klinck Rm 200
 
 
 __Textbooks__:  
@@ -144,7 +141,8 @@ up to a maximum of 20 points.
 semester. This can be done in any combination of worksheet points and
 labs (respecting the limit). Of course you can (and should!) do more, but
 this isn't required. You may submit up to 5 points at a time in a pull request
-and you may submit only 5 points per week. In your PR, there must be as many
+and you may submit up to 5 points per week and only 1 PR per week. 
+In your PR, there must be at least as many
 commits as points. So a PR with 2 worksheets and 1 lab should have at
 least 4 commits (probably one for each worksheet and 2 for the lab). This will
 be lightly enforced initially. The last day to open a PR is December 5.
