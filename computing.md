@@ -83,10 +83,10 @@ Many other git issues can also be resolved by examining that book.
 1. Repeat 3-5 as necessary.
 1. Push to Github `git push`. It may suggest a longer form of this command, obey.
 1. When done, go to Github and open a PR. Request review from the TAs.
-1. Switch back to `master` to avoid future headaches. `git checkout main`.
+1. Switch back to `main` to avoid future headaches. `git checkout main`.
 
 **Rstudio version** (uses the Git tab. Usually near Environment/History in the upper right)  
-1. Make sure you are on `master`. Pull in remote changes. Click <i class="fas fa-arrow-down" style="color:blue"></i>.
+1. Make sure you are on `main`. Pull in remote changes. Click <i class="fas fa-arrow-down" style="color:blue"></i>.
 1. Create a new branch by clicking the think that looks kinda like <i class="fas fa-code-branch" style="color:purple"></i>.
 1. Work on your documents and save frequently.
 1. Stage your changes by clicking the check boxes.
@@ -94,31 +94,31 @@ Many other git issues can also be resolved by examining that book.
 1. Repeat 3-5 as necessary.
 1. Push to Github <i class="fas fa-arrow-up" style="color:green"></i>
 1. When done, go to Github and open a PR. Request review from the TAs.
-1. Use the dropdown menu to go back to `master` and avoid future headaches.
+1. Use the dropdown menu to go back to `main` and avoid future headaches.
 
 ### Fixing common problems
 
 **master/main**  
-"master" has some pretty painful connotations. So as part of an effort to remove racist names from code, the default branch is now "main" on new versions of GitHub. But old versions (like the UBC version) still have "master". Below, I'll use "master", but if you see "main" on what you're doing, that's the one to use.
+"master" has some pretty painful connotations. So as part of an effort to remove racist names from code, the default branch is now "main" on new versions of GitHub. But old versions (like the UBC version) still have "master". Below, I'll use "main", but if you see "master" on what you're doing, that's the one to use.
 
 
 **Start from main**  
-Branches should be created from the `master` branch, not the one you used for the last assignment.  
+Branches should be created from the `main` branch, not the one you used for the last assignment.  
 ```
-git checkout master
+git checkout main
 ```
-This switches to `master`. Then pull and start the new assignment following the workflow above. (In Rstudio, use the dropdown menu.)
+This switches to `main`. Then pull and start the new assignment following the workflow above. (In Rstudio, use the dropdown menu.)
 
 **You forgot to work on a new branch**  
 Ugh, you did 5 points of worksheets before realizing you forgot to create a new branch. Don't stress. There are some things below to try. But if you're confused ASK. We've had practice with this, and soon you will too!  
 
-_(1) If you started from `master` and haven't made any commits (but you SAVED!!):_  
+_(1) If you started from `main` and haven't made any commits (but you SAVED!!):_  
 ```
 git branch -b <new-branch-name>
 ```
 This keeps everything you have and puts you on a new branch. No problem. Commit and proceed as usual.
 
-_(2) If you are on `master` and made some commits:_
+_(2) If you are on `main` and made some commits:_
 ```
 git branch <new-branch-name>
 git log
@@ -128,7 +128,7 @@ The first line makes a new branch with all the stuff you've done. Then we look a
 ```
 git reset ac2a8 --hard
 ```
-This rolls `master` back to that commit. You don't need the whole string, just the first few characters. Finally
+This rolls `main` back to that commit. You don't need the whole string, just the first few characters. Finally
 ```
 git checkout <new-branch-name>
 ```
@@ -146,7 +146,7 @@ git log
 ```
 Locate the most recent commit before you started working. It's a long string like `ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
 ```
-git rebase --onto master ac2a8 <new-branch-name>
+git rebase --onto main ac2a8 <new-branch-name>
 git checkout <new-branch-name>
 ```
-This makes the new branch look like `master` but without the differences from master that are on `ac2a8` and WITH all the work you did after `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.
+This makes the new branch look like `main` but without the differences from `main` that are on `ac2a8` and WITH all the work you did after `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.
