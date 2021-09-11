@@ -53,7 +53,7 @@ By the due date, one member of your group must create a private repository. If i
 
 (5 points / 100 total)
 
-This is a maximum 1-page long synopsis of your intentions. It should contain the following information: 
+This is a synopsis of your intentions. It should contain the following information: 
 
 1. project title 
 2. team members
@@ -107,41 +107,6 @@ penalized.
 
 Again, we will pull your repo on the due date. If you fail to name your file properly, or fail to compile, we won't know what to mark. So be sure that this happens on time.
 
-### PC 2 Rubric
-
-
-
-__Words__ (6 / 6) The text is laid out cleanly, with clear divisions
-and transitions between sections and sub-sections. The writing itself
-is well-organized, free of grammatical and other mechanical errors,
-divided into complete sentences logically grouped into paragraphs and
-sections, and easy to follow from the presumed level of knowledge. 
-
-__Numbers__ (1 / 1) All numerical results or summaries are reported to
-suitable precision, and with appropriate measures of uncertainty
-attached when applicable. 
-
-__Pictures__ (7 / 7) Figures and tables are easy to read, with
-informative captions, axis labels and legends, and are placed near the
-relevant pieces of text or referred to with convenient labels. 
-
-__Code__ (4 / 4) The code is formatted and organized so that it is easy
-for others to read and understand. It is indented, commented, and uses
-meaningful names. It only includes computations which are actually
-needed to answer the analytical questions, and avoids redundancy. Code
-borrowed from the notes, from books, or from resources found online is
-explicitly acknowledged and sourced in the comments. Functions or
-procedures not directly taken from the notes have accompanying tests
-which check whether the code does what it is supposed to. The text of
-the report is free of intrusive blocks of code. With regards to R Markdown,
-all calculations are actually done in the file as it knits, and only
-relevant results are shown.
-
-__Exploratory data analysis__ (12 / 12) Variables are examined individually and
-bivariately. Features/observations are discussed with appropriate
-figure or tables. The relevance of the EDA to the questions and
-potential models is clearly explained.
-
 
 
 
@@ -178,58 +143,6 @@ rewarded. Ugly plots, uninterpretable analysis, etc. will be
 penalized.
 
 
-
-### PC 3 rubric
-
-
-
-__Words__ (8 / 8) The text is laid out cleanly, with clear divisions and
-transitions between sections and sub-sections.  The writing itself is
-well-organized, free of grammatical and other mechanical errors, divided into
-complete sentences logically grouped into paragraphs and sections, and easy to
-follow from the presumed level of knowledge.
-
-__Numbers__ (1 / 1) All numerical results or summaries are reported to
-suitable precision, and with appropriate measures of uncertainty attached when
-applicable.
-
-__Pictures__ (7 / 7) Figures and tables are easy to read, with informative
-captions, axis labels and legends, and are placed near the relevant pieces of
-text.
-
-__Code__ (4 / 4) The code is formatted and organized so that it is easy
-for others to read and understand.  It is indented, commented, and uses
-meaningful names.  It only includes computations which are actually needed to
-answer the analytical questions, and avoids redundancy.  Code borrowed from the
-notes, from books, or from resources found online is explicitly acknowledged
-and sourced in the comments.  Functions or procedures not directly taken from
-the notes have accompanying tests which check whether the code does what it is
-supposed to. The text of the report is free of intrusive blocks of code.  If
-you use R Markdown, all calculations are actually done in the file as it knits,
-and only relevant results are shown. 
-
-__Exploratory Data Analysis__ (12 / 12) Variables are examined individually and
-bivariately. Features/observations are discussed with appropriate
-figure or tables. The relevance of the EDA to the questions and
-potential models is clearly explained.
-
-__Results and analysis__ (25 / 25) The statistical summaries
-are clearly related to, or possibly derive from, the substantive questions of interest.  Any
-assumptions are checked by means of appropriate diagnostic plots or
-formal tests. Limitations from un-fixable problems are
-clearly noted. The actual estimation
-of parameters, predictions, or other calculations are technically correct.  All calculations
-based on estimates are clearly explained, and also technically correct.  All
-estimates or derived quantities are accompanied with appropriate measures of
-uncertainty. 
-
-__Conclusions__ (8 / 8) The substantive questions are answered as
-precisely as the data and the model allow.  The chain of reasoning from
-estimation results about models, or derived quantities, to substantive
-conclusions is both clear and convincing.  Contingent answers ("if $X$, then
-$Y$, but if $Z$, then $W$") are likewise described as warranted by the
-and data.  If uncertainties in the data mean the answers to some
-questions must be imprecise, this too is reflected in the conclusions.
 
 
 ## Peer evaluation and sand bagging
