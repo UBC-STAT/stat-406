@@ -86,13 +86,13 @@ not be wasted.
 
     This section should occupy the remainder of your report.
 
-Submission is an R markdown file and a compiled pdf. The document title should be "checkpoint2.Rmd". Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
+Submission is an R markdown file and a compiled pdf. The document title should be "report.Rmd". Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
 carefully both in the text and with nice labels. Plots with no description are not useful.
 Anything exceptionally interesting will be
 rewarded. Ugly plots, uninterpretable analysis, etc. will be
 penalized.
 
-Again, we will pull your repo on the due date.
+Again, we will pull your repo on the due date. If you fail to name your file properly, or fail to compile, we won't know what to mark. So be sure that this happens on time.
 
 ### PC 2 Rubric
 
@@ -163,6 +163,8 @@ Again, be sure to describe your graphics carefully. Plots with no description ar
 As before, anything exceptionally useful will be
 rewarded. Ugly plots, uninterpretable analysis, etc. will be
 penalized.
+
+
 
 ### PC 3 rubric
 
