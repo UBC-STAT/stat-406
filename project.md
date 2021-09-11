@@ -10,7 +10,7 @@ The premise of this project is  simple. You are to pick a real data set for whic
 
 You will submit three written components.
 
-- Project checkpoint 0: due __Tuesday, 28 September__
+- Project checkpoint 0: due __Monday, 27 September__
 - Project checkpoint 1: due __Tuesday, 28 September__
 - Project checkpoint 2: due __Tuesday, 9 November__
 - Project checkpoint 3: due __Tuesday, 7 December__
@@ -20,7 +20,7 @@ You may complete the project individually, but it is recommended that you form a
 
 ## Some sources for data
 
-* [Statistics Canada](https://github.com/mountainMath/cansim) An R package that loads various data
+* [`{CanSim}`](https://github.com/mountainMath/cansim) An R package that loads various data from Statistics Canada (see also there for much more)
 * `{covidcast}` an R package with access to a massive amount of US COVID-19 data (see the [API docs](https://cmu-delphi.github.io/delphi-epidata/api/covidcast.html))
 * [Tidy Tuesday](https://github.com/rfordatascience/tidytuesday) Many strange but possibly interest data sets.
 * [Vox Media](https://www.vox.com) Github [Repo](https://github.com/voxmedia/data-projects)
@@ -33,6 +33,20 @@ You may complete the project individually, but it is recommended that you form a
 * [18 interesting places to find data](https://www.dataquest.io/blog/free-datasets-for-projects/)
 * [A list of 100+ datasets](http://rs.io/100-interesting-data-sets-for-statistics/)
 * Hockey data from [War on Ice](https://github.com/war-on-ice)
+
+
+## Project checkpoint 0
+
+(0 points)
+
+By the due date, one member of your group must create a private repository. If it is not done by the deadline, there is no guarantee that you will be able to submit Checkpoint 1.
+
+* Click the Green "New" button.
+* Under "Repository template", select "Stat-406-101-2021W/project-template"
+* Your repository name must be of the form `project-<somename>`.
+* Make your repository "Private".
+* Once you make it, go to Settings > Collaborators & Teams. Under "Teams", add "The TAs" and give them "Write" permission. Under "Collaborators" add your teammates and give them "Write" permission.
+*
 
 
 ## Project checkpoint 1 
@@ -49,14 +63,13 @@ This is a maximum 1-page long synopsis of your intentions. It should contain the
 6. reading list (papers you may need to read)
 7. A team contract. It should contain 4 areas: Participation, Communication, Meetings, Conduct. For each area, write 1-2 sentences beginning with "We agree to ..." and including any rules to which your team collectively agrees (e.g. "We agree to make 1 commit per week." or "We agree to meet in the library every other Friday.")
 
-You can use bullet points for each of these items if you like.
+
 
 For your submission, 
 
-1. Create a repository in the course organization; 
-1. Add all members of your team;
-1. Create a file called `README`. Put the above points in the file in text.
-1. We will download your repo on the due date and grade from there.
+1. Edit the `README` in your team's repo.
+1. Put the above points in the file in text. You can use bullet points for each of these items if you like.
+1. We will download your repo on the due date and grade from there. Mainly for completion. The TA will create a branch with any comments and do a PR against `master`. You can then decide how to handle the suggestions.
 
 ## Project checkpoint 2
 
@@ -223,4 +236,13 @@ questions must be imprecise, this too is reflected in the conclusions.
 
 * As part of the final submission we will also do a peer evaluation. Hopefully, everyone will contribute. However, in the case that there are issues, we reserve the right to lower your (individual) score. As the term goes on, please reach out to us if there are issues (people not adhering to the contract). Note also, we have a full commit record and can see who is responsible for what components. Poor team performance will not be tolerated and groups with challenges may be split up at our discretion.
 
+## Don't do this
 
+While searching for interesting data to use for Module 5, I came across this analysis: https://towardsdatascience.com/machine-learning-on-the-rocks-f49f75219c02
+
+This has the hallmarks of something that could be interesting (a fun data set, organized nicely along the lines above, good formatting, appropriate length). But the statistical analysis is not very good at all. There is too much story telling (first we make a data frame then we look at box plots). But especially, it makes empty claims. For example: 
+> Clustering reveals a clearer indication of what whiskey types foster the rating (and sales, as well). See how the new Clusters distinguish themselves, as compared to the categories of previous analysis.
+
+There's no discussion as to **how** it does this. Nor does it really appear to be true in the figures.
+
+Avoid this type of mealy-mouthed analysis. It will not result in good marks.
