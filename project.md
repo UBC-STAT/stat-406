@@ -15,6 +15,9 @@ You will submit three written components.
 - Project checkpoint 2: due __Tuesday, 9 November__
 - Project checkpoint 3: due __Tuesday, 7 December__
 
+You may complete the project individually, but it is recommended that you form a group of up to 4 people. If you are looking for a group, join the #group-projects channel and post there.
+
+
 ## Some sources for data
 
 * [Statistics Canada](https://github.com/mountainMath/cansim) An R package that loads various data
@@ -32,10 +35,6 @@ You will submit three written components.
 * Hockey data from [War on Ice](https://github.com/war-on-ice)
 
 
-## Checkpoint 0
-
-Before the due date of checkpoint 1, you must let the TAs know (via Slack, use @the-tas) who is in your group. This way they can create a repo for you to collaborate and submit your work.
-
 ## Project checkpoint 1 
 
 (5 points / 100 total)
@@ -48,8 +47,16 @@ This is a maximum 1-page long synopsis of your intentions. It should contain the
 4. precise description of the question(s) you are trying to answer 
 5. a few sentences describing why this question/dataset is interesting to you
 6. reading list (papers you may need to read)
+7. A team contract. It should contain 4 areas: Participation, Communication, Meetings, Conduct. For each area, write 1-2 sentences beginning with "We agree to ..." and including any rules to which your team collectively agrees (e.g. "We agree to make 1 commit per week." or "We agree to meet in the library every other Friday.")
 
 You can use bullet points for each of these items if you like.
+
+For your submission, 
+
+1. Create a repository in the course organization; 
+1. Add all members of your team;
+1. Create a file called `README`. Put the above points in the file in text.
+1. We will download your repo on the due date and grade from there.
 
 ## Project checkpoint 2
 
@@ -79,11 +86,13 @@ not be wasted.
 
     This section should occupy the remainder of your report.
 
-Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
+Submission is an R markdown file and a compiled pdf. The document title should be "checkpoint2.Rmd". Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
 carefully both in the text and with nice labels. Plots with no description are not useful.
 Anything exceptionally interesting will be
 rewarded. Ugly plots, uninterpretable analysis, etc. will be
 penalized.
+
+Again, we will pull your repo on the due date.
 
 ### PC 2 Rubric
 
@@ -208,5 +217,8 @@ and data.  If uncertainties in the data mean the answers to some
 questions must be imprecise, this too is reflected in the conclusions.
 
 
+## Peer evaluation and sand bagging
+
+* As part of the final submission we will also do a peer evaluation. Hopefully, everyone will contribute. However, in the case that there are issues, we reserve the right to lower your (individual) score. As the term goes on, please reach out to us if there are issues (people not adhering to the contract). Note also, we have a full commit record and can see who is responsible for what components. Poor team performance will not be tolerated and groups with challenges may be split up at our discretion.
 
 
