@@ -60,10 +60,10 @@ set.seed(20210901)
 mob <- mobility[complete.cases(mobility),]
 n <- nrow(mob)
 mob <- mob %>% select(-Name,-ID,-State)
-set <- sample.int(n, floor(n*.75), FALSE)
+set <- sample.int(n, floor(n * .75), FALSE)
 train <- mob[set,]  #<<
 test <- mob[setdiff(1:n, set),]
-full <- lm(Mobility ~ ., data=train)
+full <- lm(Mobility ~ ., data = train)
 ```
 
 ???
@@ -76,8 +76,7 @@ Why don't we include `Name` or `ID`?
 ## Results
 
 ```{r}
-full %>% broom::tidy()
-full %>% broom::glance()
+summary(full)
 ```
 
 ---
@@ -105,7 +104,7 @@ plot(full, 2)
 reduced <- lm(
   Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
     Manufacturing + Migration_in + Religious + Single_mothers, 
-  data=train)
+  data = train)
 reduced %>% broom::tidy()
 reduced %>% broom::glance()
 ```
@@ -144,18 +143,20 @@ plot(reduced, 2)
 ```{r}
 test$full <- predict(full, newdata = test)
 test$reduced <- predict(reduced, newdata = test)
-mses <- function(preds, obs)  
-  mean( (obs - preds)^2 )
-sapply(
-  test[, c("full","reduced")], 
-  mses, 
-  obs = test$Mobility)
+
+mses <- function(preds, obs) mean( (obs - preds)^2 )
+
+summarize(
+  test, 
+  across(full:reduced, ~ mses(.x, Mobility))
+)
 ```
 ]
 
 .pull-right[
 ```{r, echo=FALSE}
-test %>% select(Mobility, full, reduced) %>%
+test %>% 
+  select(Mobility, full, reduced) %>%
   pivot_longer(-Mobility) %>%
   ggplot(aes(Mobility,value)) + geom_point(color="orange") + 
   facet_wrap(~name, 2) +
