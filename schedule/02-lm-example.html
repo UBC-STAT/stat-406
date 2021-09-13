@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # 02 Linear model example
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-09-01
+### Last modified - 2021-09-13
 
 ---
 
@@ -99,10 +99,10 @@ set.seed(20210901)
 mob &lt;- mobility[complete.cases(mobility),]
 n &lt;- nrow(mob)
 mob &lt;- mob %&gt;% select(-Name,-ID,-State)
-set &lt;- sample.int(n, floor(n*.75), FALSE)
+set &lt;- sample.int(n, floor(n * .75), FALSE)
 *train &lt;- mob[set,]
 test &lt;- mob[setdiff(1:n, set),]
-full &lt;- lm(Mobility ~ ., data=train)
+full &lt;- lm(Mobility ~ ., data = train)
 ```
 
 ???
@@ -116,36 +116,66 @@ Why don't we include `Name` or `ID`?
 
 
 ```r
-full %&gt;% broom::tidy()
+summary(full)
 ```
 
 ```
-## # A tibble: 40 × 5
-##    term          estimate     std.error statistic p.value
-##    &lt;chr&gt;            &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
-##  1 (Intercept)    1.79e-1 0.0903            1.98  0.0483 
-##  2 Population     1.54e-9 0.00000000306     0.504 0.615  
-##  3 Urban          1.68e-3 0.00428           0.393 0.695  
-##  4 Black          9.92e-2 0.0301            3.30  0.00109
-##  5 Seg_racial    -3.88e-2 0.0202           -1.92  0.0560 
-##  6 Seg_income     1.12e+0 1.04              1.08  0.283  
-##  7 Seg_poverty   -9.58e-1 0.555            -1.73  0.0853 
-##  8 Seg_affluence -3.40e-1 0.531            -0.639 0.523  
-##  9 Commute        8.02e-2 0.0325            2.47  0.0142 
-## 10 Income         1.30e-7 0.000000763       0.170 0.865  
-## # … with 30 more rows
-```
-
-```r
-full %&gt;% broom::glance()
-```
-
-```
-## # A tibble: 1 × 12
-##   r.squared adj.r.squared  sigma statistic  p.value    df logLik    AIC    BIC
-##       &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
-## 1     0.773         0.741 0.0235      23.8 4.30e-67    39   752. -1421. -1268.
-## # … with 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;
+## 
+## Call:
+## lm(formula = Mobility ~ ., data = train)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.08062 -0.01088 -0.00049  0.01009  0.12369 
+## 
+## Coefficients:
+##                             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                1.792e-01  9.034e-02   1.984  0.04828 *  
+## Population                 1.544e-09  3.065e-09   0.504  0.61479    
+## Urban                      1.681e-03  4.281e-03   0.393  0.69491    
+## Black                      9.918e-02  3.005e-02   3.300  0.00109 ** 
+## Seg_racial                -3.879e-02  2.021e-02  -1.919  0.05600 .  
+## Seg_income                 1.120e+00  1.040e+00   1.076  0.28269    
+## Seg_poverty               -9.580e-01  5.548e-01  -1.727  0.08534 .  
+## Seg_affluence             -3.396e-01  5.315e-01  -0.639  0.52341    
+## Commute                    8.022e-02  3.251e-02   2.468  0.01422 *  
+## Income                     1.300e-07  7.628e-07   0.170  0.86483    
+## Gini                       4.682e+00  3.562e+00   1.314  0.18981    
+## Share01                   -4.697e-02  3.563e-02  -1.318  0.18853    
+## Gini_99                   -4.749e+00  3.563e+00  -1.333  0.18366    
+## Middle_class               1.068e-01  5.452e-02   1.959  0.05110 .  
+## Local_tax_rate             1.331e-01  2.955e-01   0.450  0.65280    
+## Local_gov_spending        -1.385e-06  3.364e-06  -0.412  0.68087    
+## Progressivity              5.823e-03  1.330e-03   4.380 1.70e-05 ***
+## EITC                      -5.584e-04  4.975e-04  -1.123  0.26261    
+## School_spending           -1.380e-03  2.483e-03  -0.556  0.57882    
+## Student_teacher_ratio     -7.143e-04  1.233e-03  -0.580  0.56269    
+## Test_scores                4.931e-04  3.310e-04   1.489  0.13753    
+## HS_dropout                -3.276e-01  9.914e-02  -3.304  0.00108 ** 
+## Colleges                  -5.200e-02  9.220e-02  -0.564  0.57326    
+## Tuition                    3.740e-07  4.808e-07   0.778  0.43732    
+## Graduation                -2.843e-02  1.489e-02  -1.909  0.05729 .  
+## Labor_force_participation -1.798e-02  5.944e-02  -0.302  0.76256    
+## Manufacturing             -1.899e-01  3.192e-02  -5.949 8.22e-09 ***
+## Chinese_imports           -8.892e-04  8.063e-04  -1.103  0.27111    
+## Teenage_labor             -2.939e+00  2.377e+00  -1.236  0.21737    
+## Migration_in               3.248e-01  4.074e-01   0.797  0.42600    
+## Migration_out             -8.789e-01  4.591e-01  -1.915  0.05660 .  
+## Foreign_born               1.213e-01  6.681e-02   1.815  0.07060 .  
+## Social_capital            -1.579e-03  3.096e-03  -0.510  0.61035    
+## Religious                  6.075e-02  1.389e-02   4.374 1.74e-05 ***
+## Violent_crime             -3.046e+00  1.853e+00  -1.644  0.10136    
+## Single_mothers            -3.723e-01  1.031e-01  -3.613  0.00036 ***
+## Divorced                   4.017e-02  1.677e-01   0.240  0.81082    
+## Married                   -1.212e-01  8.614e-02  -1.407  0.16070    
+## Longitude                  1.467e-04  2.507e-04   0.585  0.55882    
+## Latitude                   1.140e-03  6.468e-04   1.762  0.07918 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.02347 on 273 degrees of freedom
+## Multiple R-squared:  0.7731,	Adjusted R-squared:  0.7407 
+## F-statistic: 23.85 on 39 and 273 DF,  p-value: &lt; 2.2e-16
 ```
 
 ---
@@ -180,7 +210,7 @@ plot(full, 2)
 reduced &lt;- lm(
   Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
     Manufacturing + Migration_in + Religious + Single_mothers, 
-  data=train)
+  data = train)
 reduced %&gt;% broom::tidy()
 ```
 
@@ -252,17 +282,20 @@ plot(reduced, 2)
 ```r
 test$full &lt;- predict(full, newdata = test)
 test$reduced &lt;- predict(reduced, newdata = test)
-mses &lt;- function(preds, obs)  
-  mean( (obs - preds)^2 )
-sapply(
-  test[, c("full","reduced")], 
-  mses, 
-  obs = test$Mobility)
+
+mses &lt;- function(preds, obs) mean( (obs - preds)^2 )
+
+summarize(
+  test, 
+  across(full:reduced, ~ mses(.x, Mobility))
+)
 ```
 
 ```
-##         full      reduced 
-## 0.0004511238 0.0004632750
+## # A tibble: 1 × 2
+##       full  reduced
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1 0.000451 0.000463
 ```
 ]
 
