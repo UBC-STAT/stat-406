@@ -21,10 +21,14 @@ Bias is neither good nor bad in and of itself.
 
 A very simple example: let $Z_1,\ldots,Z_n \sim N(\mu, 1)$.
   - We don't know $\mu$, so we try to use the data (the $Z_i$'s) to estimate it.
+  
   - I propose 3 estimators: 
       1. $\widehat{\mu}_1 = 12$, 
+  
       2. $\widehat{\mu}_2=Z_6$, 
+  
       3. $\widehat{\mu}_3=\overline{Z}$.
+  
   - The __bias__ (by definition) of my estimator is $E\left[\widehat{\mu}\right]-\mu$.
   
 --
@@ -103,11 +107,11 @@ Wait a minute! You're saying there is a __better__ estimator than $\overline{Y}_
 ## Bias-variance tradeoff: Estimating the mean
 
 $$
-R(a) = R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
+R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
 $$
 
 ```{r}
-mu=1; n=5; sig2=1
+mu = 1; n = 5; sig2 = 1
 ```
 
 ```{r, fig.align='center',echo=FALSE,dev="svg",fig.width=8,fig.height=4}
@@ -137,16 +141,17 @@ ggplot(data.frame(x=c(0,1),y=c(0,2)), aes(x,y)) +
 
 If $\mu=$ `r mu` and $n=$ `r n` 
 
-then it is better to predict with `r round(aopt(mu,n),2)` $\overline{Y}_n$ 
+then it is better to predict with `r round(aopt(mu,n),2)` $\overline{Y}_5$ 
 
-than with $\overline{Y}_n$ itself.  
+than with $\overline{Y}_5$ itself.  
 
 --
 
-For this $a =$ `r round(aopt(mu,n),2)`
+For this $a =$ `r round(aopt(mu,n),2)` and $n=5$
 
-1. $R(a)=R_1(a\overline{Y}_n) =$ `r round(risk(aopt(mu,n),mu,n),2)`
-2. $R(\overline{Y}_n)=$ `r 1/n+sig2`
+1. $R_5(\widehat{Y}_a) =$ `r round(risk(aopt(mu, n), mu, n), 2)`
+
+2. $R_5(\overline{Y}_5)=$ `r 1 / n + sig2`
 
 ---
 
@@ -154,7 +159,7 @@ For this $a =$ `r round(aopt(mu,n),2)`
 
 
 $$
-R_n(f) = \Expect{\ell(Y,f(X))}
+R_n(f) = \Expect{(Y - f(X))^2}
 $$
   
 Why care about $R_n(f)$? 
@@ -166,7 +171,7 @@ Why care about $R_n(f)$?
 
 `r fa("plus", fill=green)` Compare with other models.
 
-`r fa("bomb", fill=red)` __This is hard:__  Don't know $P$ (if I knew the truth, this would be easy)
+`r fa("bomb", fill=red)` __This is hard:__  Don't know the distribution of the data (if I knew the truth, this would be easy)
 
   
 ---
@@ -177,10 +182,11 @@ Why care about $R_n(f)$?
 So,
 
 1. prediction risk  =  $\textrm{bias}^2$  +  variance  +  irreducible error 
+
 2. estimation risk  =  $\textrm{bias}^2$  +  variance
     
 
-What is $R(a)$ for our estimator $\widehat{Y}_a=a\overline{Y}_n$?
+What is $R_n(\widehat{Y}_a)$ for our estimator $\widehat{Y}_a=a\overline{Y}_n$?
 
 
 \begin{aligned}
@@ -244,13 +250,13 @@ for(i in 1:4){
 
  __bias:__ how well does $\widehat{f}(x)$ approximate the truth $\Expect{Y\given X=x}$
 
-more complicated $\mathcal{F}$, lower bias. Flexibility $\Rightarrow$ Expressivity
+* If we allow more complicated possible $f$, lower bias. Flexibility $\Rightarrow$ Expressivity
 
-more flexibility $\Rightarrow$ larger variance
+* But, more flexibility $\Rightarrow$ larger variance
 
-complicated models are hard to estimate precisely for fixed $n$
+* Complicated models are hard to estimate precisely for fixed $n$
 
-irreducible error
+* Irreducible error
 
 --
 
