@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # 04 Bias and variance
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-09-01
+### Last modified - 2021-09-15
 
 ---
 
@@ -35,10 +35,14 @@ Bias is neither good nor bad in and of itself.
 
 A very simple example: let `\(Z_1,\ldots,Z_n \sim N(\mu, 1)\)`.
   - We don't know `\(\mu\)`, so we try to use the data (the `\(Z_i\)`'s) to estimate it.
+  
   - I propose 3 estimators: 
       1. `\(\widehat{\mu}_1 = 12\)`, 
+  
       2. `\(\widehat{\mu}_2=Z_6\)`, 
+  
       3. `\(\widehat{\mu}_3=\overline{Z}\)`.
+  
   - The __bias__ (by definition) of my estimator is `\(E\left[\widehat{\mu}\right]-\mu\)`.
   
 --
@@ -117,12 +121,12 @@ Wait a minute! You're saying there is a __better__ estimator than `\(\overline{Y
 ## Bias-variance tradeoff: Estimating the mean
 
 $$
-R(a) = R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
+R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
 $$
 
 
 ```r
-mu=1; n=5; sig2=1
+mu = 1; n = 5; sig2 = 1
 ```
 
 &lt;img src="rmd_gfx/04-bias-variance/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
@@ -133,16 +137,17 @@ mu=1; n=5; sig2=1
 
 If `\(\mu=\)` 1 and `\(n=\)` 5 
 
-then it is better to predict with 0.83 `\(\overline{Y}_n\)` 
+then it is better to predict with 0.83 `\(\overline{Y}_5\)` 
 
-than with `\(\overline{Y}_n\)` itself.  
+than with `\(\overline{Y}_5\)` itself.  
 
 --
 
-For this `\(a =\)` 0.83
+For this `\(a =\)` 0.83 and `\(n=5\)`
 
-1. `\(R(a)=R_1(a\overline{Y}_n) =\)` 1.17
-2. `\(R(\overline{Y}_n)=\)` 1.2
+1. `\(R_5(\widehat{Y}_a) =\)` 1.17
+
+2. `\(R_5(\overline{Y}_5)=\)` 1.2
 
 ---
 
@@ -150,7 +155,7 @@ For this `\(a =\)` 0.83
 
 
 $$
-R_n(f) = \Expect{\ell(Y,f(X))}
+R_n(f) = \Expect{(Y - f(X))^2}
 $$
   
 Why care about `\(R_n(f)\)`? 
@@ -162,7 +167,7 @@ Why care about `\(R_n(f)\)`?
 
 <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"/></svg> Compare with other models.
 
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> __This is hard:__  Don't know `\(P\)` (if I knew the truth, this would be easy)
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M440.5 88.5l-52 52L415 167c9.4 9.4 9.4 24.6 0 33.9l-17.4 17.4c11.8 26.1 18.4 55.1 18.4 85.6 0 114.9-93.1 208-208 208S0 418.9 0 304 93.1 96 208 96c30.5 0 59.5 6.6 85.6 18.4L311 97c9.4-9.4 24.6-9.4 33.9 0l26.5 26.5 52-52 17.1 17zM500 60h-24c-6.6 0-12 5.4-12 12s5.4 12 12 12h24c6.6 0 12-5.4 12-12s-5.4-12-12-12zM440 0c-6.6 0-12 5.4-12 12v24c0 6.6 5.4 12 12 12s12-5.4 12-12V12c0-6.6-5.4-12-12-12zm33.9 55l17-17c4.7-4.7 4.7-12.3 0-17-4.7-4.7-12.3-4.7-17 0l-17 17c-4.7 4.7-4.7 12.3 0 17 4.8 4.7 12.4 4.7 17 0zm-67.8 0c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17zm67.8 34c-4.7-4.7-12.3-4.7-17 0-4.7 4.7-4.7 12.3 0 17l17 17c4.7 4.7 12.3 4.7 17 0 4.7-4.7 4.7-12.3 0-17l-17-17zM112 272c0-35.3 28.7-64 64-64 8.8 0 16-7.2 16-16s-7.2-16-16-16c-52.9 0-96 43.1-96 96 0 8.8 7.2 16 16 16s16-7.2 16-16z"/></svg> __This is hard:__  Don't know the distribution of the data (if I knew the truth, this would be easy)
 
   
 ---
@@ -173,10 +178,11 @@ Why care about `\(R_n(f)\)`?
 So,
 
 1. prediction risk  =  `\(\textrm{bias}^2\)`  +  variance  +  irreducible error 
+
 2. estimation risk  =  `\(\textrm{bias}^2\)`  +  variance
     
 
-What is `\(R(a)\)` for our estimator `\(\widehat{Y}_a=a\overline{Y}_n\)`?
+What is `\(R_n(\widehat{Y}_a)\)` for our estimator `\(\widehat{Y}_a=a\overline{Y}_n\)`?
 
 
 `\begin{aligned}
@@ -217,13 +223,13 @@ In order to make good predictions, we want our prediction risk to be small.  Thi
 
  __bias:__ how well does `\(\widehat{f}(x)\)` approximate the truth `\(\Expect{Y\given X=x}\)`
 
-more complicated `\(\mathcal{F}\)`, lower bias. Flexibility `\(\Rightarrow\)` Expressivity
+* If we allow more complicated possible `\(f\)`, lower bias. Flexibility `\(\Rightarrow\)` Expressivity
 
-more flexibility `\(\Rightarrow\)` larger variance
+* But, more flexibility `\(\Rightarrow\)` larger variance
 
-complicated models are hard to estimate precisely for fixed `\(n\)`
+* Complicated models are hard to estimate precisely for fixed `\(n\)`
 
-irreducible error
+* Irreducible error
 
 --
 
