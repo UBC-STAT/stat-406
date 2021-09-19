@@ -64,8 +64,8 @@ Optional reading
 |:---------|:-----------|:-----------|
 |16 Sep 21 |[Regression function](03-regression-function.html), [Bias and Variance](04-bias-variance.html)
 |21 Sep 21 |[Risk estimation](05-estimating-test-mse.html), [Info Criteria](06-information-criteria.html)    | |
-|23 Sep 21 | [Greedy selection](07-greedy-selection.html) | HW 1 due |
-|28 Sep 21 |         | PC 1 due  |
+|23 Sep 21 | [Greedy selection](07-greedy-selection.html) |           |
+|28 Sep 21 |         | HW1 due, PC 1 due |
 {: .table .table-striped}
 
 
