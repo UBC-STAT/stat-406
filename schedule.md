@@ -36,6 +36,11 @@ Video lectures from last year
 Optional reading
 : \[ESL\] 2.4 and 2.6
 
+Handouts
+: Programming in `R` [`.Rmd`](handouts/00-programming.Rmd), [`.pdf`](handouts/00-programming.pdf)
+: Using in RMarkdown [`.Rmd`](handouts/00-rmarkdown.Rmd), [`.pdf`](handouts/00-rmarkdown.pdf)
+
+
 |Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
 |7 Sep 21  | |(no class, Imagine UBC) |
