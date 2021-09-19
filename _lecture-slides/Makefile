@@ -17,7 +17,7 @@ materials/xaringan-themer.css: xaringan-themer.R
 .PHONY: clean	
 clean: 
 	rm -f $(htmls)
-	rm -rf rmd_gfx
+	rm -rf rmd_gfx/
 	rm -rf *_cache
 
 .PHONY: webcp
@@ -26,3 +26,4 @@ webcp:
 	rsync -avz materials ../schedule/
 	rsync -avz gfx ../schedule/
 	rsync -avz rmd_gfx ../schedule/
+	rsync -avz handouts ../schedule/
