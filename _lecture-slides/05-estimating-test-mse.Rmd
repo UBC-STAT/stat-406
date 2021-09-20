@@ -33,6 +33,34 @@ $$
 
 
 ---
+class: inverse, midi
+
+**Claim:**
+
+$E[(Y-\widehat{f}(X))^2] = \textrm{bias}^2  +  \Var{\widehat{f}}  +  \textrm{irr. error}$
+
+**Proof:**
+
+Recall that: 
+1. $\textrm{irr. error} = \Var{Y} = \Expect{(Y-f(X))^2} =: \sigma^2$.
+2. $\Expect{Y} = f(X)$ ($f(X)$ is _constant_).
+3. $Y$ and $\widehat{f}$ are independent.
+
+
+\begin{aligned}
+\Expect{(Y-\widehat{f}(X))^2} 
+&= \Expect{(Y- f(X) + f(X) - \widehat{f}(X))^2}\\
+&= \Expect{(Y-f(X))^2 + (f(X) - \widehat{f}(X))^2 - 2(Y-f(X))(f(X) - \widehat{f}(X)))}\\
+&= \Expect{(Y-f(X))^2} + \Expect{(f(X) - \widehat{f}(X))^2} - 2\Expect{(Y-f(X))(f(X) - \widehat{f}(X)))}\\
+&= \sigma^2 + \Expect{\left(f(X) - \Expect{\widehat{f}(X)} + \Expect{\widehat{f}(X)}+ \widehat{f}(X)\right)^2} - 2\Expect{Y-f(X)}\Expect{f(X) - \widehat{f}(X)}\\
+&= \sigma^2 + \Expect{\left(f(X) - \Expect{\widehat{f}(X)}\right)^2} + \Expect{\left(\Expect{\widehat{f}(X)} - \widehat{f}(X)\right)^2} -\\
+&\quad\quad 2\Expect{\left(f(X) - \Expect{\widehat{f}(X)}\right) \left(\Expect{\widehat{f}(X)} - \widehat{f}(X)\right)} + 0\\
+& = \sigma^2 + \left(f(X) - \Expect{\widehat{f}(X)}\right)^2 + \Var{\widehat{f}(X)} + 0\\
+& = \sigma^2 + \textrm{bias}^2 + \Var{\widehat{f}(X)}
+\end{aligned}
+
+
+---
 
 ## Don't use training error
 
@@ -43,7 +71,7 @@ $$\widehat{R}_n(\widehat{f})  \approx R_n(\widehat{f}),$$
 
 this approximation can be very bad.
 
-We saw this with the lab about $R^2$.
+Lab00 demonstrates this $R^2$ ($R^2$ is the same as "training error").
 
 So we should __never__ use it.
 
@@ -53,13 +81,14 @@ You should not use `anova` or the $p$-values from the `lm` output for this purpo
 
 Why? These things are to determine whether those __parameters__ are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.
 
-Not the same as "are they useful for prediction = do they help me get smaller MSE"
+Not the same as __"are they useful for prediction = do they help me get smaller out-of-sample MSE"__
 
 ---
 
 ## Held out sets
 
 One option is to have a separate "held out" or "test set".
+
 
 `r pro` Estimates the test error
 
@@ -70,6 +99,11 @@ One option is to have a separate "held out" or "test set".
 `r con` Estimate has high variance
 
 `r con` Estimate has some bias because we only used some of the data
+
+--
+
+Often also called a "validation set". This is not the same as "new data".
+
 
 ---
 
@@ -123,7 +157,7 @@ This is __leave-one-out cross validation__
 
 ## Problems with LOO-CV
 
-`r con` Each held out set is small $(n=1)$. Therefore, the variance of my predictions is high.
+`r con` Each held out set is small $(n=1)$. Therefore, the variance of the SE of each prediction is high.
 
 `r con` The training sets overlap. This is bad. 
   * Usually, averaging reduces variance: $\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.$
@@ -158,11 +192,10 @@ To alleviate some of these problems, people usually use $K$-fold cross validatio
 
 `r pro` Less computations (only need to estimate $K$ times)
 
-`r con` LOO-CV is (nearly) unbiased. 
+`r con` LOO-CV is (nearly) unbiased for $R_n$
 
-`r con` The risk depends on how much data you use to estimate the model. 
+`r con` The risk depends on how much data you use to estimate the model. $R_n$ depends on $n$.
 
-`r con` LOO-CV uses almost all the data.
 ]
 
 ---
@@ -185,7 +218,12 @@ text(2,1.5,'Testing data',cex=3,col=red)
 ## Pseudocode
 
 
-```{r, eval=FALSE}
+```{r}
+#' @param data The full data set
+#' @param estimator Function. Has 1 argument (some data) and fits a model. 
+#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions
+#' @param kfolds Integer. The number of folds.
+#' @param responsename Character. The column name of "y" in the data
 kfold_cv <- function(data, estimator, predictor, kfolds = 5, responsename = "y") {
   n <- nrow(data)
   fold.labels <- sample(rep(1:kfolds, length.out = n))
@@ -194,14 +232,22 @@ kfold_cv <- function(data, estimator, predictor, kfolds = 5, responsename = "y")
     test.rows <- fold.labels == fold
     train <- data[!test.rows, ]
     test <- data[test.rows, ]
-    current_model <- estimator(..., data = train)
-    predictions <- predictor(current.model, ..., newdata = test)
+    current_model <- estimator(train)
+    predictions <- predictor(current_model, test)
     test_responses <- test[, responsename]
     test_errors <- test_responses - predictions
     mses[fold] <- mean(test_errors^2)
   }
   mean(mses)
 }
+```
+
+```{r}
+# Example
+somedata <- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))
+est <- function(dataset) lm(z ~ ., data = dataset)
+pred <- function(mod, dataset) predict(mod, newdata = dataset)
+kfold_cv(somedata, est, pred, 5, "z")
 ```
 
 ---
@@ -211,7 +257,7 @@ kfold_cv <- function(data, estimator, predictor, kfolds = 5, responsename = "y")
 .emphasis[ 
 __For nice models__, one can show 
 
-(after pages of tedious algebra which I wouldn't wish on my worst enemy, but might, in a fit of rage assign to a beligerant graduate student) 
+(after pages of tedious algebra which I wouldn't wish on my worst enemy, but might, in a fit of rage assign as homework to beligerant students) 
 
 if $\widehat{f}(x_i) = \widehat{y}_i = h_i^\top \mathbf{y}$, for some vector $h_i(\mathbf{X})$
 ]
