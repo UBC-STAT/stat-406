@@ -43,8 +43,8 @@ $E[(Y-\widehat{f}(X))^2] = \textrm{bias}^2  +  \Var{\widehat{f}}  +  \textrm{irr
 
 Recall that: 
 1. $\textrm{irr. error} = \Var{Y} = \Expect{(Y-f(X))^2} =: \sigma^2$.
-2. $\Expect{Y} = f(X)$ ($f(X)$ is _constant_).
-3. $Y$ and $\widehat{f}$ are independent.
+2. $\Expect{Y} = f(X)$ ( $f(X)$ is _constant_).
+3. $Y$ and $\widehat{f}$ are independent. $X$ is fixed.
 
 
 \begin{aligned}
@@ -54,8 +54,8 @@ Recall that:
 &= \Expect{(Y-f(X))^2} + \Expect{(f(X) - \widehat{f}(X))^2} - 2\Expect{(Y-f(X))(f(X) - \widehat{f}(X)))}\\
 &= \sigma^2 + \Expect{\left(f(X) - \Expect{\widehat{f}(X)} + \Expect{\widehat{f}(X)}+ \widehat{f}(X)\right)^2} - 2\Expect{Y-f(X)}\Expect{f(X) - \widehat{f}(X)}\\
 &= \sigma^2 + \Expect{\left(f(X) - \Expect{\widehat{f}(X)}\right)^2} + \Expect{\left(\Expect{\widehat{f}(X)} - \widehat{f}(X)\right)^2} -\\
-&\quad\quad 2\Expect{\left(f(X) - \Expect{\widehat{f}(X)}\right) \left(\Expect{\widehat{f}(X)} - \widehat{f}(X)\right)} + 0\\
-& = \sigma^2 + \left(f(X) - \Expect{\widehat{f}(X)}\right)^2 + \Var{\widehat{f}(X)} + 0\\
+&\quad\quad 2\Expect{\left(f(X) - \Expect{\widehat{f}(X)}\right) \left(\Expect{\widehat{f}(X)} - \widehat{f}(X)\right)} - 0\\
+& = \sigma^2 + \left(f(X) - \Expect{\widehat{f}(X)}\right)^2 + \Var{\widehat{f}(X)} - 0\\
 & = \sigma^2 + \textrm{bias}^2 + \Var{\widehat{f}(X)}
 \end{aligned}
 
@@ -71,7 +71,7 @@ $$\widehat{R}_n(\widehat{f})  \approx R_n(\widehat{f}),$$
 
 this approximation can be very bad.
 
-Lab00 demonstrates this $R^2$ ($R^2$ is the same as "training error").
+Lab00 demonstrates this $R^2$ ( $R^2$ is the same as "training error").
 
 So we should __never__ use it.
 
@@ -87,7 +87,7 @@ Not the same as __"are they useful for prediction = do they help me get smaller 
 
 ## Held out sets
 
-One option is to have a separate "held out" or "test set".
+One option is to have a separate "held out" or "validation set".
 
 
 `r pro` Estimates the test error
@@ -102,7 +102,7 @@ One option is to have a separate "held out" or "test set".
 
 --
 
-Often also called a "validation set". This is not the same as "new data".
+Sometimes also called a "test set". This is not the same as "new data". It's data I have, that I'm not using to fit my model.
 
 
 ---
@@ -112,7 +112,7 @@ Often also called a "validation set". This is not the same as "new data".
 
 One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
 
-Test-set fixes this, but holds out a particular, fixed block of data we treat as "new"
+"Validation set" fixes this, but holds out a particular, fixed block of data we treat as "new"
 
 Of course, we don't have actually have new data.
 
@@ -157,7 +157,7 @@ This is __leave-one-out cross validation__
 
 ## Problems with LOO-CV
 
-`r con` Each held out set is small $(n=1)$. Therefore, the variance of the SE of each prediction is high.
+`r con` Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
 
 `r con` The training sets overlap. This is bad. 
   * Usually, averaging reduces variance: $\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.$
