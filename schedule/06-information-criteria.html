@@ -17,32 +17,24 @@ class: center, middle, inverse, title-slide
 # 06 Information criteria
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-09-01
+### Last modified - 2021-09-23
 
 ---
 
 
 
 
-## Over-fitting vs. Under-fitting
-
-.emphasis[Over-fitting means estimating a really complicated function when you don't have enough data.]
-
-This is likely a low-bias/high-variance situation.
-
-.emphasis[Under-fitting means estimating a really simple function when you have lots of data. ]
-
-This is likely a high-bias/low-variance situation.
-
-Both of these outcomes are bad (they have high risk).
-
-The best way to avoid them is to use a reasonable estimate of __prediction risk__ to choose how complicated your model should be.
-
----
 
 ## Generalized CV
 
 Last time we saw a nice trick
+
+If `\(\widehat{f}(x_i) = \widehat{y}_i = h_i^\top \mathbf{y}\)`, for some vector `\(h_i(\mathbf{X})\)`
+
+--
+
+.hand[Same as "if] `\(\widehat{f}(\mathbf{X}) = \mathbf{H}\mathbf{y}\)` .hand[for some matrix] `\(\mathbf{H}\)` .hand["]
+
 
 `$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.$$`
 
@@ -93,11 +85,20 @@ This is one way of understanding the name __effective degrees-of-freedom__
 
 Suppose, `\(Y_i\)` comes (independently) from some distribution and has mean `\(\mu_i\)` and variance `\(\sigma^2\)`
 
-Let `\(\widehat{Y}\)` be an estimator of `\(\mu\)`.
+--
+
+(remember: in the linear model `\(\Expect{Y_i} = x_i^\top \beta = \mu_i\)` )
+
+--
+
+Let `\(\widehat{Y}\)` be an estimator of `\(\mu\)` (all `\(i=1,\ldots,n\)` elements of the vector).
 
 `\begin{aligned}
-\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} &amp;= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
+\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} 
+&amp;= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
 &amp;= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
+&amp;= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
+&amp;\quad\vdots \\
 &amp;= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
 \end{aligned}`
 
@@ -139,6 +140,22 @@ Unfortunately, different books/software/notes define these differently. Even dif
 
 Forms above are in [ESL] eq. (7.29) and (7.35). [ISLR] gives special cases in Section 6.1.3. Remember the generic form here.
 ]
+
+---
+
+## Over-fitting vs. Under-fitting
+
+.emphasis[Over-fitting means estimating a really complicated function when you don't have enough data.]
+
+This is likely a low-bias/high-variance situation.
+
+.emphasis[Under-fitting means estimating a really simple function when you have lots of data. ]
+
+This is likely a high-bias/low-variance situation.
+
+Both of these outcomes are bad (they have high risk).
+
+The best way to avoid them is to use a reasonable estimate of __prediction risk__ to choose how complicated your model should be.
 
 ---
 
