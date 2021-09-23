@@ -219,25 +219,26 @@ fun <- function(n = 812) {
     x7 = x1 + x3 + rnorm(n, sd=.1),
     y = x1*3 + x2/3 + rnorm(n, sd=2.2)
   )
-  train <- df[1:ceiling(n / 2), ] 
-  test <- df[(ceiling(n / 2) + 1):n, ]
-  truth <- lm(y ~ x1 + x2, data = train)
+  train <- df[1:ceiling(n / 2), ] # half the data for training
+  test <- df[(ceiling(n / 2) + 1):n, ] # half the data for evaluation
+  oracle <- lm(y ~ x1 + x2 - 1, data = train) # knowing the right model, not the coefs
   full <- lm(y ~ ., data = train)
   stepup <- regsubsets(y ~ ., data = train, method = "forward")
   coefs <- double(ncol(df))
   names(coefs) <- names(coef(full))
-  best <- which.min(summary(stepup)$cp)
-  coefs[names(coef(stepup, best))] = coef(stepup, best)
+  best <- which.min(summary(stepup)$cp) # choose best size using training data
+  coefs[names(coef(stepup, best))] <- coef(stepup, best)
+  mse <- function(x) mean( (test$y - x)^2)
   out <- c(
-    correct = mean( (test$y - predict(truth, newdata = test))^2 ),
-    full = mean( (test$y-predict(full, newdata = test))^2 ),
-    step = mean( (test$y - as.matrix(cbind(1,test[,-8])) %*% coefs )^2 ),
-    truth = mean( (test$y - as.matrix(test[,1:2]) %*% c(3, 1/3))^2 ),
+    oracle = mse(predict(oracle, newdata = test)),
+    full = mse(predict(full, newdata = test)),
+    step = mse(as.matrix(cbind(1,test[,-8])) %*% coefs),
+    truth = mse(as.matrix(test[,1:2]) %*% c(3, 1/3)), # correct model and coefs
     nbest = best)
   out
 }
 set.seed(12345)
-sim = t(replicate(50, fun()))
+sim = t(replicate(50, fun())) # runs our simulation 50 times
 ```
 
 
@@ -253,14 +254,14 @@ mses <- sim %>%
   dplyr::select(-nbest) %>% 
   mutate(full = (full - truth) / truth * 100,
          step = (step - truth) / truth * 100, 
-         correct = (correct - truth) / truth * 100, truth=NULL)
+         oracle = (oracle - truth) / truth * 100, truth=NULL)
 g1 = mses %>% 
   pivot_longer(everything(), names_to = "method", values_to = "mse") %>%
   ggplot(aes(method, mse, fill = method)) + 
   geom_boxplot() +
   scale_fill_brewer(palette = "Set1") +
   theme(legend.position = "none") +
-  ylab("% increase in mse relative to oracle")
+  ylab("% increase in mse relative to truth")
 g2 = sim %>% 
   ggplot(aes(y = nbest)) + 
   geom_bar(aes(x = ..prop..), fill = orange) + 
