@@ -4,18 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 class: middle, center
 background-image: url("https://disher.com/wp-content/uploads/2017/02/Product-Constraints.jpg")
@@ -40,6 +28,10 @@ So far, we thought of __model selection__ as
 
 .hand[Decide which predictors we would like to use in our linear model]
 
+Or similarly:
+
+.hand[Decide which of a few linear models to use]
+
 To do this, we used a risk estimate, and chose the "model" with the lowest estimate
 
 --
@@ -58,6 +50,7 @@ $$\newcommand{\Expect}[1]{E\left[ #1 \right]}
 \newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\E}{E}
 \renewcommand{\P}{\mathbb{P}}
 \newcommand{\R}{\mathbb{R}}
@@ -180,6 +173,35 @@ ggplot(nb,aes(x,y)) + xlim(-2,2) + ylim(-2,2) + geom_path(color=red) +
 
 ---
 
+## Brief aside on norms
+
+Recall, for a vector $z \in \R^p$
+
+
+$$\norm{z}_2 = \sqrt{z_1^2 + z_2^2 + \cdots + z^2_p} = \sqrt{\sum_{j=1}^p z_j^2}$$
+
+
+So, 
+
+$$\norm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.$$
+
+
+--
+
+Other norms we should remember:
+
+$\ell_q$-norm
+: $\left(\sum_{j=1}^p z_j^q\right)^{1/q}$
+
+$\ell_1$-norm (special case)
+: $\sum_{j=1}^p |z_j|$
+
+$\ell_0$-norm
+: $\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert$
+
+
+---
+
 ## Ridge regression
 
 An equivalent way to write
@@ -214,11 +236,8 @@ Note: $\lambda$ and $s$ are known as __tuning parameters__
 __prostate__ data from [ESL]
 
 ```{r load-prostate}
-prostate = as_tibble(
-  read.table(
-    "http://www.web.stanford.edu/~hastie/ElemStatLearn/datasets/prostate.data", 
-    header = TRUE))
-prostate
+data(prostate, package = "ElemStatLearn")
+head(prostate)
 ```
 
 ???
@@ -229,26 +248,32 @@ Use lpsa as response.
 
 ## Ridge regression path
 
-```{r process-prostate, echo=FALSE, dev="svg", message=FALSE,warning=FALSE,fig.height=5,fig.width=8,fig.align="center"}
-Y = prostate$lpsa
-X = prostate %>% select(-train,-lpsa) %>% as.matrix()
-n = length(Y)
-p = ncol(X)
 
+```{r process-prostate, echo=TRUE, dev="svg", message=FALSE,warning=FALSE, fig.height = 4, fig.width=8, fig.align='center'}
+Y <- prostate$lpsa
+X <- prostate %>% select(-train,-lpsa) %>% as.matrix()
 library(glmnet)
-ridge = glmnet(x=X,y=Y,alpha=0,lambda.min.ratio = .00001)
-df = data.frame(as.matrix(t(ridge$beta)))
-df$lambda = ridge$lambda
-gather(df, key='predictor',value='coefficient',-lambda) %>%
-  ggplot(aes(x=lambda,y=coefficient,color=predictor)) + geom_path() + 
-  scale_x_log10() + xlab("log(lambda)") +
-  scale_color_brewer(palette = 'Set1') + theme_cowplot() +
-  geom_hline(yintercept = 0,color="black",linetype="dotted")
+ridge <- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
 ```
 
---
+.pull-left-wide[
+```{r plot-prostate-ridge, dev="svg", message=FALSE,warning=FALSE, fig.height = 4, fig.width=8, fig.align='center'}
+plot(ridge, xvar = "lambda")
+```
+]
 
-Model selection: means __choose__ some $\lambda=$ vertical line on the path.
+.pull-right-narrow[
+
+Model selection here: 
+
+* means __choose__ some $\lambda$ 
+
+* A value of $\lambda$ is a vertical line.
+
+* This graphic is a "path" or "coefficient trace"
+
+* Coefficients for varying $\lambda$
+]
 
 ---
 
@@ -278,9 +303,11 @@ $$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = (\mathbf{VD}^2\mathb
 ## Comparing with OLS
 
 
-$$\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{VD}^{-2}\mathbf{DU}^\top \y = \mathbf{VD}^{-1}\mathbf{U}^\top \y$$
+* $\mathbf{D}$ is a diagonal matrix
 
-$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.$$
+$$\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-2}\mathbf{D}}\mathbf{U}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-1}}\mathbf{U}^\top \y$$
+
+$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}\color{red}{(\mathbf{D}^2+\lambda \mathbf{I})^{-1}} \mathbf{DU}^\top \y.$$
 
 
 * Notice that $\bls$ depends on $d_j/d_j^2$ while $\brl$ depends on $d_j/(d_j^2 + \lambda)$.
@@ -315,14 +342,18 @@ __Conclusion:__ $(\X^{\top}\X)^{-1}$ can be really unstable, while $(\X^{\top}\X
 
 To recap:
 
-* Deciding which predictors to include, adding quadratic terms, or interactions is __model selection__ (specifically __variable selection__).
+* Deciding which predictors to include, adding quadratic terms, or interactions is __model selection__ (more precisely __variable selection__ within a linear model).
 
 * Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.  
 
+* Ridge regression does not perform variable selection.
 
-Ridge regression: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq t$ 
+* But .hand[picking] $\lambda=3.7$ and thereby .hand[deciding] to predict with $\widehat{\beta}^R_{3.7}$ is __model selection__.
 
-Best linear regression model: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t$
+
+Ridge regression: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s$ 
+
+Best linear regression model of size $s$: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq s$
 
 --
 
