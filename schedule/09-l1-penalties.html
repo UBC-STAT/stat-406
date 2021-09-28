@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>09 L1 penalties</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 09 L1 penalties
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-09-27
+
+---
+
+
+
+
+## Last time
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+
+
+Ridge regression: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s\)` 
+
+Best linear regression model of size `\(t\)`: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t\)`
+
+`\(||\beta||_0\)` is the number of nonzero elements in `\(\beta\)`
+
+Finding the best linear model  is a nonconvex optimization problem (In fact, it is NP-hard)
+
+Ridge regression is convex (easy to solve), but doesn't do model selection
+
+Can we somehow "interpolate" to get both?
+
+
+
+---
+
+## Geometry of convexity
+
+
+
+
+&lt;img src="rmd_gfx/09-l1-penalties/convexity-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## The best of both worlds
+
+
+&lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+This regularization set...
+
+* ... is convex (computationally efficient)
+* ... has corners (performs variable selection)
+
+---
+
+## `\(\ell_1\)`-regularized regression
+
+Known as 
+
+* "lasso"
+* "basis pursuit"
+
+The estimator satisfies
+
+`$$\blt = \arg\min_{ ||\beta||_1 \leq s}  \frac{1}{n}||\y-\X\beta||_2^2$$`
+
+
+In its corresponding Lagrangian dual form:
+
+`$$\bll = \arg\min_{\beta} \frac{1}{n}||\y-\X\beta||_2^2 + \lambda ||\beta||_1$$`
+
+---
+
+## Lasso
+
+While the ridge solution can be easily computed 
+
+`$$\brl = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_2^2 = (\X^{\top}\X + \lambda \mathbf{I})^{-1} \X^{\top}\y$$`
+
+
+the lasso solution
+
+
+`$$\bll = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_1 = \; ??$$`
+
+doesn't have a closed form solution.
+
+
+However, because the optimization problem is convex, there exist efficient algorithms for computing it
+
+---
+
+## Coefficient path: ridge vs lasso
+
+
+
+```r
+library(glmnet)
+data(prostate, package = "ElemStatLearn")
+X &lt;- prostate %&gt;% dplyr::select(-train,-lpsa) %&gt;% as.matrix()
+Y &lt;- prostate$lpsa
+lasso &lt;- glmnet(x = X, y = Y) # alpha = 1 by default
+ridge &lt;- glmnet(x = X, y = Y, alpha = 0)
+op &lt;- par()
+par(mfrow = c(1, 2), mar = c(5,3,3,.1))
+plot(lasso, main = "Lasso")
+plot(ridge, main = "Ridge")
+```
+
+&lt;img src="rmd_gfx/09-l1-penalties/ridge-v-lasso-1.svg" style="display: block; margin: auto;" /&gt;
+
+```r
+par(op)
+```
+
+
+
+---
+
+## Packages
+
+There are two main `R` implementations for finding lasso
+
+
+`{glmnet}`: `lasso.out = glmnet(X, Y, alpha=1)`.  
+
+* Setting `alpha=0` gives ridge regression (as does `lm.ridge` in the `MASS` package)
+* Setting `alpha` `\(\in (0,1)\)` gives a method called the "elastic net" which combines ridge regression and lasso, more on that next lecture.
+* If you don't specify `alpha`, it does lasso
+
+`{lars}`: `lars.out = lars(X, Y)`
+* `lars` also does other things called "Least angle" and "forward stagewise" in addition to "forward stepwise" regression
+
+---
+
+## (lots of others, but these are the biggies)
+
+1. `lars` (this one came first)
+2. `glmnet` (this one is faster)
+
+Use different algorithms, but both compute the solution for a range of `\(\lambda\)`.
+
+`lars` starts with an empty model and adds coefficients until saturated. The sequence of `\(\lambda\)`'s comes from the nature of the optimization problem.
+
+`glmnet` starts with an empty model and examines each value of `\(\lambda\)` using previous values as "warm starts". It is generally much faster than `lars` and uses lots of other tricks (as well as compiled code) for extra speed.
+
+The path returned by `lars` is more useful than that returned by `glmnet`.
+
+--
+
+But you should use `glmnet`.
+
+
+
+
+---
+
+
+
+## Choosing the lambda
+
+You have to choose `\(\lambda\)` in lasso or in ridge regression
+
+lasso selects variables (by setting coefficients to zero), but the value of `\(\lambda\)` determines how many/which.
+
+All of these packages come with CV built in.
+
+However, the way to do it differs from package to package
+
+--
+
+&lt;p align="center"&gt;&lt;iframe src="https://giphy.com/embed/fYfeQAOD8pSjN7M0jY" width="480" height="270" frameBorder="0" class="giphy-embed"&gt;&lt;/iframe&gt;&lt;/p&gt;
+
+---
+
+
+## `glmnet` version (lasso or ridge)
+
+.pull-left[
+
+```r
+# 1. Estimate cv and model at once
+# no formula version
+lasso.glmnet = cv.glmnet(X, Y) 
+# NEVER use glmnet() itself
+# 2. Plot the coefficient path
+# 3. Choose lambda using CV
+# 4. If the dashed lines are at the 
+# boundaries, redo with better lambda
+best.lam = lasso.glmnet$lambda.min 
+# the value, not the location 
+# (or use lasso$lambda.1se)
+# 5. Return the coefs/predictions 
+# for the best model
+coefs.glmnet = coefficients(
+  lasso.glmnet, s = "lambda.min")
+preds.glmnet = predict(
+  lasso.glmnet, newx = X, s = "lambda.1se") 
+# must supply `newx`
+```
+]
+
+.pull-right[
+&lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Paths with chosen lambda
+
+
+```r
+ridge.glmnet = cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum
+par(mfrow = c(1, 4))
+plot(ridge.glmnet)
+plot(lasso.glmnet)
+plot(ridge.glmnet$glmnet.fit, main = 'Ridge')
+abline(v = sum(abs(coef(ridge.glmnet)))) # defaults to `lambda.1se`
+plot(lasso.glmnet$glmnet.fit, main = 'Lasso')
+abline(v = sum(abs(coef(lasso.glmnet)))) # again, `lambda.1se` unless told otherwise
+```
+
+&lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, inverse, center
+
+# Next time...
+
+What happens when we're tired of all this linearity.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

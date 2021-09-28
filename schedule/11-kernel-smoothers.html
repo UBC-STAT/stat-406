@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>11 Local methods</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 11 Local methods
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-09-28
+
+---
+
+
+
+
+## Last time...
+
+
+.pull-left[
+We looked at __feature maps__ as a way to do nonlinear regression:
+
+We used new "features" `\(\Phi(x) = \bigg(\phi_1(x),\ \phi_2(x),\ldots,\phi_k(x)\bigg)\)`
+
+Now we examine an alternative
+
+Suppose I just look at the "neighbors" of some point (based on the `\(x\)`-values)
+
+I just average the `\(y\)`'s at those locations together
+
+Let's use 3 neighbors
+]
+
+--
+
+.pull-right[
+![](rmd_gfx/11-kernel-smoothers/load-lidar-1.svg)&lt;!-- --&gt;
+
+]
+
+---
+
+## KNN 
+
+
+.pull-left[
+![](rmd_gfx/11-kernel-smoothers/small-lidar-again-1.svg)&lt;!-- --&gt;
+]
+
+
+.pull-right[
+
+
+```r
+data(lidar, package="SemiPar")
+library(FNN)
+lidar_unif &lt;- lidar[sample.int(nrow(lidar), 40),] %&gt;% 
+  arrange(range)
+new_range &lt;- seq(min(lidar_unif$range), max(lidar_unif$range),
+                 length.out = 101)
+knn3 &lt;- knn.reg(
+      lidar_unif$range, # train X
+      matrix(range, ncol=1), # where to predict (really wants a matrix)
+      y = lidar_unif$logratio, # train Y
+      k = 3) # the default
+```
+
+
+This method is `\(K\)`-nearest neighbors.
+
+It's a __linear smoother__ just like in previous lectures: `\(\widehat{\mathbf{y}} = S \mathbf{y}\)` for some matrix `\(S\)`.
+
+You should imagine what `\(S\)` looks like.
+
+What is the effective degrees of freedom of KNN?
+
+KNN averages the nearest points with equal weight.
+
+But some sets of neighbors are "closer" than other sets.
+]
+
+---
+
+## Local averages
+
+Instead of choosing the number of neighbors to average, we can average any observations within a certain distance.
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+--
+
+The boxes have width 30. 
+
+---
+
+## What is a "kernel" smoother?
+
+* The mathematics:
+
+&gt; A kernel is any function `\(K\)` such that for any `\(u\)`, `\(K(u) \geq 0\)`, `\(\int du K(u)=1\)` and `\(\int uK(u)du=0\)`.
+
+* The idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.
+
+* The previous example is called the __boxcar__ kernel. It looks like this:
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/boxcar-1.svg" style="display: block; margin: auto;" /&gt;
+
+This one gives non-zero weight to points within `\(\pm 15\)` range
+
+---
+
+
+## Other kernels
+
+Most of the time, we don't use the boxcar because the weights are weird.
+
+A more common one is the Gaussian kernel:
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+For the plot, I made `\(\sigma=7.5\)`. 
+
+Now the weights "die away" for points farther from where we're predicting.
+
+---
+
+## Other kernels
+
+What if I made `\(\sigma=15\)`?
+
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+Before, points far from `\(x_{15}\)` got very small weights, now they have more influence.
+
+For the Gaussian kernel, `\(\sigma\)` determines something like the "range" of the smoother.
+
+
+---
+
+## Many Gaussians
+
+The following code gives `\(S\)` for Gaussian kernel smoothers with different `\(\sigma\)`
+
+
+```r
+dmat = as.matrix(dist(x))
+Sgauss &lt;- function(sigma) {
+  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat
+  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.
+}
+```
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## The bandwidth
+
+* Choosing `\(\sigma\)` is __very__ important.
+
+* This "range" parameter is called the __bandwidth__.
+
+* It is way more important than which kernel you use.
+
+* The default kernel in `ksmooth()` is something called 'Epanechnikov':
+
+
+```r
+epan &lt;- function(x) 3/4 * (1 - x^2) * (abs(x) &lt; 1)
+```
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Choosing the bandwidth
+
+As we have discussed, kernel smoothing (and KNN) are linear smoothers
+
+`$$\widehat{\mathbf{y}} = S\mathbf{y}$$`
+
+This has easy implications:
+
+--
+
+
+```r
+loocv &lt;- function(y, S){
+  yhat = S %*% y
+  mean( (y - yhat)^2 / (1 - diag(S))^2 )
+}
+```
+
+--
+
+The __effective degrees of freedom__ is `\(\textrm{tr}(S)\)`
+
+Therefore we can use our model selection criteria from before 
+
+---
+
+## Smoothing the full Lidar data
+
+
+```r
+dmat &lt;- as.matrix(dist(lidar$range))
+loocvs &lt;- double(100)
+sigmas &lt;- 10^(seq(log10(300), log10(.3), length=100))
+for (i in 1:100) {
+  S &lt;- Sgauss(sigmas[i])
+  loocvs[i] &lt;- loocv(lidar$logratio, S)
+}
+bests = which.min(loocvs)
+lidar$smoothed = Sgauss(sigmas[bests]) %*% lidar$logratio
+```
+
+&lt;img src="rmd_gfx/11-kernel-smoothers/smoothed-lidar-1.svg" style="display: block; margin: auto;" /&gt;
+
+I considered `\(\sigma \in [0.3,\ 300]\)` and used `\(14.93\)`.
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Why don't we just smooth everything all the time?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
