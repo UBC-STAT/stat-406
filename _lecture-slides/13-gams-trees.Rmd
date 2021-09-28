@@ -4,18 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
@@ -71,18 +59,17 @@ The algorithm for fitting these things is called "backfitting":
 ```{r, fig.align='center',fig.width=10,fig.height=4,message=FALSE}
 library(mgcv)
 set.seed(12345)
-n = 500
-simple = tibble(
+n <- 500
+simple <- tibble(
   x1 = runif(n, 0, 2*pi),
   x2 = runif(n),
-  y = 5 + 2*sin(x1) + 8*sqrt(x2) +
-    rnorm(n,sd=.25))
+  y = 5 + 2*sin(x1) + 8*sqrt(x2) + rnorm(n, sd = .25))
 ```
 
 ```{r simple-data, echo=FALSE, fig.align='center',fig.width=5,fig.height=3}
 pivot_longer(simple, -y, names_to="predictor", values_to="x") %>%
   ggplot(aes(x,y)) + geom_point(col=blue) +
-  facet_wrap(~predictor,scales = 'free_x') + theme_cowplot()
+  facet_wrap(~predictor,scales = 'free_x')
 ```
 ]
 
@@ -90,16 +77,17 @@ pivot_longer(simple, -y, names_to="predictor", values_to="x") %>%
 
 .pull-right[
 
-```{r,}
-ex_smooth = gam(
-  y~s(x1)+s(x2), data=simple)
-```
-
 Smooth each coordinate independently
 
-```{r gam-mod, echo=FALSE, fig.width=5,fig.height=4, fig.align='center'}
-plot(ex_smooth, pages = 1, scale=0, shade=TRUE, resid=TRUE, se=2, bty='n', las=1)
+```{r gam-mod, fig.height=4, fig.width=6}
+ex_smooth <- gam(y ~ s(x1) + s(x2), data = simple)
+# s(z) means "smooth" z (uses splines)
+plot(ex_smooth, pages = 1, scale = 0, shade = TRUE, 
+     resid = TRUE, se = 2, las = 1)
 ```
+
+
+
 
 ]
 
@@ -117,22 +105,20 @@ then
 
 $\textrm{MSE}(\hat f)-\sigma^2 = \frac{Cd}{n^{4/5}}.$
 
-You could also use the same methods to include "some" interactions like
+* You could also use the same methods to include "some" interactions like
 
 $$\begin{aligned}&\Expect{Y \given X=x}\\ &= \beta_0 + f_{12}(x_{1},x_{2})+f_3(x_3)+\cdots+f_p(x_{p}),\end{aligned}$$
 ]
 
 .pull-right[
 
-```{r,}
-ex_smooth2 = gam(
-  y~s(x1,x2), data=simple)
-```
-
 Smooth two coordinates together
 
-```{r gam-mod2, echo=FALSE, fig.width=6,fig.height=6, fig.align='center'}
-plot(ex_smooth2, pers=TRUE, scale=0, shade=TRUE, resid=TRUE, se=2, bty='n', las=1)
+```{r,fig.width=4,fig.height=4, fig.align='center'}
+ex_smooth2 <- gam(y ~ s(x1, x2), data = simple)
+plot(ex_smooth2, scheme = 2, scale = 0, shade = TRUE, 
+     resid = TRUE, se = 2, las=1)
+
 ```
 
 ]
@@ -179,18 +165,18 @@ The minimization is performed __greedily__ (like forward stepwise regression).
 ## Mobility data
 
 ```{r small-tree-prelim, echo=FALSE}
-data("mobility", package = "UBCstat406labs")
+mobility <- readRDS("data/mobility.RDS")
 library(tree)
 library(maptree)
-mob = mobility[complete.cases(mobility),] %>% dplyr::select(-ID,-Name)
+mob <- mobility[complete.cases(mobility),] %>% dplyr::select(-ID,-Name)
 set.seed(12345)
 par(mar=c(0,0,0,0),oma=c(0,0,0,0))
 ```
 
 ```{r small-tree, fig.align="center", fig.width=10,fig.height=4}
-bigtree = tree(Mobility~., data=mob)
-smalltree = prune.tree(bigtree, k=.09)
-draw.tree(smalltree, digits=2)
+bigtree <- tree(Mobility~ ., data = mob)
+smalltree = prune.tree(bigtree, k = .09)
+draw.tree(smalltree, digits = 2)
 ```
 
 This is called the __dendrogram__
@@ -199,20 +185,18 @@ This is called the __dendrogram__
 
 ## Partition view
 
-```{r partition-view, echo=FALSE, fig.width=12,fig.height=5,fig.align="center"}
-mob$preds = predict(smalltree)
-par(mfrow=c(1,2))
-draw.tree(smalltree, digits=2)
-cols = viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility),20)]
-plot(mob$Black, mob$Commute, pch=19, cex=.4, bty='n',las=1, col=cols, 
-     ylab="Commute time",xlab="% Black")
-partition.tree(smalltree,add=TRUE, ordvars = c("Black","Commute"))
+```{r partition-view, echo=TRUE, fig.width=10,fig.height=4,fig.align="center"}
+mob$preds <- predict(smalltree)
+par(mfrow = c(1, 2))
+draw.tree(smalltree, digits = 2)
+cols <- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility),20)]
+plot(mob$Black, mob$Commute, pch=19, cex=.4, bty='n', las=1, col=cols, ylab = "Commute time", xlab = "% Black")
+partition.tree(smalltree, add = TRUE, ordvars = c("Black","Commute"))
 ```
 
 
 We predict all observations in a region with the same value.
-
-The three regions correspond to the leaves of the tree.
+$\bullet$ The three regions correspond to the leaves of the tree.
 
 
 ---
