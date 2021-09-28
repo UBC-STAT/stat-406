@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>12 To(o) smooth or not to(o) smooth?</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 12 To(o) smooth or not to(o) smooth?
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-09-28
+
+---
+
+
+
+
+
+## Last time...
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+We've been discussing smoothing methods in 1-dimension:
+
+`$$\Expect{Y\given X=x} = f(x),\quad x\in\R$$`
+
+We looked at basis expansions, e.g.:
+
+`$$f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_p x^p$$` 
+
+We looked at local methods, e.g.:
+
+`$$f(x_i) \approx  s_i^\top \y$$`
+
+--
+
+What if `\(x \in \R^d\)` and `\(d&gt;1\)`?
+
+---
+
+
+## Kernels and interactions
+
+In multivariate nonparametric regression, you estimate a __surface__ over the input variables.
+
+This is trying essentially to find `\(\widehat{f}(x_1,\ldots,x_p)\)`.
+
+Therefore, this function __by construction__ includes interactions, handles categorical data, etc. etc.
+
+This is in contrast with __linear models__ which need you to specify these things.
+
+This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.
+
+---
+
+## Issue 1
+
+More complicated functions (smooth Kernel regressions vs. linear models) tend to have __lower bias__ but __higher variance__.
+
+For `\(d=1\)`, one can show that for kernels 
+
+`$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$` 
+
+How does this compare to just using a linear model?
+
+--
+
+__Bias__  
+    
+1. The bias of using a linear model when it is wrong is a number `\(b(\widehat\beta)\)` which doesn't depend on `\(n\)`.
+2. The bias of using kernel regression is `\(C_1/n^{4/5}\)`. This goes to 0 as `\(n\rightarrow\infty\)`.
+  
+__Variance__
+
+1. The variance of using a linear model is `\(C/n\)`
+2. The variance of using kernel regression is `\(C_2/n^{4/5}\)`.
+
+---
+
+## Issue 1
+  
+To conclude: bias of kernels goes to zero (not for lines) but variance of lines goes to zero faster than for kernels.
+
+If the linear model is right, you win. But if it's wrong, you (eventually) lose.
+
+How do you know if you have enough data? 
+
+Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.
+
+---
+
+## Issue 2
+
+For `\(d&gt;1\)`, there is more trouble.
+
+First, lets look again at 
+`$$\textrm{MSE}(\hat{f}) - \sigma^2 = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}}$$` 
+
+That is for `\(d=1\)`. It's not __that much__ slower than `\(C/n\)`, the variance for linear models.
+
+If `\(d&gt;1\)` similar calculations show,
+
+`$$\textrm{MSE}(\hat f)-\sigma^2 = \frac{C_1+C_2}{n^{4/(4+d)}} \hspace{2em} \textrm{MSE}(\hat \beta) -\sigma^2 = b(\hat\beta) + \frac{Cd}{n}.$$`
+
+--
+
+What if `\(d\)` is big (and `\(n\)` is really big)?
+
+1. Then `\(\frac{C}{n^{4/(4+d)}}\)` is still big.
+2. But `\(\frac{Cd}{n}\)` is small.
+3. So unless `\(b(\hat\beta)\)` is big, we should use the linear model.
+  
+How do you tell? Do model selection to decide.
+
+A __very, very__ questionable rule of thumb: if `\(d&gt;\log(n)\)`, don't do smoothing.
+
+---
+class: inverse, middle, center
+
+# Next time...
+
+Compromises if _d_ is big
+
+Additive models and trees
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
