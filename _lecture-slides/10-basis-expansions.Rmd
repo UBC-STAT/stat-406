@@ -3,19 +3,6 @@ title: "10 Basis expansions"
 author: 
   - "STAT 406"
   - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
@@ -64,8 +51,10 @@ So we can linearly regress $y_i = f(x_i)$ on the polynomials.
 The more terms we use, the smaller $R$.
 
 ```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align="center", dev="svg", warning=FALSE}
-data(lidar, package = "UBCstat406labs")
-lidar %>% ggplot(aes(range,logratio)) + geom_point(color=blue) + theme_cowplot() +
+data(lidar, package = "SemiPar")
+lidar %>% 
+  ggplot(aes(range,logratio)) + 
+  geom_point(color=blue) +
   geom_smooth(color=orange, formula = y~poly(x,3), method="lm", se=FALSE)
 ```
 
@@ -73,18 +62,17 @@ lidar %>% ggplot(aes(range,logratio)) + geom_point(color=blue) + theme_cowplot()
 
 ## Same thing, different orders
 
-```{r, echo=FALSE, fig.width=10, fig.height=5, fig.align="center", dev="svg", warning=FALSE}
-lidar %>% ggplot(aes(range,logratio)) + geom_point(color=blue) + theme_cowplot() +
-  geom_smooth(aes(color="a"), formula = y~poly(x,4), method="lm", se=FALSE) +
-  geom_smooth(aes(color="b"), formula = y~poly(x,7), method="lm", se=FALSE) +
-  geom_smooth(aes(color="c"), formula = y~poly(x,13), method="lm", se=FALSE) +
+```{r, fig.width=10, fig.height=4, fig.align="center", dev="svg", warning=FALSE}
+lidar %>% 
+  ggplot(aes(range, logratio)) + 
+  geom_point(color=blue) + 
+  geom_smooth(aes(color="a"), formula = y~poly(x, 4), method="lm", se=FALSE) +
+  geom_smooth(aes(color="b"), formula = y~poly(x, 7), method="lm", se=FALSE) +
+  geom_smooth(aes(color="c"), formula = y~poly(x, 13), method="lm", se=FALSE) +
   scale_color_manual(name="Taylor order",
-    values=c(green,red,"purple"), labels=c("4 terms","7 terms","13 terms"))
+    values=c(green,red,orange), labels=c("4 terms","7 terms","13 terms"))
 ```
 
---
-
-How do we decide which order to use?
 
 ---
 
@@ -100,26 +88,31 @@ So, we're still doing OLS with
 $$\X=\begin{bmatrix}1& x_1 & x_1^2 & x_1^3 \\ \vdots&&&\vdots\\1& x_n & x_n^2 & x_n^3\end{bmatrix}$$
 
 So we can still use our nice formulas for LOO-CV, GCV, Cp, AIC, etc.
+
+
+```{r}
+nmods <- 20
+loocv <- function(mdl) { 
+  mean( residuals(mdl)^2 / 
+         (1 - hatvalues(mdl))^2 ) }
+cvscores <- double(nmods)
+for (i in 1:nmods) {
+  cvscores[i] <- loocv(
+    lm(logratio ~ poly(range,i), data = lidar))}
+```
 ]
 
---
-
 .pull-right[
-```{r,echo=FALSE, dev="svg"}
-nmods = 20
-loocv <- function(out) mean(residuals(out)^2/(1-hatvalues(out))^2)
-cvscores = double(nmods)
-for(i in 1:nmods) cvscores[i] = with(lidar, loocv(lm(logratio~poly(range,i))))
+
+```{r, echo=FALSE, dev="svg"}
 g1 = ggplot(data.frame(ord=1:nmods,cvscores=cvscores), aes(ord,cvscores)) +
   geom_point(color=blue) +
   geom_line(color=blue) + ylab('LOO CV') + xlab('polynomial order') +
-  geom_vline(xintercept = which.min(cvscores), linetype="dotted") +
-  theme_cowplot()
+  geom_vline(xintercept = which.min(cvscores), linetype="dotted") 
 g2 = ggplot(lidar, aes(range,logratio)) + geom_point(color=blue) + 
-  theme_cowplot() +
   geom_smooth(color=orange, 
-              formula = y~poly(x,which.min(cvscores)), method="lm", se=FALSE)
-plot_grid(g1,g2,nrow=2)
+              formula = y~poly(x,which.min(cvscores)), method="lm", se=FALSE) + ggtitle("Best model")
+plot_grid(g1, g2, nrow=2)
 ```
 ]
 
@@ -141,7 +134,7 @@ $x \mapsto \bigg(1,\ x,\ x^2,\ x^3,\ (x-k_1)^3_+,\ (x-k_2)^3_+,\ldots, (x-k_p)^3
 
 __Fourier series__
 
-$x \mapsto \bigg(1,\ \cos(2\pi x),\ \sin(2\pi x),\ \cos(2\pi 2 x),\ \sin(2\pi 2 x), \ldots, \cos(2\pi p x),\ \sin(2\pi p x),\bigg)$
+$x \mapsto \bigg(1,\ \cos(2\pi x),\ \sin(2\pi x),\ \cos(2\pi 2 x),\ \sin(2\pi 2 x), \ldots, \cos(2\pi p x),\ \sin(2\pi p x)\bigg)$
 
 ---
 
@@ -168,46 +161,54 @@ Procedure 2:
 3. Do ridge, lasso and elastic net $\alpha=.5$ on 20th order polynomials, B splines with 20 knots, and Fourier series with $p=20$. Choose tuning parameter.
 4. Repeat 1-3 10 times (different splits)
 
-```{r simulation, cache=TRUE, echo=FALSE}
-x = (lidar$range - min(lidar$range)+.005) / (max(lidar$range)-min(lidar$range)+.01)
-Xmat = cbind(poly(x,20), splines::bs(x, df=20), 
+---
+
+
+```{r simulation, cache = TRUE}
+x <- (lidar$range - min(lidar$range) + .005) / (max(lidar$range) - min(lidar$range) + .01)
+Xmat <- cbind(poly(x,20), splines::bs(x, df=20), 
              cos(2*pi*outer(x,1:20)), sin(2*pi*outer(x,1:20)))
 y = lidar$logratio
 library(glmnet)
-mse <- function(x,y) mean((x-y)^2)
-lidar_sim <- function(ord=20, train=0.75){
-  n = nrow(lidar)
-  train = as.logical(rbinom(n, 1, .75)); test=!train # not precisely 75%, but on average
-  polycv = double(ord)
-  for(i in 1:20) polycv[i] = loocv(lm(y~Xmat[,1:i], subset=train))
-  bpoly = lm(y[train]~Xmat[train,1:which.min(polycv)])
-  lasso = cv.glmnet(Xmat[train,],y[train])
-  ridge = cv.glmnet(Xmat[train,],y[train],alpha = 0)
-  elnet = cv.glmnet(Xmat[train,],y[train],alpha=.5)
-  out = data.frame(
-    methods=c("poly","lasso","ridge","elnet"),
-    mses = c(mse(y[test], cbind(1,Xmat[test,1:which.min(polycv)])%*%coef(bpoly)),
-             mse(y[test], predict(lasso,Xmat[test,],s="lambda.min")),
-             mse(y[test], predict(ridge,Xmat[test,],s="lambda.min")),
-             mse(y[test], predict(elnet,Xmat[test,],s="lambda.min"))
-             ),
+mse <- function(x,y) mean( (x - y)^2 )
+lidar_sim <- function(maxord = 20, train = 0.75){
+  n <- nrow(lidar)
+  train <- as.logical(rbinom(n, 1, .75))
+  test <- !train # not precisely 75%, but on average
+  polycv <- double(maxord) # preallocate
+  for(i in 1:20) polycv[i] <- loocv( lm(y ~ Xmat[ , 1:i], subset = train))
+  bpoly <- lm(y[train] ~ Xmat[train, 1:which.min(polycv)])
+  lasso <- cv.glmnet(Xmat[train, ], y[train])
+  ridge <- cv.glmnet(Xmat[train, ], y[train], alpha = 0)
+  elnet <- cv.glmnet(Xmat[train, ], y[train], alpha = .5)
+  out <- data.frame(
+    methods = c("poly", "lasso", "ridge", "elnet"),
+    mses = c(
+      mse(y[test], cbind(1, Xmat[test, 1:which.min(polycv)]) %*% coef(bpoly)),
+      mse(y[test], predict(lasso, Xmat[test,], s="lambda.min")),
+      mse(y[test], predict(ridge, Xmat[test,], s="lambda.min")),
+      mse(y[test], predict(elnet, Xmat[test,], s="lambda.min"))
+    ),
     nvars = c(which.min(polycv),
-              sum(abs(coef(lasso,s="lambda.min"))>0),
+              sum(abs(coef(lasso, s="lambda.min")) > 0),
               ncol(Xmat),
-              sum(abs(coef(elnet,s="lambda.min"))>0))
+              sum(abs(coef(elnet, s="lambda.min")) > 0))
   )
   out
 }
 set.seed(12345)
-sim_out = lapply(1:10,lidar_sim)
-sim_results = bind_rows(sim_out)
+sim_results <- lapply(1:20, lidar_sim) %>% bind_rows()
 ```
 
-```{r sim-results, dev="svg", fig.height=4, fig.width=10, fig.align="center", echo=FALSE}
-sim_results %>% pivot_longer(-methods) %>%
+---
+
+```{r sim-results, dev="svg", fig.height=5, fig.width=10, fig.align="center", echo=TRUE}
+sim_results %>% 
+  pivot_longer(-methods) %>%
   ggplot(aes(methods, value, fill=methods)) + geom_boxplot() +
-  facet_wrap(~name, scales = "free_y") + theme_cowplot() + ylab("") +
-  theme(legend.position = "none") + xlab("")
+  facet_wrap(~name, scales = "free_y") + ylab("") +
+  theme(legend.position = "none") + xlab("") +
+  scale_fill_viridis_d(begin = .2, end = 1)
 ```
 
 ---
