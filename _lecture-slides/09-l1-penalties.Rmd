@@ -4,18 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
@@ -42,9 +30,9 @@ $$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
 
 
 
-Ridge regression: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq t$ 
+Ridge regression: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s$ 
 
-Best linear regression model: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t$
+Best linear regression model of size $t$: $\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t$
 
 $||\beta||_0$ is the number of nonzero elements in $\beta$
 
@@ -147,18 +135,18 @@ Known as
 
 The estimator satisfies
 
-$$\blt = \arg\min_{ ||\beta||_1 \leq t}  ||\y-\X\beta||_2^2$$
+$$\blt = \arg\min_{ ||\beta||_1 \leq s}  \frac{1}{n}||\y-\X\beta||_2^2$$
 
 
 In its corresponding Lagrangian dual form:
 
-$$\bll = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_1$$
+$$\bll = \arg\min_{\beta} \frac{1}{n}||\y-\X\beta||_2^2 + \lambda ||\beta||_1$$
 
 ---
 
 ## Lasso
 
-While the ridge solution can be easily computed
+While the ridge solution can be easily computed 
 
 $$\brl = \arg\min_{\beta} ||\y-\X\beta||_2^2 + \lambda ||\beta||_2^2 = (\X^{\top}\X + \lambda \mathbf{I})^{-1} \X^{\top}\y$$
 
@@ -177,19 +165,22 @@ However, because the optimization problem is convex, there exist efficient algor
 
 ## Coefficient path: ridge vs lasso
 
-```{r ridge-v-lasso,echo=FALSE,dev="svg",fig.align="center", fig.width=11, fig.height=6}
-library(lars)
+
+```{r ridge-v-lasso,echo=TRUE,dev="svg",fig.align="center", fig.width=11, fig.height=4}
 library(glmnet)
-prostate = as_tibble(
-  read.table(
-    "http://www.web.stanford.edu/~hastie/ElemStatLearn/datasets/prostate.data", 
-    header = TRUE))
-X = prostate %>% dplyr::select(-train,-lpsa) %>% as.matrix()
-Y = prostate$lpsa
-n = length(Y)
-p = ncol(X)
-lasso = glmnet(x=X,y=Y)
-ridge = glmnet(x=X,y=Y,alpha=0)
+data(prostate, package = "ElemStatLearn")
+X <- prostate %>% dplyr::select(-train,-lpsa) %>% as.matrix()
+Y <- prostate$lpsa
+lasso <- glmnet(x = X, y = Y) # alpha = 1 by default
+ridge <- glmnet(x = X, y = Y, alpha = 0)
+op <- par()
+par(mfrow = c(1, 2), mar = c(5,3,3,.1))
+plot(lasso, main = "Lasso")
+plot(ridge, main = "Ridge")
+par(op)
+```
+
+```{r tidy-glmnet, include = FALSE, eval = FALSE}
 df = data.frame(as.matrix(t(ridge$beta)))
 df1 = data.frame(as.matrix(t(lasso$beta)))
 df$l1norm = colSums(abs(ridge$beta))
@@ -240,19 +231,12 @@ The path returned by `lars` is more useful than that returned by `glmnet`.
 
 But you should use `glmnet`.
 
----
 
-## Lasso paths
 
-```{r, fig.width=8, fig.height=4, fig.align="center", dev="svg"}
-lasso = glmnet(X,Y)
-lars.out = lars(X,Y)
-par(mfrow=c(1,2))
-plot(lasso)
-plot(lars.out,main='')
-```
 
 ---
+
+
 
 ## Choosing the lambda
 
@@ -277,7 +261,7 @@ However, the way to do it differs from package to package
 ```{r}
 # 1. Estimate cv and model at once
 # no formula version
-lasso.glmnet = cv.glmnet(X,Y) 
+lasso.glmnet = cv.glmnet(X, Y) 
 # NEVER use glmnet() itself
 # 2. Plot the coefficient path
 # 3. Choose lambda using CV
@@ -289,19 +273,20 @@ best.lam = lasso.glmnet$lambda.min
 # 5. Return the coefs/predictions 
 # for the best model
 coefs.glmnet = coefficients(
-  lasso.glmnet, s = best.lam)
+  lasso.glmnet, s = "lambda.min")
 preds.glmnet = predict(
-  lasso.glmnet, newx = X, s = best.lam) 
+  lasso.glmnet, newx = X, s = "lambda.1se") 
 # must supply `newx`
 ```
 ]
 
 .pull-right[
 ```{r, dev="svg", fig.align="center",fig.width=3, fig.height=6,echo=FALSE}
-par(mfrow=c(2,1), mar=c(5,3,3,0))
+par(mfrow=c(2,1), mar=c(5, 3, 3, 0))
 plot(lasso.glmnet$glmnet.fit) # the glmnet.fit == glmnet(X,Y)
 # 3. Choose lambda using CV
 plot(lasso.glmnet) #a different plot method for the cv fit
+par(op)
 ```
 ]
 
@@ -310,14 +295,14 @@ plot(lasso.glmnet) #a different plot method for the cv fit
 ## Paths with chosen lambda
 
 ```{r, fig.width=11,fig.align="center",dev="svg",fig.height=4}
-ridge.glmnet = cv.glmnet(X,Y,alpha=0,lambda.min.ratio=1e-10) # added to get a minimum
-par(mfrow=c(1,4))
+ridge.glmnet = cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum
+par(mfrow = c(1, 4))
 plot(ridge.glmnet)
 plot(lasso.glmnet)
-plot(ridge.glmnet$glmnet.fit, main='Ridge (glmnet)')
-abline(v=sum(abs(coef(ridge.glmnet))))
-plot(lasso.glmnet$glmnet.fit, main='Lasso (glmnet)')
-abline(v=sum(abs(coef(lasso.glmnet))))
+plot(ridge.glmnet$glmnet.fit, main = 'Ridge')
+abline(v = sum(abs(coef(ridge.glmnet)))) # defaults to `lambda.1se`
+plot(lasso.glmnet$glmnet.fit, main = 'Lasso')
+abline(v = sum(abs(coef(lasso.glmnet)))) # again, `lambda.1se` unless told otherwise
 ```
 
 ---
