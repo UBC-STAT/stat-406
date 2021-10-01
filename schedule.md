@@ -96,8 +96,8 @@ Optional reading
 |5 Oct 21  |[Ridge](08-ridge-regression.html), [Lasso](09-l1-penalties.html)  |  |
 |7 Oct 21  |[NP 1](10-basis-expansions.html), [NP 2](11-kernel-smoothers.html) |  |
 |12 Oct 21 |[Why smoothing?](12-why-smooth.html)  |  |
-|14 Oct 21 |[Other](13-gams-trees.html)          | HW 2 due |
-|19 Oct 21 |          |  |
+|14 Oct 21 |[Other](13-gams-trees.html)          |  |
+|19 Oct 21 |          | HW 2 due |
 {: .table .table-striped}
 
 
@@ -120,8 +120,8 @@ Optional reading
 |:---------|:---------|:-----|
 |21 Oct 21 |[Classification](14-classification-intro.html), [LDA and QDA](15-LDA-and-QDA.html) |          |
 |26 Oct 21 |[Gradient descent](00-gradient-descent.html), [Logistic regression](16-logistic-regression.html) |
-|28 Oct 21 |[Nonlinear](17-nonlinear-classifiers.html)  | HW 3 due |
-|2 Nov 21  |          |
+|28 Oct 21 |[Nonlinear](17-nonlinear-classifiers.html)  |  |
+|2 Nov 21  |          | HW 3 due |
 {: .table .table-striped}
 
 
@@ -146,8 +146,8 @@ Optional reading
 | 9 Nov 21   |[Bagging and random forests](19-bagging-and-rf.html), [Boosting](20-boosting.html)| PC 2 due |
 | 11 Nov 21  | (no class, Midterm Break) |
 | 16 Nov 21  |[Intro to neural nets](21-nnets-intro.html), [Estimating neural nets](22-nnets-estimation.html)  |
-| 18 Nov 21  |[Neural nets wrapup](23-nnets-other.html) | HW 4 due |
-| 23 Nov 21  |  |
+| 18 Nov 21  |[Neural nets wrapup](23-nnets-other.html) |          |
+| 23 Nov 21  |  | HW 4 due |
 {: .table .table-striped}
 
 
@@ -171,8 +171,8 @@ Optional reading
 |:---------|:-----------|:-----------|
 |25 Nov 20 |[Intro to PCA](24-pca-intro.html), [Issues with PCA](25-pca-issues.html)  |
 |30 Nov 20 | [PCA v KPCA](00-pca-v-kpca.html), [Manifold learning](26-manifolds.html) |
-|2 Dec 20  |[K means clustering](27-kmeans.html), [Hierarchical clustering](28-hclust.html) |HW 5 due |
-|7 Dec 20  | |PC 3 due |
+|2 Dec 20  |[K means clustering](27-kmeans.html), [Hierarchical clustering](28-hclust.html) |         |
+|7 Dec 20  | |HW 5 due, PC 3 due |
 {: .table .table-striped}
 
 
