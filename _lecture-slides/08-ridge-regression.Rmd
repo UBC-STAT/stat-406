@@ -36,6 +36,10 @@ To do this, we used a risk estimate, and chose the "model" with the lowest estim
 
 --
 
+Let's call what we've done __variable selection__, a specific case of __model selection__.
+
+--
+
 Moving forward, we need to generalize this to
 
 .hand[Decide which of possibly infinite prediction functions] $f\in\mathcal{F}$ .hand[to use]
@@ -89,7 +93,7 @@ __shrinkage__.
 * A constrained minimization problem is written
 
 
-$$\min_\beta f(\beta) \mbox{ subject to } C(\beta)$$
+$$\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)$$
 
 * $f(\beta)$ is the objective function
 * $C(\beta)$ is the constraint
@@ -191,7 +195,7 @@ $$\norm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.$$
 Other norms we should remember:
 
 $\ell_q$-norm
-: $\left(\sum_{j=1}^p z_j^q\right)^{1/q}$
+: $\left(\sum_{j=1}^p |z_j|^q\right)^{1/q}$
 
 $\ell_1$-norm (special case)
 : $\sum_{j=1}^p |z_j|$
@@ -331,8 +335,8 @@ Some comments:
 
 * A better phrase: $\X$ is ill-conditioned
 * AKA "(numerically) rank-deficient".
-* $\X = \mathbf{U D V}^\top$ ill-conditioned $\Longleftrightarrow$ some elements of $D \approx 0$
-* $\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y$, so small entries of $D$ $\Longleftrightarrow$ huge elements of $D^{-1}$
+* $\X = \mathbf{U D V}^\top$ ill-conditioned $\Longleftrightarrow$ some elements of $\mathbf{D} \approx 0$
+* $\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y$, so small entries of $\mathbf{D}$ $\Longleftrightarrow$ huge elements of $\mathbf{D}^{-1}$
 * Means huge variance: $\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top$
 
 
@@ -341,29 +345,35 @@ Ridge Regression fixes this problem by preventing the division by a near-zero nu
 __Conclusion:__ $(\X^{\top}\X)^{-1}$ can be really unstable, while $(\X^{\top}\X + \lambda \mathbf{I})^{-1}$ is not.
 
 ---
+layout: true
 
 ## Can we get the best of both worlds?
 
+---
 To recap:
 
 * Deciding which predictors to include, adding quadratic terms, or interactions is __model selection__ (more precisely __variable selection__ within a linear model).
 
 * Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.  
 
+* If the LM is **true**, 
+    1. OLS is unbiased, but Variance depends on $\mathbf{D}^{-2}$. Can be big.
+    2. Ridge is biased (can you find the bias?). But Variance is smaller than OLS.
+
 * Ridge regression does not perform variable selection.
 
 * But .hand[picking] $\lambda=3.7$ and thereby .hand[deciding] to predict with $\widehat{\beta}^R_{3.7}$ is __model selection__.
 
+---
 
 Ridge regression: $\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s$ 
 
 Best linear regression model of size $t$: $\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t$
 
---
 
 $||\beta||_0$ is the number of nonzero elements in $\beta$
 
-Finding the best linear model is a nonconvex optimization problem (In fact, it is NP-hard)
+Finding the best linear model (of size $s$, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)
 
 Ridge regression is convex (easy to solve), but doesn't do __variable__ selection
 
@@ -374,6 +384,7 @@ Note: selecting $\lambda$ is still __model__ selection, but we've included __all
 
 ---
 class: center, middle, inverse
+layout: false
 
 # Next time...
 

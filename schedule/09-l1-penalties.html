@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # 09 L1 penalties
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-09-27
+### Last modified - 2021-10-04
 
 ---
 
@@ -50,7 +50,7 @@ Best linear regression model of size `\(t\)`: `\(\min ||\y-\X\beta||_2^2 \textrm
 
 `\(||\beta||_0\)` is the number of nonzero elements in `\(\beta\)`
 
-Finding the best linear model  is a nonconvex optimization problem (In fact, it is NP-hard)
+Finding the best linear model (of size `\(s\)`, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)
 
 Ridge regression is convex (easy to solve), but doesn't do model selection
 
@@ -211,14 +211,13 @@ However, the way to do it differs from package to package
 # no formula version
 lasso.glmnet = cv.glmnet(X, Y) 
 # NEVER use glmnet() itself
-# 2. Plot the coefficient path
-# 3. Choose lambda using CV
-# 4. If the dashed lines are at the 
+# 2. Look at the CV curve
+# 3. If the dashed lines are at the 
 # boundaries, redo with better lambda
 best.lam = lasso.glmnet$lambda.min 
 # the value, not the location 
 # (or use lasso$lambda.1se)
-# 5. Return the coefs/predictions 
+# 4. Return the coefs/predictions 
 # for the best model
 coefs.glmnet = coefficients(
   lasso.glmnet, s = "lambda.min")
@@ -229,7 +228,16 @@ preds.glmnet = predict(
 ]
 
 .pull-right[
+
+```r
+par(mfrow=c(2,1), mar=c(5, 3, 3, 0))
+plot(lasso.glmnet) # a plot method for the cv fit
+plot(lasso.glmnet$glmnet.fit) # the glmnet.fit == glmnet(X,Y)
+```
+
 &lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+
 ]
 
 ---
@@ -248,7 +256,7 @@ plot(lasso.glmnet$glmnet.fit, main = 'Lasso')
 abline(v = sum(abs(coef(lasso.glmnet)))) # again, `lambda.1se` unless told otherwise
 ```
 
-&lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="rmd_gfx/09-l1-penalties/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 class: middle, inverse, center
