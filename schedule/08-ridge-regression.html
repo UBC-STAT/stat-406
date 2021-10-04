@@ -17,7 +17,7 @@ class: center, middle, inverse, title-slide
 # 08 Ridge regression
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-09-27
+### Last modified - 2021-10-04
 
 ---
 
@@ -47,6 +47,10 @@ Or similarly:
 .hand[Decide which of a few linear models to use]
 
 To do this, we used a risk estimate, and chose the "model" with the lowest estimate
+
+--
+
+Let's call what we've done __variable selection__, a specific case of __model selection__.
 
 --
 
@@ -103,7 +107,7 @@ __shrinkage__.
 * A constrained minimization problem is written
 
 
-`$$\min_\beta f(\beta) \mbox{ subject to } C(\beta)$$`
+`$$\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)$$`
 
 * `\(f(\beta)\)` is the objective function
 * `\(C(\beta)\)` is the constraint
@@ -163,7 +167,7 @@ So,
 Other norms we should remember:
 
 `\(\ell_q\)`-norm
-: `\(\left(\sum_{j=1}^p z_j^q\right)^{1/q}\)`
+: `\(\left(\sum_{j=1}^p |z_j|^q\right)^{1/q}\)`
 
 `\(\ell_1\)`-norm (special case)
 : `\(\sum_{j=1}^p |z_j|\)`
@@ -184,7 +188,9 @@ An equivalent way to write
 is in the __Lagrangian__ form
 
 
-`$$\brl = \arg \min_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.$$`
+`$$\brl = \arg \min_{ \beta} \sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.$$`
+
+
 
 
 For every `\(\lambda\)` there is a unique `\(s\)` (and vice versa) that makes 
@@ -201,6 +207,8 @@ Observe:
 
 Note: `\(\lambda\)` and `\(s\)` are known as __tuning parameters__
 
+Note also: I'm going to stop multiplying by `\(1/n\)`. The effect is to scale `\(\lambda\)`.
+
 ---
 
 ## Example data
@@ -214,13 +222,20 @@ head(prostate)
 ```
 
 ```
-##       lcavol  lweight age      lbph svi       lcp gleason pgg45       lpsa train
-## 1 -0.5798185 2.769459  50 -1.386294   0 -1.386294       6     0 -0.4307829  TRUE
-## 2 -0.9942523 3.319626  58 -1.386294   0 -1.386294       6     0 -0.1625189  TRUE
-## 3 -0.5108256 2.691243  74 -1.386294   0 -1.386294       7    20 -0.1625189  TRUE
-## 4 -1.2039728 3.282789  58 -1.386294   0 -1.386294       6     0 -0.1625189  TRUE
-## 5  0.7514161 3.432373  62 -1.386294   0 -1.386294       6     0  0.3715636  TRUE
-## 6 -1.0498221 3.228826  50 -1.386294   0 -1.386294       6     0  0.7654678  TRUE
+##       lcavol  lweight age      lbph svi       lcp gleason pgg45       lpsa
+## 1 -0.5798185 2.769459  50 -1.386294   0 -1.386294       6     0 -0.4307829
+## 2 -0.9942523 3.319626  58 -1.386294   0 -1.386294       6     0 -0.1625189
+## 3 -0.5108256 2.691243  74 -1.386294   0 -1.386294       7    20 -0.1625189
+## 4 -1.2039728 3.282789  58 -1.386294   0 -1.386294       6     0 -0.1625189
+## 5  0.7514161 3.432373  62 -1.386294   0 -1.386294       6     0  0.3715636
+## 6 -1.0498221 3.228826  50 -1.386294   0 -1.386294       6     0  0.7654678
+##   train
+## 1  TRUE
+## 2  TRUE
+## 3  TRUE
+## 4  TRUE
+## 5  TRUE
+## 6  TRUE
 ```
 
 ???
@@ -314,8 +329,8 @@ Some comments:
 
 * A better phrase: `\(\X\)` is ill-conditioned
 * AKA "(numerically) rank-deficient".
-* `\(\X = \mathbf{U D V}^\top\)` ill-conditioned `\(\Longleftrightarrow\)` some elements of `\(D \approx 0\)`
-* `\(\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y\)`, so small entries of `\(D\)` `\(\Longleftrightarrow\)` huge elements of `\(D^{-1}\)`
+* `\(\X = \mathbf{U D V}^\top\)` ill-conditioned `\(\Longleftrightarrow\)` some elements of `\(\mathbf{D} \approx 0\)`
+* `\(\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y\)`, so small entries of `\(\mathbf{D}\)` `\(\Longleftrightarrow\)` huge elements of `\(\mathbf{D}^{-1}\)`
 * Means huge variance: `\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top\)`
 
 
@@ -324,29 +339,35 @@ Ridge Regression fixes this problem by preventing the division by a near-zero nu
 __Conclusion:__ `\((\X^{\top}\X)^{-1}\)` can be really unstable, while `\((\X^{\top}\X + \lambda \mathbf{I})^{-1}\)` is not.
 
 ---
+layout: true
 
 ## Can we get the best of both worlds?
 
+---
 To recap:
 
 * Deciding which predictors to include, adding quadratic terms, or interactions is __model selection__ (more precisely __variable selection__ within a linear model).
 
 * Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.  
 
+* If the LM is **true**, 
+    1. OLS is unbiased, but Variance depends on `\(\mathbf{D}^{-2}\)`. Can be big.
+    2. Ridge is biased (can you find the bias?). But Variance is smaller than OLS.
+
 * Ridge regression does not perform variable selection.
 
 * But .hand[picking] `\(\lambda=3.7\)` and thereby .hand[deciding] to predict with `\(\widehat{\beta}^R_{3.7}\)` is __model selection__.
 
+---
 
-Ridge regression: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s\)` 
+Ridge regression: `\(\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s\)` 
 
-Best linear regression model of size `\(s\)`: `\(\min ||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq s\)`
+Best linear regression model of size `\(t\)`: `\(\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq t\)`
 
---
 
 `\(||\beta||_0\)` is the number of nonzero elements in `\(\beta\)`
 
-Finding the best linear model is a nonconvex optimization problem (In fact, it is NP-hard)
+Finding the best linear model (of size `\(s\)`, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)
 
 Ridge regression is convex (easy to solve), but doesn't do __variable__ selection
 
@@ -357,6 +378,7 @@ Note: selecting `\(\lambda\)` is still __model__ selection, but we've included _
 
 ---
 class: center, middle, inverse
+layout: false
 
 # Next time...
 
