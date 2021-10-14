@@ -54,6 +54,7 @@ This is in contrast with __linear models__ which need you to specify these thing
 This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.
 
 ---
+layout: true
 
 ## Issue 1
 
@@ -63,54 +64,73 @@ For $d=1$, one can show that for kernels (with the correct bandwidth)
 
 $$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
 
-How does this compare to just using a linear model?
+---
 
---
+_you don't need to memorize these formulas_
+
+---
+
+Recall, this decomposition is **squared bias** + **variance** + **irreducible error**
+
+* It depends on the **choice** of $h = cn^{-1/5}$
+
+$$\textrm{MSE}(\hat{f}) = C_1 h^4 + \frac{C_2}{nh} + \sigma^2$$ 
+
+
+
+---
+
+### How does this compare to just using a linear model?
 
 __Bias__  
     
-1. The bias of using a linear model when it is wrong is a number $b(\widehat\beta)$ which doesn't depend on $n$.
+1. The bias of using a linear model **if the truth nonlinear** is a number $b$ which doesn't depend on $n$.
 2. The bias of using kernel regression is $C_1/n^{4/5}$. This goes to 0 as $n\rightarrow\infty$.
   
 __Variance__
 
-1. The variance of using a linear model is $C/n$
+1. The variance of using a linear model is $C/n$ **no matter what**
 2. The variance of using kernel regression is $C_2/n^{4/5}$.
 
 ---
 
-## Issue 1
-  
-To conclude: bias of kernels goes to zero (not for lines) but variance of lines goes to zero faster than for kernels.
+### To conclude: 
 
-If the linear model is right, you win. But if it's wrong, you (eventually) lose.
+* bias of kernels goes to zero (not for lines)
+
+* but variance of lines goes to zero faster than for kernels.
+
+If the linear model is **right**, you win. 
+
+But if it's wrong, you (eventually) lose as $n$ grows.
 
 How do you know if you have enough data? 
 
 Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.
 
 ---
+layout: false
 
 ## Issue 2
 
 For $d>1$, there is more trouble.
 
 First, lets look again at 
-$$\textrm{MSE}(\hat{f}) - \sigma^2 = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}}$$ 
+$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
 
 That is for $d=1$. It's not __that much__ slower than $C/n$, the variance for linear models.
 
 If $d>1$ similar calculations show,
 
-$$\textrm{MSE}(\hat f)-\sigma^2 = \frac{C_1+C_2}{n^{4/(4+d)}} \hspace{2em} \textrm{MSE}(\hat \beta) -\sigma^2 = b(\hat\beta) + \frac{Cd}{n}.$$
+$$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+d)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cd}{n} + \sigma^2 .$$
 
 --
 
 What if $d$ is big (and $n$ is really big)?
 
-1. Then $\frac{C}{n^{4/(4+d)}}$ is still big.
-2. But $\frac{Cd}{n}$ is small.
-3. So unless $b(\hat\beta)$ is big, we should use the linear model.
+1. Then $(C_1 + C_2) / n^{4/(4+d)}$ is still big.
+2. But $Cd / n$ is small.
+3. So unless $b$ is big, we should use the linear model.
   
 How do you tell? Do model selection to decide.
 
