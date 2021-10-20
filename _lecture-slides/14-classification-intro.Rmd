@@ -4,18 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -100,9 +88,7 @@ variance and better predictions.
 
 ## How do we measure quality?
 
-Before in regression, we have $y_i \in \mathbb{R}$ and use squared error loss
-
-
+Before in regression, we have $y_i \in \mathbb{R}$ and use squared error loss to measure accuracy: $(y - \hat{y})^2$
 Instead, let $y \in \mathcal{K} = \{1,\ldots, K\}$
 
 (This is arbitrary, sometimes other numbers, such as $\{-1,1\}$ will be
@@ -119,29 +105,41 @@ We again make predictions $\hat{y}=k$ based on the data
 
 --
 
-We're going to use $g$ to be our classifier. It takes values in $\mathcal{K}$.
+### Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | Infect others |
+| Are - | Isolation | 0 |
+
+--
+
+We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.
 
 ---
 
 ## How do we measure quality?
 
 Again, we appeal to risk
-$$R_n(g) = E \ell(Y,g(X))$$ If we use the law of
+$$R_n(g) = E [\ell(Y,g(X))]$$ If we use the law of
 total probability, this can be written
 $$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$
 This can be minimized over $X$, to produce
 $$g_*(X) = \arg\min_{g \in \mathcal{G}} \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
 
 
-$g_*$ is the __Bayes' classifier__. 
+$g_*$ is named the __Bayes' classifier__. 
 
-$R_n(g_*)$ is the called the __Bayes' limit__ or __Bayes' Risk__. It's the best we could hope to do if we knew the distribution of the data.
+$R_n(g_*)$ is the called the __Bayes' limit__ or __Bayes' Risk__. 
+
+It's the best we could hope to do if we knew the distribution of the data.
 
 --
 
 But we don't, so we'll try to do our best to estimate it.
 
 ---
+layout: true
 
 ## Best classifier
 
@@ -150,9 +148,19 @@ If we make specific choices for $\ell$, we can find $g_*$ exactly (pretending we
 Define (for convenience)
 $$\ell_g(Z) = \ell(Y,g(X))$$ 
 
+
 As $Y$ takes only a few values, __zero-one__
 prediction risk is natural
 $$\ell_g(Z) = \begin{cases}0 & Y=g(X)\\1 & Y\neq g(X) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell_g(Z)} = Pr(g(X) \neq Y),$$
+
+---
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
+---
 
 This means we want to __label__ or
 __classify__ a new observation $(x_0,y_0)$ such that
@@ -163,50 +171,64 @@ Under this loss, we have
 $$g_*(X) = \argmin_{g \in\mathcal{G}} Pr(g(X) \neq Y) = \argmin_{g \in \mathcal{G}} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g \in \mathcal{G}} Pr(Y = g(x) | X=x )$$
 
 ---
+layout: false
 
 ## Best classifier
 
 Suppose we encode a two-class response as $Y \in \{0,1\}$
 
+Zero-One loss is natural
 
-Let's try using __squared error loss__ instead:
+--
+
+**But just for fun** Let's try using __squared error loss__ instead:
 $\ell_f(Z) = (Y - f(X))^2$
 
 
-Then, the Bayes' rule is
+Then, the Bayes' Classifier is
 $$f_*(X) = E[ Y \given X] = Pr(Y = 1 \given X)$$ 
 (note that $f_* \in [0,1]$ is the regression function)
 
-Hence, we achieve the same Bayes' rule/limit with squared error
+Hence, we achieve the same Bayes' Risk with squared error
 classification by discretizing the probability:
 
 $$g_*(X) = \begin{cases}0 & f_*(X) < 1/2\\1 & \textrm{else}\end{cases}$$
 
+--
+
+Natural Classifier: 
+1. Estimate $f_*$ using any method we've learned. 
+2. Predict 0 if $\hat{f}(x)$ is less than 1/2, else predict 1.
+
+---
+layout: true
+
+
+## Claim: Classification is easier than regression
+
 ---
 
-## Classification is easier than regression
-
+.emphasis[
 Let $\hat{f}$ be any estimate of $f_*$
-
 
 Let $\widehat g (X) = \begin{cases}0 & \hat f(X) < 1/2\\1 & else\end{cases}$
 
+"Do regression, threshold to classify"
+]
 
+
+.alert[
 It can be shown that 
 $$\begin{aligned}
   &Pr(Y \neq \hat{g}(X) \given X) - Pr(Y \neq g_*(X) \given X)  \\
   &= \cdots =\\
 & =  2\left|f_*(X) - \frac{1}{2}\right|\mathbf{1}\left(g_*(X)\neq \hat{g}(X)\right) \end{aligned}$$
+]
 
-
---
-
-__Can you show this?__
 
 ---
 
-## Classification is easier than regression
-
+.alert[
 Now
 $$g_*(X)\neq \widehat{g}(X) \Rightarrow |\hat{f}(X) - f_*(X)| \geq |\hat{f}(X) - 1/2|$$
 Therefore
@@ -217,25 +239,31 @@ $$\begin{aligned}
 & =  \int 2\left|\hat{f}(x) - \frac{1}{2}\right|\mathbf{1}(g_*(x)\neq \hat{g}(x))dx  \\
 & \leq  2\int |\hat{f}(x) - f_*(x)| \mathbf{1}(g_*(x)\neq \hat{g}(x))dx \\
 & \leq  2\int |\hat{f}(x) - f_*(x)|dx \end{aligned}$$
+]
 
+.hand[Misclassification error < 2 x Regression error]
 
 
 ---
+layout: false
 
-## Bayes' rule and class densities
+## Bayes' Classifier and class densities
 
-Using Bayes' theorem 
+Using **Bayes' theorem**
 
 $$\begin{aligned}
-f_*(X) & = Pr(Y = 1 \given X) \\ & =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{g \in \{0,1\}} Pr(X\given Y = g) Pr(Y = g)} \\ & = \frac{f_1(X) \pi}{ f_1(X)\pi + f_0(X)(1-\pi)}\end{aligned}$$
+f_*(X) & = Pr(Y = 1 \given X) \\ 
+&= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
+& =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ & = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$
 
-We call $f_g(X)$ the __class densities__
+* We call $f_k(X)$ the __class (conditional) densities__
 
+* $\pi$ is the __marginal probability__ $P(Y=1)$
 
-The Bayes' rule can be rewritten 
+The Bayes' Classifier (best classifier) can be rewritten 
 
 $$g_*(X) = \begin{cases}
-1 & \textrm{ if } \frac{f_1(X)}{f_0(X)} > \frac{1-\pi}{\pi} \\
+1 & \textrm{ if } \frac{p_1(X)}{p_0(X)} > \frac{1-\pi}{\pi} \\
 0  &  \textrm{ otherwise}
 \end{cases}$$
 
@@ -243,30 +271,35 @@ $$g_*(X) = \begin{cases}
 
 ## How to find a classifier
 
-All of these prior expressions for $g_*$ give rise to classifiers
+.hand[Why did we go through that math?]
 
-__Empirical risk minimization:__ Choose a set
+Each expression for $g_*$ suggests a way to find a classifier
+
+* __Density estimation:__ Estimate $\hat{\pi}$ and $f_g$
+
+* __Regression:__ Find an
+estimate $\hat{f}$ of $f^*$ and plug it in to the Bayes' rule (compare the predicted value to 1/2)
+
+* __Empirical risk minimization:__ Choose a set
 of classifiers $\mathcal{G}$ and find $g \in \mathcal{G}$ that minimizes
 some estimate of $R_n(g)$
     
 > (This can be quite challenging as, unlike in regression, the
 training error is nonconvex)
 
-__Regression:__ Find an
-estimate $\hat{f}$ and plug it in to the Bayes' rule
 
-__Density estimation:__
-Estimate $\hat{\pi}$ and $f_g$
 
 --
 
 Easiest classifier when $y\in \{0,\ 1\}$:
 
+(stupidest version of the second case...)
+
 ```{r eval=FALSE}
-ghat = round(predict(lm(y~., trainingdata)))
+ghat <- round(predict(lm(y~., trainingdata)))
 ```
 
-Think about why this may not be very good.
+Think about why this may not be very good. (At least 2 reasons I can think of.)
 
 ---
 class: middle, inverse, center

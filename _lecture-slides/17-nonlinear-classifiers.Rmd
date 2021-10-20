@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
@@ -69,9 +56,9 @@ generate_lda <- function(
 ```
 
 ```{r}
-dat1 = generate_lda(100, Sigma = .5*diag(2))
-logit_poly = glm(y~x1*x2 + I(x1^2) + I(x2^2), dat1, family="binomial")
-lda_poly = lda(y~x1*x2 + I(x1^2) + I(x2^2), dat1)
+dat1 <- generate_lda(100, Sigma = .5*diag(2))
+logit_poly <- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = "binomial")
+lda_poly <- lda(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1)
 ```
 
 ---
@@ -88,7 +75,7 @@ g0=ggplot(dat1, aes(x1,x2)) +
   geom_point(aes(shape=as.factor(y)), size=4) +
   coord_cartesian(c(-2.5,3),c(-2.5,3)) +
   scale_fill_viridis_b(n.breaks=6,alpha=.5,name="log odds") +
-  theme_cowplot() + ggtitle("Polynomial logit") +
+  ggtitle("Polynomial logit") +
   theme(legend.position = "bottom", legend.key.width=unit(2,"cm"))
 g1=ggplot(dat1, aes(x1,x2)) + 
   scale_shape_manual(values=c("0","1"), guide="none") +
@@ -96,7 +83,7 @@ g1=ggplot(dat1, aes(x1,x2)) +
   geom_point(aes(shape=as.factor(y)), size=4) +
   coord_cartesian(c(-2.5,3),c(-2.5,3)) +
   scale_fill_viridis_b(n.breaks=6,alpha=.5,name=bquote(delta[1]-delta[0])) +
-  theme_cowplot() + ggtitle("Polynomial lda") +
+  ggtitle("Polynomial lda") +
   theme(legend.position = "bottom", legend.key.width=unit(2,"cm"))
 plot_grid(g0,g1)
 ```
@@ -128,8 +115,8 @@ Everything else is pretty much the same
 Like with regression trees, classification trees operate by greedily splitting the predictor space
 
 ```{r bake-it, echo=FALSE}
-data(gbbakeoff, package="UBCstat406labs")
-gbbakeoff = gbbakeoff[complete.cases(gbbakeoff),]
+gbbakeoff <- readRDS("data/gbbakeoff.RDS")
+gbbakeoff <- gbbakeoff[complete.cases(gbbakeoff),]
 library(tree)
 library(maptree)
 ```
@@ -138,14 +125,16 @@ library(maptree)
 ```{r glimpse-bakers, R.options = list(width = 50)}
 gbbakeoff[FALSE,]
 ```
+
+```{r our-partition}
+smalltree <- tree(
+  winners ~ technical_median + percent_star, 
+  data = gbbakeoff)
+```
+
 ]
 
 .pull-right[
-```{r our-partition}
-smalltree = tree(
-  winners~technical_median+percent_star, 
-  data = gbbakeoff)
-```
 
 ```{r plot-partition, echo=FALSE, fig.align="center", fig.height=5, fig.width=5}
 plot(gbbakeoff$technical_median, gbbakeoff$percent_star, 
@@ -174,15 +163,17 @@ __Top Row:__
 
 true decision boundary is linear
 
-linear classifier $>$ tree with axis-parallel splits
+`r pro` linear classifier 
+
+`r con` tree with axis-parallel splits
 
 __Bottom Row:__ 
 
 true decision boundary is non-linear
 
-A linear classifier can't capture the true decision boundary
+`r con` A linear classifier can't capture the true decision boundary
 
-decision tree is successful.
+`r pro` decision tree is successful.
 ]
 
 ---
@@ -285,7 +276,7 @@ We do this next module
 
 ```{r}
 library(class)
-knn3 = knn(dat1[,-1], gr, dat1$y, k=3)
+knn3 <- knn(dat1[,-1], gr, dat1$y, k = 3)
 ```
 
 ```{r, fig.align="center", fig.width=10, fig.height=6, dev='png',dvi=300,echo=FALSE}
@@ -296,7 +287,6 @@ ggplot(dat1, aes(x1,x2)) +
   geom_point(aes(shape=as.factor(y)), size=4) +
   coord_cartesian(c(-2.5,3),c(-2.5,3)) +
   scale_fill_manual(values=c(orange,green)) +
-  theme_cowplot() + 
   theme(legend.position = "bottom", legend.title=element_blank(),
         legend.key.width=unit(2,"cm"))
 ```
@@ -320,25 +310,26 @@ ggplot(pg, aes(x1,x2)) + geom_raster(aes(fill=knn)) +
   geom_point(data=dat1,mapping=aes(x1,x2,shape=as.factor(y)), size=4) +
   scale_shape_manual(values=c("0","1"), guide="none") +
   coord_cartesian(c(-2.5,3),c(-2.5,3)) +
-  theme_cowplot() + 
   theme(legend.position = "bottom", legend.title=element_blank(),
         legend.key.width=unit(2,"cm"))
 ```
 
 * How should we choose $k$?
 
-* Scaling is also very important. The nearest neighbors are determined by their distance, so better to standardize your data first.
+* Scaling is also very important. "Nearness" is determined bydistance, so better to standardize your data first.
+
+* If there are ties, break randomly. So even $k$ is strange.
 
 ---
 
 ## `knn.cv`
 
 ```{r}
-kmax = 20
-err = double(kmax)
-for(ii in 1:kmax){
-  pk = knn.cv(dat1[,-1],dat1$y, k=ii) # does leave one out CV
-  err[ii] = mean(pk != dat1$y)
+kmax <- 20
+err <- double(kmax)
+for (ii in 1:kmax) {
+  pk <- knn.cv(dat1[,-1], dat1$y, k = ii) # does leave one out CV
+  err[ii] <- mean(pk != dat1$y)
 }
 ```
 

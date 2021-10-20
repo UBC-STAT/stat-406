@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ## Simple optimization techniques
@@ -40,7 +27,7 @@ source("rmd_config.R")
 
 We'll see "gradient descent" a few times: 
 
-1. solving logistic regression
+1. solves logistic regression (simple version of IRWLS)
 
 2. gradient boosting
 
@@ -61,10 +48,9 @@ I start at a point (say $x_1=23$)
 
 I want to "go" in the negative direction of the gradient.
 
-The gradient (at $x_1=23$) is  
-$f'(23)=2(23-6)=34$.
+The gradient (at $x_1=23$) is  $f'(23)=2(23-6)=34$.
 
-OK go that way by some small amount: 
+Move current value toward current value - 34.
 
 $x_2 = x_1 - \gamma 34$, for $\gamma$ small.
 
@@ -75,18 +61,18 @@ In general, $x_{n+1} = x_n -\gamma f'(x_n)$.
 .pull-right[  
   
 ```{r}
-niter = 10
-gam = 0.1
-x = double(niter)
-x[1] = 23
-grad <- function(x) 2*(x-6)
-for(i in 2:niter) x[i] = x[i-1] - gam*grad(x[i-1])
+niter <- 10
+gam <- 0.1
+x <- double(niter)
+x[1] <- 23
+grad <- function(x) 2 * (x - 6)
+for (i in 2:niter) x[i] = x[i-1] - gam * grad(x[i - 1])
 ```
 
 ```{r echo=FALSE, fig.height=4,fig.width=4,fig.align='center'}
 ggplot(data.frame(x=x, y=(x-6)^2)) + geom_path(aes(x,y)) + 
   geom_point(aes(x,y)) +
-  theme_cowplot() + coord_cartesian(xlim=c(6-24,24),ylim=c(0,300)) +
+  coord_cartesian(xlim=c(6-24,24),ylim=c(0,300)) +
   geom_vline(xintercept = 6, color=red,linetype="dotted") +
   geom_hline(yintercept = 0,color=red,linetype="dotted") +
   stat_function(data=data.frame(x=c(6-24,24)),aes(x), fun=function(x) (x-6)^2, color=blue, alpha=.4) +
