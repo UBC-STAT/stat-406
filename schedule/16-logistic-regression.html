@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>16 Logistic regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 16 Logistic regression
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-10-20
+
+---
+
+
+
+
+## Last time
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}$$`
+
+* We showed that with two classes, the __Bayes' classifier__ is
+
+`$$g_*(X) = \begin{cases}
+1 &amp; \textrm{ if } \frac{p_1(X)}{p_0(X)} &gt; \frac{1-\pi}{\pi} \\
+0  &amp;  \textrm{ otherwise}
+\end{cases}$$`
+
+where `\(p_1(X) = Pr(X \given Y=1)\)` and `\(p_0(X) = Pr(X \given Y=0)\)`
+
+* We then looked at what happens if we assume `\(Pr(X \given Y=y)\)` is Normally distributed.
+
+We then used this distribution and the class prior `\(\pi\)` to find the __posterior__ `\(Pr(Y=1 \given X=x)\)`.
+
+--
+
+Instead, let's directly model the posterior
+
+`$$\begin{aligned}
+Pr(Y = 1 \given X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
+\P(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\end{aligned}$$`
+
+This is logistic regression.
+
+---
+
+## Why this?
+
+`$$Pr(Y = 1 \given X=x) = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}$$`
+
+* There are lots of ways to map `\(\R \mapsto [0,1]\)`.
+
+* The "logistic" function `\(z\mapsto \exp(z) / (1+\exp(z)) =:h(z)\)` is nice.
+
+* It's symmetric: `\(1 - h(z) = h(-z)\)`
+
+* Has a nice derivative: `\(h'(z) = \frac{\exp(z)}{(1 + \exp(z))^2} = h(z)(1-h(z))\)`.
+
+* It's the inverse of the "log-odds": `\(\log(p / (1-p))\)`.
+
+
+---
+
+## Another linear classifier
+
+Like LDA, logistic regression is a linear classifier
+
+The _logit_ (i.e.: log odds) transformation
+gives a linear decision boundary
+`$$\log\left( \frac{\P(Y = 1 \given X=x)}{\P(Y = 0 \given X=x) } \right) = \beta_0 + \beta^{\top} x$$`
+The decision boundary is the hyperplane
+`\(\{x : \beta_0 + \beta^{\top} x = 0\}\)`
+
+If the log-odds are below 0, classify as 0, above 0 classify as a 1.
+
+--
+
+Logistic regression is also easy in R
+
+
+```r
+logistic &lt;- glm(y ~ ., dat, family="binomial")
+```
+
+Or we can use lasso or ridge regression or a GAM as before
+
+
+```r
+lasso_logit &lt;- cv.glmnet(x, y, family = "binomial")
+ridge_logit &lt;- cv.glmnet(x, y, alpha = 0, family = "binomial")
+gam_logit &lt;- gam(y~s(x), data = dat, family = "binomial")
+```
+
+
+_Aside: glm means generalized linear model_
+
+---
+
+## Baby example (continued from last time)
+
+
+
+
+```r
+dat1 &lt;- generate_lda(100, Sigma = .5*diag(2))
+logit &lt;- glm(y~., dat1, family="binomial")
+summary(logit)
+```
+
+```
+## 
+## Call:
+## glm(formula = y ~ ., family = "binomial", data = dat1)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -2.43789  -0.49172  -0.06611   0.56141   2.07663  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  -2.6649     0.6281  -4.243 2.21e-05 ***
+## x1            2.5305     0.5995   4.221 2.43e-05 ***
+## x2            1.6610     0.4365   3.805 0.000142 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 138.469  on 99  degrees of freedom
+## Residual deviance:  68.681  on 97  degrees of freedom
+## AIC: 74.681
+## 
+## Number of Fisher Scoring iterations: 6
+```
+
+---
+
+## Visualizing the classification boundary
+
+&lt;img src="rmd_gfx/16-logistic-regression/plot-d1-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Calculation
+
+While the `R` formula for logistic regression is straightforward, it's not as easy to compute as OLS or LDA or QDA.
+
+
+Logistic regression for two classes simplifies to a likelihood:
+
+Write `\(p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)\)`
+
+* `\(P(Y_i = y_i \given X = x_i, \beta) = p_i^{y_i}(1-p_i)^{1-y_i}\)`
+
+* `\(P(\mathbf{Y} \given \mathbf{X}, \beta) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}\)`. 
+`$$\begin{aligned}
+\ell(\beta) 
+&amp; = \log \left( \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} \right)\\
+&amp;=\sum_{i=1}^n \left( y_i\log(p_i(\beta)) + (1-y_i)\log(1-p_i(\beta))\right) \\
+&amp; = 
+\sum_{i=1}^n \left( y_i\log(e^{\beta^{\top}x_i}/(1+e^{\beta^{\top}x_i})) - (1-y_i)\log(1+e^{\beta^{\top}x_i})\right) \\
+&amp; = 
+\sum_{i=1}^n \left( y_i\beta^{\top}x_i -\log(1 + e^{\beta^{\top} x_i})\right)\end{aligned}$$`
+
+This gets optimized via Newton-Raphson updates and iteratively reweighed
+least squares.
+
+---
+
+## IRWLS for logistic regression
+
+(This is preparation for Neural Networks.)
+
+
+```r
+logit_irwls &lt;- function(y, x, maxit = 100, tol=1e-6){
+  p &lt;- ncol(x)
+  beta &lt;- double(p) # initialize coefficients 
+  beta0 &lt;- 0
+  conv &lt;- FALSE # hasn't converged
+  iter &lt;- 1 # first iteration
+  while (!conv &amp;&amp; (iter &lt; maxit)) { # check loops
+    iter &lt;- iter + 1 # update first thing (so as not to forget) 
+    eta &lt;- beta0 + x %*% beta 
+    mu &lt;- exp(eta) / (1 + exp(eta))
+    gp &lt;- 1 / (mu * (1 - mu)) # inverse of derivative of logistic
+    z &lt;- eta + (y - mu) * gp # effective transformed response
+    betaNew &lt;- coef(lm(z ~ x, weights = 1/gp)) # do weighted Least Squares
+    conv &lt;- mean((c(beta0, beta) - betaNew)^2) &lt; tol # check if the betas are "moving" 
+    beta0 &lt;- betaNew[1] # update betas
+    beta &lt;- betaNew[-1]
+  }
+  return(c(beta0, beta))
+}
+```
+
+---
+
+## Comparing LDA and Logistic regression
+
+Both decision boundaries are linear in `\(x\)`:  
+
+- LDA `\(\longrightarrow \alpha_0 + \alpha_1^\top x\)` 
+- Logit `\(\longrightarrow \beta_0 + \beta_1^\top x\)`.
+
+But the parameters are estimated differently.
+
+Examine the joint distribution of `\((X,\ Y)\)`:  
+
+- LDA: `\(\prod_i f(X_i,\ Y_i) = \underbrace{\prod_i f(X_i \given Y_i)}_{\textrm{Gaussian}}\underbrace{\prod_i f(Y_i)}_{\textrm{Bernoulli}}\)`
+- Logistic Regression: `\(\prod_i f(X_i,Y_i) = \underbrace{\prod_i f(Y_i\given X_i)}_{\textrm{Logistic}}\underbrace{\prod_i f(X_i)}_{\textrm{Ignored}}\)`
+  
+* LDA estimates the joint, but Logistic estimates only the conditional distribution. But this is really all we need.
+
+* So logistic requires fewer assumptions.
+
+* But if the two classes are perfectly separable, logistic crashes (and the MLE is undefined)
+
+* LDA works even if the conditional isn't normal, but works poorly if any X is qualitative
+
+---
+
+## Comparing with QDA
+
+
+* Recall: this gives a "quadratic" decision boundary (it's a curve).
+
+* If we have many columns in `\(X\)` `\((p)\)`
+    - Logistic estimates `\(p+1\)` parameters
+    - LDA estimates `\(2p + p(p+1)/2 + 1\)`
+    - QDA estimates `\(2p + p(p+1) + 1\)`
+  
+* If `\(p=50\)`,
+    - Logistic: 51
+    - LDA: 1376
+    - QDA: 2651
+  
+* QDA doesn't get used much: there are better nonlinear versions with way fewer parameters
+
+* LDA only really depends on `\(\Sigma^{-1}(\mu_1-\mu_0)\)` and `\((\mu_1+\mu_0)\)`, so appropriate algorithms use `\(&lt;2p\)` parameters.
+
+--
+
+__Final note:__ while logistic regression and LDA produce linear decision boundaries, they are **not** linear smoothers
+
+AIC/BIC/Cp work if you use the likelihood correctly and count parameters correctly
+
+Must people use either test set or CV
+
+---
+class: middle, center, inverse
+
+# Next time:
+
+Nonlinear classifiers
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

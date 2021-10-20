@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>12 To(o) smooth or not to(o) smooth?</title>
+    <title>15 LDA and QDA</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -14,7 +14,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 12 To(o) smooth or not to(o) smooth?
+# 15 LDA and QDA
 ### STAT 406
 ### Daniel J. McDonald
 ### Last modified - 2021-10-20
@@ -24,140 +24,182 @@ class: center, middle, inverse, title-slide
 
 
 
-
-## Last time...
+## Last time
 
 `$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
 \newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
 \newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
 \newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
 \newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\y}{\mathbf{y}}$$`
+\newcommand{\X}{\mathbf{X}}$$`
 
-We've been discussing smoothing methods in 1-dimension:
+We showed that with two classes, the __Bayes' classifier__ is
 
-`$$\Expect{Y\given X=x} = f(x),\quad x\in\R$$`
+`$$g_*(X) = \begin{cases}
+1 &amp; \textrm{ if } \frac{p_1(X)}{p_0(X)} &gt; \frac{1-\pi}{\pi} \\
+0  &amp;  \textrm{ otherwise}
+\end{cases}$$`
 
-We looked at basis expansions, e.g.:
-
-`$$f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_p x^p$$` 
-
-We looked at local methods, e.g.:
-
-`$$f(x_i) \approx  s_i^\top \y$$`
+where `\(p_1(X) = Pr(X \given Y=1)\)`, `\(p_0(X) = Pr(X \given Y=0)\)` and `\(\pi = Pr(Y=1)\)`
 
 --
 
-What if `\(x \in \R^d\)` and `\(d&gt;1\)`?
+For more than two classes.
 
----
+`$$g_*(X) = 
+\argmax_k \frac{\pi_k p_k(X)}{\sum_k \pi_k p_k(X)}$$`
 
+where `\(p_k(X) = Pr(X \given Y=k)\)` and `\(\pi_k = P(Y=k)\)`
 
-## Kernels and interactions
+--
+ 
+Let's make some assumptions:
 
-In multivariate nonparametric regression, you estimate a __surface__ over the input variables.
+1. `\(Pr(X\given Y=k) = \mbox{N}(\mu_k,\Sigma_k)\)`
+2. `\(\Sigma_k = \Sigma_{k'} = \Sigma\)`
 
-This is trying essentially to find `\(\widehat{f}(x_1,\ldots,x_p)\)`.
+--
 
-Therefore, this function __by construction__ includes interactions, handles categorical data, etc. etc.
-
-This is in contrast with __linear models__ which need you to specify these things.
-
-This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.
+This leads to __Linear Discriminant Analysis__ (LDA), one of the oldest classifiers
 
 ---
 layout: true
 
-## Issue 1
+## LDA
 
-More complicated functions (smooth Kernel regressions vs. linear models) tend to have __lower bias__ but __higher variance__.
-
-For `\(p=1\)`, one can show that for kernels (with the correct bandwidth)
-
-`$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$` 
-
----
-
-_you don't need to memorize these formulas_
+.emphasis[
+1. Split your training data into `\(K\)` subsets based on `\(y_i=k\)`.
+2. In each subset, estimate the mean of `\(X\)`: `\(\hat\mu_k = \overline{X}_k\)`
+3. Estimate the pooled variance: `$$\hat\Sigma = \frac{1}{n-K} \sum_{k \in \mathcal{K}} \sum_{i \in k} (x_i - \overline{X}_k) (x_i - \overline{X}_k)^{\top}$$`
+4. Estimate the class proportion: `\(\hat\pi_k = n_k/n\)`
+]
 
 ---
 
-Recall, this decomposition is **squared bias** + **variance** + **irreducible error**
+Assume just `\(K = 2\)` so `\(k \in \{0,\ 1\}\)`
 
-* It depends on the **choice** of `\(h\)`
+We predict `\(\hat{y} = 1\)` if
 
-`$$\textrm{MSE}(\hat{f}) = C_1 h^4 + \frac{C_2}{nh} + \sigma^2$$` 
+`$$\hat{p_1}(x) / \hat{p_0}(x) &gt; \hat{\pi_0} / \hat{\pi_1}$$` 
 
-* Using `\(h= = cn^{-1/5}\)` **balances** squared bias and variance, leads to the above rate.
+Plug in the density estimates:
 
----
-
-### How does this compare to just using a linear model?
-
-__Bias__  
-    
-1. The bias of using a linear model **if the truth nonlinear** is a number `\(b\)` which doesn't depend on `\(n\)`.
-2. The bias of using kernel regression is `\(C_1/n^{4/5}\)`. This goes to 0 as `\(n\rightarrow\infty\)`.
-  
-__Variance__
-
-1. The variance of using a linear model is `\(C/n\)` **no matter what**
-2. The variance of using kernel regression is `\(C_2/n^{4/5}\)`.
+`$$\hat{p_k}(x) = N(x - \hat{\mu}_k,\ \hat\Sigma)$$`
 
 ---
 
-### To conclude: 
 
-* bias of kernels goes to zero (not for lines)
+Now we take `\(\log\)` and simplify `\((K=2)\)`:
 
-* but variance of lines goes to zero faster than for kernels.
+$$
+`\begin{aligned}
+&amp;\Rightarrow \log(\hat{p_1}(x)\times\hat{\pi_1}) - \log(\hat{p_0}(x)\times\hat{\pi_0})
+= \cdots = \cdots\\
+&amp;= x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1 - x^\top\hat\Sigma^{-1}\overline X_0-\frac{1}{2}\overline X_0^\top \hat\Sigma^{-1}\overline X_0 + \log \hat\pi_0\\
+&amp;=: \delta_1(x) - \delta_0(x)
+\end{aligned}`
+$$
 
-If the linear model is **right**, you win. 
 
-But if it's wrong, you (eventually) lose as `\(n\)` grows.
-
-How do you know if you have enough data? 
-
-Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.
+**If `\(\delta_1(x) &gt; \delta_0(x)\)`, we set `\(\hat g(x)=1\)`**
 
 ---
 layout: false
 
-## Issue 2
+## What is linear?
 
-For `\(p&gt;1\)`, there is more trouble.
+Look closely at the equation for `\(\delta_1(x)\)`:
 
-First, lets look again at 
-`$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$` 
+`$$\delta_1(x)=x^\top\hat\Sigma^{-1}\overline X_1-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1$$`
 
-That is for `\(p=1\)`. It's not __that much__ slower than `\(C/n\)`, the variance for linear models.
+We can write this as `\(\delta_1(x) = x^\top a_1 + b_1\)` with `\(a_1 = \hat\Sigma^{-1}\overline X_1\)` and `\(b_1=-\frac{1}{2}\overline X_1^\top \hat\Sigma^{-1}\overline X_1 + \log \hat\pi_1\)`.
 
-If `\(d&gt;1\)` similar calculations show,
+We can do the same for `\(\delta_0(x)\)` (in terms of `\(a_0\)` and `\(b_0\)`)
 
-`$$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .$$`
+Therefore, 
 
---
+`$$\delta_1(x)-\delta_0(x) = x^\top(a_1-a_0) + (b_1-b_0)$$`
 
-What if `\(d\)` is big (and `\(n\)` is really big)?
+This is how we discriminate between the classes.
 
-1. Then `\((C_1 + C_2) / n^{4/(4+p)}\)` is still big.
-2. But `\(Cp / n\)` is small.
-3. So unless `\(b\)` is big, we should use the linear model.
-  
-How do you tell? Do model selection to decide.
-
-A __very, very__ questionable rule of thumb: if `\(p&gt;\log(n)\)`, don't do smoothing.
+We just calculate `\((a_1 - a_0)\)` (a vector in `\(\R^p\)`), and `\(b_1 - b0\)` (a scalar)
 
 ---
-class: inverse, middle, center
+
+## Baby example
+
+.pull-left[
+
+```r
+library(mvtnorm)
+library(MASS)
+generate_lda &lt;- function(n, p = c(.5,.5), 
+                         mu_mat = matrix(c(0,0,1,1), 2),
+                         Sigma = diag(1, 2, 2)) {
+  X &lt;- rmvnorm(n, sigma = Sigma)
+  tibble(
+    y = apply(rmultinom(n, 1, p) &gt; 0, 2, which) - 1,
+    x1 = X[,1] + mu_mat[1,y+1],
+    x2 = X[,2] + mu_mat[2,y+1]
+  )
+}
+dat1 &lt;- generate_lda(100, Sigma = .5*diag(2))
+lda_fit &lt;- lda(y~., dat1)
+```
+]
+
+.pull-right[
+
+&lt;img src="rmd_gfx/15-LDA-and-QDA/plot-d1-1.png" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Multiple classes
+
+
+```r
+moreclasses &lt;-generate_lda(150, c(.2, .3, .5), matrix(c(0, 0, 1, 1, 1, 0), 2), .5 * diag(2))
+separateclasses &lt;- generate_lda(150, c(.2, .3, .5),matrix(c(-1, -1, 2, 2, 2, -1), 2), .1*diag(2))
+```
+
+&lt;img src="rmd_gfx/15-LDA-and-QDA/3class-plot-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## QDA
+
+Just like LDA, but `\(\Sigma_k\)` is separate for each class.
+
+Produces __Quadratic__ decision boundary.
+
+Everything else is the same.
+
+
+```r
+qda_fit = qda(y~., dat1)
+qda_3fit = qda(y~., moreclasses)
+```
+
+&lt;img src="rmd_gfx/15-LDA-and-QDA/qda-vs-lda-2class-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 3 class comparison
+
+&lt;img src="rmd_gfx/15-LDA-and-QDA/3class-comparison-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, inverse, center
 
 # Next time...
 
-Compromises if _p_ is big
-
-Additive models and trees
+One more linear classifier and transformations
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
