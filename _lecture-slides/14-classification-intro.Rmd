@@ -85,6 +85,7 @@ data.
 variance and better predictions.
 
 ---
+layout: true
 
 ## How do we measure quality?
 
@@ -103,20 +104,32 @@ We again make predictions $\hat{y}=k$ based on the data
 * We get zero loss if we predict the right class
 * We lose $\ell(k,k')$ on $(k\neq k')$ for incorrect predictions
 
---
 
-### Suppose you have a fever of 39º C. You get a rapid test on campus.
+---
+
+Suppose you have a fever of 39º C. You get a rapid test on campus.
 
 | Loss | Test + | Test - |
 |:---: | :---: | :---: |
 | Are + | 0 | Infect others |
 | Are - | Isolation | 0 |
 
---
+---
 
-We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.
+Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
 
 ---
+
+**We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.**
+
+---
+layout: false
 
 ## How do we measure quality?
 
@@ -145,13 +158,10 @@ layout: true
 
 If we make specific choices for $\ell$, we can find $g_*$ exactly (pretending we know the distribution)
 
-Define (for convenience)
-$$\ell_g(Z) = \ell(Y,g(X))$$ 
-
 
 As $Y$ takes only a few values, __zero-one__
 prediction risk is natural
-$$\ell_g(Z) = \begin{cases}0 & Y=g(X)\\1 & Y\neq g(X) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell_g(Z)} = Pr(g(X) \neq Y),$$
+$$\ell(y,\ g(x)) = \begin{cases}0 & y=g(x)\\1 & y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),$$
 
 ---
 
@@ -175,24 +185,24 @@ layout: false
 
 ## Best classifier
 
-Suppose we encode a two-class response as $Y \in \{0,1\}$
+Suppose we encode a two-class response as $y \in \{0,1\}$
 
 Zero-One loss is natural
 
 --
 
 **But just for fun** Let's try using __squared error loss__ instead:
-$\ell_f(Z) = (Y - f(X))^2$
+$\ell(y,\ f(x)) = (y - f(x))^2$
 
 
 Then, the Bayes' Classifier is
-$$f_*(X) = E[ Y \given X] = Pr(Y = 1 \given X)$$ 
+$$f_*(x) = E[ Y \given X = x] = Pr(Y = 1 \given X)$$ 
 (note that $f_* \in [0,1]$ is the regression function)
 
 Hence, we achieve the same Bayes' Risk with squared error
 classification by discretizing the probability:
 
-$$g_*(X) = \begin{cases}0 & f_*(X) < 1/2\\1 & \textrm{else}\end{cases}$$
+$$g_*(x) = \begin{cases}0 & f_*(x) < 1/2\\1 & \textrm{else}\end{cases}$$
 
 --
 
@@ -211,7 +221,7 @@ layout: true
 .emphasis[
 Let $\hat{f}$ be any estimate of $f_*$
 
-Let $\widehat g (X) = \begin{cases}0 & \hat f(X) < 1/2\\1 & else\end{cases}$
+Let $\widehat g (x) = \begin{cases}0 & \hat f(x) < 1/2\\1 & else\end{cases}$
 
 "Do regression, threshold to classify"
 ]
@@ -256,7 +266,7 @@ f_*(X) & = Pr(Y = 1 \given X) \\
 &= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
 & =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ & = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$
 
-* We call $f_k(X)$ the __class (conditional) densities__
+* We call $p_k(X)$ the __class (conditional) densities__
 
 * $\pi$ is the __marginal probability__ $P(Y=1)$
 
@@ -275,7 +285,7 @@ $$g_*(X) = \begin{cases}
 
 Each expression for $g_*$ suggests a way to find a classifier
 
-* __Density estimation:__ Estimate $\hat{\pi}$ and $f_g$
+* __Density estimation:__ Estimate $\pi$ and $p_g$
 
 * __Regression:__ Find an
 estimate $\hat{f}$ of $f^*$ and plug it in to the Bayes' rule (compare the predicted value to 1/2)
