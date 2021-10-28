@@ -23,7 +23,7 @@ Email: <daniel@stat.ubc.ca>
 Slack: [@prof-daniel](https://stat-406-2021w.slack.com/team/U02D54WLXRT)
 
 __Office hours__:    
-Daniel: Thursday 1400-1500   
+Daniel: Thursday 1400-1500 on Zoom or in ESB 1045  
 
 TAs  
 Xiaoxuan: Friday 1500-1600  

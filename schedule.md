@@ -180,4 +180,4 @@ Optional reading
 
 ## F Final exam
 
-TBA – During University Scheduled Final Exam Period  
+22 December 8:30-11am – During University Scheduled Final Exam Period (in person)  

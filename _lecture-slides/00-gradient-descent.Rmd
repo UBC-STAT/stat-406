@@ -41,7 +41,7 @@ So what is it and how does it work?
 
 ## Very basic example
 
-.pull-left[
+.pull-left-wide[
 Suppose I want to minimize $f(x)=(x-6)^2$ numerically.
 
 I start at a point (say $x_1=23$)
@@ -56,10 +56,6 @@ $x_2 = x_1 - \gamma 34$, for $\gamma$ small.
 
 In general, $x_{n+1} = x_n -\gamma f'(x_n)$.
 
-]
-  
-.pull-right[  
-  
 ```{r}
 niter <- 10
 gam <- 0.1
@@ -68,6 +64,12 @@ x[1] <- 23
 grad <- function(x) 2 * (x - 6)
 for (i in 2:niter) x[i] = x[i-1] - gam * grad(x[i - 1])
 ```
+
+
+]
+  
+.pull-right-narrow[  
+  
 
 ```{r echo=FALSE, fig.height=4,fig.width=4,fig.align='center'}
 ggplot(data.frame(x=x, y=(x-6)^2)) + geom_path(aes(x,y)) + 
@@ -85,7 +87,7 @@ ggplot(data.frame(x=x, y=(x-6)^2)) + geom_path(aes(x,y)) +
 
 ## Why does this work?
 
-__Interpretation 1:__
+__Heuristic interpretation:__
 
 * Gradient tells me the slope.
 
@@ -93,13 +95,18 @@ __Interpretation 1:__
 
 * go that way, but not too far (or we'll miss it)
 
-__Interpretation 2:__
+__More rigorous interpretation:__
 
 - Taylor expansion
-$$f(x) \approx f(x_0) +  f'(x_0)(x-x_0) + \frac{1}{2}f''(x_0)(x-x_0)^2$$
-- replace $f''(x_0)$ with $1/\gamma$
-- minimize the quadratic in $x$
-$$0\overset{\textrm{set}}{=}f'(x_0) + \frac{1}{\gamma}(x-x_0) \Longrightarrow x =x_0 - \gamma f'(x_0)$$
+$$
+f(x) \approx f(x_0) + \nabla f(x_0)^{\top}(x-x_0) + \frac{1}{2}(x-x_0)^\top H(x_0) (x-x_0)
+$$
+- replace $H$ with $\gamma^{-1} I$
+
+- minimize the quadratic approximation in $x$:
+$$
+0\overset{\textrm{set}}{=}\nabla f(x_0) + \frac{1}{\gamma}(x-x_0) \Longrightarrow x = x_0 - \gamma \nabla f(x_0)
+$$
 
 ---
 
@@ -123,7 +130,10 @@ ggplot(data.frame(x=c(-2,3)), aes(x)) +
 
 ---
 
-## What $\gamma$?
+## What $\gamma$? (more details than we have time for)
+
+What to use for $\gamma_k$? 
+
 
 __Fixed__
 
@@ -136,33 +146,104 @@ $$\gamma_k \quad s.t.\quad\sum_{k=1}^{\infty} \gamma_k = \infty ,\quad
               \sum_{k=1}^{\infty} \gamma^{2}_k < \infty$$
 
 
-__Backtracking line search__
-
-1. Set $0 <\beta < 1 , 0 < \alpha <\frac{1}{2}$
-2. At each $k$, while
-$f\left(x^{(k)} - \gamma f'(x^{(k)})\right) > f(x^{(k)}) - \alpha \gamma  f(x^{(k)})^{2}_{2}$
-set $\gamma = \beta \gamma$ (shrink t)
-3. $x^{t+1} = x - \gamma f'(x_t)$ 
-
 
 __Exact line search__
 
-- Backtracking approximates this
+- Tells you exactly how far to go.
 - At each $k$, solve
-$\gamma_k = \arg\min_{s >= 0} f( x^{(k)} - s f(x^{(k-1)}))$
+$\gamma_k = \arg\min_{s \geq 0} f( x^{(k)} - s f(x^{(k-1)}))$
 - Usually can't solve this.
 
+
+
 ---
+layout: true
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=TRUE, fig.align='center', fig.align='center'}
+x <- matrix(0, 40, 2)
+x[1, ] <- c(1, 1)
+grad <- function(x) c(2, 1) * x
+```
+
+---
+
+```{r, message=FALSE, echo=FALSE, fig.align='center', fig.height=5, fig.width=8}
+df = expand.grid(b1 = seq(-1,1,length.out = 100), b2 = seq(-1,1,length.out = 100))
+df = df %>% mutate(f = b1^2 + b2^2/2)
+g = ggplot(df, aes(b1,b2)) + geom_raster(aes(fill=log10(f))) +  scale_fill_viridis_c() + xlab('x1') + ylab('x2')
+g
+```
+
+---
+
+
+```{r, message=FALSE, echo=TRUE}
+gamma <- .1
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma * grad(x[k - 1, ])
+```
+
+```{r, echo=FALSE, fig.align='center', fig.height=4, fig.width=8}
+b = tibble(b1=x[,1],b2=x[,2])
+g + geom_path(data=b,aes(b1,b2)) +
+  geom_point(data=b,aes(b1,b2),size=2)
+```
+
+---
+
+```{r, message=FALSE, echo=FALSE}
+x <- matrix(0, 40, 2)
+x[1, ] <- c(1, 1)
+```
+
+```{r, echo=TRUE}
+gamma <- .9 # bigger gamma
+for (k in 2:40) x[k,] <- x[k - 1,] - gamma * grad(x[k-1,])
+```
+
+```{r, echo=FALSE, fig.align='center', fig.height=4, fig.width=8}
+b = tibble(b1=x[,1],b2=x[,2])
+g + geom_path(data=b,aes(b1,b2)) + 
+  geom_point(data=b,aes(b1,b2),size=2) + 
+  coord_cartesian(c(-1,1),c(-1,1))
+```
+
+---
+
+
+```{r, message=FALSE, echo=FALSE, fig.align='center'}
+x <- matrix(0, 40, 2)
+x[1,] <- c(1,1)
+```
+
+```{r, echo=TRUE}
+gamma <- .5 # medium, but decrease it
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma / sqrt(k) * grad(x[k - 1, ]) 
+```
+
+```{r, echo=FALSE, fig.align='center', fig.height=4, fig.width=8}
+b = tibble(b1=x[,1],b2=x[,2])
+g + geom_path(data=b,aes(b1,b2)) + geom_point(data=b,aes(b1,b2),size=2)
+```
+
+
+
+
+---
+layout: false
 
 ## When do we stop?
 
 For $\epsilon>0$, small
 
 
-Check any/all of
+Check any / all of
 
 1. $|f'(x)| < \epsilon$
+
 2. $|x^{(k)} - x^{(k-1)}| < \epsilon$
+
 3. $|f(x^{(k)}) - f(x^{(k-1)})| < \epsilon$
 
 ---
@@ -187,4 +268,163 @@ Usually cycle through "mini-batches" $\mathcal{M}$ until we've seen all $n$ poin
 --
 
 This is the workhorse for neural network optimization
+
+---
+class: center, middle, inverse
+
+# Practice with GD and Logistic regression
+
+---
+
+## Gradient descent for Logistic regression
+
+Suppose $Y=1$ with probability $p(x)$ and $Y=0$ with probability $1-p(x)$, $x \in \R$.  
+
+I want to model $P(Y=1| X=x)$. 
+
+I'll assume that $\log\left(\frac{p(x)}{1-p(x)}\right) = ax$ for some scalar $a$. This means that
+$p(x) = \frac{\exp(ax)}{1+\exp(ax)} = \frac{1}{1+\exp(-ax)}$
+
+
+--
+
+.pull-left[
+```{r generate-data}
+n <- 100
+a <- 2
+x <- runif(n, -5, 5)
+logit <- function(x) 1 / (1 + exp(-x))
+p <- logit(a * x)
+y <- rbinom(n, 1, p)
+df <- tibble(x, y)
+g <- ggplot(df, aes(x, y)) +
+  geom_point(color="cornflowerblue") +
+  stat_function(fun = ~ logit(a * .x))
+```
+]
+
+
+.pull-right[
+```{r, echo=FALSE, fig.height=4}
+g
+```
+]
+
+---
+layout: true
+
+
+## Reminder: the likelihood
+
+$$L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}$$
+
+Remember, we defined $p(x) = \frac{\exp(ax)}{1+\exp(ax)} = \frac{1}{1+\exp(-ax)}$.
+
+---
+
+The log likelihood is therefore
+
+$$
+\begin{aligned}
+\ell(y | a, x) &= \log \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i} \\
+&= \sum_{i=1}^n y_i\log p(x_i) + (1-y_i)\log(1-p(x_i))\\
+&= \sum_{i=1}^n\log(1-p(x_i)) + y_i\log\left(\frac{p(x_i)}{1-p(x_i)}\right)\\
+&=\sum_{i=1}^n ax_i y_i + \log\left(1-p(x_i)\right)\\
+&=\sum_{i=1}^n ax_i y_i + \log\left(\frac{1}{1+\exp(ax_i)}\right)
+\end{aligned}
+$$
+
+---
+
+Now, we want the negative of this. Why? 
+
+We would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood.
+
+
+$$-\ell(y | a, x) = \sum_{i=1}^n -ax_i y_i - \log\left(\frac{1}{1+\exp(ax_i)}\right)$$
+
+---
+
+This is, in the notation of our slides $f(a)$. 
+
+We want to minimize it in $a$ by gradient descent. 
+
+So we need the derivative with respect to $a$: $f'(a)$. 
+
+Now, conveniently, this simplifies a lot. 
+
+
+$$\frac{d}{d a} f(a) = \sum_{i=1}^n -x_i y_i - \left(-\frac{x_i \exp(ax_i)}{1+\exp(ax_i)}\right) = 
+\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \sum_{i=1}^n -x_i(y_i-p(x_i)).$$
+
+---
+
+(Simple) gradient descent to minimize $-\ell(a)$ or maximize $L(y|a,x)$ is:
+
+1. Input $a_1, \gamma>0, j_\max, \epsilon>0, \frac{d}{da} -\ell(a)$.
+2. For $j=1,2,\ldots,j_\max$,
+$$a_j = a_{j-1} - \gamma \frac{d}{da} (-\ell(a_{j-1}))$$
+3. Stop if $\epsilon > |a_j - a_{j-1}|$.
+
+---
+
+```{r amlecorrect, echo=TRUE}
+amle <- function(x, y, a0, gam = 0.5, jmax = 50, eps = 1e-6){
+  a <- double(jmax) # place to hold stuff (always preallocate space)
+  a[1] <- a0 # starting value
+  for (j in 2:jmax) { # avoid possibly infinite while loops
+    px <- logit(a[j - 1] * x) 
+    grad <- sum( -x * (y - px) ) 
+    a[j] <- a[j - 1] - gam * grad
+    if (abs(grad) < eps || abs(a[j] - a[j-1]) < eps) break
+  }
+  a[1:j]
+}
+```
+
+---
+layout: false
+
+## Try it:
+
+```{r ourmle1}
+(too_big <- amle(x, y, 5, .5))
+(too_small <- amle(x, y, 5, .01))
+(just_right <- amle(x, y, 5, .1))
+```
+
+---
+
+## Visual
+
+
+.pull-left[
+```{r}
+negll <- function(a) {
+  -a * sum(x*y) - 
+    rowSums(log(1 / (1 + exp(outer(a, x)))))
+}
+tb <- tibble(a = too_big, negll = negll(a))
+ts <- tibble(a = too_small, negll = negll(a))
+jr <- tibble(a = just_right, negll = negll(a))
+ppp <- bind_rows(too_big = tb, 
+                 too_small = ts, 
+                 just_right = jr,
+                 .id = "gamma")
+g <- ggplot(ppp, aes(a, negll)) +
+  geom_point(aes(color = gamma)) + 
+  facet_wrap(~gamma, ncol = 1) +
+  stat_function(fun = negll, xlim = c(-2.5,5)) +
+  scale_y_log10() + 
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom") 
+coef(glm(y ~ x - 1, family = "binomial"))
+```
+]
+
+.pull-right[
+```{r}
+g
+```
+]
 
