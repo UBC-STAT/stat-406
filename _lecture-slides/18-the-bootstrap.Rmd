@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -63,6 +50,7 @@ source("rmd_config.R")
 ]
 
 ---
+layout: true
 
 ## In statistics...
 
@@ -76,11 +64,23 @@ It's good for "second-level" analysis.
 
 You usually get these "second-level" properties from "the sampling distribution of an estimator"
 
+---
+
 But what if you don't know the sampling distribution? Or you're skeptical of the CLT argument?
 
 ---
 
-## An example
+**Sampling distributions**
+
+1. If $X_i$ are iid Normal $(0,\sigma^2)$, then $\Var{\overline{X}} = \sigma^2 / n$.
+1. If $X_i$ are iid and $n$ is big, then $\Var{\overline{X}} \approx \Var{X_1} / n$.
+1. If $X_i$ are iid Binomial $(m, p)$, then $\Var{\overline{X}} = mp(1-p) / n$
+
+
+---
+layout: false
+
+## Example of unknown sampling distribution
 
 I estimate a classification tree on some data.
 
@@ -88,7 +88,9 @@ I get a new $x_0$ and produce $\widehat{Pr}(y_0 =1 \given x_0)$.
 
 Can I get a 95% confidence interval for $Pr(y_0=1 \given x_0)$?
 
-The bootstrap gives this to you. 
+--
+
+**The bootstrap gives this to you.**
 
 --
 
@@ -98,9 +100,13 @@ __Procedure__
 1. Resample your training data w/ replacement.
 2. Calculate a new tree on this sample.
 3. Produce a new prediction, call it $\widehat{Pr}_b(y_0 =1 \given x_0)$.
-4. Repeat 1-3 $B$ times.
+4. Repeat 1-3 $b = 1,\ldots,B$ times.
 5. CI: $\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha/2),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha/2)\right]$
 ]
+
+--
+
+$\hat{F}$ is the "empirical" distribution of the bootstraps. 
 
 ---
 
@@ -124,9 +130,12 @@ $$\bar{X} \pm 2*s/\sqrt{n}$$
 
 ```{r, fig.align='center', fig.height=4}
 ggplot(data.frame(x=c(0,12)), aes(x)) + 
-  stat_function(fun=function(x) dexp(x, 1/5), color=blue) +
+  stat_function(fun=function(x) dexp(x, 1/5), color=orange) +
   geom_vline(xintercept = 5, color=blue) + # mean
-  geom_vline(xintercept = qexp(.5,1/5), color=red) # median
+  geom_vline(xintercept = qexp(.5,1/5), color=red)+ # median
+  annotate("label", x = c(2.5, 5.5, 10), y = c(.15, .15, .05), 
+           label = c("median","bar(x)", "pdf"), parse = TRUE,
+           color = c(red, blue, orange), size = 6)
 ```
 
 ---
@@ -147,68 +156,28 @@ n = 500
 
 ```{r, fig.align='center', fig.height=3, fig.width=8}
 set.seed(2020-10-05)
-x = rexp(n, 1/5)
-(med = median(x))
-B = 100
-alpha = 0.05
-bootMed <- function(x) median(sample(x, replace=TRUE))
-bootDist = replicate(B, bootMed(x))
-bootCI = 2* med - quantile(bootDist, probs = c(1-alpha/2, alpha/2))
-ggplot(data.frame(bootDist), aes(bootDist)) + geom_density(color=blue) +
-  geom_vline(xintercept = bootCI, col=blue, linetype=2) + 
+x <- rexp(n, 1/5)
+(med <- median(x)) # sample median
+B <- 100
+alpha <- 0.05
+bootMed <- function() median(sample(x, replace=TRUE)) # resample, and get the median
+Fhat <- replicate(B, bootMed()) # repeat B times, "empirical distribution"
+CI <- 2 * med - quantile(Fhat, probs = c(1 - alpha / 2, alpha / 2))
+```
+
+```{r, echo = FALSE, fig.height=3, fig.align='center'}
+ggplot(data.frame(Fhat), aes(Fhat)) + 
+  geom_density(color = orange) +
+  geom_vline(xintercept = CI, color=orange, linetype=2) + 
   geom_vline(xintercept = med, col=blue) + 
-  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
+  geom_vline(xintercept = qexp(.5, 1/5), col=red) +
+  annotate("label", x = c(3.15, 3.5, 3.75), y = c(.5, .5, 1),
+           color = c(orange, red, blue),
+           label = c("widehat(F)", "true~median", "widehat(median)"),
+           parse = TRUE)
+
+
 ```
-
----
-
-## An alternative
-
-* In that bootstrap, I didn't use any information about the data-generating process. It's called the "non-parametric bootstrap"
-
-* What if I told you that the data came from an Exponential, but I didn't tell you the mean (parameter)?
-
-* You could try a "parametric" bootstrap:
-
----
-
-```{r, fig.align='center', fig.height=3}
-xbar = mean(x)
-s = sd(x)
-ParaBootSamp <- function(B, xbar, s){
-  means = rnorm(B, mean=xbar, sd=s/sqrt(n))
-  meds = qexp(.5, 1/means)
-  return(meds)
-}
-ParaBootDist = ParaBootSamp(B, xbar, s)
-ParaBootCI = 2*med - quantile(ParaBootDist, probs = c(1-alpha/2, alpha/2))
-ggplot(data.frame(ParaBootDist), aes(ParaBootDist)) + 
-  geom_density(color=blue) +
-  geom_vline(xintercept = ParaBootCI, col=blue, linetype=2) + 
-  geom_vline(xintercept = med, col=blue) + 
-  geom_vline(xintercept = qexp(.5, 1/5), col=red) # truth
-```
-
----
-
-## In truth
-
-* Let's compare these intervals
-
-* The nonparametric bootstrap (first one) had a width of
-```{r}
-bootCI[2] - bootCI[1]
-```
-
-* The parametric bootstrap (second one) had a width of
-```{r}
-ParaBootCI[2] - ParaBootCI[1]
-```
-
-* Using theory, we could find the exact CI. In this case, it has a width of `r 2*qnorm(.975) / (4*dexp(qexp(.5,1/5), 1/5)*sqrt(n))`. 
-
-<!-- med \pm z_alpha/2/\sqrt(n) 1/4/ F'(pop med)^2 -->
-
 
 
 
@@ -230,39 +199,26 @@ ParaBootCI[2] - ParaBootCI[1]
 
 ---
 
-## Bootstrap error sources
-
-.center[
-![:scale 30%](gfx/boot2.png)
-]
-
-
-1. Simulation error: using only $B$ samples to estimate $F$ with $\hat{F}$.
-
-2. Statistical error: our data depended on a sample from the population. We don't have the whole population so we make an error by using a sample (Note: this part is what __always__ happens with data, and what the science of statistics analyzes.)
-
-3. Specification error: If we use the model-based bootstrap (we're ignoring this), and our model is wrong, then we are overconfident.
-
----
-
 ## Slightly harder example
 
 ```{r, echo=FALSE}
 library(MASS)
 fatcats = cats
-fatcats$Hwt = fitted(lm(Hwt~Bwt, data=cats)) + rt(nrow(fatcats), 3)
+fatcats$Hwt = fitted(lm(Hwt~Bwt + 0, data=cats)) + rt(nrow(fatcats), 1)
 ```
 
 .pull-left[
-```{r, fig.width=8, fig.height=6, fig.align='center', echo=FALSE}
-ggplot(fatcats, aes(Bwt, Hwt)) + geom_point(color=blue) + theme_cowplot() +
-  xlab("Cat body weight") + ylab("Cat heart weight")
+```{r, fig.width=8, fig.height=6, fig.align='center'}
+ggplot(fatcats, aes(Bwt, Hwt)) + 
+  geom_point(color=blue) + 
+  xlab("Cat body weight") + 
+  ylab("Cat heart weight")
 ```
 ]
 
 .pull-right[
 ```{r}
-cats.lm = lm(Hwt ~ 0+Bwt,data=fatcats)
+cats.lm <- lm(Hwt ~ 0 + Bwt, data = fatcats)
 summary(cats.lm)
 confint(cats.lm)
 ```
@@ -271,7 +227,7 @@ confint(cats.lm)
 
 ---
 
-## I think that that CI is wrong...
+## When we fit models, we examine diagnostics
 
 
 .pull-left[
@@ -279,27 +235,122 @@ confint(cats.lm)
 qqnorm(residuals(cats.lm))
 qqline(residuals(cats.lm))
 ```
+
+**The tails are too fat. So I don't believe that CI...**
+]
+
+--
+
+.pull-right[
+
+**We bootstrap**
+
+```{r}
+B <- 500
+bhats <- double(B)
+alpha <- .05
+for (b in 1:B) {
+  samp <- sample(1:nrow(fatcats), replace = TRUE)
+  newcats <- fatcats[samp, ] # new data
+  bhats[b] <- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
+}
+
+2 * coef(cats.lm) - # Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
+confint(cats.lm) # Original CI
+```
+]
+
+---
+
+## An alternative
+
+* So far, I didn't use any information about the data-generating process. 
+
+* We've done the "non-parametric bootstrap"
+
+* This is easiest, and most common for the methods in this module
+
+--
+
+**But there's another version**
+
+* You could try a "parametric bootstrap"
+
+* This assumes knowledge about the DGP
+
+---
+
+## Same data
+
+.pull-left[
+
+**Non-parametric bootstrap**
+
+Same as before
+
+```{r}
+B <- 500
+bhats <- double(B)
+alpha <- .05
+for (b in 1:B) {
+  samp <- sample(1:nrow(fatcats), replace = TRUE)
+  newcats <- fatcats[samp, ] # new data
+  bhats[b] <- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
+}
+
+2 * coef(cats.lm) - # NP Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
+confint(cats.lm) # Original CI
+```
 ]
 
 .pull-right[
+**Parametric bootstrap**
+
+1. Assume that the linear model is TRUE.
+2. Then, $\texttt{Hwt}_i = \beta\times \texttt{Bwt}_i + \epsilon$
+3. The $\epsilon_i$ is random, just resample those.
+
 ```{r}
-B = 500
-bhats = double(B)
-alpha = .05
-for(b in 1:B){
-  samp = sample.int(
-    nrow(fatcats), replace = TRUE)
-  newcats = fatcats[samp,]
-  bhats[b] = coef(
-    lm(Hwt~0+Bwt,data=newcats))
+B <- 500
+bhats <- double(B)
+alpha <- .05
+cats.lm <- lm(Hwt ~ 0 + Bwt, data = fatcats)
+newcats <- fatcats
+for (b in 1:B) {
+  samp <- sample(residuals(cats.lm), replace = TRUE)
+  newcats$Hwt <- predict(cats.lm) + samp # new data
+  bhats[b] <- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
 }
-2*coef(cats.lm) - 
-  quantile(
-    bhats, 
-    probs = c(1-alpha/2, alpha/2))
-confint(cats.lm)
+
+2 * coef(cats.lm) - # Parametric Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
 ```
+
+
 ]
+
+
+---
+
+## Bootstrap error sources
+
+.center[
+![:scale 30%](gfx/boot2.png)
+]
+
+
+**Simulation error**:
+using only $B$ samples to estimate $F$ with $\hat{F}$.
+
+**Statistical error:** 
+our data depended on a sample from the population. We don't have the whole population so we make an error by using a sample (Note: this part is what __always__ happens with data, and what the science of statistics analyzes.)
+
+**Specification error:**
+If we use the parametric bootstrap, and our model is wrong, then we are overconfident.
+
+
 
 
 ---
