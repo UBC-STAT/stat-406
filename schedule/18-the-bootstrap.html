@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>18 The bootstrap</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 18 The bootstrap
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-10-30
+
+---
+
+
+
+class: middle, center
+background-image: url("https://i1.wp.com/bdtechtalks.com/wp-content/uploads/2018/12/artificial-intelligence-deep-learning-neural-networks-ai.jpg?w=1392&amp;ssl=1")
+background-size: cover
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+
+
+
+
+.secondary[.larger[Module]] .huge-orange-number[4]
+
+.secondary[.large[bagging, random forests, boosting, and neural nets]]
+
+
+---
+
+## A small detour...
+
+.center[
+![](https://www.azquotes.com/picture-quotes/quote-i-believe-in-pulling-yourself-up-by-your-own-bootstraps-i-believe-it-is-possible-i-saw-stephen-colbert-62-38-03.jpg)
+]
+
+---
+
+.center[
+![:scale 80%](http://rackjite.com/wp-content/uploads/rr11014aa.jpg)
+]
+
+---
+layout: true
+
+## In statistics...
+
+The "bootstrap" works. And well.
+
+It's good for "second-level" analysis.
+
+* "First-level" analyses are things like `\(\hat\beta\)`, `\(\hat \y\)`, an estimator of the center (a median), etc.
+
+* "Second-level" are things like `\(\Var{\hat\beta}\)`, a confidence interval for `\(\hat \y\)`, or a median, etc.
+
+You usually get these "second-level" properties from "the sampling distribution of an estimator"
+
+---
+
+But what if you don't know the sampling distribution? Or you're skeptical of the CLT argument?
+
+---
+
+**Sampling distributions**
+
+1. If `\(X_i\)` are iid Normal `\((0,\sigma^2)\)`, then `\(\Var{\overline{X}} = \sigma^2 / n\)`.
+1. If `\(X_i\)` are iid and `\(n\)` is big, then `\(\Var{\overline{X}} \approx \Var{X_1} / n\)`.
+1. If `\(X_i\)` are iid Binomial `\((m, p)\)`, then `\(\Var{\overline{X}} = mp(1-p) / n\)`
+
+
+---
+layout: false
+
+## Example of unknown sampling distribution
+
+I estimate a classification tree on some data.
+
+I get a new `\(x_0\)` and produce `\(\widehat{Pr}(y_0 =1 \given x_0)\)`.
+
+Can I get a 95% confidence interval for `\(Pr(y_0=1 \given x_0)\)`?
+
+--
+
+**The bootstrap gives this to you.**
+
+--
+
+.emphasis[
+__Procedure__
+
+1. Resample your training data w/ replacement.
+2. Calculate a new tree on this sample.
+3. Produce a new prediction, call it `\(\widehat{Pr}_b(y_0 =1 \given x_0)\)`.
+4. Repeat 1-3 `\(b = 1,\ldots,B\)` times.
+5. CI: `\(\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha/2),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha/2)\right]\)`
+]
+
+--
+
+`\(\hat{F}\)` is the "empirical" distribution of the bootstraps. 
+
+---
+
+## Very basic example
+
+* Let `\(X_i\sim Exponential(1/5)\)`. The pdf is `\(f(x) = \frac{1}{5}e^{-x/5}\)`
+
+
+* I know if I estimate the mean with `\(\bar{X}\)`, then by the CLT (if `\(n\)` is big), 
+
+`$$\frac{\sqrt{n}(\bar{X}-E[X])}{s} \approx N(0, 1).$$`
+
+
+* This gives me a 95% confidence interval like
+`$$\bar{X} \pm 2*s/\sqrt{n}$$`
+
+
+* But I don't want to estimate the mean, I want to estimate the median.
+
+---
+
+
+```r
+ggplot(data.frame(x=c(0,12)), aes(x)) + 
+  stat_function(fun=function(x) dexp(x, 1/5), color=orange) +
+  geom_vline(xintercept = 5, color=blue) + # mean
+  geom_vline(xintercept = qexp(.5,1/5), color=red)+ # median
+  annotate("label", x = c(2.5, 5.5, 10), y = c(.15, .15, .05), 
+           label = c("median","bar(x)", "pdf"), parse = TRUE,
+           color = c(red, blue, orange), size = 6)
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Now what
+
+
+
+* I give you a sample of size 500, you give me the sample median.
+
+* How do you get a CI?
+
+* You can use the bootstrap!
+
+---
+
+
+```r
+set.seed(2020-10-05)
+x &lt;- rexp(n, 1/5)
+(med &lt;- median(x)) # sample median
+```
+
+```
+## [1] 3.652976
+```
+
+```r
+B &lt;- 100
+alpha &lt;- 0.05
+bootMed &lt;- function() median(sample(x, replace=TRUE)) # resample, and get the median
+Fhat &lt;- replicate(B, bootMed()) # repeat B times, "empirical distribution"
+CI &lt;- 2 * med - quantile(Fhat, probs = c(1 - alpha / 2, alpha / 2))
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+
+## How does this work?
+
+.center[
+![:scale 70%](gfx/boot1.png)
+]
+
+---
+
+## Approximations
+
+.center[
+![:scale 70%](gfx/boot2.png)
+]
+
+---
+
+## Slightly harder example
+
+
+
+.pull-left[
+
+```r
+ggplot(fatcats, aes(Bwt, Hwt)) + 
+  geom_point(color=blue) + 
+  xlab("Cat body weight") + 
+  ylab("Cat heart weight")
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+
+```r
+cats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)
+summary(cats.lm)
+```
+
+```
+## 
+## Call:
+## lm(formula = Hwt ~ 0 + Bwt, data = fatcats)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -49.800  -0.609   0.005   1.030  46.657 
+## 
+## Coefficients:
+##     Estimate Std. Error t value Pr(&gt;|t|)    
+## Bwt   3.8577     0.2379   16.22   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 7.896 on 143 degrees of freedom
+## Multiple R-squared:  0.6478,	Adjusted R-squared:  0.6453 
+## F-statistic:   263 on 1 and 143 DF,  p-value: &lt; 2.2e-16
+```
+
+```r
+confint(cats.lm)
+```
+
+```
+##        2.5 %   97.5 %
+## Bwt 3.387478 4.327881
+```
+]
+
+
+---
+
+## When we fit models, we examine diagnostics
+
+
+.pull-left[
+
+```r
+qqnorm(residuals(cats.lm))
+qqline(residuals(cats.lm))
+```
+
+&lt;img src="rmd_gfx/18-the-bootstrap/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+
+**The tails are too fat. So I don't believe that CI...**
+]
+
+--
+
+.pull-right[
+
+**We bootstrap**
+
+
+```r
+B &lt;- 500
+bhats &lt;- double(B)
+alpha &lt;- .05
+for (b in 1:B) {
+  samp &lt;- sample(1:nrow(fatcats), replace = TRUE)
+  newcats &lt;- fatcats[samp, ] # new data
+  bhats[b] &lt;- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
+}
+
+2 * coef(cats.lm) - # Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
+```
+
+```
+##    97.5%     2.5% 
+## 3.372550 4.359246
+```
+
+```r
+confint(cats.lm) # Original CI
+```
+
+```
+##        2.5 %   97.5 %
+## Bwt 3.387478 4.327881
+```
+]
+
+---
+
+## An alternative
+
+* So far, I didn't use any information about the data-generating process. 
+
+* We've done the "non-parametric bootstrap"
+
+* This is easiest, and most common for the methods in this module
+
+--
+
+**But there's another version**
+
+* You could try a "parametric bootstrap"
+
+* This assumes knowledge about the DGP
+
+---
+
+## Same data
+
+.pull-left[
+
+**Non-parametric bootstrap**
+
+Same as before
+
+
+```r
+B &lt;- 500
+bhats &lt;- double(B)
+alpha &lt;- .05
+for (b in 1:B) {
+  samp &lt;- sample(1:nrow(fatcats), replace = TRUE)
+  newcats &lt;- fatcats[samp, ] # new data
+  bhats[b] &lt;- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
+}
+
+2 * coef(cats.lm) - # NP Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
+```
+
+```
+##    97.5%     2.5% 
+## 3.357146 4.308220
+```
+
+```r
+confint(cats.lm) # Original CI
+```
+
+```
+##        2.5 %   97.5 %
+## Bwt 3.387478 4.327881
+```
+]
+
+.pull-right[
+**Parametric bootstrap**
+
+1. Assume that the linear model is TRUE.
+2. Then, `\(\texttt{Hwt}_i = \beta\times \texttt{Bwt}_i + \epsilon\)`
+3. The `\(\epsilon_i\)` is random, just resample those.
+
+
+```r
+B &lt;- 500
+bhats &lt;- double(B)
+alpha &lt;- .05
+cats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)
+newcats &lt;- fatcats
+for (b in 1:B) {
+  samp &lt;- sample(residuals(cats.lm), replace = TRUE)
+  newcats$Hwt &lt;- predict(cats.lm) + samp # new data
+  bhats[b] &lt;- coef(lm(Hwt ~ 0 + Bwt, data = newcats)) 
+}
+
+2 * coef(cats.lm) - # Parametric Bootstrap CI
+  quantile(bhats, probs = c(1-alpha/2, alpha/2))
+```
+
+```
+##    97.5%     2.5% 
+## 3.320712 4.357285
+```
+
+
+]
+
+
+---
+
+## Bootstrap error sources
+
+.center[
+![:scale 30%](gfx/boot2.png)
+]
+
+
+**Simulation error**:
+using only `\(B\)` samples to estimate `\(F\)` with `\(\hat{F}\)`.
+
+**Statistical error:** 
+our data depended on a sample from the population. We don't have the whole population so we make an error by using a sample (Note: this part is what __always__ happens with data, and what the science of statistics analyzes.)
+
+**Specification error:**
+If we use the parametric bootstrap, and our model is wrong, then we are overconfident.
+
+
+
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Bootstrap for bagging and random forests
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
