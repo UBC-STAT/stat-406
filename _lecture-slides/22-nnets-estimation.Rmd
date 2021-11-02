@@ -4,63 +4,13 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
 source("rmd_config.R")
 ```
 
-## Neural Network terms again
-
-.pull-left[.center[
-![:scale 75%](https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Colored_neural_network.svg/1280px-Colored_neural_network.svg.png)]
-]
-
-.pull-right[
-
-$$
-\begin{aligned}
-z_k   &= \sigma(\alpha_k^{\top}x) \quad  ( k = 1, \ldots K)\\
-K &= \textrm{# hidden units}\\
-w_g  &= \beta_g^{\top}z \quad  ( g = 1, \ldots G)\\
-G &= \textrm{# of outputs}\\
-\mu_g(x) &= L^{-1}(w_g)
-\end{aligned}
-$$
-
-
--   .hand[Regression]:  The link
-    function is $L(u) = u$ (here, $G=1$)
-
--   .hand[Classification]:  With $G$
-    classes, we are modeling $\pi_g = P(Y = g\ \vert\ X=x)$ and
-    $L = \textrm{logit}$:
-    
-    $\hat{\pi}_g(x) = \frac{e^{w_g}}{\sum_{g'=1}^G e^{w_{g'}}}$
-    
-    $\hat{y} = \widehat{g}(x) = \arg\max_g \hat{\pi}_g(x)$
-    
-    This is called the __softmax__  function for
-    historical reasons
-
-]
-
----
-
-## Training neural networks
+## Neural Network terms again (T hidden layers, regression)
 
 $$\newcommand{\Expect}[1]{E\left[ #1 \right]}
 \newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
@@ -76,154 +26,145 @@ $$\newcommand{\Expect}[1]{E\left[ #1 \right]}
 \newcommand{\bfy}{\mathbf{y}}
 \newcommand{\bfx}{\mathbf{x}}$$
 
-Neural networks have _many_
-( __MANY__ ) unknown parameters
 
-They are usually called __weights__ in this dialect and __biases__
+.pull-left[
 
- 
-For our simple network (1 hidden layer) these are
+$$\begin{aligned}
+A_{k}^{(1)} &= g\left(\sum_{j=1}^p w^{(1)}_{k,j} x_j\right)\\
+A_{\ell}^{(t)} &= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)} \right)\\
+z_m &= \sum_{\ell=1}^{K_T} \beta_{m,\ell} A_{\ell}^{(T)}\\
+\hat{Y} &= z_m \ \ (M=1)
+\end{aligned}$$
 
--   $\alpha_{k0}, \alpha_k \textrm{ for } k = 1,\ldots,K$ (total of
-    $K(p+1)$ parameters)
+Notes:
+> $B \in \R^{M\times K_T}$. $M=1$ for regression  
+$\mathbf{W}_t \in \R^{K_2\times K_1}$ $t=1,\ldots,T$  
 
--   $\beta_{g0}, \beta_g \textrm{ for } g = 1,\ldots,G$ (total of
-    $G(K+1)$ parameters)
 
- 
-__Total parameters:__
-$\asymp Kp + GK = K(p + G)$
+]
+
+.pull-right[
+
+![:scale 200%](gfx/single-layer-net.svg)
+]
 
 ---
 
-## Common loss functions
+## Training neural networks, first, choices
 
 
-__Regression:__ 
-    $$\hat{R} = \sum_{i = 1}^n (y_i - \hat{y}_i)^2$$
 
-__Classification:__ 
-    Cross-entropy
-    $$\hat{R} = -\sum_{i = 1}^n \sum_{g=1}^G y_{ig} \log( \hat{\pi}_g(x_i))$$
+* Choose the architecture: how many layers, units per layer, what connections?
 
--   Here, $y_{ig}$ is an indicator variable for the $g^{th}$ class.
-    In other words $Y_i \in \{0,1\}^G$
+* Choose the loss: common choices (for each data point $i$)
 
-- Neural networks seamlessly incorporate multivariate response variables, even in regression
 
-- With the softmax $+$ cross-entropy, a neural network is a linear multinomial logistic regression model in the hidden units
+__Regression:__  $\hat{R}_i = \frac{1}{2}(y_i - \hat{y}_i)^2$ (the 1/2 just makes the derivitave nice)
+
+__Classification:__ $\hat{R}_i = -  I(y_i = m)\log( 1 + \exp(-z_{im}))$
+
+* Choose the activation function $g$
+
 
 ---
 
 ## Training neural networks
 
-The simplest approach to minimizing $\hat{R}$ is via gradient
-descent
 
- 
-In this dialect, we call it __back propagation__
+We need to estimate $B$, $\mathbf{W}_t$ $t=1,\ldots,T$
+
+We want to minimize $\hat{R} = \sum_{i=1}^n \hat{R}_i$ as a function of all this.
+
+
+We use gradient descent, but in this dialect, we call it __back propagation__
 
  
 Derivatives can be formed using the chain
 rule and then computed via a forward and backward sweep
 
-All the $\sigma$'s that get used have $\sigma'(u)$ "nice".
-
-.pull-left[
-
-__Our predictor__
-
-$\mu(x) = \beta_0 + \sum_{g=1}^G \sum_{k=1}^{K}\beta_{gk} \sigma\left(\alpha_{k0} + \alpha^\top_{k}x\right)$
-
-__Ignore the "biases"__ (for simplicity)
-
-$\mu(x) = \sum_{g=1}^k\sum_{k=1}^K \beta_{gk} \sigma\left(\alpha^\top_{k}x\right)$
-]
+All the $g(u)$'s that get used have $g'(u)$ "nice".
 
 --
 
-.pull-right[
- 
-__Derivatives__
- 
-$\frac{\partial \mu}{\partial \beta_{gk}} = \sigma(\alpha_k^{\top}x)  =: z_k$
+If $g$ is ReLu: $g(u) = xI(x>0)$, $g'(u) = I(x>0)$
 
-$\frac{\partial \mu}{\partial \alpha_{k}} = \sum_{g=1}^G \beta_{gk}\sigma'( \alpha_k^{\top}x)x$
+Get derivatives from backprop, then
 
-]
-
----
-
-## The rest of the derivatives
-
-For squared error, let $\hat{R}_i = (y_i - \hat{y}_i)^2$
-
-$$\begin{aligned}
-\frac{\partial \hat{R}_i}{\partial \beta_{gk}} 
-& = -2(y_i - \hat{y}_i)z_{ik} \\
-\frac{\partial \hat{R}_i}{\partial \alpha_{kj}}  
-& = -2(y_i - \hat{y}_i)\beta_{gk} \sigma'(\alpha_k^{\top} x_i)x_{ij}\end{aligned}$$
-Given these derivatives, a gradient descent update can be found
-$$\begin{aligned}
-\hat{\beta}_{gk}^{t+1} 
-& = 
-\hat{\beta}_{gk}^{t} - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \vec\beta_{gk}} \right|_{\hat{\beta}_k^{t},\ \hat{\alpha}_k^t} \\
-\hat{\alpha}_{kj}^{t+1} 
-& = 
-\hat{\alpha}_{kj}^{t}  - \gamma_t \sum_{i=1}^n \left. \frac{\partial \hat{R}_i}{\partial \alpha_{kj}} \right|_{\hat{\beta}^t_k,\ \hat{\alpha}_{k}^{t}} \end{aligned}$$
+$$\begin{align}
+\widetilde{B} &\leftarrow B - \gamma \frac{\partial \widehat{R}}{\partial B}\\
+\widetilde{\mathbf{W}_t} &\leftarrow \mathbf{W}_t - \gamma \frac{\partial \widehat{R}}{\partial \mathbf{W}_t}
+\end{align}$$
 
 ---
 
-## Mapping it out (regression)
+## Chain rule
 
-Given current $\beta,\ {\alpha}$, we want to get new, $\tilde\beta,\ \tilde\alpha$ 
 
+We want $\frac{\partial}{\partial B} \hat{R}_i$ and $\frac{\partial}{\partial W_{t}}\hat{R}_i$ for all $t$.
+
+__Regression__: $\hat{R}_i = \frac{1}{2}(y_i - \hat{y}_i)^2$
+
+$$\begin{aligned}
+\frac{\partial\hat{R}_i}{\partial B} &= -(y_i - \hat{y}_i)\frac{\partial \hat{y_i}}{\partial B} =\underbrace{-(y_i - \hat{y}_i)}_{-r_i}  \mathbf{A}^{(T)}\\
+\frac{\partial}{\partial \mathbf{W}_T} \hat{R}_i &= -(y_i - \hat{y}_i)\frac{\partial\hat{y_i}}{\partial \mathbf{W}_T} = -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_T}\\ 
+&= -\left(r_i  B \odot g'(\mathbf{W}_T \mathbf{A}^{(T)}) \right) \left(\mathbf{A}^{(T-1)}\right)^\top\\
+\frac{\partial}{\partial \mathbf{W}_{T-1}} \hat{R}_i &= -(y_i - \hat{y}_i)\frac{\partial\hat{y_i}}{\partial \mathbf{W}_{T-1}} = -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_{T-1}}\\
+&= -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_{T}}\frac{\partial \mathbf{W}_{T}}{\partial \mathbf{A}^{(T-1)}}\frac{\partial \mathbf{A}^{(T-1)}}{\partial \mathbf{W}_{T-1}}\\
+\cdots &= \cdots
+\end{aligned}$$
+
+---
+
+## Mapping it out 
+
+Given current $\mathbf{W}_t, B$, we want to get new, $\widetilde{\mathbf{W}}_t,\ \widetilde B$ for $t=1,\ldots,T$
+
+* Squared error for regression, cross-entropy for classification
 
 .pull-left[
 __Feed forward__ `r fa("arrow-down", fill=green)`
 
-$\mathbf{a}_k = \X \alpha_k \in \R^n$
+$$\mathbf{A}^{(0)} = \mathbf{X}  \in \R^{n\times p}$$
 
-$\mathbf{z}_k = \sigma(\mathbf{a}_k)$ (component wise)
+Repeat, $t= 1,\ldots, T$
+1. $\mathbf{Z}_{t} = \mathbf{A}^{(t-1)}\mathbf{W}_t \in \R^{n\times K_t}$
+1. $\mathbf{A}^{(t)} = g(\mathbf{Z}_{t})$ (component wise)
+1. $\dot{\mathbf{A}}^{(t)} = g'(\mathbf{Z}_t)$
 
-$\mathbf{z}'_k = \sigma'(\mathbf{a}_k)$
-
-$w_g = \beta_g^\top \mathbf{z} \in \R^n$
-
-$\hat{\mathbf{y}} = \sum_{g=1}^G w_g$
+$$\begin{cases}
+\hat{\mathbf{y}} = B^\top \mathbf{A}^{(T)} \in \R^n \\
+\hat{\Pi} = \left(1 + \exp\left(-\mathbf{BA}^{(T)}\right)\right)^{-1} \in \R^{n \times M}\end{cases}$$
 
 ]
 
 .pull-right[
 __Back propogate__ `r fa("arrow-up", fill=orange)`
 
-$\mathbf{r} = (\mathbf{y} - \widehat{\mathbf{y}})$
 
-$\frac{\partial R}{\partial \beta_k} = \mathbf{r}^\top \mathbf{z}_k \in \R$
 
-$\frac{\partial R}{\partial \alpha_{kj}} = -2\beta_k \mathbf{r}^\top (\mathbf{x}_j \odot \mathbf{z}'_k) \in \R$
+$$\mathbf{r} = 
+\begin{cases}
+-\left(\mathbf{y} - \widehat{\mathbf{y}}\right)\\
+\left(1 - \widehat{\Pi}\right)[y]
+\end{cases}$$
 
-$\tilde\beta_k = \beta_k - \gamma \frac{\partial R}{\partial \beta_k}$
+$$\begin{aligned}
+\frac{\partial}{\partial \mathbf{B}} \widehat{R} &= \left(\mathbf{A}^{(T)}\right)^\top \mathbf{r}\\
+\boldsymbol{\Gamma} &\leftarrow \mathbf{r}\\
+\mathbf{W}_{T+1} &\leftarrow \mathbf{B}
+\end{aligned}$$
 
-$\tilde\alpha_{kj} = \alpha_{kj} - \gamma \frac{\partial R}{\partial \alpha_{kj}}$
+
+Repeat, $t = T,...,1$,
+1. $\boldsymbol{\Gamma} \leftarrow \left(\boldsymbol{\Gamma} \mathbf{W}_{t+1}\right) \odot\dot{\mathbf{A}}^{(t)}$
+1. $\frac{\partial R}{\partial \mathbf{W}_t} =\left(\mathbf{A}^{(t)}\right)^\top \Gamma$
 
 ]
 
-Not much has to change if we alter $\sigma$ or $L$.
 
 ---
 
 ## Deep nets
-
-Generalizing to multi-layer neural networks, we can specify any number
-of hidden units:
-
-$$\begin{aligned}
-\textrm{0 Layer} & = \sigma( \alpha_{\textrm{lowest}}^{\top}x) \\
-\textrm{1 Layer} &  = \sigma( \alpha_{\textrm{lowest} + 1}^{\top}(\textrm{0 Layer})) \\
-&\quad \vdots  \\
-\textrm{Top Layer} &  = \sigma( \alpha_{\textrm{Top} }^{\top}(\textrm{Top - 1 Layer})) \\
-L(\mu_g(x)) & = \beta_{g0} + \beta_g^{\top}(\textrm{Top Layer}) \quad  ( g = 1, \ldots G)\end{aligned}$$
 
 
 Some comments on adding layers:
@@ -231,7 +172,7 @@ Some comments on adding layers:
 -   It has been shown that one hidden layer is sufficient to approximate
     any bounded piecewise continuous function
 
-- However, this may take a huge number of hidden units (i.e. $K \gg 1$). 
+- However, this may take a huge number of hidden units (i.e. $K_1 \gg 1$). 
 
 - This is what people mean when they say that NNets are "universal approximators"
     
@@ -239,6 +180,8 @@ Some comments on adding layers:
     layer. 
     
 - Also, we can encode (in)dependencies that can speed computations
+
+- We don't have to connect everything the way we have been
 
 ---
 
@@ -310,13 +253,14 @@ plotd = data.frame(x = testdata, spline = bestspline, nnet=bestnn,
 ```
 
 ```{r fun-nnet-spline, echo=FALSE, fig.align='center', fig.width=10, fig.height=4}
-load("data-and-big-results/nnet-example.Rdata")
+load("data/nnet-example.Rdata")
 plotd %>%
   pivot_longer(-x) %>%
-  ggplot(aes(x,value,color=name)) + geom_line() + 
-  scale_color_manual(values=c(red, green, blue)) + theme_cowplot() +
-  theme(legend.position = c(.75,.25), legend.title = element_blank()) +
-  geom_point(data=df,mapping=aes(x,y),color='black', alpha=.2) 
+  ggplot(aes(x, value, color=name)) + geom_line(size=1.5) + ylab("y") +
+  scale_color_manual(values=c(red, orange, blue)) + 
+  theme(legend.title = element_blank()) +
+  geom_point(data=df, mapping=aes(x,y),
+             color='black', alpha=.4, shape = 16) 
 ```
 
 ---
@@ -327,14 +271,20 @@ plotd %>%
 doppler_nnet = data.frame(x=NNplot,err=NNerr)
 spl = data.frame(x=Ks,err=SplineErr)
 best = c(min(NNerr),min(SplineErr))
-g1 <- ggplot(doppler_nnet, aes(x,err,group=1)) +  
-  ggtitle('Neural Nets') + xlab('architecture') + theme_cowplot() + 
+rel <- function(x) abs(x)/.01
+g1 <- ggplot(doppler_nnet, aes(x,rel(err),group=1)) +  
+  ggtitle('Neural Nets') + xlab('architecture') + 
   theme(axis.text.x = element_text(angle = 90,vjust=.5)) + 
-  geom_line(color=orange) + geom_hline(yintercept = best[1], color=red) +
-  geom_hline(yintercept = best[2], color=green) 
-g2 <- ggplot(spl, aes(x,err)) + ggtitle('Splines') + xlab('degrees of freedom') +
-  geom_line(color=orange) + geom_hline(yintercept = best[1], color=red) +
-  geom_hline(yintercept = best[2], color=green) + theme_cowplot()
+  geom_line(color=orange) + ylab("Increase in error over f*") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  geom_hline(yintercept = rel(best[1]), color=red) +
+  geom_hline(yintercept = rel(best[2]), color=green) 
+g2 <- ggplot(spl, aes(x, rel(err))) + ggtitle('Splines') +
+  xlab('degrees of freedom') +
+  geom_line(color=orange) + ylab("Increase in error over f*") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  geom_hline(yintercept = rel(best[1]), color=red) +
+  geom_hline(yintercept = rel(best[2]), color=green) 
 plot_grid(g1,g2)
 ```
 
