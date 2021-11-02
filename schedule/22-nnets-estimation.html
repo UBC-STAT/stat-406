@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>22 Neural nets - estimation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 22 Neural nets - estimation
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-11-02
+
+---
+
+
+
+
+## Neural Network terms again (T hidden layers, regression)
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{Pr}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\bfx}{\mathbf{x}}$$`
+
+
+.pull-left[
+
+`$$\begin{aligned}
+A_{k}^{(1)} &amp;= g\left(\sum_{j=1}^p w^{(1)}_{k,j} x_j\right)\\
+A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)} \right)\\
+z_m &amp;= \sum_{\ell=1}^{K_T} \beta_{m,\ell} A_{\ell}^{(T)}\\
+\hat{Y} &amp;= z_m \ \ (M=1)
+\end{aligned}$$`
+
+Notes:
+&gt; `\(B \in \R^{M\times K_T}\)`. `\(M=1\)` for regression  
+`\(\mathbf{W}_t \in \R^{K_2\times K_1}\)` `\(t=1,\ldots,T\)`  
+
+
+]
+
+.pull-right[
+
+![:scale 200%](gfx/single-layer-net.svg)
+]
+
+---
+
+## Training neural networks, first, choices
+
+
+
+* Choose the architecture: how many layers, units per layer, what connections?
+
+* Choose the loss: common choices (for each data point `\(i\)`)
+
+
+__Regression:__  `\(\hat{R}_i = \frac{1}{2}(y_i - \hat{y}_i)^2\)` (the 1/2 just makes the derivitave nice)
+
+__Classification:__ `\(\hat{R}_i = -  I(y_i = m)\log( 1 + \exp(-z_{im}))\)`
+
+* Choose the activation function `\(g\)`
+
+
+---
+
+## Training neural networks
+
+
+We need to estimate `\(B\)`, `\(\mathbf{W}_t\)` `\(t=1,\ldots,T\)`
+
+We want to minimize `\(\hat{R} = \sum_{i=1}^n \hat{R}_i\)` as a function of all this.
+
+
+We use gradient descent, but in this dialect, we call it __back propagation__
+
+ 
+Derivatives can be formed using the chain
+rule and then computed via a forward and backward sweep
+
+All the `\(g(u)\)`'s that get used have `\(g'(u)\)` "nice".
+
+--
+
+If `\(g\)` is ReLu: `\(g(u) = xI(x&gt;0)\)`, `\(g'(u) = I(x&gt;0)\)`
+
+Get derivatives from backprop, then
+
+`$$\begin{align}
+\widetilde{B} &amp;\leftarrow B - \gamma \frac{\partial \widehat{R}}{\partial B}\\
+\widetilde{\mathbf{W}_t} &amp;\leftarrow \mathbf{W}_t - \gamma \frac{\partial \widehat{R}}{\partial \mathbf{W}_t}
+\end{align}$$`
+
+---
+
+## Chain rule
+
+
+We want `\(\frac{\partial}{\partial B} \hat{R}_i\)` and `\(\frac{\partial}{\partial W_{t}}\hat{R}_i\)` for all `\(t\)`.
+
+__Regression__: `\(\hat{R}_i = \frac{1}{2}(y_i - \hat{y}_i)^2\)`
+
+`$$\begin{aligned}
+\frac{\partial\hat{R}_i}{\partial B} &amp;= -(y_i - \hat{y}_i)\frac{\partial \hat{y_i}}{\partial B} =\underbrace{-(y_i - \hat{y}_i)}_{-r_i}  \mathbf{A}^{(T)}\\
+\frac{\partial}{\partial \mathbf{W}_T} \hat{R}_i &amp;= -(y_i - \hat{y}_i)\frac{\partial\hat{y_i}}{\partial \mathbf{W}_T} = -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_T}\\ 
+&amp;= -\left(r_i  B \odot g'(\mathbf{W}_T \mathbf{A}^{(T)}) \right) \left(\mathbf{A}^{(T-1)}\right)^\top\\
+\frac{\partial}{\partial \mathbf{W}_{T-1}} \hat{R}_i &amp;= -(y_i - \hat{y}_i)\frac{\partial\hat{y_i}}{\partial \mathbf{W}_{T-1}} = -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_{T-1}}\\
+&amp;= -r_i \frac{\partial \hat{y}_i}{\partial \mathbf{A}^{(T)}} \frac{\partial \mathbf{A}^{(T)}}{\partial \mathbf{W}_{T}}\frac{\partial \mathbf{W}_{T}}{\partial \mathbf{A}^{(T-1)}}\frac{\partial \mathbf{A}^{(T-1)}}{\partial \mathbf{W}_{T-1}}\\
+\cdots &amp;= \cdots
+\end{aligned}$$`
+
+---
+
+## Mapping it out 
+
+Given current `\(\mathbf{W}_t, B\)`, we want to get new, `\(\widetilde{\mathbf{W}}_t,\ \widetilde B\)` for `\(t=1,\ldots,T\)`
+
+* Squared error for regression, cross-entropy for classification
+
+.pull-left[
+__Feed forward__ <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"/></svg>
+
+`$$\mathbf{A}^{(0)} = \mathbf{X}  \in \R^{n\times p}$$`
+
+Repeat, `\(t= 1,\ldots, T\)`
+1. `\(\mathbf{Z}_{t} = \mathbf{A}^{(t-1)}\mathbf{W}_t \in \R^{n\times K_t}\)`
+1. `\(\mathbf{A}^{(t)} = g(\mathbf{Z}_{t})\)` (component wise)
+1. `\(\dot{\mathbf{A}}^{(t)} = g'(\mathbf{Z}_t)\)`
+
+`$$\begin{cases}
+\hat{\mathbf{y}} = B^\top \mathbf{A}^{(T)} \in \R^n \\
+\hat{\Pi} = \left(1 + \exp\left(-\mathbf{BA}^{(T)}\right)\right)^{-1} \in \R^{n \times M}\end{cases}$$`
+
+]
+
+.pull-right[
+__Back propogate__ <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#F9AC2F;overflow:visible;position:relative;"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg>
+
+
+
+`$$\mathbf{r} = 
+\begin{cases}
+-\left(\mathbf{y} - \widehat{\mathbf{y}}\right)\\
+\left(1 - \widehat{\Pi}\right)[y]
+\end{cases}$$`
+
+`$$\begin{aligned}
+\frac{\partial}{\partial \mathbf{B}} \widehat{R} &amp;= \left(\mathbf{A}^{(T)}\right)^\top \mathbf{r}\\
+\boldsymbol{\Gamma} &amp;\leftarrow \mathbf{r}\\
+\mathbf{W}_{T+1} &amp;\leftarrow \mathbf{B}
+\end{aligned}$$`
+
+
+Repeat, `\(t = T,...,1\)`,
+1. `\(\boldsymbol{\Gamma} \leftarrow \left(\boldsymbol{\Gamma} \mathbf{W}_{t+1}\right) \odot\dot{\mathbf{A}}^{(t)}\)`
+1. `\(\frac{\partial R}{\partial \mathbf{W}_t} =\left(\mathbf{A}^{(t)}\right)^\top \Gamma\)`
+
+]
+
+
+---
+
+## Deep nets
+
+
+Some comments on adding layers:
+
+-   It has been shown that one hidden layer is sufficient to approximate
+    any bounded piecewise continuous function
+
+- However, this may take a huge number of hidden units (i.e. `\(K_1 \gg 1\)`). 
+
+- This is what people mean when they say that NNets are "universal approximators"
+    
+-   By including multiple layers, we can have fewer hidden units per
+    layer. 
+    
+- Also, we can encode (in)dependencies that can speed computations
+
+- We don't have to connect everything the way we have been
+
+---
+
+## Simple example
+
+
+```r
+n = 200
+df = tibble(x = seq(.05, 1, length=n),
+ y = sin(1/x) + rnorm(n, 0, .1) ## Doppler function
+)
+testdata = matrix(seq(.05, 1, length.out = 1e3), ncol=1)
+library(neuralnet)
+nn_out = neuralnet(y~x, data=df, hidden=c(10,5,15), threshold = 0.01, rep=3)
+nn_preds = sapply(1:3, function(x) compute(nn_out, testdata, x)$net.result)
+yhat = rowMeans(nn_results) # average over the runs
+```
+
+
+
+&lt;img src="rmd_gfx/22-nnets-estimation/fun-nnet-spline-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Different architectures
+
+&lt;img src="rmd_gfx/22-nnets-estimation/nnet-vs-spline-plots-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle,center,inverse
+
+# Next time...
+
+Other considerations
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

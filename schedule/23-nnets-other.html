@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>22 Neural nets - other considerations</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 22 Neural nets - other considerations
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-11-02
+
+---
+
+
+
+
+## Estimation procedures (training)
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\bfx}{\mathbf{x}}$$`
+
+Back-propagation
+
+__Advantages:__ 
+
+-   It's updates only depend on local
+    information in the sense that if objects in the hierarchical model
+    are unrelated to each other, the updates aren't affected
+
+    (This helps in many ways, most notably in parallel architectures)
+
+-   It doesn't require second-derivative information
+
+-   As the updates are only in terms of `\(\hat{R}_i\)`, the algorithm can
+    be run in either batch  or online  mode
+
+__Down sides:__ 
+
+-   It can be very slow
+
+-   Need to choose the learning rate
+    `\(\gamma_t\)`
+---
+
+## Other algorithms
+
+There are many  variations on the fitting algorithm
+
+__Stochastic gradient descent__: (SGD) discussed in the optimization lecture
+
+The rest are variations that use lots of tricks
+
+* RMSprop
+* Adam
+* Adadelta
+* Adagrad
+* Adamax
+* Nadam
+* Ftrl
+
+---
+
+## Regularizing neural networks
+
+NNets can almost always achieve 0 training error. Even with regularization
+
+Flavors:
+
+-   a complexity penalization term
+
+-   early stopping on the back propagation algorithm used for fitting
+
+
+Explicit regularization `\(\longrightarrow\)` solve `\(\min \hat{R} + \rho(\alpha,\beta)\)`
+
+-   __Weight decay:__  This is like
+    ridge regression in that we penalize the squared Euclidean norm of
+    the weights `\(\rho(\alpha,\beta) = \sum \beta^2 + \sum \alpha^2\)`
+
+-   __Weight elimination:__  This
+    encourages more shrinking of small weights
+    `\(\rho(\alpha,\beta) =  \sum \frac{\beta^2}{1+\beta^2} + \sum \frac{\alpha^2}{1 + \alpha^2}\)` or Lasso-type
+
+
+__Dropout:__
+
+In each epoch, randomly choose `\(z\%\)` of the nodes and set the weights to zero.
+
+---
+
+## Other common pitfalls
+
+There are three areas to watch out for
+
+- __Nonconvexity:__  The neural network optimization problem is non-convex. This makes any numerical solution highly dependent on the initial values. These must be
+
+  - chosen carefully, typically random near 0. .hand[DON'T] use all 0.
+
+  - regenerated several times to check sensitivity
+
+-   __Scaling:__  Be sure to
+    standardize the covariates before training
+
+-   __Number of hidden units:__  It is generally
+    better to have too many hidden units than too few (regularization
+    can eliminate some).
+
+
+- __Sifting the output:__ 
+    
+    -   Choose the solution that minimizes training
+    error
+
+    -   Choose the solution that minimizes the
+    penalized  training error
+
+    -   Average the solutions across runs
+
+---
+
+## Tuning parameters
+
+There are many.
+
+* Regularization
+* Stopping criterion
+* learning rate
+* Architecture
+* Dropout %
+* others...
+
+These are hard to tune.
+
+Often choose "some" with a validation set.
+
+--
+
+More often, people set them all arbitrarily
+
+---
+
+## Thoughts on NNets
+
+Off the top of my head, without lots of justification
+
+.pull-left[
+
+__Why don't statisticians like them?__
+
+.center[.larger[<svg aria-hidden="true" role="img" viewBox="0 0 496 512" style="height:1em;width:0.97em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#DB0B5B;overflow:visible;position:relative;"><path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zM136 240c0-9.3 4.1-17.5 10.5-23.4l-31-9.3c-8.5-2.5-13.3-11.5-10.7-19.9 2.5-8.5 11.4-13.2 19.9-10.7l80 24c8.5 2.5 13.3 11.5 10.7 19.9-2.1 6.9-8.4 11.4-15.3 11.4-.5 0-1.1-.2-1.7-.2.7 2.7 1.7 5.3 1.7 8.2 0 17.7-14.3 32-32 32S136 257.7 136 240zm168 154.2c-27.8-33.4-84.2-33.4-112.1 0-13.5 16.3-38.2-4.2-24.6-20.5 20-24 49.4-37.8 80.6-37.8s60.6 13.8 80.6 37.8c13.8 16.5-11.1 36.6-24.5 20.5zm76.6-186.9l-31 9.3c6.3 5.8 10.5 14.1 10.5 23.4 0 17.7-14.3 32-32 32s-32-14.3-32-32c0-2.9.9-5.6 1.7-8.2-.6.1-1.1.2-1.7.2-6.9 0-13.2-4.5-15.3-11.4-2.5-8.5 2.3-17.4 10.7-19.9l80-24c8.4-2.5 17.4 2.3 19.9 10.7 2.5 8.5-2.3 17.4-10.8 19.9z"/></svg>]]
+
+- There is almost no theory (certainly nothing for deep nets)
+- Theory is (as far as we can tell) nearly impossible
+- Statistical theory applies to global minima, here, only local determined by the optimizer
+- No good understanding of when they work
+- In large part, NNets look like logistic regression + feature creation. We understand that well, and in many applications, it performs as well
+- Explosion of tuning parameters without a way to decide
+- Require massive datasets to work
+]
+
+.pull-right[
+
+__Why are they hot?__
+
+.center[.larger[<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#F9AC2F;overflow:visible;position:relative;"><path d="M323.56 51.2c-20.8 19.3-39.58 39.59-56.22 59.97C240.08 73.62 206.28 35.53 168 0 69.74 91.17 0 209.96 0 281.6 0 408.85 100.29 512 224 512s224-103.15 224-230.4c0-53.27-51.98-163.14-124.44-230.4zm-19.47 340.65C282.43 407.01 255.72 416 226.86 416 154.71 416 96 368.26 96 290.75c0-38.61 24.31-72.63 72.79-130.75 6.93 7.98 98.83 125.34 98.83 125.34l58.63-66.88c4.14 6.85 7.91 13.55 11.27 19.97 27.35 52.19 15.81 118.97-33.43 153.42z"/></svg>]]
+
+- Perform exceptionally well on typical CS tasks (images, translation)
+- Take advantage of SOTA computing (parallel, GPUs)
+- Very good for multinomial logistic regression
+- An excellent example of "transfer learning"
+- They generate pretty pictures (the nets, pseudo-responses at hidden units)
+
+]
+
+---
+
+## Keras
+
+Most people who do deep learning use Python `\(+\)` Keras `\(+\)` Tensorflow
+
+It takes some work to get all this software up and running.
+
+It is possible to do in with R using an [interface to Keras](https://keras.rstudio.com/index.html).
+
+We did this last week, so see there.
+
+
+
+---
+class: middle, center
+background-image: url(rmd_gfx/23-nnets-other/embeddings-1.svg)
+background-size: cover
+
+
+
+.primary[.larger[Next time...]]
+
+.primary[.larger[Module]] .huge-blue-number[5]
+
+.primary[.larger[unsupervised learning]]
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
