@@ -24,6 +24,7 @@ Slack: [@prof-daniel](https://stat-406-2021w.slack.com/team/U02D54WLXRT)
 
 __Office hours__:    
 Daniel: Thursday 1400-1500 on Zoom or in ESB 1045  
+Also: Monday 1600-1700 on Zoom only
 
 TAs  
 Xiaoxuan: Friday 1500-1600  
