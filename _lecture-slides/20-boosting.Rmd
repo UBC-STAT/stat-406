@@ -18,7 +18,7 @@ We learned about bagging, for averaging low-bias / high-variance estimators.
 
 Today, we examine it's opposite: __Boosting__.
 
-__Boosting__ also combines estimators, but it combines __high-bias__ low-variance estimators.
+__Boosting__ also combines estimators, but it combines __high-bias__ / low-variance estimators.
 
 Boosting has a number of flavors. And if you Google descriptions, most are wrong.
 
@@ -64,7 +64,7 @@ The number of iterations must be chosen.
 
 ## AdaBoost (Freund and Schapire)
 
-Let $G_m(x)$ be a weak learner (say a tree with one split)
+Let $G(x, \theta)$ be a weak learner (say a tree with one split)
 
 .emphasis[
 
@@ -74,15 +74,15 @@ __Algorithm (AdaBoost):__
 
 2. Until we quit ( $m<M$ iterations )
     
-    a. Estimate a classifier $G_m(x)$ using weights $w_i$
+    a. Estimate the classifier $G(x,\theta_m)$ using weights $w_i$
     
-    b. Calculate it's weighted error $\textrm{err}_m = \sum_{i=1}^n w_i I(y_i \neq G_m(x_i)) / \sum w_i$
+    b. Calculate it's weighted error $\textrm{err}_m = \sum_{i=1}^n w_i I(y_i \neq G(x_i, \theta_m)) / \sum w_i$
     
     c. Set $\alpha_m = \log((1-\textrm{err}_m)/\text{err}_m)$
     
-    d. Update $w_i \leftarrow w_i \exp(\alpha_m I(y_i \neq G_m(x_i)))$
+    d. Update $w_i \leftarrow w_i \exp(\alpha_m I(y_i \neq G(x_i,\theta_m)))$
 
-3. Final classifier is $G(x) = \textrm{sign}\left( \sum_{m=1}^M \alpha_m G_m(x)\right)$
+3. Final classifier is $G(x) = \textrm{sign}\left( \sum_{m=1}^M \alpha_m G(x, \theta_m)\right)$
 ]
 
 ---
@@ -143,7 +143,7 @@ __Algorithm:__
 
 Here, $L$ is a loss function that measures prediction accuracy
 
-If $L(y,\ f(x))= \exp(-y f(x))$ and $G$ is a classifier, then this is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000).
+If $L(y,\ f(x))= \exp(-y f(x))$, $G$ is a classifier, and $y \in \{-1, 1\}$ then this is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000). Called 
 
 ---
 
@@ -157,16 +157,17 @@ Here are some other loss functions for 2-class classification
 losses = tibble(x = seq(-2,2,length.out = 100),
        `Misclassification (0-1)` = as.numeric(x<0),
        Exponential = exp(-x),
-       Binomial_deviance = log2(1+exp(-2*x)),
+       Binomial_deviance = log2(1 + exp(-x)),
        Squared_error = (x-1)^2,
        Support_vector = pmax((1-x),0))
 losses %>% pivot_longer(-x) %>%
   ggplot(aes(x, y=value, color=name)) + 
-  geom_line() +
+  geom_line(size = 1.5) +
   coord_cartesian(ylim=c(0,3)) + 
   theme(legend.title = element_blank()) + 
-  scale_color_brewer(palette = "Set1") +
-  ylab("Loss") + xlab(bquote(y~f(x)~(Margin)))
+  scale_color_viridis_d() +
+  ylab("Loss") + 
+  xlab(bquote(y~f(x)~(Margin)))
 ```
 
 --
@@ -188,7 +189,7 @@ For most loss functions, $\arg\min_{\beta, \theta} \sum_{i=1}^n L\left(y_i,\ f_{
 
 Instead, if we take one gradient step toward the minimum, we get
 
-$f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x))$
+$f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\gamma_m \left(-\nabla L(y,f_{m-1}(x))\right)$
 
 This is called __Gradient boosting__
 
@@ -235,7 +236,7 @@ grad_boost <- gbm(mobile ~ ., data = train_boost, n.trees = 500, distribution = 
 
 * Typically done with "small" trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)
 
-* Usually modify the gradient step to $f_m(x) = f_{m-1}(x) + \gamma_m \alpha G_m(x)$ with $0<\alpha<1$. Helps to keep from fitting too hard.
+* Usually modify the gradient step to $f_m(x) = f_{m-1}(x) + \gamma_m \alpha G(x,\theta_m)$ with $0<\alpha<1$. Helps to keep from fitting too hard.
 
 * Often combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.
 
