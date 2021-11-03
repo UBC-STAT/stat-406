@@ -99,7 +99,7 @@ not be wasted.
 
     This section should occupy the remainder of your report.
 
-Submission is an R markdown file and a compiled pdf. The document title should be "report.Rmd". Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
+Submission is an R markdown file and a compiled pdf. The file names should be `report.Rmd` and `report.pdf` (so the TAs know what to grade). Total page length: maximum 3 pages (not including graphics). Be sure to describe your graphics
 carefully both in the text and with nice labels. Plots with no description are not useful.
 Anything exceptionally interesting will be
 rewarded. Ugly plots, uninterpretable analysis, etc. will be
