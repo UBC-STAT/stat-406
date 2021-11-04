@@ -203,16 +203,17 @@ ggplot(data.frame(Fhat), aes(Fhat)) +
 
 ```{r, echo=FALSE}
 library(MASS)
-fatcats = cats
-fatcats$Hwt = fitted(lm(Hwt~Bwt + 0, data=cats)) + rt(nrow(fatcats), 1)
+fatcats <- cats
+fatcats$Hwt <- fitted(lm(Hwt~Bwt + 0, data=cats)) + rt(nrow(fatcats), 1)
+fatcats <- fatcats %>% mutate(Hwt = pmin(pmax(Hwt, 3), 900*Bwt))
 ```
 
 .pull-left[
 ```{r, fig.width=8, fig.height=6, fig.align='center'}
 ggplot(fatcats, aes(Bwt, Hwt)) + 
   geom_point(color=blue) + 
-  xlab("Cat body weight") + 
-  ylab("Cat heart weight")
+  xlab("Cat body weight (Kg)") + 
+  ylab("Cat heart weight (g)")
 ```
 ]
 
