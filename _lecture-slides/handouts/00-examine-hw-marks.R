@@ -57,10 +57,10 @@ Z[cbind(1:nrow(X), dropped)] <- NA
 
 
 
-imputer <- function(gmat, maxit = 30, tol = 1e-6) {
+imputer <- function(gmat, meth = lm, maxit = 30, tol = 1e-6) {
   # Loop over columns until converged
   #  1. Set y = nonmissing, X = completed columns
-  #  2. regress y on X
+  #  2. regress y on X using meth()
   #  3. predict missing y with completed X, and fill in missing y
   miss <- is.na(gmat)
   start_vals <- colMeans(gmat, na.rm = TRUE)
@@ -73,11 +73,10 @@ imputer <- function(gmat, maxit = 30, tol = 1e-6) {
     for (j in 1:ncol(gmat)) {
       y <- filled[!miss[,j],j]
       X <- filled[!miss[,j], -j]
-      fit <- lm(y~X)
+      Xpred <- filled[miss[,j], -j]
+      fit <- meth(y~X)
       filled[miss[,j], j] <- pmin(
-        pmax(
-          drop(cbind(1, filled[miss[,j], -j]) %*% coef(fit)), 0),
-        10)
+        pmax(drop(cbind(1, Xpred) %*% coef(fit)), 0), 10)
     }
     new <- filled[miss]
     if (mean(abs(new - init) < tol)) break
