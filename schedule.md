@@ -180,4 +180,14 @@ Optional reading
 
 ## F Final exam
 
-22 December 8:30-11am – During University Scheduled Final Exam Period (in person)  
+22 December 8:30-11am – in Henry Angus (ANGU) 098
+
+* In person attendance is required (per Faculty of Science guidelines)
+* You must bring your computer as the exam will be given through Canvas with "lockdown browser"
+* Please [arrange to borrow](https://services.library.ubc.ca/computers-technology/technology-borrowing/) one from the library if you do not have your own
+* There are plenty of outlets in the room
+* You may bring 2 sheets of front/back 8.5x11 paper with any notes you want to use
+* There will be no required coding, but I may show code or output and ask questions about it.
+* It will be entirely multiple choice / True-False / matching, etc.
+* Questions will be similar to Quizzes or Homework.
+
