@@ -173,13 +173,14 @@ animals urinate in 21 seconds](https://arxiv.org/abs/1310.3737).[^note]
 
 #### Assignments
 
-There will be 5 assignments, you should complete 4. These are submitted via pull
+There will be 5 assignments, you should complete 4. The best 3 will count.
+These are submitted via pull
 request similar to the worksheets. You are allowed _one late class period_. This
-means that of the 4 assignments you submit, one can be submitted late, up until
-the next class meeting. This policy (drop 1, submit 1 late) is intended to
+means that of the 4 assignments you might submit, one can be submitted late, up until
+the next class meeting. This policy (submit 4, drop 1, submit 1 late) is intended to
 accommodate any and all issues. It is not a "pad your mark" policy. If you
 submit the first 4 assignments, we won't mark the fifth. The TAs have a lot on
-their plate and "marking dropped assignments" takes a lot of work. Both policies
+their plate and "marking 5 assignments" takes a lot of work. Both policies
 are "no questions asked". Simply turn it in late or not at all and we'll take
 care of the rest. You don't need to justify anything.
 
