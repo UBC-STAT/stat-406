@@ -1,19 +1,29 @@
 relu <- function(x) x * (x > 0)
 relup <- function(x) x > 0
 
-initialize_backprop <- function(n_hidden, p, M, sd = .1) {
-  z <- c(p, n_hidden, M)
-  W <- list()
-  for (i in seq_along(z[-1])) 
-    W[[i]] <- matrix(rnorm(z[i+1]*z[i], sd = sd), nrow = z[i])
-  W
-}
-
-
+#' Do back propagation to find the gradient 
+#' 
+#' Finds the gradients for W for a fully connected Neural Network.
+#' Should work for both regression/classification.
+#'
+#' @param X Matrix. Predictors in n x p (observed).
+#' @param y Response. If classification, an n x M matrix where M is the number
+#'   of classes and each column contains 0/1. If regression, a vector of 
+#'   length n
+#' @param W0 List. Each component is a matrix of appropriate size. The length
+#'   of the list is the number of hidden layers + 1 for the output layer.
+#' @param g_fun Function. The activation function.
+#' @param gp_fun Function. Gradient of the activation function.
+#'
+#' @return A list of gradients of the same length as `W0`.
 backprop <- function(X, y, W0, g_fun = relu, gp_fun = relup) {
-  # check inputs
+  # Basic input checks
   stopifnot(is.matrix(X))
-  stopifnot((n <- nrow(X)) == length(y))
+  n <- nrow(X)
+  if (is.matrix(y) && n != nrow(y)) 
+    stop("number of observations in X/y is different")
+  if (is.vector(m) && n != length(y))
+    stop("number of observations in X/y is different")
   if (!is.list(W0)) W0 <- list(W0)
   L <- length(W0)
   
@@ -32,8 +42,8 @@ backprop <- function(X, y, W0, g_fun = relu, gp_fun = relup) {
   
   # Did we do classification? (Assume y is 1-hot encoded)
   if (ncol(Z[[L]]) > 1) {
-    phat <- 1 / (1 + exp(-Z[[L]])) * y
-    r <- phat * (1 - phat) # gradient of log loss
+    phat <- rowSums(1 / (1 + exp(-Z[[L]])) * y)
+    r <- - (1 - phat) # gradient of log loss
   } else r <- - (y - drop(Z[[L + 1]])) # gradient of 0.5*(y-yhat)^2
   
   # Back propogate (calculate the gradients of the whole thing)
