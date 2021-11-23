@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 class: middle, center
@@ -97,6 +84,27 @@ like overall shape types
 
 It is possible to quantify this intuition for PCA at least
 
+--
+
+.hand[Goal:] Transform $\mathbf{X}\in \R^{n\times p}$ into $\mathbf{Z} \in \R^{n \times ?}$
+
+?-dimension can be bigger (feature creation) or smaller (dimension reduction) than $p$
+
+
+---
+
+## You've done this already!
+
+* You added transformations as predictors in regression
+
+* You "expanded" $\mathbf{X}$ using a basis $\Phi$ (polynomials, splines, etc.)
+
+* You used Neural Nets to do a "feature map"
+
+--
+
+This is the same, just no $Y$ around
+
 ---
 
 ## PCA
@@ -116,6 +124,22 @@ At its core, we are finding linear combinations of the original
 This is expressed via the SVD: $\X - \overline{\X} = \U\D\V^{\top}$ as
 $$\mathbf{Z} = \X \V = \U\D$$
 
+---
+
+## Short SVD aside (reminder from Ridge Regression)
+
+* Any $n\times p$ matrix can be decomposed into $\mathbf{UDV}^\top$.
+
+* These have properties:
+
+1. $\mathbf{U}^\top \mathbf{U} = \mathbf{I}_n$
+2. $\mathbf{V}^\top \mathbf{V} = \mathbf{I}_p$
+3. $\mathbf{D}$ is diagonal (0 off the diagonal)
+
+--
+
+Almost all the methods for we'll talk about for representation learning use the SVD of some matrix.
+
 
 ---
 
@@ -134,7 +158,7 @@ df[41:60,2] = 0
 ggplot(df,aes(x1,x2,color=lab)) + geom_point() + 
   coord_cartesian(c(-2,2), c(-2,2)) +
   scale_color_manual(values=c(blue,orange,green)) +
-  theme_cowplot() + facet_wrap(~lab) +
+  facet_wrap(~lab) +
   theme(legend.title = element_blank(), legend.position = 'none')
 ```
 
@@ -148,7 +172,7 @@ correlated
 What if they are?
 
 ```{r, echo=FALSE, fig.align='center', fig.width=10, fig.height=4}
-library(UBCstat406labs)
+#library(UBCstat406labs)
 theta = -pi/4
 R = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2)
 X = as.matrix(df[1:20,1:2]) %*% R
@@ -159,7 +183,7 @@ df2[41:60,2] = 0
 ggplot(df2,aes(x1,x2,color=lab)) + geom_point() + 
   scale_color_manual(values=c(blue,orange,green)) +
   coord_cartesian(c(-2,2), c(-2,2)) +
-  theme_cowplot() + facet_wrap(~lab) +
+  facet_wrap(~lab) +
   theme(legend.title = element_blank(), legend.position = 'none')
 ```
 
@@ -180,7 +204,7 @@ df3 %>%
   ggplot(aes(x1,x2,color=lab)) + geom_point() + 
   scale_color_manual(values=c(blue,orange,green)) +
   coord_cartesian(c(-2,2),c(-2,2)) + 
-  facet_grid(~version) + theme_cowplot() +
+  facet_grid(~version) + 
   theme(legend.title = element_blank(), legend.position = 'bottom')
 ```
 
@@ -205,9 +229,9 @@ __PCA__ gives us exactly this rotation
 ]]
 
 ```{r pca-leaf}
-data(leaf)
-X = leaf %>% dplyr::select(Eccentricity:Entropy)
-pca = prcomp(X, scale=TRUE) ## DON'T USE princomp()
+leaf <- readRDS("data/leaf.rds")
+X <- leaf %>% dplyr::select(Eccentricity:Entropy)
+pca <- prcomp(X, scale=TRUE) ## DON'T USE princomp()
 ```
 
 
@@ -216,11 +240,11 @@ pca = prcomp(X, scale=TRUE) ## DON'T USE princomp()
 proj_pca <- as.matrix(X) %*% pca$rotation[,1:2] %>% scale() %>% as_tibble()
 proj_pca$species = as.factor(leaf$Species)
 g1 = ggplot(proj_pca, aes(PC1,PC2,color=species)) + 
-  geom_point() + theme_cowplot() + theme(legend.position = 'none') +
+  geom_point() + theme(legend.position = 'none') +
   scale_color_viridis_d()
 g2 = ggplot(tibble(var_explained=pca$sdev^2/sum(pca$sdev^2), M=1:ncol(X)),
             aes(M, var_explained))+ geom_point(color=orange) + 
-  geom_segment(aes(xend=M,yend=0), color=blue) + theme_cowplot()
+  geom_segment(aes(xend=M,yend=0), color=blue)
 plot_grid(g1,g2)
 ```
 
