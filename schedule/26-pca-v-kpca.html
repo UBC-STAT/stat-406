@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>24 Principal components, introduction</title>
+    <title>00 PCA v KPCA</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -14,7 +14,7 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 24 Principal components, introduction
+# 00 PCA v KPCA
 ### STAT 406
 ### Daniel J. McDonald
 ### Last modified - 2021-11-23
@@ -22,9 +22,13 @@ class: center, middle, inverse, title-slide
 ---
 
 
-class: middle, center
-background-image: url(rmd_gfx/23-nnets-other/embeddings-1.svg)
-background-size: cover
+
+
+
+
+## PCA v KPCA
+
+
 
 `$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
 \newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
@@ -44,227 +48,195 @@ background-size: cover
 \newcommand{\D}{\mathbf{D}}
 \newcommand{\V}{\mathbf{V}}$$`
 
+(We assume `\(\X\)` is already centered, `\(n\)` rows, `\(p\)` columns)
 
-
-
-
-.primary[.larger[Module]] .huge-orange-number[5]
-
-.primary[.larger[pca, clustering]]
-
----
-
-## Unsupervised learning
-
-In Machine Learning, rather than calling `\(\y\)` the .hand[response], people call it the .hand[supervisor]
-
-So .hand[unsupervised] learning means .hand[learning without] `\(\y\)`
-
-The only data you get are the .hand[features] `\(\{x_1,\ldots,x_n\}\)`.
-
-This type of analysis is more often .hand[exploratory]
-
-We're not necessarily using this for prediction (but we could)
-
-So now, we get `\(\X\)`
-
-The two main activities are __representation learning__ and __clustering__
-
----
-
-
-## Representation learning
-
-Representation learning is the idea that performance of ML methods is
-highly dependent on the choice of representation
-
-
-For this reason, much of ML is geared towards transforming the data into
-the relevant features and then using these as inputs
-
-
-This idea is as old as statistics itself, really,
-
-(e.g. Pearson (1901), where PCA was first introduced)
-
-However, the idea is constantly revisited in a variety of fields and
-contexts
-
-
-Commonly, these learned representations capture low-level information
-like overall shape types
-
-
-
-It is possible to quantify this intuition for PCA at least
-
---
-
-.hand[Goal:] Transform `\(\mathbf{X}\in \R^{n\times p}\)` into `\(\mathbf{Z} \in \R^{n \times ?}\)`
-
-?-dimension can be bigger (feature creation) or smaller (dimension reduction) than `\(p\)`
-
-
----
-
-## You've done this already!
-
-* You added transformations as predictors in regression
-
-* You "expanded" `\(\mathbf{X}\)` using a basis `\(\Phi\)` (polynomials, splines, etc.)
-
-* You used Neural Nets to do a "feature map"
-
---
-
-This is the same, just no `\(Y\)` around
-
----
-
-## PCA
-
-Principal components analysis (PCA) is an (unsupervised) dimension
-reduction technique
-
-
-It solves various equivalent optimization problems
-
-(Maximize variance, minimize `\(L_2\)` distortions, find closest subspace of a given rank, `\(\ldots\)`)
-
-At its core, we are finding linear combinations of the original
-(centered) covariates `$$z_{ij} = \alpha_j^{\top} x_i$$`
-
-
-This is expressed via the SVD. 
-
-`$$\X  = \U\D\V^{\top}$$`
-
---
-
-.secondary[Warning:] We assume throughout that `\(\X - \mathbf{11^\top}\overline{x} = 0\)` (we center the columns)
-
---
-
-Then our new features are
-
-`$$\mathbf{Z} = \X \V = \U\D$$`
-
----
-
-## Short SVD aside (reminder from Ridge Regression)
-
-* Any `\(n\times p\)` matrix can be decomposed into `\(\mathbf{UDV}^\top\)`.
-
-* These have properties:
-
-1. `\(\mathbf{U}^\top \mathbf{U} = \mathbf{I}_n\)`
-2. `\(\mathbf{V}^\top \mathbf{V} = \mathbf{I}_p\)`
-3. `\(\mathbf{D}\)` is diagonal (0 off the diagonal)
-
---
-
-Almost all the methods for we'll talk about for representation learning use the SVD of some matrix.
-
-
----
-class: inverse
-
-## Why?
-
-1. Given `\(\X\)`, find a projection `\(\mathbf{P}\)` onto `\(\R^d\)` with `\(d \leq p\)` 
-that minimizes the reconstruction error
-$$
-`\begin{aligned}
-\min_{\mathbf{P}} &amp;\,\, \lVert \mathbf{X} - \mathbf{X}\mathbf{P} \rVert^2_F \,\,\, \textrm{(sum all the elements)}\\
-\textrm{subject to} &amp;\,\, \textrm{rank}(\mathbf{P}) = d,\, \mathbf{P} = \mathbf{P}^T,\, \mathbf{P} = \mathbf{P}^2
-\end{aligned}`
-$$
-The conditions ensure that `\(\mathbf{P}\)` is a projection matrix onto `\(d\)` dimensions.
-
-2. Maximize the variance explained by an orthogonal transformation `\(\mathbf{A} \in \R^{p\times d}\)`
-$$
-`\begin{aligned}
-\max_{\mathbf{A}} &amp;\,\, \textrm{trace}\left(\frac{1}{n}\mathbf{A}^\top \X^\top \X \mathbf{A}\right)\\
-\textrm{subject to} &amp;\,\, \mathbf{A}^\top\mathbf{A} = \mathbf{I}_d
-\end{aligned}`
-$$
-
-* In case one, the minimizer is `\(\mathbf{P} = \mathbf{V}_d\mathbf{V}_d^\top\)`
-* In case two, the maximizer is `\(\mathbf{A} = \mathbf{V}_d\)`.
-
-
----
-
-## Lower dimensional embeddings
-
-Suppose we have predictors `\(\x_1\)` and `\(\x_2\)`
-
--   We more faithfully preserve the structure of this data by keeping
-    `\(\x_1\)` and setting `\(\x_2\)` to zero than the opposite
-
-&lt;img src="rmd_gfx/24-pca-intro/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## Lower dimensional embeddings
-
-An important feature of the previous example is that `\(\x_1\)` and `\(\x_2\)` aren't
-correlated
-
-What if they are?
-
-&lt;img src="rmd_gfx/24-pca-intro/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
-
-We lose a lot of structure by setting either `\(\x_1\)` or `\(\x_2\)` to zero
-
-
----
-
-## Lower dimensional embeddings
-
-
-The only difference is the first is a rotation of the second
-
-&lt;img src="rmd_gfx/24-pca-intro/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## PCA
 
 .pull-left[
-If we knew how to rotate our data, then we could more easily retain the structure.
+__PCA:__
 
-__PCA__ gives us exactly this rotation
+0. Start with data.
+1. Decompose `\(\X=\U\D\V^\top\)` (SVD). 
+2. Embed into `\(M\leq p\)` dimensions: 
+`$$\U_M \D_M = \X\V_M$$`
 
+The "embedding" is `\(\U_M \D_M\)`.
+
+(called the "Principal Components" or the "scores" or occasionally the "factors")
+
+The "loadings" are `\(\V_M\)`
 ]
 
-.pull-right[
+--
 
-.emphasis[
-1. Center and (scale) the data matrix `\(\X\)`
-2. Compute the SVD of `\(\X = \U\D \V^\top\)` or `\(\X\X^\top = \U\D^2\U^\top\)` or `\(\X^\top \X = \V\D^2 \V^\top\)`
-3. Return `\(\U_M\D_M\)`, where `\(\D_M\)` is the largest `\(M\)`
-    eigenvalues of `\(\X\)`
-]]
+.pull-right[
+__KPCA:__
+
+0. Choose `\(k(x_i, x_{i'})\)`. Create `\(\mathbf{K}\)`.
+1. Decompose `\(\mathbf{K} = \U \D^2 \U^\top\)` (eigendecomposition)
+2. Embed into `\(M\leq p\)` dimensions:
+`$$\U_M \D_M$$`
+
+The "embedding" is `\(\U_M \D_M\)`.
+
+There are no "loadings"  
+(there exists no matrix `\(\mathbf{B}\)` such that `\(\X\mathbf{B} = \U_M \D_M\)`)
+]
+
+---
+
+## Why is this the solution?
+
+The "maximize variance" version of PCA:
+
+`$$\max_\alpha \Var{\X\alpha} \quad \textrm{ subject to } \quad \left|\left| \alpha \right|\right|_2^2 = 1$$`
+
+( `\(\Var{\X\alpha} = \alpha^\top\X^\top\X\alpha\)` )
+
+This is equivalent to solving (Lagrangian):
+
+`$$\max_\alpha \alpha^\top\X^\top\X\alpha - \lambda\left|\left| \alpha \right|\right|_2^2$$`
+
+Take derivative wrt `\(\alpha\)` and set to 0:
+
+`$$0 = 2\X^\top\X\alpha - 2\lambda\alpha$$`
+
+This is the equation for an eigenproblem. The solution is `\(\alpha=\V_1\)` and the maximum is `\(\D_1^2\)`.
+
+---
+
+## Example (not real unless there's code)
 
 
 ```r
-leaf &lt;- readRDS("data/leaf.rds")
-X &lt;- leaf %&gt;% dplyr::select(Eccentricity:Entropy)
-pca &lt;- prcomp(X, scale=TRUE) ## DON'T USE princomp()
+mob &lt;- readRDS("data/mobility.RDS")
+X &lt;- mob %&gt;% select(Black:Married) %&gt;% as.matrix()
+not_missing &lt;- X %&gt;% complete.cases()
+X &lt;- scale(X[not_missing,], center = TRUE, scale = TRUE)
+colors &lt;- mob$Mobility[not_missing] 
+M &lt;- 2 # embedding dimension
+```
+
+--
+
+.pull-left[
+__PCA:__ (all 3 are equivalent)
+
+
+```r
+s &lt;- svd(X) # use svd 
+pca_loadings &lt;- s$v[,1:M]
+pca_scores &lt;- X %*% pca_loadings
 ```
 
 
 
-&lt;img src="rmd_gfx/24-pca-intro/pca-leaf-plot-1.svg" style="display: block; margin: auto;" /&gt;
+```r
+s &lt;- eigen(t(X) %*% X) # V D^2 V'
+pca_loadings &lt;- s$vectors[,1:M]
+pca_scores &lt;- X %*% pca_loadings
+```
+
+
+
+```r
+s &lt;- eigen(X %*% t(X)) # U D^2 U'
+D &lt;- sqrt(diag(s$values[1:M]))
+U &lt;- s$vectors[,1:M]
+pca_scores &lt;- U %*% D
+pca_loadings = (1/D) %*% t(U) %*% X
+```
+
+
+
+]
+
+.pull-right[
+__KPCA:__
+
+
+```r
+d &lt;- 2
+K &lt;- (1 + X %*% t(X))^d # polynomial
+e &lt;- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U &lt;- e$vectors[,1:M]
+D &lt;- diag(sqrt(e$values[1:M]))
+kpca_poly &lt;- U %*% D
+```
+
+
+```r
+K &lt;- tanh(1 + X %*% t(X)) # sigmoid kernel
+e &lt;- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U &lt;- e$vectors[,1:M]
+D &lt;- diag(sqrt(e$values[1:M]))
+kpca_sigmoid &lt;- U %*% D
+```
+
+
+]
 
 ---
-class: middle, inverse, center
 
-# Next time...
+## Plotting
 
-When does PCA work?
+&lt;img src="rmd_gfx/26-pca-v-kpca/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
 
+---
+
+## PCA loadings
+
+Showing the first 10 PCA loadings:
+
+* First column are the weights on the first score
+* each number corresponds to a variable in the original data
+* How much does that variable contribute to that score?
+
+
+```r
+head(round(pca_loadings,2), 10)
+```
+
+```
+##        [,1]  [,2]
+##  [1,]  0.25  0.07
+##  [2,]  0.13 -0.14
+##  [3,]  0.17 -0.34
+##  [4,]  0.18 -0.33
+##  [5,]  0.16 -0.34
+##  [6,] -0.24  0.11
+##  [7,] -0.04 -0.35
+##  [8,]  0.28  0.00
+##  [9,]  0.13 -0.14
+## [10,]  0.29  0.10
+```
+
+---
+
+## KPCA, feature map version
+
+
+```r
+p &lt;- ncol(X)
+scX &lt;- scale(X)
+width &lt;- p*(p-1)/2 + p # ~630
+Z &lt;- matrix(NA, nrow(X), width)
+k &lt;-  0
+for(i in 1:p){
+  for(j in i:p){
+    k &lt;- k + 1
+    Z[,k] &lt;- X[,i] * X[,j]
+  }
+}
+wideX &lt;- scale(cbind(X, Z))
+s &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores &lt;- s$u %*% diag(s$d)
+```
+
+* Unfortunately, can't easily compare to check whether the result is the same
+* Also can cause numerical issues
+* But should be the "same" (assuming I didn't screw up...)
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
