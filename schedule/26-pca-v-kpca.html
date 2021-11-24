@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>00 PCA v KPCA</title>
+    <title>26 PCA v KPCA</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -14,10 +14,10 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 00 PCA v KPCA
+# 26 PCA v KPCA
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-11-23
+### Last modified - 2021-11-24
 
 ---
 
@@ -48,7 +48,7 @@ class: center, middle, inverse, title-slide
 \newcommand{\D}{\mathbf{D}}
 \newcommand{\V}{\mathbf{V}}$$`
 
-(We assume `\(\X\)` is already centered, `\(n\)` rows, `\(p\)` columns)
+(We assume `\(\X\)` is already centered/scaled, `\(n\)` rows, `\(p\)` columns)
 
 
 .pull-left[
@@ -71,9 +71,10 @@ The "loadings" are `\(\V_M\)`
 .pull-right[
 __KPCA:__
 
-0. Choose `\(k(x_i, x_{i'})\)`. Create `\(\mathbf{K}\)`.
-1. Decompose `\(\mathbf{K} = \U \D^2 \U^\top\)` (eigendecomposition)
-2. Embed into `\(M\leq p\)` dimensions:
+1. Choose `\(k(x_i, x_{i'})\)`. Create `\(\mathbf{K}\)`.
+1. Double center `\(\mathbf{K} = \mathbf{PKP}\)`.
+1. Decompose `\(\mathbf{K} = \U \D^2 \U^\top\)` (eigendecomposition).
+1. Embed into `\(M\leq p\)` dimensions:
 `$$\U_M \D_M$$`
 
 The "embedding" is `\(\U_M \D_M\)`.
@@ -114,6 +115,7 @@ not_missing &lt;- X %&gt;% complete.cases()
 X &lt;- scale(X[not_missing,], center = TRUE, scale = TRUE)
 colors &lt;- mob$Mobility[not_missing] 
 M &lt;- 2 # embedding dimension
+P &lt;- diag(nrow(X)) - 1/nrow(X)
 ```
 
 --
@@ -156,7 +158,7 @@ __KPCA:__
 
 ```r
 d &lt;- 2
-K &lt;- (1 + X %*% t(X))^d # polynomial
+K &lt;- P %*% (1 + X %*% t(X))^d %*% P # polynomial
 e &lt;- eigen(K) # U D^2 U' 
 # (different from the PCA one, K /= XX')
 U &lt;- e$vectors[,1:M]
@@ -166,7 +168,7 @@ kpca_poly &lt;- U %*% D
 
 
 ```r
-K &lt;- tanh(1 + X %*% t(X)) # sigmoid kernel
+K &lt;- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel
 e &lt;- eigen(K) # U D^2 U' 
 # (different from the PCA one, K /= XX')
 U &lt;- e$vectors[,1:M]
@@ -237,6 +239,7 @@ fkpca_scores &lt;- s$u %*% diag(s$d)
 * Unfortunately, can't easily compare to check whether the result is the same
 * Also can cause numerical issues
 * But should be the "same" (assuming I didn't screw up...)
+* Would also allow me to get the loadings, though they'd depend on polynomials
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
