@@ -1,9 +1,9 @@
 ---
 title: "22 Neural nets - other considerations"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+author:
+- STAT 406
+- Daniel J. McDonald
+date: "Last modified - `r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
@@ -46,7 +46,7 @@ __Down sides:__
 -   It can be very slow
 
 -   Need to choose the learning rate
-    $\gamma$
+    $\gamma_t$
 ---
 
 ## Other algorithms
@@ -82,11 +82,11 @@ Explicit regularization $\longrightarrow$ solve $\min \hat{R} + \rho(\alpha,\bet
 
 -   __Weight decay:__  This is like
     ridge regression in that we penalize the squared Euclidean norm of
-    the weights $\rho(\mathbf{B},\mathbf{W}) = \sum \beta^2 + \sum w^2$
+    the weights $\rho(\alpha,\beta) = \sum \beta^2 + \sum \alpha^2$
 
 -   __Weight elimination:__  This
     encourages more shrinking of small weights
-    $\rho(\mathbf{B},\mathbf{W}) =  \sum \frac{\beta^2}{1+\beta^2} + \sum \frac{w^2}{1 + w^2}$ or Lasso-type $\sum |\beta| +  \sum |w|$
+    $\rho(\alpha,\beta) =  \sum \frac{\beta^2}{1+\beta^2} + \sum \frac{\alpha^2}{1 + \alpha^2}$ or Lasso-type
 
 
 __Dropout:__
@@ -191,7 +191,27 @@ It is possible to do in with R using an [interface to Keras](https://keras.rstud
 
 We did this last week, so see there.
 
-
+```{r embeddings, echo=FALSE,include=FALSE,fig.width=16,fig.height=9}
+library(maniTools)
+num_pts = 600
+d = 2   #target dimension
+k = 8   #k nearest neighbors
+sim_data <- swiss_roll(num_pts)
+pca_dr <- sim_data$data %>% center_and_standardise() %>% prcomp()
+proj_pca <- sim_data$data %*% pca_dr$rotation[,1:2] %>% scale()
+proj_hess <- Hessian_LLE(sim_data$data, k = k, d = d)$projection %>% scale()
+proj_LLE <- LLE2(sim_data$data, dim = d, k = k) %>% scale()
+all = cbind(rbind(proj_pca, proj_LLE, proj_hess), sim_data$colors)
+colnames(all) = c('x','y','col')
+all = as_tibble(all)
+all$method = rep(c("PCA","Hessian maps","LLE"), each=num_pts) 
+ggplot(all, aes(x,y,color=col)) + geom_point() +
+  scale_color_viridis_c() +
+  facet_wrap(~method, scales="free") + 
+  theme(legend.position = "none", 
+        axis.line = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), axis.title = element_blank())
+```
 
 ---
 class: middle, center

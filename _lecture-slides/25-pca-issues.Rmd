@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -53,7 +40,7 @@ df_arrows = data.frame(x1 = m[1], y1 = m[2],
                        y2 = m[2] + 3*ee$vectors[2,]*ss/sum(ss))
 pgood <- ggplot(df) + geom_point(aes(x,y,color=z)) + 
   scale_color_viridis_c()+ coord_fixed() +
-  theme_cowplot() +theme(legend.position = 'none') +
+  theme(legend.position = 'none') +
   geom_segment(aes(x=x1,y=y1,xend=x2,yend=y2), data=df_arrows, arrow=arrow(), size=2, color=orange)
 pgood
 ```
@@ -86,13 +73,14 @@ structure with just 1 dimension,
 
 instead of the original 2 (the coloring is for visualizing). 
 
-```{r pca-reduced, fig.align='center',fig.height=5,fig.width=10,echo=FALSE}
+```{r pca-reduced, fig.align='center',fig.height=4,fig.width=10,echo=FALSE}
 xx = scale(x, center=m, scale=FALSE) %*% ee$vectors[,1]
 df2 = data.frame(x=xx + m[1], y=xx + m[2], z=z)
 pred <- ggplot(df2) + geom_point(aes(x=x,y=y,col=z)) + 
-  theme_cowplot() +theme(legend.position = 'none') +
+  theme(legend.position = 'none') +
+  coord_fixed() +
   scale_color_viridis_c()
-plot_grid(pgood, pred)
+cowplot::plot_grid(pgood, pred, align = "v")
 ```
 
 ---
@@ -112,7 +100,7 @@ df_arrows = data.frame(x1 = 0, y1 = 0,
                        y2 =  ee$vectors[2,]*ss/sum(ss)*2)
 gsp = ggplot(df_spiral) + geom_point(aes(x=x,y=y,col=z)) + 
   coord_fixed() +
-  scale_color_viridis_c() + theme_cowplot() + theme(legend.position = 'none') +
+  scale_color_viridis_c() + theme(legend.position = 'none') +
   geom_segment(aes(x=x1,y=y1,xend=x2,yend=y2), data=df_arrows, arrow=arrow(), size=2,color=orange)
 gsp
 ```
@@ -130,11 +118,11 @@ from purple to yellow).
 However, when we write it as 1 PCA dimension,
 all the points are all "mixed up". 
 
-```{r spiral-reduced, fig.align='center',fig.height=4,fig.width=10, echo=FALSE}
+```{r spiral-reduced, fig.align='center',fig.height=5,fig.width=10, echo=FALSE}
 xx = as.matrix(df_spiral[,1:2]) %*% ee$vectors[,1]
 df_spiral2 = data.frame(x=xx, y=xx, z=tt)
 gspbad <- ggplot(df_spiral2) + geom_point(aes(x=x,y=y,col=z)) + 
-  scale_color_viridis_c() + theme_cowplot() + 
+  scale_color_viridis_c() + coord_fixed() +
   theme(legend.position = 'none')
 plot_grid(gsp,gspbad)
 ```
@@ -252,7 +240,7 @@ dfkern$method = rep(c('data','pca','kpoly (d=2)', 'kgauss (gamma=.1)'), each=n)
 
 ```{r plot-kpca, echo=FALSE, fig.align='center', fig.height=6, fig.width=10}
 dfkern %>% 
-  ggplot(aes(x=x,y=y,color=z)) + geom_point() + theme_cowplot()+
+  ggplot(aes(x=x,y=y,color=z)) + geom_point() +
   facet_wrap(~method, scales='free', nrow=2) +
   scale_color_viridis_c() + theme(legend.position = 'none') +
   ylab('x2') + xlab('x1')

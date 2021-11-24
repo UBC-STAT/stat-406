@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -55,7 +42,7 @@ __PCA:__
 
 0. Start with data.
 1. Decompose $\X=\U\D\V^\top$ (SVD). 
-2. Embed into $M<p$ dimensions: 
+2. Embed into $M\leq p$ dimensions: 
 $$\U_M \D_M = \X\V_M$$
 
 The "embedding" is $\U_M \D_M$.
@@ -72,7 +59,7 @@ __KPCA:__
 
 0. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
 1. Decompose $\mathbf{K} = \U \D^2 \U^\top$ (eigendecomposition)
-2. Embed into $M<p$ dimensions:
+2. Embed into $M\leq p$ dimensions:
 $$\U_M \D_M$$
 
 The "embedding" is $\U_M \D_M$.
@@ -106,39 +93,38 @@ This is the equation for an eigenproblem. The solution is $\alpha=\V_1$ and the 
 ## Example (not real unless there's code)
 
 ```{r}
-X = UBCstat406labs::mobility %>% select(Black:Married) %>% as.matrix()
-not_missing = X %>% complete.cases()
-X = scale(X[not_missing,], center = TRUE, scale = TRUE)
-colors = UBCstat406labs::mobility$Mobility[not_missing] 
-M = 2 # embedding dimension
+mob <- readRDS("data/mobility.RDS")
+X <- mob %>% select(Black:Married) %>% as.matrix()
+not_missing <- X %>% complete.cases()
+X <- scale(X[not_missing,], center = TRUE, scale = TRUE)
+colors <- mob$Mobility[not_missing] 
+M <- 2 # embedding dimension
 ```
 
 --
 
 .pull-left[
-__PCA:__
+__PCA:__ (all 3 are equivalent)
 
 ```{r}
-s = svd(X)
-pca_loadings = s$v[,1:M]
-pca_scores = X %*% pca_loadings
+s <- svd(X) # use svd 
+pca_loadings <- s$v[,1:M]
+pca_scores <- X %*% pca_loadings
 ```
 
-or
 
 ```{r, echo=TRUE, eval=FALSE}
-s = eigen(t(X) %*% X) # V D^2 V'
-pca_loadings = s$vectors[,1:M]
-pca_scores = X %*% pca_loadings
+s <- eigen(t(X) %*% X) # V D^2 V'
+pca_loadings <- s$vectors[,1:M]
+pca_scores <- X %*% pca_loadings
 ```
 
-or
 
 ```{r, echo=TRUE, eval=FALSE}
-s = eigen(X %*% t(X)) # U D^2 U'
-D = sqrt(diag(s$values[1:M]))
-U = s$vectors[,1:M]
-pca_scores = U %*% D
+s <- eigen(X %*% t(X)) # U D^2 U'
+D <- sqrt(diag(s$values[1:M]))
+U <- s$vectors[,1:M]
+pca_scores <- U %*% D
 pca_loadings = (1/D) %*% t(U) %*% X
 
 ```
@@ -151,14 +137,24 @@ pca_loadings = (1/D) %*% t(U) %*% X
 __KPCA:__
 
 ```{r}
-d = 2
-K = (1 + X %*% t(X))^d
-e = eigen(K) # U D^2 U' 
+d <- 2
+K <- (1 + X %*% t(X))^d # polynomial
+e <- eigen(K) # U D^2 U' 
 # (different from the PCA one, K /= XX')
-U = e$vectors[,1:M]
-D = diag(sqrt(e$values[1:M]))
-kpca_scores = U %*% D
+U <- e$vectors[,1:M]
+D <- diag(sqrt(e$values[1:M]))
+kpca_poly <- U %*% D
 ```
+
+```{r}
+K <- tanh(1 + X %*% t(X)) # sigmoid kernel
+e <- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U <- e$vectors[,1:M]
+D <- diag(sqrt(e$values[1:M]))
+kpca_sigmoid <- U %*% D
+```
+
 
 ]
 
@@ -168,11 +164,14 @@ kpca_scores = U %*% D
 
 ```{r, echo=FALSE, fig.align="center", fig.width=10, fig.height=6}
 pca = tibble(score1=pca_scores[,1], score2=pca_scores[,2], colors=colors)
-kpca = tibble(score1=kpca_scores[,1], score2=kpca_scores[,2], colors=colors)
-bind_rows(pca=pca, kpca=kpca, .id="method") %>%
-  ggplot(aes(score1,score2,color=colors)) + 
-  facet_wrap(~method, scales = "free") + theme_cowplot() +
-  scale_color_viridis_c() + geom_point()
+kpca_poly = tibble(score1=kpca_poly[,1], score2=kpca_poly[,2], colors=colors)
+kpca_sigmoid = tibble(score1=kpca_sigmoid[,1], score2=kpca_sigmoid[,2], colors=colors)
+bind_rows(pca=pca, kpca_poly=kpca_poly, kpca_sigmoid = kpca_sigmoid, .id="method") %>%
+  ggplot(aes(score1, score2, color=colors)) + 
+  facet_wrap(~method, scales = "free") + 
+  theme(legend.position = "bottom") +
+  guides(color = guide_colorbar(barwidth = unit(.5, "npc"))) +
+  scale_color_viridis_c(name = "Mobility") + geom_point()
 ```
 
 ---
@@ -194,19 +193,20 @@ head(round(pca_loadings,2), 10)
 ## KPCA, feature map version
 
 ```{r, echo=TRUE, eval=FALSE}
-p = ncol(X)
-width = p*(p-1)/2 + p # ~630
-Z = matrix(NA, nrow(X), width)
-k = 0
+p <- ncol(X)
+scX <- scale(X)
+width <- p*(p-1)/2 + p # ~630
+Z <- matrix(NA, nrow(X), width)
+k <-  0
 for(i in 1:p){
   for(j in i:p){
-    k = k + 1
-    Z[,k] = X[,i] * X[,j]
+    k <- k + 1
+    Z[,k] <- X[,i] * X[,j]
   }
 }
-wideX = scale(cbind(X, Z), center=TRUE, scale=TRUE)
-s = RSpectra::svds(wideX, 2) # the whole svd would be super slow
-fkpca_scores = s$u %*% diag(s$d)
+wideX <- scale(cbind(X, Z))
+s <- RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores <- s$u %*% diag(s$d)
 ```
 
 * Unfortunately, can't easily compare to check whether the result is the same

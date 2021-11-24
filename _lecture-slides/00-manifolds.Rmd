@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -196,7 +183,7 @@ __Key Idea:__   We can get the eigenvectors/eigenvalues of $\mathbf{L}$. Analogo
 
 ## Here's our manifold
 
-```{r elephant, echo=FALSE, fig.align='center',fig.width=8,fig.height=5}
+```{r elephant, include=FALSE}
 tt = -100:500/100
 elephant <- function(tt,eye=TRUE){
   x = 12*cos(3*tt) - 14*cos(5*tt) + 50*sin(tt) + 18*sin(2*tt)
@@ -206,12 +193,15 @@ elephant <- function(tt,eye=TRUE){
 }
 ele = elephant(tt,FALSE)
 ele$tt = tt
-noisy_ele = ele %>% mutate(y=y+rnorm(nrow(ele),0,5), x=x+rnorm(nrow(ele),0,5), z=rnorm(nrow(ele),0,5)) %>%
-  relocate(tt, .after=last_col()) %>% rename(colors=tt)
-saveRDS(noisy_ele, file="data-and-big-results/noisy_ele.RDS")
+noisy_ele = ele %>% 
+  mutate(y=y+rnorm(nrow(ele),0,5), x=x+rnorm(nrow(ele),0,5), z=rnorm(nrow(ele),0,5)) %>%
+  relocate(tt, .after=last_col()) %>%
+  rename(colors=tt)
+```
 
+```{r plot-elephant, echo=FALSE, fig.align='center',fig.width=8,fig.height=5}
 ggplot(noisy_ele, aes(x=y,y=x,col=tt)) + geom_point() + 
-  theme_cowplot() + scale_color_viridis_c() + 
+  scale_color_viridis_c() + 
   theme(legend.position = 'none') +
   geom_path(data=ele, aes(x=y,y=x), color="black",size=2)
 ```

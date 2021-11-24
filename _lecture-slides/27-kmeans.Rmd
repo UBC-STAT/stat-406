@@ -4,19 +4,6 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
@@ -182,8 +169,8 @@ __Note:__ CH is undefined for $K =1$
 ```{r}
 library(mvtnorm)
 set.seed(406406406)
-X1 = rmvnorm(50,c(-1,2),sigma=matrix(c(1,.5,.5,1),2))
-X2 = rmvnorm(40,c(2,-1),sigma=matrix(c(1.5,.5,.5,1.5),2))
+X1 <- rmvnorm(50, c(-1, 2), sigma = matrix(c(1, .5, .5, 1), 2))
+X2 <- rmvnorm(40, c(2, -1), sigma = matrix(c(1.5, .5, .5, 1.5), 2))
 ```
 
 ```{r plotting-dumb-clusts, echo=FALSE, fig.align="center", fig.width=10,fig.height=5}
@@ -191,7 +178,7 @@ clust_raw = rbind(X1,X2)
 clust = tibble(x1=clust_raw[,1], x2=clust_raw[,2],
                true = as.factor(rep(c(1,2), times=c(50,40))))
 clust %>% ggplot(aes(x=x1,y=x2,color=true)) + geom_point() +
-  theme_cowplot() + scale_color_manual(values = c(orange,blue)) +
+  scale_color_manual(values = c(orange,blue)) +
   theme(legend.position = "none")
 ```
 
@@ -215,23 +202,24 @@ summaries = tibble('within'=summaries[1,],'between'=summaries[2,],'K'=K) %>%
 summaries %>% gather(key='key',value='value',-K) %>%
   ggplot(aes(K,value)) + geom_line(color=blue) + ylab('')+
   coord_cartesian(c(1,20)) +
-  facet_wrap(~key,ncol=3,scales='free_y') + theme_cowplot()
+  facet_wrap(~key,ncol=3,scales='free_y')
 ```
 
 ---
 
 ## Dumb example
 
-* Various solutions
-
-```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=5}
+```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=6}
 all_assignments = all_assignments %>% as_tibble()
 names(all_assignments) = paste0('K = ',K)
 small_assignments = all_assignments[,c(1,2,4,9,14,19,29,39)]
 bind_cols(small_assignments, clust) %>% 
-  gather(key='key',value='value',-x1,-x2) %>%
-  ggplot(aes(x1,x2,color=value)) + geom_point() + facet_wrap(~key) +
-  theme_cowplot() + theme(legend.position = 'none') +
+  pivot_longer(-starts_with("x")) %>%
+  ggplot(aes(x1, x2, color=value)) + geom_point() + 
+  facet_wrap(~factor(
+    name, 
+    levels = c("true", paste0("K = ", c(2, 3, 5, 10, 15, 20, 30, 40))))) +
+  theme(legend.position = 'none') +
   scale_color_viridis_d()
 ```
 
@@ -246,8 +234,8 @@ k2 = bind_cols(all_assignments[,1], clust)
 centers = kmeans(clust_raw, 2)$centers
 centers = tibble(x1 = centers[,1], x2 = centers[,2])
 ggplot(k2, aes(x1,x2)) + geom_point(aes(color=`K = 2`)) +
-  geom_point(data=centers, color="blue", size=3, shape=10) +
-  theme_cowplot() + theme(legend.position = 'none') +
+  geom_point(data=centers, color="blue", size=5, shape=10) +
+  theme(legend.position = 'none') +
   scale_color_viridis_d()
 ```
 

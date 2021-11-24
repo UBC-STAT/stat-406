@@ -4,34 +4,19 @@ author:
   - "STAT 406"
   - "Daniel J. McDonald"
 date: 'Last modified - `r Sys.Date()`'
-output:
-  xaringan::moon_reader:
-    includes:
-      in_header: 
-        - materials/load-fa.html
-    lib_dir: libs
-    css: ["materials/xaringan-themer.css","slides-style.css"]
-    nature:
-      beforeInit: materials/macros.js
-      highlightStyle: zenburn
-      highlightLines: true
-      countIncrementalSlides: false
-      ratio: "16:9"
 ---
 
 
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE}
 source("rmd_config.R")
-knitr::opts_chunk$set(echo = FALSE, 
-                      fig.align = 'center', fig.width = 10, 
-                      fig.height = 5)
 ```
 
 ## From $K$-means to hierarchical clustering
 
 
 .pull-left[
+
 __K-means__
 
 
@@ -49,32 +34,53 @@ __Hierarchical clustering__
 
 There is a catch: we need to choose a way to measure the distance
 between clusters, called the __linkage__.
+
 ]
 
 .pull-right[
 
-```{r, fig.height=5,fig.width=5,fig.align='center'}
+```{r, fig.height=5,fig.width=5,fig.align='center', echo=FALSE}
 library(mvtnorm)
 set.seed(406406406)
 X1 = rmvnorm(50,c(-1,2),sigma=matrix(c(1,.5,.5,1),2))
 X2 = rmvnorm(40,c(2,-1),sigma=matrix(c(1.5,.5,.5,1.5),2))
-heatmaply::heatmaply(as.matrix(dist(rbind(X1,X2))), 
-                     showticklabels=c(FALSE,FALSE), hide_colorbar = TRUE)
 ```
 
-Given the linkage, hierarchical clustering produces a sequence of
+```{r, fig.height=5,fig.width=5,fig.align='center'}
+# same data as K-means "Dumb example"
+egg <- heatmaply::heatmaply(
+  as.matrix(dist(rbind(X1,X2))), 
+  showticklabels=c(FALSE,FALSE), hide_colorbar = TRUE)
+egg
+```
+
+]
+
+---
+
+## Hierarchical clustering
+
+.pull-left[
+```{r, echo=FALSE}
+egg
+```
+
+]
+
+.pull-right[
+* Given the linkage, hierarchical clustering produces a sequence of
 clustering assignments.
 
 
-At one end, all points are in their __own__
+* At one end, all points are in their __own__
 cluster.
 
 
-At the other, all points are in __one__
+* At the other, all points are in __one__
 cluster.
 
 
-In the middle, there are __nontrivial__
+* In the middle, there are __nontrivial__
 solutions.
 
 ]
@@ -85,38 +91,39 @@ solutions.
 
 
 .pull-left[
-```{r, fig.height=3,fig.width=3}
+```{r, fig.height=3,fig.width=3,echo=FALSE}
 set.seed(1)
 x1 = runif(7)
 x1[1:3] = x1[1:3] + 1
 x2 = runif(7,0,2)
 tiny = tibble(x1=x1,x2=x2) %>% arrange(x2)
 tiny$true = factor(c(2,2,2,1,1,1,1))
-g <- ggplot(tiny, aes(x=x1,y=x2)) + geom_point(aes(color=true), size=3) + 
-  theme_cowplot() + theme(legend.position='none') + 
+g <- ggplot(tiny, aes(x=x1,y=x2)) + 
+  geom_point(aes(color=true), size=3) + 
+  theme(legend.position='none') + 
   scale_color_manual(values=c(orange,blue))
 g + geom_text(label=1:7,nudge_x =.1,nudge_y = .1)
 ```
 
-Given these data points, an agglomerative algorithm chooses a cluster sequence by combining the points into groups.
+* Given these data points, an agglomerative algorithm chooses a cluster sequence by combining the points into groups.
 
-We can also represent the sequence of clustering assignments as a
+* We can also represent the sequence of clustering assignments as a
 dendrogram
 
-Cutting the dendrogram horizontally partitions the data points
+* Cutting the dendrogram horizontally partitions the data points
 into clusters
 ]
 
 .pull-right[
 
-Notation: Define $x_1,\ldots, x_n$ to be the data
+* Notation: Define $x_1,\ldots, x_n$ to be the data
 
 
-Let the dissimiliarities be $d_{ij}$ between
+* Let the dissimiliarities be $d_{ij}$ between
 each pair $x_i, x_j$
 
 
-At any level, clustering assignments can be expressed by sets
+* At any level, clustering assignments can be expressed by sets
 $G = \{ i_1, i_2, \ldots, i_r\}$ giving the
 indicies of points in this group. Define
 $|G|$ to be the size of $G$.
@@ -129,11 +136,11 @@ distance between them.
 
 Agglomerative clustering, given the linkage:
 
-- Start with each point in its own group
-
-- Until there is only one cluster, repeatedly merge the two groups
+.emphasis[
+1. Start with each point in its own group
+2. Until there is only one cluster, repeatedly merge the two groups
 $G,H$ that minimize $d(G,H)$.
-    
+]
 ]
     
 ---
@@ -146,7 +153,7 @@ dissimilarity between two points in different groups:
 $$d_{\textrm{single}}(G,H) = \min_{i \in G, \, j \in H} d_{ij}$$
 
 
-```{r, fig.height=4}
+```{r, fig.height=4, echo = FALSE, fig.align='center'}
 seg = function(a,b){
   o = bind_cols(tiny[a,1:2],tiny[b,1:2])
   names(o) = c('x','y','xend','yend')
@@ -167,7 +174,7 @@ different clusters:
 $$d_{\textrm{complete}}(G,H) = \max_{i \in G,\, j \in H} d_{ij}.$$
 
 
-```{r, fig.height=4}
+```{r, fig.height=4, echo = FALSE, fig.align='center'}
 g + geom_segment(aes(x=x,y=y,xend=xend,yend=yend),data = seg(2,5))+
   geom_text(label=1:7,nudge_x =.02,nudge_y = .1)
 ```
@@ -182,7 +189,7 @@ over all points in different clusters:
 $$d_{\textrm{average}}(G,H) = \frac{1}{|G| \cdot |H| }\sum_{i \in G, \,j \in H} d_{ij}.$$
 
 
-```{r, fig.height=4}
+```{r, fig.height=4, echo=FALSE, fig.align='center'}
 g + geom_segment(aes(x=x,y=y,xend=xend,yend=yend),
                  data = seg(rep(1:3,times=4),rep(4:7,each=3))) +
   geom_text(label=1:7,nudge_x =.02,nudge_y = .1)
@@ -218,24 +225,17 @@ parent is always higher than the height of either daughter.
 ## Centroid linkage
 
 __Centroid linkage__ is 
-relatively new. 
-
-.pull-left[
-Assume
-
--   $x_i \in \mathbb{R}^p$
-
-]
+relatively new. We need
+$x_i \in \mathbb{R}^p$.
 
 
-.pull-right[
+
 $\overline{x}_G$ and $\overline{x}_H$ are group averages
 
 $d_{\textrm{centroid}} = ||\overline{x}_G - \overline{x}_H||_2^2$
 
-]
 
-```{r, fig.height=4}
+```{r, fig.height=4, echo=FALSE, fig.align='center'}
 tf = tiny %>% group_by(true) %>% summarize(mx = mean(x1), my = mean(x2)) 
 tff = bind_cols(tf[1,2:3],tf[2,2:3])
 names(tff) = c('x','y','xend','yend')
@@ -258,7 +258,7 @@ Centroid linkage is
 
 However, it may introduce inversions.
 
-```{r, fig.height=4}
+```{r, fig.height=4, echo=FALSE}
 tt = seq(0,2*pi,len=50)
 tt2 = seq(0,2*pi,len=75)
 c1 = data.frame(x=cos(tt),y=sin(tt),grp=1)
@@ -267,19 +267,19 @@ circles = bind_rows(c1,c2)
 di = dist(circles[,1:2])
 hc = hclust(di, method="centroid")
 g1 = ggplot(circles,aes(x=x,y=y,color=as.factor(grp))) + geom_point() + 
-  theme_cowplot() + scale_color_manual(values=c(orange,blue)) +
+  scale_color_manual(values=c(orange,blue)) +
   ylab('x2')+xlab('x1')+
   theme(legend.position = 'none')
 ```
 
 .pull-left[
-```{r, fig.width=3,fig.height=3}
+```{r, fig.width=3,fig.height=3,echo=FALSE,fig.align='center'}
 g1
 ```
 ]
 
 .pull-right[
-```{r, fig.width=4, fig.height=4}
+```{r, fig.width=4, fig.height=4,echo=FALSE,fig.align='center'}
 plot(hc)
 ```
 ]
@@ -321,7 +321,7 @@ Can do lots of things besides Euclidean
 
 This is very important
 
-```{r fig.height=4, fig.width=4}
+```{r fig.height=4, fig.width=4, echo=FALSE}
 g1
 ```
 ]
@@ -331,4 +331,14 @@ class: middle, inverse, center
 
 # Next time...
 
-Wrapup and final bits of advice
+
+
+### No more slides.  All done. 
+
+`r fontawesome::fa('grin-stars', height = "6em", fill = blue)`
+
+--
+
+### FINAL EXAM!! 
+
+`r fontawesome::fa('skull-crossbones', height = "6em", red)`

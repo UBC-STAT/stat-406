@@ -121,7 +121,18 @@ At its core, we are finding linear combinations of the original
 (centered) covariates $$z_{ij} = \alpha_j^{\top} x_i$$
 
 
-This is expressed via the SVD: $\X - \overline{\X} = \U\D\V^{\top}$ as
+This is expressed via the SVD. 
+
+$$\X  = \U\D\V^{\top}$$
+
+--
+
+.secondary[Warning:] We assume throughout that $\X - \mathbf{11^\top}\overline{x} = 0$ (we center the columns)
+
+--
+
+Then our new features are
+
 $$\mathbf{Z} = \X \V = \U\D$$
 
 ---
@@ -139,6 +150,33 @@ $$\mathbf{Z} = \X \V = \U\D$$
 --
 
 Almost all the methods for we'll talk about for representation learning use the SVD of some matrix.
+
+
+---
+class: inverse
+
+## Why?
+
+1. Given $\X$, find a projection $\mathbf{P}$ onto $\R^d$ with $d \leq p$ 
+that minimizes the reconstruction error
+$$
+\begin{aligned}
+\min_{\mathbf{P}} &\,\, \lVert \mathbf{X} - \mathbf{X}\mathbf{P} \rVert^2_F \,\,\, \textrm{(sum all the elements)}\\
+\textrm{subject to} &\,\, \textrm{rank}(\mathbf{P}) = d,\, \mathbf{P} = \mathbf{P}^T,\, \mathbf{P} = \mathbf{P}^2
+\end{aligned}
+$$
+The conditions ensure that $\mathbf{P}$ is a projection matrix onto $d$ dimensions.
+
+2. Maximize the variance explained by an orthogonal transformation $\mathbf{A} \in \R^{p\times d}$
+$$
+\begin{aligned}
+\max_{\mathbf{A}} &\,\, \textrm{trace}\left(\frac{1}{n}\mathbf{A}^\top \X^\top \X \mathbf{A}\right)\\
+\textrm{subject to} &\,\, \mathbf{A}^\top\mathbf{A} = \mathbf{I}_d
+\end{aligned}
+$$
+
+* In case one, the minimizer is $\mathbf{P} = \mathbf{V}_d\mathbf{V}_d^\top$
+* In case two, the maximizer is $\mathbf{A} = \mathbf{V}_d$.
 
 
 ---

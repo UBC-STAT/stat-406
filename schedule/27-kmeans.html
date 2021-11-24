@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>27 Kmeans clustering</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# 27 Kmeans clustering
+### STAT 406
+### Daniel J. McDonald
+### Last modified - 2021-11-23
+
+---
+
+
+
+
+
+
+## Clustering
+
+So far, we've looked at ways of reducing the dimension.
+
+Either linearly or nonlinearly, usually with the goal of visualization or possibly for an input to supervised learning.
+
+Now we try to find groups or clusters in our data.
+
+Think of __clustering__ as classification without the labels.
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$`
+
+
+---
+
+## K-means (ideally)
+
+.emphasis[
+1.  Select a number of clusters `\(K\)`.
+
+2.  Let `\(C_1,\ldots,C_K\)` partition `\(\{1,2,3,\ldots,n\}\)` such that
+    - All observations belong to some set `\(C_k\)`.
+    - No observation belongs to more than one set.
+
+3.  K-means attempts to form these sets by making __within-cluster
+    variation__, `\(W(C_k)\)`, as small as
+    possible. `$$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$`
+
+4.  To Define `\(W\)`, we need a concept of distance. By far the most common is Euclidean `$$W(C_k) =  \frac{1}{|C_k|} \sum_{i,i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$`
+That is, the average (Euclidean) distance between all cluster
+members.
+]
+
+---
+
+## K-means (in reality)
+
+It turns out `$$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$` is too challenging
+computationally ( `\(K^n\)` partitions!).
+
+
+So, we make a greedy approximation:
+
+.emphasis[
+
+1.  Randomly assign observations to the `\(K\)` clusters
+
+2.  Iterate until the cluster assignments stop changing:
+    -   For each of `\(K\)` clusters, compute the
+        centroid, which is the `\(p\)`-length
+        vector of the means in that cluster.
+    -   Assign each observation to the cluster whose centroid is closest
+        (in Euclidean distance).
+]
+
+This procedure is guaranteed to decrease `\(\sum_{k=1}^K W(C_k)\)` at each step.
+
+But being greedy, it finds a local, rather than a global optimum. 
+
+---
+
+## Best practices
+
+To fit K-means, you need to
+
+1.  Pick `\(K\)` (inherent in the method)
+
+2.  Convince yourself you have found a good solution (due to the
+    randomized approach to the algorithm).
+
+For 2., a commonly used approach is to run
+K-means many times with different starting points. Pick the solution
+that has the smallest value for
+`$$\sum_{k=1}^K W(C_k)$$`
+
+
+It turns out that __1.__ is difficult to do in a
+principled way.
+
+---
+
+## Choosing the Number of Clusters
+
+Why is it important?
+
+-   It might make a big difference (concluding there are `\(K = 2\)` cancer
+    sub-types versus `\(K = 3\)`).
+
+-   One of the major goals of statistical learning is automatic
+    inference. A good way of choosing `\(K\)` is certainly a part of this.
+
+
+`$$W(K) = \sum_{k=1}^K  \sum_{i \in C_k}  \norm{x_i - \overline{x}_k}_2^2,$$`
+
+
+
+Within-cluster variation measures how tightly grouped the clusters are. 
+
+
+How spread apart the groups?
+are `\(B(K) = \sum_{k=1}^K |C_k| \norm{\overline{x}_k - \overline{x} }_2^2,\)`
+where `\(|C_k|\)` is the number of points in `\(C_k\)`, and `\(\overline{x}\)` is
+the grand mean
+
+.pull-left[.center[
+`\(W\)` <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0076A5;overflow:visible;position:relative;"><path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"/></svg> when `\(K\)` <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#654ea3;overflow:visible;position:relative;"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg>  ]]
+
+.pull-right[.center[
+`\(B\)` <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#654ea3;overflow:visible;position:relative;"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg> when `\(K\)` <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#654ea3;overflow:visible;position:relative;"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg>]]
+
+
+---
+
+## CH index
+
+Ideally: as K grows, want small `\(W\)` and small `\(B\)`
+
+
+__CH index__
+
+`$$\textrm{CH}(K) = \frac{B(K)/(K-1)}{W(K)/(n-K)}$$` 
+
+To choose `\(K\)`, pick some
+maximum number of clusters to be considered, `\(K_{\max} = 20\)`, for
+example
+
+
+`$$\hat K = \arg\max_{K \in \{ 2,\ldots, K_{\max} \}} CH(K).$$`
+
+__Note:__ CH is undefined for `\(K =1\)`
+
+
+
+---
+
+## Dumb example
+
+
+
+```r
+library(mvtnorm)
+set.seed(406406406)
+X1 &lt;- rmvnorm(50, c(-1, 2), sigma = matrix(c(1, .5, .5, 1), 2))
+X2 &lt;- rmvnorm(40, c(2, -1), sigma = matrix(c(1.5, .5, .5, 1.5), 2))
+```
+
+&lt;img src="rmd_gfx/27-kmeans/plotting-dumb-clusts-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Dumb example
+
+* We would __maximize__ CH
+
+&lt;img src="rmd_gfx/27-kmeans/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Dumb example
+
+&lt;img src="rmd_gfx/27-kmeans/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Dumb example
+
+* `\(K = 2\)`
+
+&lt;img src="rmd_gfx/27-kmeans/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Hierarchical clustering
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

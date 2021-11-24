@@ -21,7 +21,9 @@ Readings from [\[ISLR\]](https://www.statlearning.com) are always required while
 </div>
 
 
-> All lecture slides as `.Rmd` files are available [here](https://github.com/UBC-STAT/stat-406/tree/main/_lecture-slides). Handouts for some lectures (coding files, pdfs) are available [here](https://github.com/UBC-STAT/stat-406/tree/main/_lecture-slides/handouts).
+> All lecture slides as `.Rmd` files are available [here](https://github.com/UBC-STAT/stat-406/tree/main/_lecture-slides). 
+
+> Handouts for some lectures (coding files, pdfs) are available [here](https://github.com/UBC-STAT/stat-406/tree/main/_lecture-slides/handouts).
 
 ## 0 Introduction and Review
 
@@ -162,7 +164,7 @@ Required reading
 : \[ISLR\] 12
 
 Video lectures  
-: Lectures 24-29 (Lecture 29 will be a asynchronous)
+: Lectures 24-28
 
 Optional reading
 : \[ESL\] 8.5, 13.2, 14.3, 14.5.1, 14.8, 14.9
@@ -170,8 +172,8 @@ Optional reading
 
 |Date      |Slides |Deadlines    |
 |:---------|:-----------|:-----------|
-|25 Nov 20 |[Intro to PCA](24-pca-intro.html), [Issues with PCA](25-pca-issues.html)  |
-|30 Nov 20 | [PCA v KPCA](00-pca-v-kpca.html), [Manifold learning](26-manifolds.html) |
+|25 Nov 20 | [Intro to PCA](24-pca-intro.html), [Issues with PCA](25-pca-issues.html)  |
+|30 Nov 20 | [PCA v KPCA](26-pca-v-kpca.html) |
 |2 Dec 20  |[K means clustering](27-kmeans.html), [Hierarchical clustering](28-hclust.html) |         |
 |7 Dec 20  | |HW 5 due, PC 3 due |
 {: .table .table-striped}
