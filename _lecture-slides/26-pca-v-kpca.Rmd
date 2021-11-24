@@ -1,5 +1,5 @@
 ---
-title: "00 PCA v KPCA"
+title: "26 PCA v KPCA"
 author: 
   - "STAT 406"
   - "Daniel J. McDonald"
@@ -34,7 +34,7 @@ $$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
 \newcommand{\D}{\mathbf{D}}
 \newcommand{\V}{\mathbf{V}}$$
 
-(We assume $\X$ is already centered, $n$ rows, $p$ columns)
+(We assume $\X$ is already centered/scaled, $n$ rows, $p$ columns)
 
 
 .pull-left[
@@ -57,9 +57,10 @@ The "loadings" are $\V_M$
 .pull-right[
 __KPCA:__
 
-0. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
-1. Decompose $\mathbf{K} = \U \D^2 \U^\top$ (eigendecomposition)
-2. Embed into $M\leq p$ dimensions:
+1. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
+1. Double center $\mathbf{K} = \mathbf{PKP}$.
+1. Decompose $\mathbf{K} = \U \D^2 \U^\top$ (eigendecomposition).
+1. Embed into $M\leq p$ dimensions:
 $$\U_M \D_M$$
 
 The "embedding" is $\U_M \D_M$.
@@ -99,6 +100,7 @@ not_missing <- X %>% complete.cases()
 X <- scale(X[not_missing,], center = TRUE, scale = TRUE)
 colors <- mob$Mobility[not_missing] 
 M <- 2 # embedding dimension
+P <- diag(nrow(X)) - 1/nrow(X)
 ```
 
 --
@@ -138,7 +140,7 @@ __KPCA:__
 
 ```{r}
 d <- 2
-K <- (1 + X %*% t(X))^d # polynomial
+K <- P %*% (1 + X %*% t(X))^d %*% P # polynomial
 e <- eigen(K) # U D^2 U' 
 # (different from the PCA one, K /= XX')
 U <- e$vectors[,1:M]
@@ -147,7 +149,7 @@ kpca_poly <- U %*% D
 ```
 
 ```{r}
-K <- tanh(1 + X %*% t(X)) # sigmoid kernel
+K <- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel
 e <- eigen(K) # U D^2 U' 
 # (different from the PCA one, K /= XX')
 U <- e$vectors[,1:M]
@@ -212,3 +214,4 @@ fkpca_scores <- s$u %*% diag(s$d)
 * Unfortunately, can't easily compare to check whether the result is the same
 * Also can cause numerical issues
 * But should be the "same" (assuming I didn't screw up...)
+* Would also allow me to get the loadings, though they'd depend on polynomials
