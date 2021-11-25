@@ -189,20 +189,19 @@ clust %>% ggplot(aes(x=x1,y=x2,color=true)) + geom_point() +
 * We would __maximize__ CH
 
 ```{r, echo=FALSE, fig.align='center',fig.width=10,fig.height=5}
-K = 2:40
-all_clusters <- lapply(K, FUN = function(x){
-  out = kmeans(clust_raw, x)
-  list(assignments = out$cluster, withinss = out$tot.withinss,
-              betweenss = out$betweenss)
-})
-all_assignments = sapply(all_clusters, FUN = function(x) as.factor(x$assignments))
-summaries = sapply(all_clusters, FUN = function(x) c(x$withinss, x$betweenss))
-summaries = tibble('within'=summaries[1,],'between'=summaries[2,],'K'=K) %>% 
-  mutate(CH = (between/(K-1))/(within/(nrow(clust_raw)-K)))
-summaries %>% gather(key='key',value='value',-K) %>%
-  ggplot(aes(K,value)) + geom_line(color=blue) + ylab('')+
-  coord_cartesian(c(1,20)) +
-  facet_wrap(~key,ncol=3,scales='free_y')
+K <- 2:40
+N <- nrow(clust_raw)
+all_clusters <- map(K, ~ kmeans(clust_raw, .x, nstart = 20))
+all_assignments <- map_dfc(all_clusters, "cluster")
+names(all_assignments) <- paste0("K = ", K)
+summaries <- map_dfr(all_clusters, `[`, c("tot.withinss", "betweenss")) %>%
+  rename(W = tot.withinss, B = betweenss) %>%
+  mutate(K = K, CHidx = (B / (K-1)) / (W / (N-K)))
+summaries %>% 
+  pivot_longer(-K) %>%
+  ggplot(aes(K, value)) + geom_line(color = blue) + ylab('')+
+  coord_cartesian(c(1, 20)) +
+  facet_wrap(~name, ncol=3, scales='free_y')
 ```
 
 ---
@@ -210,15 +209,18 @@ summaries %>% gather(key='key',value='value',-K) %>%
 ## Dumb example
 
 ```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=6}
-all_assignments = all_assignments %>% as_tibble()
-names(all_assignments) = paste0('K = ',K)
-small_assignments = all_assignments[,c(1,2,4,9,14,19,29,39)]
+small_assignments <- all_assignments[, c(1,2,3,4,9,14,19,29)]
+nums <- as.character(1:30)
 bind_cols(small_assignments, clust) %>% 
+  mutate(across(starts_with("K = "), factor)) %>%
   pivot_longer(-starts_with("x")) %>%
+  mutate(value = fct_relevel(value, "1", "30", "29", "28","27","26","10",
+                             "5", "25", "24", "23","22","21","9",
+                             "3", "20", "19", "18", "17", "16","8",
+                             '4', "15", "14", "13", "12", "11","7",
+                             "2","6")) %>%
   ggplot(aes(x1, x2, color=value)) + geom_point() + 
-  facet_wrap(~factor(
-    name, 
-    levels = c("true", paste0("K = ", c(2, 3, 5, 10, 15, 20, 30, 40))))) +
+  facet_wrap(~ factor(name, levels = c("true", paste0("K = ", c(2:5,10,15,20,30))))) +
   theme(legend.position = 'none') +
   scale_color_viridis_d()
 ```
@@ -228,15 +230,19 @@ bind_cols(small_assignments, clust) %>%
 ## Dumb example
 
 * $K = 2$
+```{r, echo = TRUE, message = FALSE}
+km <- kmeans(clust_raw, 2, nstart = 20)
+names(km)
+centers <- as_tibble(km$centers, .name_repair = "unique")
+```
 
-```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=5}
-k2 = bind_cols(all_assignments[,1], clust)
-centers = kmeans(clust_raw, 2)$centers
-centers = tibble(x1 = centers[,1], x2 = centers[,2])
-ggplot(k2, aes(x1,x2)) + geom_point(aes(color=`K = 2`)) +
-  geom_point(data=centers, color="blue", size=5, shape=10) +
+```{r, echo=FALSE, fig.align='center',fig.width=10,fig.height=3}
+names(centers) <- c("x1", "x2")
+bind_cols(clust, est = factor(km$cluster)) %>%
+  ggplot(aes(x1, x2)) + geom_point(aes(color=est)) +
+  geom_point(data = centers, color = orange, size=5) +
   theme(legend.position = 'none') +
-  scale_color_viridis_d()
+  scale_color_viridis_d(begin = .2, end=.8)
 ```
 
 ---
