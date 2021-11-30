@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>27 Kmeans clustering</title>
+    <title>27 K-means clustering</title>
     <meta charset="utf-8" />
     <meta name="author" content="STAT 406" />
     <meta name="author" content="Daniel J. McDonald" />
@@ -14,10 +14,10 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
-# 27 Kmeans clustering
+# 27 K-means clustering
 ### STAT 406
 ### Daniel J. McDonald
-### Last modified - 2021-11-25
+### Last modified - 2021-11-30
 
 ---
 
@@ -30,7 +30,9 @@ class: center, middle, inverse, title-slide
 
 So far, we've looked at ways of reducing the dimension.
 
-Either linearly or nonlinearly, usually with the goal of visualization or possibly for an input to supervised learning.
+Either linearly or nonlinearly, 
+
+* The goal is visualization/exploration or possibly for an input to supervised learning.
 
 Now we try to find groups or clusters in our data.
 
@@ -59,28 +61,32 @@ Think of __clustering__ as classification without the labels.
 
 ## K-means (ideally)
 
-.emphasis[
+
 1.  Select a number of clusters `\(K\)`.
 
 2.  Let `\(C_1,\ldots,C_K\)` partition `\(\{1,2,3,\ldots,n\}\)` such that
     - All observations belong to some set `\(C_k\)`.
     - No observation belongs to more than one set.
 
-3.  K-means attempts to form these sets by making __within-cluster
+3.  Make __within-cluster
     variation__, `\(W(C_k)\)`, as small as
     possible. `$$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$`
 
-4.  To Define `\(W\)`, we need a concept of distance. By far the most common is Euclidean `$$W(C_k) =  \frac{1}{|C_k|} \sum_{i,i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$`
+4.  Define `\(W\)` as `$$W(C_k) =  \frac{1}{|C_k|} \sum_{i,i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$`
 That is, the average (Euclidean) distance between all cluster
 members.
-]
+
+--
+
+To work, K-means needs __distance to a center__ and __notion of center__
+
 
 ---
 
 ## K-means (in reality)
 
 It turns out `$$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$` is too challenging
-computationally ( `\(K^n\)` partitions!).
+computationally ( `\(K^n\)` partitions! ).
 
 
 So, we make a greedy approximation:
@@ -89,9 +95,8 @@ So, we make a greedy approximation:
 
 1.  Randomly assign observations to the `\(K\)` clusters
 
-2.  Iterate until the cluster assignments stop changing:
-    -   For each of `\(K\)` clusters, compute the
-        centroid, which is the `\(p\)`-length
+2.  Iterate the following:
+    -   For each cluster, compute the `\(p\)`-length
         vector of the means in that cluster.
     -   Assign each observation to the cluster whose centroid is closest
         (in Euclidean distance).
@@ -112,7 +117,7 @@ To fit K-means, you need to
 2.  Convince yourself you have found a good solution (due to the
     randomized approach to the algorithm).
 
-For 2., a commonly used approach is to run
+For 2., run
 K-means many times with different starting points. Pick the solution
 that has the smallest value for
 `$$\sum_{k=1}^K W(C_k)$$`
@@ -138,11 +143,15 @@ Why is it important?
 
 
 
-Within-cluster variation measures how tightly grouped the clusters are. 
+Within-cluster variation measures how __tightly grouped__ the clusters are. 
+
+--
+
+It's opposite is __Between-cluster variation__: How spread apart are the clusters?
+
+`$$B(K) = \sum_{k=1}^K |C_k| \norm{\overline{x}_k - \overline{x} }_2^2,$$`
 
 
-How spread apart the groups?
-are `\(B(K) = \sum_{k=1}^K |C_k| \norm{\overline{x}_k - \overline{x} }_2^2,\)`
 where `\(|C_k|\)` is the number of points in `\(C_k\)`, and `\(\overline{x}\)` is
 the grand mean
 
@@ -157,8 +166,13 @@ the grand mean
 
 ## CH index
 
-Ideally: as K grows, want small `\(W\)` and small `\(B\)`
+.emphasis[
 
+Want small `\(W\)` and big `\(B\)`
+
+]
+
+--
 
 __CH index__
 
@@ -216,8 +230,8 @@ names(km)
 ```
 
 ```
-## [1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
-## [6] "betweenss"    "size"         "iter"         "ifault"
+## [1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss" "betweenss"   
+## [7] "size"         "iter"         "ifault"
 ```
 
 ```r
