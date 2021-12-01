@@ -58,7 +58,7 @@ $$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
     variation__, $W(C_k)$, as small as
     possible. $$\min_{C_1,\ldots,C_K} \sum_{k=1}^K W(C_k).$$
 
-4.  Define $W$ as $$W(C_k) =  \frac{1}{|C_k|} \sum_{i,i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$
+4.  Define $W$ as $$W(C_k) =  \frac{1}{2|C_k|} \sum_{i, i' \in C_k} \norm{x_i - x_{i'}}_2^2.$$
 That is, the average (Euclidean) distance between all cluster
 members.
 
@@ -66,6 +66,28 @@ members.
 
 To work, K-means needs __distance to a center__ and __notion of center__
 
+
+---
+class: inverse
+
+## Why this formula?
+
+Let $\mu_k = \frac{1}{|C_k|} \sum_{i\in C_k} x_i$
+
+$$
+\begin{aligned}
+\sum_{k=1}^K W(C_k) 
+&= \sum_{k=1}^K \frac{1}{2|C_k|} \sum_{i, i' \in C_k} \norm{x_i - x_{i'}}_2^2
+= \sum_{k=1}^K \frac{1}{2|C_k|} \sum_{i\neq i' \in C_k} \norm{x_i - x_{i'}}_2^2 \\
+&= \sum_{k=1}^K \frac{1}{2|C_k|} \sum_{i \neq i' \in C_k} \norm{x_i -\mu_k + \mu_k - x_{i'}}_2^2\\
+&= \sum_{k=1}^K \frac{1}{2|C_k|} \left[\sum_{i \neq i' \in C_k} \left(\norm{x_i - \mu_k}_2^2 + 
+\norm{x_{i'} - \mu_k}_2^2\right) + \sum_{i \neq i' \in C_k} 2 (x_i-\mu_k)^\top(\mu_k - x_{i'})\right]\\
+&= \sum_{k=1}^K \frac{1}{2|C_k|} \left[2(|C_k|-1)\sum_{i \in C_k} \norm{x_i - \mu_k}_2^2  + 2\sum_{i \in C_k} \norm{x_i - \mu_k}_2^2 \right]\\
+&= \sum_{k=1}^K \sum_{x \in C_k} \norm{x-\mu_k}^2_2
+\end{aligned}
+$$
+
+If you wanted (equivalently) to minimize $\sum_{k=1}^K \frac{1}{|C_k|} \sum_{x \in C_k} \norm{x-\mu_k}^2_2$, then you'd use $\sum_{k=1}^K \frac{1}{\binom{C_k}{2}} \sum_{i, i' \in C_k} \norm{x_i - x_{i'}}_2^2$
 
 ---
 
