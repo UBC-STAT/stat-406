@@ -248,6 +248,7 @@ g + geom_segment(aes(x=x,y=y,xend=xend,yend=yend),data = tff) +
 
 ## Centroid linkage
 
+.pull-left[
 Centroid linkage is
 
 -   ... quite intuitive
@@ -272,15 +273,28 @@ g1 = ggplot(circles,aes(x=x,y=y,color=as.factor(grp))) + geom_point() +
   theme(legend.position = 'none')
 ```
 
-.pull-left[
+
 ```{r, fig.width=3,fig.height=3,echo=FALSE,fig.align='center'}
 g1
 ```
 ]
 
 .pull-right[
-```{r, fig.width=4, fig.height=4,echo=FALSE,fig.align='center'}
-plot(hc)
+
+```{r, echo=TRUE, eval=FALSE}
+tt <- seq(0, 2*pi, len=50)
+tt2 <- seq(0, 2*pi, len=75)
+c1 <- tibble(x = cos(tt), y = sin(tt))
+c2 <- tibble(x = 1.5 * cos(tt2), y = 1.5 * sin(tt2))
+circles <- bind_rows(c1, c2)
+di <- dist(circles[,1:2])
+hc <- hclust(di, method = "centroid")
+```
+
+
+```{r, fig.width=4, fig.height=4,echo=TRUE,fig.align='center'}
+par(mar = c(.1,5,3,.1))
+plot(hc, xlab="")
 ```
 ]
 
