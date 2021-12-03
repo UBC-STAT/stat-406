@@ -183,7 +183,7 @@ Optional reading
 
 ## F Final exam
 
-22 December 8:30-11am – in Henry Angus (ANGU) 098
+__22 December 8:30-11am – in Henry Angus (ANGU) 098__
 
 * In person attendance is required (per Faculty of Science guidelines)
 * You must bring your computer as the exam will be given through Canvas with "lockdown browser"
@@ -193,4 +193,17 @@ Optional reading
 * There will be no required coding, but I may show code or output and ask questions about it.
 * It will be entirely multiple choice / True-False / matching, etc.
 * Questions will be similar to Quizzes or Homework.
+* Practice Exam and Solution are on Canvas.
+
+__Office Hours__
+
+See Canvas/Zoom for links.
+
+* 13 December @ 15h with Xiaoting
+* 15 December @ 11h with Daniel
+* 16 December @ 16h with Daniel (in person and Zoom)
+* 17 December @ 10h with Sherry
+* 20 December @ 13h with Chloe
+* 21 December @ 10h with Daniel
+
 
