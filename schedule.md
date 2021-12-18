@@ -195,7 +195,26 @@ __22 December 8:30-11am – in Henry Angus (ANGU) 098__
 * Questions will be similar to Quizzes or Homework.
 * Practice Exam and Solution are on Canvas.
 
-__Office Hours__
+### Procedures (shown in Canvas Announcement)
+
+I know many of you are concerned about rapidly escalating case numbers, and I share your concerns. According to Dr. Henry's press briefing today, there has (until now) been very little spread in lecture halls, in stark contrast to what happens in parties or social gatherings. Here is the current plan (subject to change if the University makes changes). The room is very large (holds 260 people), so there should be plenty of space to spread out.
+
+
+1. The Exam remains in-person as scheduled. This is UBC policy until it changes. I was told explicitly that ONLY the Dean can decide to move it online. See also the most recent message from Pres. OnoLinks to an external site.. 
+1. If you are feeling ill, please contact your Faculty Advising office for an SD. I was told that this will likely be granted. Please do not come to the exam.
+1. Please wear a high quality mask if you can (rather than a non-medical mask). Please keep it on at all times (fitting tightly over your nose and mouth) and refrain from drinking. No eating is allowed.
+1. Please arrive early. We will let you in as you arrive to try to minimize close-quarters gathering.
+1. The Canvas Exam will not open until 8:45. This should allow us a bit of extra time to seat you and go over instructions.
+1. We will check your UBC ID as you arrive. You will not be allowed to take the exam without it. See UBC Policy hereLinks to an external site..
+1. You may bring 2 sheets of paper, with handwritten notes. Front and back. We will glance at these at the same time we check your ID. We will not collect them.
+1. We will NOT use Lockdown browser, but any student caught looking at any window or program other than Canvas will be warned, and their mark may be lowered, potentially to 0. 
+1. I would like students to remain seated until 10am. At 10, we will allow any students who are done to leave all at once. After that, we will ask students to remain until the Exam ends at 10:45. This is to minimize possibly contagious students from climbing over others. We will conduct both these exoduses in an organized fashion, row by row.
+1. For the same reason, we will limit bathroom breaks to emergencies only. If truly necessary, we can let you go at 10am with the first exodus. Please plan accordingly.
+1. We will not be mingling to answer clarifying questions. We will handle any "inaccurate questions" afterward as needed. This is for everyone's safety.
+1. All told, you will have 1 hour 55 minutes for the exam (begin at 8:45, end at 10:45, 5 minute break at 10 for early departures).
+1. There have been reports of students pulling fire alarms during exams in the last week. If this or something else disrupts the exam, there are official policies that apply. They sound "not fun", so hopefully this can be avoided.
+
+### Office Hours
 
 See Canvas/Zoom for links.
 
