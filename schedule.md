@@ -218,11 +218,3 @@ I know many of you are concerned about rapidly escalating case numbers, and I sh
 
 See Canvas/Zoom for links.
 
-* 13 December @ 15h with Xiaoting
-* 15 December @ 11h with Daniel
-* 16 December @ 16h with Daniel (in person and Zoom)
-* 17 December @ 10h with Sherry
-* 20 December @ 13h with Chloe
-* 21 December @ 10h with Daniel
-
-
