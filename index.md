@@ -2,12 +2,12 @@
 layout: home
 ---
 
-<div class="jumbotron">
+<div class="h-100 p-5 bg-primary text-white">
   <h1 class="display-3">STAT 406 2021W</h1>
   <p class="lead">Methods for Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
-  <a class="btn btn-danger btn-lg text-white" href="schedule/" role="button">Jump to Schedule.</a>
+  <a class="btn btn-secondary btn-lg text-white" href="schedule/" role="button">Jump to Schedule.</a>
   </p>
 </div>
 
