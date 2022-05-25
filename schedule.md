@@ -20,6 +20,7 @@ Readings from [\[ISLR\]](https://www.statlearning.com) are always required while
 </div>
 </div>
 
+<br>
 
 > All lecture slides as `.Rmd` files are available [here](https://github.com/UBC-STAT/stat-406/tree/main/_lecture-slides). 
 
@@ -183,7 +184,9 @@ Optional reading
 
 ## F Final exam
 
-__22 December 8:30-11am – in Henry Angus (ANGU) 098__
+__TBA__
+
+<!-->
 
 * In person attendance is required (per Faculty of Science guidelines)
 * You must bring your computer as the exam will be given through Canvas with "lockdown browser"
@@ -218,3 +221,4 @@ I know many of you are concerned about rapidly escalating case numbers, and I sh
 
 See Canvas/Zoom for links.
 
+-->
