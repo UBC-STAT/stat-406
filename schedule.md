@@ -186,7 +186,7 @@ Optional reading
 
 __TBA__
 
-<!-->
+<!--
 
 * In person attendance is required (per Faculty of Science guidelines)
 * You must bring your computer as the exam will be given through Canvas with "lockdown browser"
