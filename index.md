@@ -3,7 +3,7 @@ layout: home
 ---
 
 <div class="p-5 bg-secondary text-white rounded-3">
-  <h1 class="display-3">STAT 406 2021W</h1>
+  <h1 class="display-3">STAT 406 2022W</h1>
   <p class="lead">Methods for Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
