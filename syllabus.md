@@ -212,10 +212,10 @@ to the appropriate University authorities. See also the text below.
 
 These are short multiple choice and True / False questions. They happen in class. For each question, correct answers are worth 4, incorrect answers are worth 2. You get zero points for not answering.
 
-At the end of the term, I'll take the total number of clicker questions and multiply by 3 to find the total number possible. If your average is 3 or higher, you get 10 points. If your average $x$ is between 1 and 3, you get $5(x-1)$ points.
+At the end of the term, I'll take the total number of clicker questions and multiply by 3 to find the total number possible. If your average is 3 or higher, you get 10 points. If your average, x, is between 1 and 3, you get 5(x-1) points.
 
 If your average is less than 1, you get 0 points in this component. In addition 
-> your final grade in this course will be reduced by 1 letter grade. 
+> your final grade in this course will be reduced by 1 letter grade.
 
 This means that if you did everything else and get a perfect score on the final exam, you will get a 79. **DON'T DO THIS!!**
 
@@ -226,7 +226,7 @@ To compensate, I will do my best to post recordings of lectures. Past experience
 1. You learn better by attending class than by skipping and "watching".
 2. Sometimes the technology messes up. So there's no guarantee that these will be available.
 
-The purpose is to let you occasionally miss class if you're not feeling well with minimal consequences. See also [below](#your-personal-health). If for some reason you need to miss longer streches of time that result in Accomodations, please contact me.
+The purpose is to let you occasionally miss class if you're not feeling well with minimal consequences. See also [below](#your-personal-health). If for some reason you need to miss longer streches of time, please contact me or discuss your situation with your Academic Advisor.
 
 ### Your score on Labs, HW, and Clickers
 
@@ -240,14 +240,14 @@ Rules:
 * If you isolate due to Covid, fine. You miss a few clickers and maybe a lab (though you can do it remotely).
 * If you have a job interview and can't complete an assignment on time, then skip it.
 
-We're not going to police this stuff. You don't need to let me know. There is no reason that every single person enrolled in this course shouldn't get $\geq 70$ in this class.
+We're not going to police this stuff. You don't need to let me know. There is no reason that every single person enrolled in this course shouldn't get > 70 in this class.
 
 Illustrative scenarios:  
 * Doing 80% on 5 homeworks, coming to class and getting 50% correct, get 2 points on 6 labs gets you 70 points.
 * Doing 90% on 5 homeworks, getting 50% correct on all the clickers, averaging 1.7 on all the labs gets you 70 points.
 * Going to all the labs and getting 100%, 94% on 4 homeworks, plus being wrong on every clicker gets you 70 points
-* Choose your own adventure.
-* Note that the biggest barrier to getting to 70 is skipping the assignments.
+
+Choose your own adventure. Note that the biggest barrier to getting to 70 is skipping the assignments.
 
 ## Final exam
 
@@ -267,11 +267,9 @@ The point of this scheme is for those who work hard to do well. But those who re
 
 ### Covid Safety in the Classroom 
 
-Masks
-: Masks are **recommended**. For our in-person meetings in this class, it is important that all of us feel as comfortable as possible engaging in class activities while sharing an indoor space. Masks are a primary tool to make it harder for Covid-19 to find a new host. Please note that there are some people who cannot wear a mask. These individuals are equally welcome in our class.
+**Masks.** Masks are **recommended**. For our in-person meetings in this class, it is important that all of us feel as comfortable as possible engaging in class activities while sharing an indoor space. Masks are a primary tool to make it harder for Covid-19 to find a new host. Please note that there are some people who cannot wear a mask. These individuals are equally welcome in our class.
 
-Vaccination
-: If you have not yet had a chance to get vaccinated against Covid-19, vaccines are available to you, free, and on campus. See <http://www.vch.ca/covid-19/covid-19-vaccine> for help finding an appointment. The higher the rate of vaccination in our community overall, the lower the chance of spreading this virus. You are an important part of the UBC community. Please arrange to get vaccinated if you have not already done so.
+**Vaccination.** If you have not yet had a chance to get vaccinated against Covid-19, vaccines are available to you, free, and on campus. See <http://www.vch.ca/covid-19/covid-19-vaccine> for help finding an appointment. The higher the rate of vaccination in our community overall, the lower the chance of spreading this virus. You are an important part of the UBC community. Please arrange to get vaccinated if you have not already done so.
 
 ### Your personal health
 
@@ -286,7 +284,7 @@ Vaccination
     * Use Slack  for help.
     * Come to virtual office hours.
     * See the marking scheme for reassurance about what flexibility you have. No part of your final grade will be directly impacted by missing class.
-* **If you are sick on a final exam day, do not attend the exam.** You must follow up with your home faculty's advising office to apply for [deferred standing](https://students.ubc.ca/enrolment/academic-learning-resources/academic-advising). Students who are granted deferred standing write the final exam/assignment at a later date. If you're a Science student, you must apply for deferred standing (an academic concession) through Science Advising no later than 48 hours after the missed final exam/assignment. Learn more and find the application [online](https://science.ubc.ca/students/advising/concession). For additional information about academic concessions, see the UBC policy [here](http://www.calendar.ubc.ca/vancouver/index.cfm?tree=3,329,0,0).
+* **If you are sick on final exam day, do not attend the exam.** You must follow up with your home faculty's advising office to apply for [deferred standing](https://students.ubc.ca/enrolment/academic-learning-resources/academic-advising). Students who are granted deferred standing write the final exam at a later date. If you're a Science student, you must apply for deferred standing (an academic concession) through Science Advising no later than 48 hours after the missed final exam/assignment. Learn more and find the application [online](https://science.ubc.ca/students/advising/concession). For additional information about academic concessions, see the UBC policy [here](http://www.calendar.ubc.ca/vancouver/index.cfm?tree=3,329,0,0).
 
 
 
