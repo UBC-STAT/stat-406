@@ -8,11 +8,11 @@ Term 2022 Winter 1: 07 Sep - 07 Dec 2021
 
 ## COVID information TL;DR
 
-
-**When you come to class, we encourage you to wear a mask.**    
-**If you think you're sick, stay home no matter what.**  
-More details [below](#covid-safety-in-the-classroom)
-
+<div class="alert alert-warning" role="alert">
+When you come to class, we encourage you to wear a mask.    
+If you think you're sick, stay home no matter what.  
+More details <a href="#covid-safety-in-the-classroom">below</a>.
+</div>
  
 ## Course info
 __Instructor__:  
@@ -217,7 +217,11 @@ At the end of the term, I'll take the total number of clicker questions and mult
 If your average is less than 1, you get 0 points in this component. In addition 
 > your final grade in this course will be reduced by 1 letter grade.
 
-This means that if you did everything else and get a perfect score on the final exam, you will get a 79. **DON'T DO THIS!!**
+This means that if you did everything else and get a perfect score on the final exam, you will get a 79. 
+
+<div class="alert alert-danger" role="alert">
+DON'T DO THIS!!
+</div>
 
 This may sound harsh, but think about what is required for such a penalty. You'd have to skip more than 50% of class meetings and get every question wrong when you are in class. This is an in person course. It is not possible to get an A without attending class on a regular basis.
 
@@ -273,7 +277,9 @@ The point of this scheme is for those who work hard to do well. But those who re
 
 ### Your personal health
 
-**If you are sick, it’s important that you stay home – no matter what you think you may be sick with (e.g., cold, flu, other).** 
+<div class="alert alert-warning" role="alert">
+If you are sick, it’s important that you stay home – no matter what you think you may be sick with (e.g., cold, flu, other).
+</div>
 
 * Do not come to class if you have Covid symptoms, have recently tested positive for Covid, or are required to quarantine. You can check this website to find out if you should self-isolate or self-monitor:
 <http://www.bccdc.ca/health-info/diseases-conditions/covid-19/self-isolation#Who.>
@@ -287,8 +293,9 @@ The point of this scheme is for those who work hard to do well. But those who re
 * **If you are sick on final exam day, do not attend the exam.** You must follow up with your home faculty's advising office to apply for [deferred standing](https://students.ubc.ca/enrolment/academic-learning-resources/academic-advising). Students who are granted deferred standing write the final exam at a later date. If you're a Science student, you must apply for deferred standing (an academic concession) through Science Advising no later than 48 hours after the missed final exam/assignment. Learn more and find the application [online](https://science.ubc.ca/students/advising/concession). For additional information about academic concessions, see the UBC policy [here](http://www.calendar.ubc.ca/vancouver/index.cfm?tree=3,329,0,0).
 
 
-
-**Please talk with me if you have any concerns or ask me if you are worried about falling behind.**
+<div class="alert alert-secondary" role="alert">
+Please talk with me if you have any concerns or ask me if you are worried about falling behind.
+</div>
 
 
 ## University policies
