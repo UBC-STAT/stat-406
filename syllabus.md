@@ -4,7 +4,7 @@ layout: page
 icon: "fas fa-user-shield"
 ---
 
-Term 2022 Winter 1: 07 Sep - 07 Dec 2021  
+Term 2022 Winter 1: 07 Sep - 07 Dec 2022  
 
 ## COVID information TL;DR
 
