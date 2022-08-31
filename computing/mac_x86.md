@@ -1,3 +1,11 @@
+---
+layout: page
+title: MacOS x86
+icon: "fab fa-apple"
+---
+
+
+
 ## Installation notes
 
 If you have already installed Git, LaTeX, or any of the R packages,

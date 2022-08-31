@@ -1,3 +1,10 @@
+---
+layout: page
+title: MacOS ARM
+icon: "fab fa-apple"
+---
+
+
 ## Installation notes
 
 If you have already installed Git, LaTeX, or any of the R packages,

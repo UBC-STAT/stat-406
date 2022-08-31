@@ -1,3 +1,10 @@
+---
+layout: page
+title: Windows
+icon: "fab fa-windows"
+---
+
+
 ## Installation notes
 
 If you have already installed Git, LaTeX, or any of the R packages,

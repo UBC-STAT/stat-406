@@ -1,3 +1,11 @@
+---
+layout: page
+title: Ubuntu
+icon: "fab fa-linux"
+---
+
+
+
 ## Installation notes
 
 If you have already installed Git, LaTeX, or any of the R packages,
