@@ -6,19 +6,102 @@ icon: "fas fa-question-circle"
 
 
 
-### How do I succeed in this class?
+## How do I succeed in this class?
 
-* Complete readings and watch videos before the material is covered in class, and then review again afterwards.
+* Complete readings before the material is covered in class, and then review again afterwards.
 
 * Participate actively in class. If you don't understand something, I can guarantee no one else does either. I have a Ph.D., and I've been doing this for more than 10 years. It's hard for me to remember what it's like to be you and what you don't know. Say something! I want you to learn this stuff, and I love to explain more carefully.
 
 * Come to office hours. Again, I like explaining things.
 
-* Try the tutorials again without the help of your classmates. 
+* Try the Labs again without the help of your classmates. 
 
 * Read the examples at the end of the \[ISLR\] chapters. Try the exercises.
 
 * Do not procrastinate --- don’t let a module go by with unanswered questions as it will just make the following module’s material even more difficult to follow.
+
+## Git and Github
+
+### Homework/Readings workflow
+
+**Rstudio version** (uses the Git tab. Usually near Environment/History in the upper right)  
+1. Make sure you are on `main`. Pull in remote changes. Click <i class="fas fa-arrow-down" style="color:blue"></i>.
+1. Create a new branch by clicking the think that looks kinda like <i class="fas fa-code-branch" style="color:purple"></i>.
+1. Work on your documents and save frequently.
+1. Stage your changes by clicking the check boxes.
+1. Commit your changes by clicking **Commit**. 
+1. Repeat 3-5 as necessary.
+1. Push to Github <i class="fas fa-arrow-up" style="color:green"></i>
+1. When done, go to Github and open a PR. Request review from the TAs.
+1. Use the dropdown menu to go back to `main` and avoid future headaches.
+
+
+**Command line version**  
+1. (Optional, but useful. Pull in any remote changes.) `git pull`
+1. Create a new branch `git branch -b <name-of-branch>`
+1. Work on your documents and save frequently.
+1. Stage your changes `git add <name-of-document1>` repeat for each changed document. `git add .` stages all changed documents.
+1. Commit your changes `git commit -m "some message that is meaningful"` 
+1. Repeat 3-5 as necessary.
+1. Push to Github `git push`. It may suggest a longer form of this command, obey.
+1. When done, go to Github and open a PR. Request review from the TAs.
+1. Switch back to `main` to avoid future headaches. `git checkout main`.
+
+### Fixing common problems
+
+**master/main**  
+"master" has some pretty painful connotations. So as part of an effort to remove racist names from code, the default branch is now "main" on new versions of GitHub. But old versions (like the UBC version) still have "master". Below, I'll use "main", but if you see "master" on what you're doing, that's the one to use.
+
+
+**Start from main**  
+Branches should be created from the `main` branch, not the one you used for the last assignment.  
+```
+git checkout main
+```
+This switches to `main`. Then pull and start the new assignment following the workflow above. (In Rstudio, use the dropdown menu.)
+
+**You forgot to work on a new branch**  
+Ugh, you did 5 points of worksheets before realizing you forgot to create a new branch. Don't stress. There are some things below to try. But if you're confused ASK. We've had practice with this, and soon you will too!  
+
+_(1) If you started from `main` and haven't made any commits (but you SAVED!!):_  
+```
+git branch -b <new-branch-name>
+```
+This keeps everything you have and puts you on a new branch. No problem. Commit and proceed as usual.
+
+_(2) If you are on `main` and made some commits:_
+```
+git branch <new-branch-name>
+git log
+```
+The first line makes a new branch with all the stuff you've done. Then we look at the log. Locate the most recent commit before you started working. It's a long string like
+`ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
+```
+git reset ac2a8 --hard
+```
+This rolls `main` back to that commit. You don't need the whole string, just the first few characters. Finally
+```
+git checkout <new-branch-name>
+```
+and continue working.
+
+_(3) If you started work on `<some-old-branch>` for work you already submitted:_  
+This one is harder, and I would suggest getting in touch with the TAs. Here's the procedure.
+```
+git commit -am "uhoh, I need to be on a different branch"
+git branch <new-branch-name>
+```
+Commit your work with a dumb message, then create a new branch. It's got all your stuff.
+```
+git log
+```
+Locate the most recent commit before you started working. It's a long string like `ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
+```
+git rebase --onto main ac2a8 <new-branch-name>
+git checkout <new-branch-name>
+```
+This makes the new branch look like `main` but without the differences from `main` that are on `ac2a8` and WITH all the work you did after `ac2a8`. It's pretty cool. And should work. Finally, we switch to our new branch.
+
 
 ### How can I get better at R?
 
@@ -28,7 +111,17 @@ Coding is an _active_ activity just like learning Spanish. You have to practice 
 
 When I took German in 7th grade, I remember my teacher saying "to learn a language, you have to constantly tell lies". What he meant was, you don't just say "yesterday I went to the gym". You say "yesterday I went to the market", "yesterday I went to the movies", "today she's going to the gym", etc. The point is to internalize conjugation, vocabulary, and the inner workings of the language. The same is true when coding. Do things different ways. Try automating regular tasks. 
 
-If you are still looking for more reading, there are some links on my [website](https://dajmcdon.github.io/code-links/) as well as many other places accessible by [Google](http://www.google.com/). A supremely useful text book is [R4DS](https://r4ds.had.co.nz).
+Recommended resources
+
+* [Data Science: A first introduction](https://datasciencebook.ca) This is the course textbook for UBC's DSCI 100
+* [R4DS](https://r4ds.had.co.nz) written by Hadley Wickham and Garrett Grolemund
+* [DSCI 310 Coursenotes](https://ubc-dsci.github.io/reproducible-and-trustworthy-workflows-for-data-science/README.html) by Tiffany A. Timbers, Joel Ostblom, Florencia D’Andrea, and Rodolfo Lourenzutti
+* [Happy Git with R](https://happygitwithr.com) by Jenny Bryan
+* [Modern Dive: Statistical Inference via Data Science](https://moderndive.com) 
+* [Stat545](https://stat545.com)
+* [Google](https://duckduckgo.com) 
+
+
 
 ### My code doesn't run. What do I do?
 
@@ -96,10 +189,3 @@ garbage = with(ChickWeight,
                by(weight, Chick, 
                   function(x) (x^2+23)/length(x))) ## WTF???
 ```
-
-### Resources for learning to code better
-
-* [R for Data Science](http://r4ds.had.co.nz), a nice textbook from Hadley Wickham
-* The official intro, "An Introduction to R", available online in [html](http://cran.r-project.org/doc/manuals/R-intro.html) and [pdf](http://cran.r-project.org/doc/manuals/R-intro.pdf)
-* My (very brief) introduction to [programming](https://dajmcdon.github.io/assets/code-links/programming.pdf)
-* My (very brief) introduction to [statistical graphics](https://dajmcdon.github.io/assets/code-links/graphics.pdf)
