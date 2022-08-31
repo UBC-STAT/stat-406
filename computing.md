@@ -27,7 +27,7 @@ Below are instructions for installation. These are edited and simplified from th
 
 Please click the appropriate link below to view the installation instructions for your operating system:
 
-- [macOS x86](mac_x86.html) or [macOS arm](computing/mac_arm.html) 
+- [macOS x86](mac_x86.html) or [macOS arm](mac_arm.html) 
 - [Ubuntu](cubuntu.html)
 - [Windows](windows.html)
 
