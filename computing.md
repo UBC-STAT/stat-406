@@ -5,72 +5,35 @@ icon: "fab fa-r-project"
 ---
 
 In order to participate in this class, we will require the use of R, and encourage
-the use of RStudio. Both are free, and you likely already have both. If not, see below.
-These instructions are taken from [UBC's MDS site](https://ubc-mds.github.io/resources_pages/installation_instructions/), thanks!
+the use of RStudio. Both are free, and you likely already have both. 
 
-## Installing R and Rstudio
+You also need Git, Github and Slack.
 
-### On macOS
+Below are instructions for installation. These are edited and simplified from the [DSCI 310 Setup Instructions](https://ubc-dsci.github.io/dsci-310-student/computer-setup.html). If you took DSCI 310 last year, you may be good to go, with the exception of the [R package](https://ubc-stat.github.io/stat-406-rpackage/).
 
-Go to <https://cran.r-project.org/bin/macosx/> and download the latest version of R for Mac (Should look something like this: R-4.1.0.pkg). Open the file and follow the installer instructions.
+## Laptop requirements
 
-After installation, in Terminal type the following to ask for the version:
-```
-R --version
-```
+ - Runs one of the following operating systems: Ubuntu 20.04, macOS (version 11.4.x or higher), Windows 10 (version 2004, 20H2, 21H1 or higher).
+    - When installing Ubuntu, checking the box "Install third party..." will (among other things) install proprietary drivers, which can be helpful for wifi and graphics cards.
+- Can connect to networks via a wireless connection for on campus work
+- Has at least 30 GB disk space available
+- Has at least 4 GB of RAM
+- Uses a 64-bit CPU
+- Is at most 6 years old (4 years old or newer is recommended)
+- Uses English as the default language. Using other languages is possible, but we have found that it often causes problems in the homework. We've done our best to fix them, but we may ask you to change it if you are having trouble.
+- Student user has full administrative access to the computer.
 
-you should see something like this if you were successful:
-```
-R version 4.0.0 (2020-04-24) -- "Arbor Day"
-Copyright (C) 2020 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin17.0 (64-bit)
+## Software installation instructions
 
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under the terms of the
-GNU General Public License versions 2 or 3.
-For more information about these matters see
-https://www.gnu.org/licenses/.
-```
+Please click the appropriate link below to view the installation instructions for your operating system:
 
-Choose and download the Mac version of RStudio from <https://www.rstudio.com/products/rstudio/download/#download>. Open the file and follow the installer instructions.
+- [macOS x86](install_stack/mac_x86.html) or [macOS arm](install_stack/mac_arm.html) 
+- [Ubuntu](install_stack/ubuntu.html)
+- [Windows](install_stack/windows.html)
 
-To see if you were successful, try opening RStudio by clicking on its icon (from Finder, Applications or Launchpad).
-
-### On Windows
-
-Go to <https://cran.r-project.org/bin/windows/base/> and download the latest version of R for Windows (Should look something like this: Download R 4.1.0 for Windows). Open the file and follow the installer instructions.
-
-Chose and download the Windows version of RStudio from <https://www.rstudio.com/products/rstudio/download/#download>. Open the file and follow the installer instructions.
-
-To see if you were successful, try opening RStudio by clicking on its icon. 
-
-## Packages you need
-
-You should be able to install the vast majority of necessary packages by running
-the following code in the `R` console.
-
-```
-if (!suppressWarnings(require(remotes, quietly = TRUE)))
-  install.packages("remotes")
-tmp <- tempdir()
-dp <- file.path(tmp, "DESCRIPTION")
-download.file(
-  "https://raw.githubusercontent.com/UBC-STAT/stat-406-worksheets/main/DESCRIPTION",
-  dp
-)
-remotes::install_deps(tmp)
-unlink(tmp)
-rm(tmp, dp)
-```
 
 
 ## Git and Github
-
-### Installation
-
-In many cases, you likely already have it installed. See the book [Happy Git with R](https://happygitwithr.com/install-git.html) for help.
-
-Many other git issues can also be resolved by examining that book. 
 
 ### Homework/Readings workflow
 
