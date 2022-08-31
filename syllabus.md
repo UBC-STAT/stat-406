@@ -215,8 +215,9 @@ These are short multiple choice and True / False questions. They happen in class
 At the end of the term, I'll take the total number of clicker questions and multiply by 3 to find the total number possible. If your average is 3 or higher, you get 10 points. If your average, x, is between 1 and 3, you get 5(x-1) points.
 
 If your average is less than 1, you get 0 points in this component. In addition 
-> your final grade in this course will be reduced by 1 letter grade.
-
+<div class="alert alert-info" role="alert">
+your final grade in this course will be reduced by 1 letter grade.
+</div>
 This means that if you did everything else and get a perfect score on the final exam, you will get a 79. 
 
 <div class="alert alert-danger" role="alert">

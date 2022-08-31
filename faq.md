@@ -55,7 +55,7 @@ icon: "fas fa-question-circle"
 
 **Start from main**  
 Branches should be created from the `main` branch, not the one you used for the last assignment.  
-```
+```bash
 git checkout main
 ```
 This switches to `main`. Then pull and start the new assignment following the workflow above. (In Rstudio, use the dropdown menu.)
@@ -64,39 +64,39 @@ This switches to `main`. Then pull and start the new assignment following the wo
 Ugh, you did 5 points of worksheets before realizing you forgot to create a new branch. Don't stress. There are some things below to try. But if you're confused ASK. We've had practice with this, and soon you will too!  
 
 _(1) If you started from `main` and haven't made any commits (but you SAVED!!):_  
-```
+```bash
 git branch -b <new-branch-name>
 ```
 This keeps everything you have and puts you on a new branch. No problem. Commit and proceed as usual.
 
 _(2) If you are on `main` and made some commits:_
-```
+```bash
 git branch <new-branch-name>
 git log
 ```
 The first line makes a new branch with all the stuff you've done. Then we look at the log. Locate the most recent commit before you started working. It's a long string like
 `ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
-```
+```bash
 git reset ac2a8 --hard
 ```
 This rolls `main` back to that commit. You don't need the whole string, just the first few characters. Finally
-```
+```bash
 git checkout <new-branch-name>
 ```
 and continue working.
 
 _(3) If you started work on `<some-old-branch>` for work you already submitted:_  
 This one is harder, and I would suggest getting in touch with the TAs. Here's the procedure.
-```
+```bash
 git commit -am "uhoh, I need to be on a different branch"
 git branch <new-branch-name>
 ```
 Commit your work with a dumb message, then create a new branch. It's got all your stuff.
-```
+```bash
 git log
 ```
 Locate the most recent commit before you started working. It's a long string like `ac2a8365ce0fa220c11e658c98212020fa2ba7d1`. Then,
-```
+```bash
 git rebase --onto main ac2a8 <new-branch-name>
 git checkout <new-branch-name>
 ```
@@ -131,7 +131,7 @@ This is a constant issue with code, and it happens to everyone. The following is
 
 1. Read the Error message. It will give you some important hints. Sometimes these are hard to parse, but that's ok.
 
-```
+```r
 set.seed(12345)
 y = rnorm(10)
 x = matrix(rnorm(20),2)
@@ -177,14 +177,14 @@ This is covered in much greater detail in the lectures, so see there. Here is my
 5. Don't use __magic numbers__. 
 6. Use meaningful names. Don't do this:
 
-```
+```r
 data("ChickWeight")
 out = lm(weight~Time+Chick+Diet, data=ChickWeight)
 ```
 7. Comment things that aren't clear from the (meaningful) names.
 8. Comment long formulas that don't immediately make sense: 
 
-```
+```r
 garbage = with(ChickWeight, 
                by(weight, Chick, 
                   function(x) (x^2+23)/length(x))) ## WTF???
