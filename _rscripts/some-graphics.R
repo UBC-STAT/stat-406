@@ -19,4 +19,4 @@ ggplot(data.frame(x = x, y = y), aes(x, y)) +
   geom_smooth(se=FALSE, span=.075, color=primary) +
   #geom_smooth(se=FALSE, span=.15, color=orange) +
   geom_smooth(se=FALSE, span=.75, color=tertiary)
-ggsave(here::here("assets", "img", "smooths.jpg"), width = 9, height = 4.5)
+ggsave(here::here("assets", "img", "smooths.svg"), width = 9, height = 4.5)

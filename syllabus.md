@@ -20,7 +20,7 @@ Daniel McDonald
 Office: Earth Sciences Building 3106  
 Website: <https://dajmcdon.github.io/>  
 Email: <daniel@stat.ubc.ca>  
-Slack: [@prof-daniel](https://stat-406-2021w.slack.com/team/U02D54WLXRT)
+Slack: [@prof-mcdonald](https://stat-406-2022w.slack.com/team/U040BDRBCBH)
 
 __Office hours__:    
 Daniel: Thursday 1400-1500 on Zoom or in ESB 1045  
@@ -29,7 +29,7 @@ Also: Monday 1600-1700 on Zoom only
 
 __Course webpage__:    
 WWW: <https://ubc-stat.github.io/stat-406/>  
-Github: <https://learning.github.ubc.ca/STAT-406-101-2022W/>  
+Github: <https://github.com/stat-406-2022w>  
 See also Canvas
 
 __Lectures__:  
@@ -124,7 +124,11 @@ Labs typically have a few questions for you to
 answer or code to implement. These are to be done _during lab_ 
 periods. But you can do them on your own as well. These are worth 2 points each up to a maximum of 20 points. They are due at 2300 on the day of your assigned lab section.
 
-**Rules.** You must submit via PR by the deadline. Your PR must include **at least 3 commits**. After lab 2, failure to include at least 3 commits will result in a maximum score of 1.5.
+**Rules.** You must submit via PR by the deadline. Your PR must include **at least 3 commits**. After lab 2, failure to include at least 3 commits will result in a maximum score of 1. 
+
+<div class="alert alert-info" role="alert">
+If you attend your lab section, you may work in pairs, submitting a single document to one of your Repos. Be sure to put both names on the document, and mention the collaboration on your PR. You still have until 11pm to submit.
+</div>
 
 **Marking.** 
 The overriding theme here is "if you put in the effort, you'll get all the
@@ -152,7 +156,7 @@ Assignments are typically lightly marked. The median last year was 9/12. But the
 
 After receiving a mark and feedback, you may make corrections for up to 50% of lost marks. The revision must be submitted within 1 week of getting your mark. Only 1 revision per assignment. The TA decision is final. Note that the TAs will only regrade parts you missed, but if you somehow make it worse, they can deduct more points.
 
-**Policy on collaboration**
+**Policy on collaboration on assignments**
 
 Discussing assignments with your classmates is allowed and encouraged, but it is
 important that every student get practice working on these problems. This means
@@ -168,6 +172,10 @@ homework collaboration is:
 4. This also applies in reverse: if someone approaches you for help, you must
    not provide it unless they have already attempted to solve the problem, and
    you may not share your code or spell out the solution step-by-step.
+
+<div class="alert alert-warning" role="alert">
+Adherence to the above policy means that identical answers, or nearly identical, answers cannot occur. Thus, such occurences are violations of the Course's <a href="#academic-honesty-and-standards">Academic honesty policy</a>. 
+</div>
 
 These rules also apply to getting help from other people such as friends not in
 the course (try the problem first, discuss strategies, not step-by-step
@@ -224,14 +232,14 @@ This means that if you did everything else and get a perfect score on the final 
 DON'T DO THIS!!
 </div>
 
-This may sound harsh, but think about what is required for such a penalty. You'd have to skip more than 50% of class meetings and get every question wrong when you are in class. This is an in person course. It is not possible to get an A without attending class on a regular basis.
+This may sound harsh, but think about what is required for such a penalty. You'd have to skip more than 50% of class meetings and get every question wrong when you are in class. This is an in-person course. It is not possible to get an A without attending class on a regular basis.
 
 To compensate, I will do my best to post recordings of lectures. Past experience has shown 2 things:
 
 1. You learn better by attending class than by skipping and "watching".
 2. Sometimes the technology messes up. So there's no guarantee that these will be available.
 
-The purpose is to let you occasionally miss class if you're not feeling well with minimal consequences. See also [below](#your-personal-health). If for some reason you need to miss longer streches of time, please contact me or discuss your situation with your Academic Advisor.
+The purpose is to let you occasionally miss class for any reason with minimal consequences. See also [below](#your-personal-health). If for some reason you need to miss longer streches of time, please contact me or discuss your situation with your Academic Advisor.
 
 ### Your score on Labs, HW, and Clickers
 
@@ -319,7 +327,7 @@ Several commercial services have approached students regarding selling class not
 
 Some of the problems that are assigned are similar or identical to those assigned in previous years by me or other instructors for this or other courses. Using proofs or code from anywhere other than the textbooks (with attribution), this year's course notes (with attribution), or the course website is not only considered cheating (as described above), it is easily detectable cheating. Such behavior is strictly forbidden.
 
-In previous years, I have caught students cheating on the exams. I did not enforce any penalty because the action did not help. Cheating, in my experience, occurs because students don't understand the material, so the result is usually a failing grade even before I impose any penalty and report the incident to the Dean's office. I carefully structure exams to make it so that I can catch these issues. I __will__ catch you, and it does not help. Do your own work, and use the TA and me as resources. If you are struggling, we are here to help.
+In previous years, I have caught students cheating on the exams or assignments. I did not enforce any penalty because the action did not help. Cheating, in my experience, occurs because students don't understand the material, so the result is usually a failing grade even before I impose any penalty and report the incident to the Dean's office. I carefully structure exams and assignments to make it so that I can catch these issues. I __will__ catch you, and it does not help. Do your own work, and use the TA and me as resources. If you are struggling, we are here to help.
 
 > If I suspect cheating, your case will be forwarded to the Dean's office. No questions asked.
 
