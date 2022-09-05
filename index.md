@@ -7,7 +7,7 @@ layout: home
   <p class="lead">Methods for Statistical Learning</p>
   <hr class="my-4">
   <p class="lead">
-  <a class="btn btn-primary btn-lg text-white" href="schedule/" role="button">Jump to Schedule.</a>
+  <a class="btn btn-primary btn-lg text-white" href="https://ubc-stat.github.io/stat-406-lectures/" role="button">Jump to Schedule.</a>
   </p>
 </div>
 
