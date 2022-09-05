@@ -23,8 +23,8 @@ Email: <daniel@stat.ubc.ca>
 Slack: [@prof-mcdonald](https://stat-406-2022w.slack.com/team/U040BDRBCBH)
 
 __Office hours__:    
-Daniel: Thursday 1400-1500 on Zoom or in ESB 1045  
-Also: Monday 1600-1700 on Zoom only
+Daniel: Tuesday 1400-1500 room TBA
+Also: Thursday 1100-1200 on Zoom only (this one may be cancelled some weeks, link on Canvas)
 
 
 __Course webpage__:    
@@ -33,7 +33,7 @@ Github: <https://github.com/stat-406-2022w>
 See also Canvas
 
 __Lectures__:  
-Tue/Thu 0800h - 0930h UTC-7 Vancouver local time  
+Tue/Thu 0800h - 0930h  
 (In person) Earth Sciences Building (ESB) 1012
 
 
