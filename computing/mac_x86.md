@@ -141,7 +141,7 @@ typing the following into the R console inside RStudio:
 
 ```R
 install.packages("remotes")
-remotes::install.packages("ubc-stat/stat-406-rpackage")
+remotes::install_github("ubc-stat/stat-406-rpackage")
 ```
 
 With luck, that will install everything you need.
@@ -153,7 +153,7 @@ It is possible you already have this installed.
 First try the following check in RStudio
 
 ```r
-stat406::test_latex_installation()
+Stat406::test_latex_installation()
 ```
 
 If you see Green checkmarks, then you're good.
