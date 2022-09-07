@@ -20,9 +20,11 @@ icon: "fas fa-question-circle"
 
 * Do not procrastinate --- don’t let a module go by with unanswered questions as it will just make the following module’s material even more difficult to follow.
 
+* Do the [Worksheets](https://ubc-stat.github.io/stat-406-worksheets). 
+
 ## Git and Github
 
-### Homework/Readings workflow
+### Homework/Labs workflow
 
 **Rstudio version** (uses the Git tab. Usually near Environment/History in the upper right)  
 1. Make sure you are on `main`. Pull in remote changes. Click <i class="fas fa-arrow-down" style="color:blue"></i>.
@@ -147,7 +149,7 @@ This one is a little difficult. The first stuff before the colon is telling me w
 
 3. Google!! If the first few steps didn't help, copy the error message into Google. This almost always helps. Best to remove any overly specific information first.
 
-4. Ask your classmates MSTeams. In order to ask most effectively, you should probably provide them some idea of how the error happened. See the section on [MWEs](#minimal-working-examples) for how to do this.
+4. Ask your classmates Slack. In order to ask most effectively, you should probably provide them some idea of how the error happened. See the section on [MWEs](#minimal-working-examples) for how to do this.
 
 5. See me or the TA. Note that it is highly likely that I will ask if you did the above steps first. And I will want to see your minimal working example (MWE). 
 
@@ -159,7 +161,7 @@ An MWE is a small bit of code which will work on anyone's machine and reproduce 
 
 I find that, in the process of preparing an MWE, I can often answer my own question. So it is a useful exercise even if you aren’t ready to call in the experts yet. The process of stripping your problem down to its bare essence often reveals where the root issue lies. My above code is an MWE: I set a seed, so we both can use _exactly_ the same data, and it's only a few lines long without calling any custom code that you don't have.
 
-For a good discussion of how to do this, see [stackexchange](https://stackoverflow.com/questions/5963269/how-to-make-a-great-r-reproducible-example-aka-mcve-minimal-complete-and-ver/5963610#5963610).
+For a good discussion of how to do this, see the [R Lecture](https://ubc-stat.github.io/stat-406-lectures/slides/00-r-review.html) or  [stackexchange](https://stackoverflow.com/questions/5963269/how-to-make-a-great-r-reproducible-example-aka-mcve-minimal-complete-and-ver/5963610#5963610).
 
 ### How to write good code
 

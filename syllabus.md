@@ -124,6 +124,8 @@ Labs typically have a few questions for you to
 answer or code to implement. These are to be done _during lab_ 
 periods. But you can do them on your own as well. These are worth 2 points each up to a maximum of 20 points. They are due at 2300 on the day of your assigned lab section.
 
+If you attend lab, you may share a submission with another student (with acknowledgement on the PR). If you do not attend lab, you must work on your own (subject to the collaboration instructions for Assignments below).
+
 **Rules.** You must submit via PR by the deadline. Your PR must include **at least 3 commits**. After lab 2, failure to include at least 3 commits will result in a maximum score of 1. 
 
 <div class="alert alert-info" role="alert">
@@ -152,9 +154,9 @@ animals urinate in 21 seconds](https://arxiv.org/abs/1310.3737).[^note]
 
 There will be 5 assignments. These are submitted via pull request similar to the labs but to the `homework-<username>` repo. Each assignment is worth up to 12 points. They are due by 2300 on the deadline. You must make **at least 5 commits**. Failure to have at least 5 commits will result in a 25% deduction on HW1 and a 50% deduction there after.
 
-Assignments are typically lightly marked. The median last year was 9/12. But they are not easy. Nor are they short. They often involve a combination of coding, writing, description, and production of graphs.
+Assignments are typically lightly marked. The median last year was 8/10. But they are not easy. Nor are they short. They often involve a combination of coding, writing, description, and production of graphs.
 
-After receiving a mark and feedback, you may make corrections for up to 50% of lost marks. The revision must be submitted within 1 week of getting your mark. Only 1 revision per assignment. The TA decision is final. Note that the TAs will only regrade parts you missed, but if you somehow make it worse, they can deduct more points.
+After receiving a mark and feedback, if you score less than 10, you may make corrections for up to 50% of lost marks. The revision must be submitted within 1 week of getting your mark. Only 1 revision per assignment. The TA decision is final. Note that the TAs will only regrade parts you missed, but if you somehow make it worse, they can deduct more points.
 
 **Policy on collaboration on assignments**
 
