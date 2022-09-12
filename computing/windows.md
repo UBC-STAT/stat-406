@@ -264,6 +264,16 @@ Compiled with zlib 1.2.11; using zlib 1.2.11
 Compiled with xpdf version 4.03
 ```
 
+## Github PAT
+
+You're probably familiar with 2-factor authentication for your UBC account or other accounts which is a very secure way to protect sensitive information (in case your password gets exposed). Github uses a Personal Access Token (PAT) for the Command Line Interface (CLI) and RStudio. This is different from the password you use to log in with a web browser. You will have to create one. There are some nice `R` functions that will help you along, and I find that easiest. 
+
+Complete instructions are in [Chapter 9 of Happy Git With R](https://happygitwithr.com/https-pat.html). Here's the quick version (you need the `usethis` and `gitcreds` libraries, which you can install with `install.packages(c("usethis", "gitcreds"))`):
+
+1. In the RStudio Console, call `usethis::create_github_token()` This should open a webbrowser. In the Note field, write what you like, perhaps "Stat 406 token". Then update the Expiration to any date after December 15. ("No expiration" is fine, though not very secure). Make sure that everything in `repo` is checked. Leave all other checks as is. Scroll to the bottom and click the green "Generate Token" button.
+2. This should now give you a long string to Copy. It often looks like `ghp_0asfjhlasdfhlkasjdfhlksajdhf9234u`. Copy that. (You would use this instead of the browser password in RStudio when it asks for a password).
+3. To store the PAT permanently in `R` (so you'll never have to do this again, hopefully) call `gitcreds::gitcreds_set()` and paste the thing you copied there.
+
 ## Post-installation notes
 
 You have completed the installation instructions, well done 🙌!
