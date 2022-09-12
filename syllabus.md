@@ -23,8 +23,9 @@ Email: <daniel@stat.ubc.ca>
 Slack: [@prof-mcdonald](https://stat-406-2022w.slack.com/team/U040BDRBCBH)
 
 __Office hours__:    
-Daniel: Tuesday 1400-1500 room TBA
-Also: Thursday 1100-1200 on Zoom only (this one may be cancelled some weeks, link on Canvas)
+Daniel: Tuesday 1400-1500, ESB 4182    
+Naitong: Friday 1200-1300, ESB 3174  
+Zoom (Daniel/Lin): Thursday 1000-1100, Link on Canvas
 
 
 __Course webpage__:    
