@@ -157,7 +157,7 @@ There will be 5 assignments. These are submitted via pull request similar to the
 
 Assignments are typically lightly marked. The median last year was 8/10. But they are not easy. Nor are they short. They often involve a combination of coding, writing, description, and production of graphs.
 
-After receiving a mark and feedback, if you score less than 10, you may make corrections for up to 50% of lost marks. The revision must be submitted within 1 week of getting your mark. Only 1 revision per assignment. The TA decision is final. Note that the TAs will only regrade parts you missed, but if you somehow make it worse, they can deduct more points.
+After receiving a mark and feedback, if you score less than 8, you may make corrections to bring your total to 8. The revision must be submitted within 1 week of getting your mark. Only 1 revision per assignment. The TA decision is final. Note that the TAs will only regrade parts you missed, but if you somehow make it worse, they can deduct more points. The revision allowance applies only to 4 or more points of "content" deductions not "penalties" for insufficient commits, code that runs of the side of the page, etc.
 
 **Policy on collaboration on assignments**
 
