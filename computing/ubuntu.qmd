@@ -1,7 +1,5 @@
 ---
-layout: page
-title: MacOS x86
-icon: "fab fa-apple"
+title: "<i class='fab fa-linux'></i> Ubuntu"
 ---
 
 
@@ -15,15 +13,14 @@ we may ask you to uninstall and try again.
 In order to be able to support you effectively and minimize setup issues and software
 conflicts, we suggest you install the required software as specified below.
 
-In all the sections below,
-if you are presented with the choice to download either a 64-bit (also called x64)
-or a 32-bit (also called x86) version of the application **always** choose the 64-bit version.
+## Ubuntu software settings
 
-## Terminal
+To ensure that you are installing the right version of the software in this guide,
+open "Software & Updates" and make sure that the boxes in the screenshot are checked
+(this is the default configuration).
 
-By "Terminal" below we mean the command line program called "Terminal". Note that this is also available
-**Inside RStudio**. Either works. To easily pull up the Terminal (outside RStudio), Type `Cmd + Space` 
-then begin typing "Terminal" and press `Return`.
+![](assets/img/ubuntu_settings.png)
+
 
 ## GitHub
 
@@ -37,29 +34,25 @@ Sign up for a free account at [GitHub.com](https://github.com/) if you don't hav
 We will be using the command line version of Git as well as Git through RStudio.
 Some of the Git commands we will use are only available since Git 2.23,
 so if your Git is older than this version,
-we ask you to update it using the Xcode command line tools (not all of Xcode), which includes Git.
+so if your Git is older than this version,
+we ask you to update it using the following commands:
 
-Open Terminal and type the following command to install Xcode command line tools:
-
-```bash
-xcode-select --install
+```
+sudo apt update
+sudo apt install git
 ```
 
-After installation, in terminal type the following to ask for the version:
+You can check your git version with the following command:
 
-```bash
+```
 git --version
 ```
 
-you should see something like this (does not have to be the exact same version) if you were successful:
-
-```
-git version 2.32.1 (Apple Git-133)
-```
-
-> **Note:** If you run into trouble, please see the Install Git
-> Mac OS section from [Happy Git and GitHub for the useR](http://happygitwithr.com/install-git.html#mac-os)
-> for additional help or strategies for Git installation.
+::: {.callout-note}
+If you run into trouble, please see the Install Git
+Linux section from [Happy Git and GitHub for the useR](http://happygitwithr.com/install-git.html#mac-os)
+for additional help or strategies for Git installation.
+::: 
 
 
 ### Configuring Git user info
@@ -74,10 +67,11 @@ git config --global user.name "Jane Doe"
 git config --global user.email janedoe@example.com
 ```
 
-> **Note:** To ensure that you haven't made a typo in any of the above,
-> you can view your global Git configurations by either opening the
-> configuration file in a text editor (e.g. via the command `nano ~/.gitconfig`)
-> or by typing `git config --list --global`).
+::: {.callout-note}
+To ensure that you haven't made a typo in any of the above, you can view your global Git configurations by either opening the
+configuration file in a text editor (e.g. via the command `nano ~/.gitconfig`)
+or by typing `git config --list --global`).
+:::
 
 If you have never used Git before, we recommend also setting the default editor:
 
@@ -94,11 +88,29 @@ We will generally (always?) use R in RStudio.
 
 ### R
 
-Go to [https://cran.r-project.org/bin/macosx/](https://cran.r-project.org/bin/macosx/)
-and download the latest version of R for Mac. Open the file and follow the installer instructions.
+The version of R available in the default Ubuntu repositories is older
+than the one we will be using in this course.
+To obtain the latest R packages,
+we need to add a new repository which is maintained directly by the r-project.
+To do this, first add the key for this repository by typing the following:
 
-After installation, open a new terminal window and type the following:
+```bash
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+```
 
+Then add the URL to the repository:
+
+```bash
+sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+```
+
+Next, install `r-base` and `r-base-dev` (useful for compiling R packages from source):
+
+```bash
+sudo apt install r-base r-base-dev
+```
+
+After installation, type the following in a new terminal window:
 ```bash
 R --version
 ```
@@ -106,9 +118,9 @@ R --version
 You should see something like this if you were successful:
 
 ```
-R version 4.0.0 (2020-04-24) -- "Arbor Day"
-Copyright (C) 2020 The R Foundation for Statistical Computing
-Platform: x86_64-apple-darwin17.0 (64-bit)
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under the terms of the
 GNU General Public License versions 2 or 3.
@@ -116,25 +128,33 @@ For more information about these matters see
 https://www.gnu.org/licenses/.
 ```
 
-> **Note:** Although it is possible to install R through conda, we highly recommend not doing so.
-> In case you have already installed R using conda you can remove it by executing `conda uninstall r-base`.
 
+::: {.callout-note}
+[See this page for additional instructions if you run into trouble while installing R](https://cloud.r-project.org/bin/linux/ubuntu/).
 
-### XQuartz
+Although it is possible to install R through conda,
+we highly recommend not doing so. In case you have already installed R using
+conda you can remove it by executing `conda uninstall r-base`.
+:::
 
-Some R packages rely on the dependency XQuartz which no longer ships with the Mac OS,
-thus we need to install it separately.
-Download it from here: [https://www.xquartz.org/](https://www.xquartz.org/)
-and follow the installation instructions.
 
 ### RStudio
 
-Download the macOS Desktop version (not Pro) of RStudio Preview from
-[https://rstudio.com/products/rstudio/download/preview/](https://rstudio.com/products/rstudio/download/preview/).
+Download the Ubuntu 18/Debian 10 Desktop version (not Pro) of RStudio Preview from
+<https://posit.co/download/rstudio-desktop/>.
 Open the file and follow the installer instructions.
 
 
+
+
 ### Installing R packages
+
+The `tidyverse` R package (and some others) have external dependencies on Ubuntu outside of R.
+We need to install these first before we install such R packages:
+
+```
+sudo apt install libcurl4-openssl-dev libssl-dev libxml2-dev
+```
 
 Next, install the key R packages needed for the course by opening up RStudio and
 typing the following into the R console inside RStudio:
@@ -160,7 +180,7 @@ If you see Green checkmarks, then you're good.
 
 Even if it fails, follow the instructions, and try it again.
 
-If it stall fails, proceed with the instructions
+If it still fails, proceed with the instructions
 
 <hr>
 
@@ -174,7 +194,10 @@ First, run the following command to make sure that `/usr/local/bin` is writable:
 sudo chown -R $(whoami):admin /usr/local/bin
 ```
 
-> **Note:** You might be asked to enter your password during installation.
+::: {.callout-note}
+You might be asked to enter your password during installation.
+:::
+
 Now open RStudio and run the following commands to install the `tinytex` package and setup `tinytex`:
 
 ```R
@@ -203,6 +226,7 @@ Compiled with libpng 1.6.37; using libpng 1.6.37
 Compiled with zlib 1.2.11; using zlib 1.2.11
 Compiled with xpdf version 4.03
 ```
+
 ## Github PAT
 
 You're probably familiar with 2-factor authentication for your UBC account or other accounts which is a very secure way to protect sensitive information (in case your password gets exposed). Github uses a Personal Access Token (PAT) for the Command Line Interface (CLI) and RStudio. This is different from the password you use to log in with a web browser. You will have to create one. There are some nice `R` functions that will help you along, and I find that easiest. 
