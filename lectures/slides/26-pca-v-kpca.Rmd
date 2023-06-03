@@ -1,0 +1,221 @@
+---
+title: "26 PCA v KPCA"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+---
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+## PCA v KPCA
+
+
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$
+
+(We assume $\X$ is already centered/scaled, $n$ rows, $p$ columns)
+
+
+.pull-left[
+__PCA:__
+
+0. Start with data.
+1. Decompose $\X=\U\D\V^\top$ (SVD). 
+2. Embed into $M\leq p$ dimensions: 
+$$\U_M \D_M = \X\V_M$$
+
+The "embedding" is $\U_M \D_M$.
+
+(called the "Principal Components" or the "scores" or occasionally the "factors")
+
+The "loadings" are $\V_M$
+]
+
+--
+
+.pull-right[
+__KPCA:__
+
+1. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
+1. Double center $\mathbf{K} = \mathbf{PKP}$.
+1. Decompose $\mathbf{K} = \U \D^2 \U^\top$ (eigendecomposition).
+1. Embed into $M\leq p$ dimensions:
+$$\U_M \D_M$$
+
+The "embedding" is $\U_M \D_M$.
+
+There are no "loadings"  
+(there exists no matrix $\mathbf{B}$ such that $\X\mathbf{B} = \U_M \D_M$)
+]
+
+---
+
+## Why is this the solution?
+
+The "maximize variance" version of PCA:
+
+$$\max_\alpha \Var{\X\alpha} \quad \textrm{ subject to } \quad \left|\left| \alpha \right|\right|_2^2 = 1$$
+
+( $\Var{\X\alpha} = \alpha^\top\X^\top\X\alpha$ )
+
+This is equivalent to solving (Lagrangian):
+
+$$\max_\alpha \alpha^\top\X^\top\X\alpha - \lambda\left|\left| \alpha \right|\right|_2^2$$
+
+Take derivative wrt $\alpha$ and set to 0:
+
+$$0 = 2\X^\top\X\alpha - 2\lambda\alpha$$
+
+This is the equation for an eigenproblem. The solution is $\alpha=\V_1$ and the maximum is $\D_1^2$.
+
+---
+
+## Example (not real unless there's code)
+
+```{r}
+data("mobility", package = "Stat406")
+X <- mobility %>% select(Black:Married) %>% as.matrix()
+not_missing <- X %>% complete.cases()
+X <- scale(X[not_missing, ], center = TRUE, scale = TRUE)
+colors <- mob$Mobility[not_missing] 
+M <- 2 # embedding dimension
+P <- diag(nrow(X)) - 1 / nrow(X)
+```
+
+--
+
+.pull-left[
+__PCA:__ (all 3 are equivalent)
+
+```{r}
+s <- svd(X) # use svd 
+pca_loadings <- s$v[,1:M]
+pca_scores <- X %*% pca_loadings
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+s <- eigen(t(X) %*% X) # V D^2 V'
+pca_loadings <- s$vectors[,1:M]
+pca_scores <- X %*% pca_loadings
+```
+
+
+```{r, echo=TRUE, eval=FALSE}
+s <- eigen(X %*% t(X)) # U D^2 U'
+D <- sqrt(diag(s$values[1:M]))
+U <- s$vectors[,1:M]
+pca_scores <- U %*% D
+pca_loadings = (1/D) %*% t(U) %*% X
+
+```
+
+
+
+]
+
+.pull-right[
+__KPCA:__
+
+```{r}
+d <- 2
+K <- P %*% (1 + X %*% t(X))^d %*% P # polynomial
+e <- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U <- e$vectors[,1:M]
+D <- diag(sqrt(e$values[1:M]))
+kpca_poly <- U %*% D
+```
+
+```{r}
+K <- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel
+e <- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U <- e$vectors[,1:M]
+D <- diag(sqrt(e$values[1:M]))
+kpca_sigmoid <- U %*% D
+```
+
+
+]
+
+---
+
+## Plotting
+
+```{r, echo=FALSE, fig.align="center", fig.width=10, fig.height=6}
+pca = tibble(score1=pca_scores[,1], score2=pca_scores[,2], colors=colors)
+kpca_poly = tibble(score1=kpca_poly[,1], score2=kpca_poly[,2], colors=colors)
+kpca_sigmoid = tibble(score1=kpca_sigmoid[,1], score2=kpca_sigmoid[,2], colors=colors)
+bind_rows(pca=pca, kpca_poly=kpca_poly, kpca_sigmoid = kpca_sigmoid, .id="method") %>%
+  ggplot(aes(score1, score2, color=colors)) + 
+  facet_wrap(~method, scales = "free") + 
+  theme(legend.position = "bottom") +
+  guides(color = guide_colorbar(barwidth = unit(.5, "npc"))) +
+  scale_color_viridis_c(name = "Mobility") + geom_point()
+```
+
+---
+
+## PCA loadings
+
+Showing the first 10 PCA loadings:
+
+* First column are the weights on the first score
+* each number corresponds to a variable in the original data
+* How much does that variable contribute to that score?
+
+```{r}
+head(round(pca_loadings,2), 10)
+```
+
+---
+
+## KPCA, feature map version
+
+```{r, echo=TRUE, eval=FALSE}
+p <- ncol(X)
+scX <- scale(X)
+width <- p*(p-1)/2 + p # ~630
+Z <- matrix(NA, nrow(X), width)
+k <-  0
+for(i in 1:p){
+  for(j in i:p){
+    k <- k + 1
+    Z[,k] <- X[,i] * X[,j]
+  }
+}
+wideX <- scale(cbind(X, Z))
+s <- RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores <- s$u %*% diag(s$d)
+```
+
+* Unfortunately, can't easily compare to check whether the result is the same
+* Also can cause numerical issues
+* But should be the "same" (assuming I didn't screw up...)
+* Would also allow me to get the loadings, though they'd depend on polynomials

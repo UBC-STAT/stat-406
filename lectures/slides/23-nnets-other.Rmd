@@ -1,0 +1,445 @@
+---
+title: "23 Neural nets - other considerations"
+author:
+- STAT 406
+- Daniel J. McDonald
+date: "Last modified - `r Sys.Date()`"
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+## Estimation procedures (training)
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathbb{V}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\bfx}{\mathbf{x}}$$
+
+Back-propagation
+
+__Advantages:__ 
+
+-   It's updates only depend on local
+    information in the sense that if objects in the hierarchical model
+    are unrelated to each other, the updates aren't affected
+
+    (This helps in many ways, most notably in parallel architectures)
+
+-   It doesn't require second-derivative information
+
+-   As the updates are only in terms of $\hat{R}_i$, the algorithm can
+    be run in either batch  or online  mode
+
+__Down sides:__ 
+
+-   It can be very slow
+
+-   Need to choose the learning rate
+    $\gamma_t$
+---
+
+## Other algorithms
+
+There are many  variations on the fitting algorithm
+
+__Stochastic gradient descent__: (SGD) discussed in the optimization lecture
+
+The rest are variations that use lots of tricks
+
+* RMSprop
+* Adam
+* Adadelta
+* Adagrad
+* Adamax
+* Nadam
+* Ftrl
+
+---
+
+## Regularizing neural networks
+
+NNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters.
+
+Flavors:
+
+-   a complexity penalization term
+
+-   early stopping on the back propagation algorithm used for fitting
+
+
+Explicit regularization $\longrightarrow$ solve $\min \hat{R} + \rho(\alpha,\beta)$
+
+-   __Weight decay:__  This is like
+    ridge regression in that we penalize the squared Euclidean norm of
+    the weights $\rho(\mathbf{W},\mathbf{B}) = \sum w_i^2 + \sum b_i^2$
+
+-   __Weight elimination:__  This
+    encourages more shrinking of small weights
+    $\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}$ or Lasso-type
+
+
+__Dropout:__
+
+In each epoch, randomly choose $z\%$ of the nodes and set those weights to zero.
+
+---
+
+## Other common pitfalls
+
+There are three areas to watch out for
+
+- __Nonconvexity:__  The neural network optimization problem is non-convex. This makes any numerical solution highly dependent on the initial values. These should be
+
+  - chosen carefully, typically random near 0. .hand[DON'T] use all 0.
+
+  - regenerated several times to check sensitivity
+
+-   __Scaling:__  Be sure to
+    standardize the covariates before training
+
+-   __Number of hidden units:__  It is generally
+    better to have too many hidden units than too few (regularization
+    can eliminate some).
+
+
+- __Sifting the output:__ 
+    
+    -   Choose the solution that minimizes training
+    error
+
+    -   Choose the solution that minimizes the
+    penalized  training error
+
+    -   Average the solutions across runs
+
+---
+
+## Tuning parameters
+
+There are many.
+
+* Regularization
+* Stopping criterion
+* learning rate
+* Architecture
+* Dropout %
+* others...
+
+These are hard to tune.
+
+In practice, people might choose "some" with a validation set, and fix the rest largely arbitrarily
+
+--
+
+More often, people set them all arbitrarily
+
+---
+
+## Thoughts on NNets
+
+Off the top of my head, without lots of justification
+
+.pull-left[
+
+__Why don't statisticians like them?__
+
+.center[.larger[`r fa("face-angry", fill=red)`]]
+
+- There is little theory (though this is increasing)
+- Statistical theory applies to global minima, here, only local determined by the optimizer
+- Little understanding of when they work
+- In large part, NNets look like logistic regression + feature creation. We understand that well, and in many applications, it performs as well
+- Explosion of tuning parameters without a way to decide
+- Require massive datasets to work
+]
+
+.pull-right[
+
+__Why are they hot?__
+
+.center[.larger[`r fa("fire", fill=orange)`]]
+
+- Perform exceptionally well on typical CS tasks (images, translation)
+- Take advantage of SOTA computing (parallel, GPUs)
+- Very good for multinomial logistic regression
+- An excellent example of "transfer learning"
+- They generate pretty pictures (the nets, pseudo-responses at hidden units)
+
+]
+
+---
+
+## Keras
+
+Most people who do deep learning use Python $+$ Keras $+$ Tensorflow
+
+It takes some work to get all this software up and running.
+
+It is possible to do in with R using an [interface to Keras](https://keras.rstudio.com/index.html).
+
+--
+
+I used to try to do a walk-through, but the interface is quite brittle
+
+If you want to explore, see the handout:
+* Knitted: https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.html
+* Rmd: https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.Rmd
+
+```{r embeddings, echo=FALSE,include=FALSE,fig.width=16,fig.height=9}
+library(maniTools)
+num_pts = 600
+d = 2   #target dimension
+k = 8   #k nearest neighbors
+sim_data <- swiss_roll(num_pts)
+pca_dr <- sim_data$data %>% center_and_standardise() %>% prcomp()
+proj_pca <- sim_data$data %*% pca_dr$rotation[,1:2] %>% scale()
+proj_hess <- Hessian_LLE(sim_data$data, k = k, d = d)$projection %>% scale()
+proj_LLE <- LLE2(sim_data$data, dim = d, k = k) %>% scale()
+all = cbind(rbind(proj_pca, proj_LLE, proj_hess), sim_data$colors)
+colnames(all) = c('x','y','col')
+all = as_tibble(all)
+all$method = rep(c("PCA","Hessian maps","LLE"), each=num_pts) 
+ggplot(all, aes(x,y,color=col)) + geom_point() +
+  scale_color_viridis_c() +
+  facet_wrap(~method, scales="free") + 
+  theme(legend.position = "none", 
+        axis.line = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), axis.title = element_blank())
+```
+
+---
+class: middle, inverse, center
+
+# Double descent and model complexity
+
+---
+
+
+```{r, echo=FALSE, eval=TRUE}
+tweetrmd::tweet_embed("https://twitter.com/daniela_witten/status/1292293102103748609")
+```
+
+---
+
+## Where does this U shape come from?
+
+
+.center.large[
+MSE = Squared Bias + Variance + Irreducible Noise
+]
+
+As we increase flexibility:
+* Squared bias goes down
+* Variance goes up
+* Eventually, | $\partial$ Variance | $>$ | $\partial$ Squared Bias |.
+
+
+**Goal:** Choose amount of flexibility to balance these and minimize MSE.
+
+--
+
+.hand[Use CV or something to estimate MSE and decide how much flexibility.]
+
+
+---
+
+```{r, echo=FALSE, eval=TRUE}
+tweetrmd::tweet_embed("https://twitter.com/daniela_witten/status/1292293104855158784", hide_thread = "t")
+```
+
+---
+
+## Zero training error and model saturation
+
+* In Deep Learning, the recommendation is to "fit until you get zero training error"
+
+* This somehow magically, leads to a continued decrease in test error.
+
+* So, who cares about the Bias-Variance Trade off!!
+
+--
+
+**Lesson:**
+
+BV Trade off is not wrong. `r fa("face-sad-tear", fill =orange)`
+
+This is a misunderstanding of black box algorithms and flexibility.
+
+We don't even need deep learning to illustrate. 
+
+
+---
+
+```{r, fig.width=6, fig.height=4, fig.align='center'}
+library(splines)
+set.seed(20221102)
+n <- 20
+df <- tibble(
+  x = seq(-1.5 * pi, 1.5 * pi, length.out = n),
+  y = sin(x) + runif(n, -0.5, 0.5)
+)
+g <- ggplot(df, aes(x, y)) + geom_point() + stat_function(fun = sin) + ylim(c(-2, 2))
+g + stat_smooth(method = lm, formula = y ~ bs(x, df = 4), se = FALSE, color = green) + # too smooth
+  stat_smooth(method = lm, formula = y ~ bs(x, df = 8), se = FALSE, color = orange) # looks good
+```
+
+
+---
+
+```{r, fig.width=6, fig.height=4, fig.align='center'}
+xn <- seq(-1.5 * pi, 1.5 * pi, length.out = 1000)
+# Spline by hand
+X <- bs(df$x, df = 20, intercept = TRUE)
+Xn <- bs(xn, df = 20, intercept = TRUE)
+S <- svd(X)
+yhat <- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)
+g + geom_line(data = tibble(x=xn, y=yhat), colour = orange) +
+  ggtitle("20 degrees of freedom")
+```
+
+---
+
+```{r, fig.width=6, fig.height=4, fig.align='center'}
+xn <- seq(-1.5 * pi, 1.5 * pi, length.out = 1000)
+# Spline by hand
+X <- bs(df$x, df = 40, intercept = TRUE)
+Xn <- bs(xn, df = 40, intercept = TRUE)
+S <- svd(X)
+yhat <- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)
+g + geom_line(data = tibble(x = xn, y = yhat), colour = orange) +
+  ggtitle("40 degrees of freedom")
+```
+
+---
+layout: true
+
+## What happened?!
+
+---
+
+```{r, fig.width=6, fig.height=4, fig.align='center'}
+doffs <- 4:50
+mse <- function(x, y) mean((x - y)^2)
+get_errs <- function(doff) {
+  X <- bs(df$x, df = doff, intercept = TRUE)
+  Xn <- bs(xn, df = doff, intercept = TRUE)
+  S <- svd(X)
+  yh <- S$u %*% crossprod(S$u, df$y)
+  bhat <- S$v %*% diag(1 / S$d) %*% crossprod(S$u, df$y)
+  yhat <- Xn %*% S$v %*% diag(1 / S$d) %*% crossprod(S$u, df$y)
+  nb <- sqrt(sum(bhat^2))
+  tibble(train = mse(df$y, yh), test = mse(yhat, sin(xn)), norm = nb)
+}
+errs <- map_dfr(doffs, get_errs, .id = "degrees of freedom") %>%
+  mutate(`degrees of freedom` = doffs) %>%
+  pivot_longer(train:test, values_to = "error")
+```
+
+---
+
+
+```{r, fig.width=8, fig.height=4, fig.align='center'}
+ggplot(errs, aes(`degrees of freedom`, error, color = name)) +
+  geom_line(size = 2) + 
+  coord_cartesian(ylim = c(0, .12)) +
+  scale_colour_manual(values = c(blue, orange)) +
+  scale_x_log10() + geom_vline(xintercept = 20)
+```
+
+---
+
+```{r, fig.width=8, fig.height=5, fig.align='center'}
+ggplot(errs %>% filter(name == "test"), aes(norm, error)) +
+  geom_line(colour = blue, size = 2) + 
+  scale_y_log10() + scale_x_log10() + geom_vline(xintercept = 20)
+```
+
+---
+layout: false
+
+## Degrees of freedom and complexity
+
+* In low dimensions (where $n \gg p$), with linear smoothers, edf and model complexity are roughly the same.
+
+* But this relationship breaks down in more complicated settings
+
+* We've already seen this:
+
+```{r, fig.align='center', fig.width=7, fig.height=3, warning=FALSE}
+library(glmnet)
+out <- cv.glmnet(X, df$y, nfolds = n) # leave one out
+par(mfrow=c(1, 2), mar = c(5, 3, 0, 0))
+plot(out$lambda, out$cvm, type = "b", log = "xy")
+plot(out$nzero, out$cvm, type = "b", log = "xy")
+```
+
+---
+
+## Infinite solutions
+
+* In Lasso, edf is not really the right measure of complexity
+
+* Better is $\lambda$ or the norm of the coefficients (these are basically the same)
+
+* So what happened with the Splines?
+
+--
+
+* When df $= 20$, there's a unique solution that interpolates the data
+
+* When df $> 20$, there are infinitely many solutions that interpolate the data.
+
+Because we used the SVD to solve the system, we happened to pick one: the one that has the smallest $||\hat\beta||_2$
+
+Recent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm.
+
+If we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don't see double descent anymore.
+
+---
+
+## The lesson
+
+Deep learning isn't magic.
+
+Zero training error with lots of parameters doesn't mean good test error.
+
+We still need the bias variance tradeoff
+
+It's intuition still applies: more flexibility eventually leads to increased MSE
+
+But we need to be careful how we measure complexity.
+
+
+---
+
+class: middle, center
+background-image: url(rmd_gfx/23-nnets-other/embeddings-1.svg)
+background-size: cover
+
+
+
+.primary[.larger[Next time...]]
+
+.primary[.larger[Module]] .huge-blue-number[5]
+
+.primary[.larger[unsupervised learning]]
+
+
+
+

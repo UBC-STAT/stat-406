@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>26 Manifold learning</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <link href="materials/libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-progressBar/progress-bar.js"></script>
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 26 Manifold learning
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-08-29
+]
+
+---
+
+
+
+
+
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style><style>.xe__progress-bar__container {
+  top:0;
+  opacity: 1;
+  position:absolute;
+  right:0;
+  left: 0;
+}
+.xe__progress-bar {
+  height: 0.25em;
+  background-color: #2c365e;
+  width: calc(var(--slide-current) / var(--slide-total) * 100%);
+}
+.remark-visible .xe__progress-bar {
+  animation: xe__progress-bar__wipe 200ms forwards;
+  animation-timing-function: cubic-bezier(.86,0,.07,1);
+}
+@keyframes xe__progress-bar__wipe {
+  0% { width: calc(var(--slide-previous) / var(--slide-total) * 100%); }
+  100% { width: calc(var(--slide-current) / var(--slide-total) * 100%); }
+}</style>
+
+
+## Last time
+
+We examined kernel PCA:
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$`
+
+
+1.  Specify a kernel `\(k\)`, for example `\(k(x,x') = \exp\left( -\norm{x - x'}_2^2/\gamma\right)\)`
+
+2.  Form `\(\mathbf{K}_{i,i'} = k(x_i,x_{i'})\)`
+
+3.  Standardize and take eigendecomposition `\(\mathbf{K} = \U\D^2\U^{\top}\)`
+
+Why `\((i,\ i')\)`? These are two rows of `\(\X\)`. Rows of `\(\X\)` denoted by `\(i\)`, columns by `\(j\)`
+
+Closely related to this is
+
+__Classical Multidimensional Scaling__
+
+---
+
+## CMDS
+
+
+1. Calculate a matrix of distances (or dissimilarities) between data points `\(\Delta\)`, and square them `\(\Delta^2\)`
+
+3. .hand[Double center] `\(\mathbf{B} = (I-\frac{1}{n}11^\top)\Delta^2(I-\frac{1}{n}11^\top)\)`
+
+3. Write `\(\mathbf{B} = \U\D^2 \U^\top\)` (find the eigendecomposition == SVD of square symmetric matrix)
+
+4. Approximate your data with `\(\U_{M}\D_{M}\)`, "the first `\(M\)` columns"
+
+CMDS is embedding .hand[dissimilarities] by using the eigendecomposition.
+
+--
+
+__Distances v. Dissimilarities__
+
+Euclidean distance: `\(d(x,y) = \sqrt{\sum_{j=1}^p (x_j-y_j)^2} = \sqrt{(x-y)^\top(x-y)} =\sqrt{x^\top x + y^\top y - 2x^\top y}\)`
+
+Euclidean dissimilarity: `\(\delta(x,y) = x^\top y\)`
+
+--
+
+.pull-left[
+
+&lt;img src="rmd_gfx/00-manifolds/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+
+--
+
+.pull-right[
+
+&lt;img src="rmd_gfx/00-manifolds/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+
+## Manifold learning
+
+.pull-left[
+
+Suppose my data don't lie on hyperplanes (so I don't want to use PCA)
+
+I could use kernel PCA, but there's another way to think of the problem
+
+How good of an approximation is Euclidean distance to the distance along the data?
+
+This question is equivalent to asking: how quickly does the
+tangent (space) change?
+
+
+Therefore, the quality of the (local) Euclidean distance, depends on the
+second derivative (ie: how fast does the first derivative change?)
+
+
+In higher dimensions, the second derivative is known as the
+__Laplacian__:
+`\(\sum_{j} \frac{\partial^2 f}{\partial x_j^2}\)` (Note: This is also
+known as the divergence of the gradient)
+]
+
+.pull-right[
+
+In 1-D, the tangent space is just the first derivative at that point:
+`$$f(x) = x^2 \Rightarrow f'(x) = 2x.$$`
+
+
+
+&lt;img src="rmd_gfx/00-manifolds/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+## What are Laplacian Eigenmaps, then?
+
+Imagine the operator `\(\mathbf{L}\)` that performs this operation:
+`$$\mathbf{L} f = \sum_{j} \frac{\partial^2 f}{\partial x_j^2}$$`
+
+Then `\(\mathbf{L}\)` is the __Laplacian__, mapping
+a function to the divergence of its gradient
+
+
+__Key Idea:__   We can get the eigenvectors/eigenvalues of `\(\mathbf{L}\)`. Analogously to PCA, we can now do inference with these eigenvectors.
+
+
+
+.emphasis[Collect data: `\(x_1,\ldots,x_n\)` where `\(x_i\in\R^p\)`.
+
+1. Center and scale the data matrix `\(\X\)`
+2. Compute `\(\mathbf{K}\)` where
+    `\(\mathbf{K}_{i,i'} = \exp\left(-\|x_i-x_{i'}\|_2^2/\gamma\right)\)`
+4. __Optionally__: (a) allow only the `\(k\)` nearest neighbors `\(i'\)` to `\(i\)` to have `\(\mathbf{K}_{i,i'}\)` nonzero (b) set `\(\mathbf{K}_{i,i'}=1\)` if nonzero.
+3. Form the Laplacian `\(\mathbf{L} = \mathbf{I} -\mathbf{G}^{-1}\mathbf{K}\)` where `\(\mathbf{G} =\)` `diag(rowSums(` `\(\mathbf{K}\)` `))`
+4. Compute the Eigendecomposition of `\(\mathbf{L} = \U\D\U^\top\)`.
+5. Return `\(\mathbf{U}_M\D_M^{-1}\)`, where `\(\D_M\)` contains the __smallest__ `\(M\)` nonzero
+    eigenvalues of `\(\mathbf{L}\)`
+]
+
+---
+
+## Here's our manifold
+
+
+
+&lt;img src="rmd_gfx/00-manifolds/plot-elephant-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## PCA, CMDS, and Laplacian eigenmaps
+
+
+```r
+library(maniTools)
+elef = noisy_ele[,1:2]
+pca = elef %&gt;% center_and_standardise() %&gt;% prcomp()
+pca = as.matrix(elef) %*% pca$rotation[,1] 
+cmds = cmdscale(dist(elef), k = 1) 
+le = Laplacian_Eigenmaps(elef, 5, 1)$eigenvectors 
+```
+
+&lt;img src="rmd_gfx/00-manifolds/mani-plots-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Scratching the Laplacian
+
+There are lots of other manifold learning techniques
+
+To name a few
+
+* Hessian maps
+* Locally linear embeddings
+* Diffusion maps
+* Local tangent space alignment
+* Isomap
+
+Issues with nonlinear techniques:
+
+1. Need to choose `\(M\)` (also with linear)
+2. Also other tuning parameters.
+3. These others can have __huge__ effects
+4. The difference between the data lying .hand[on] the manifold and the data lying .hand[near] the manifold is important
+
+&lt;img src="rmd_gfx/00-manifolds/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: inverse, center, middle
+
+# Next time...
+
+Clustering
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

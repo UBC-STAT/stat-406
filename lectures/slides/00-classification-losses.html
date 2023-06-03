@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>00 Evaluating classifiers</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 00 Evaluating classifiers
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-11-07
+]
+
+---
+
+
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+
+## How do we measure accuracy?
+
+**So far** --- 0-1 loss. If correct class, lose 0 else lose 1.
+
+**Asymmetric classification loss** --- If correct class, lose 0 else lose something.
+
+For example, consider facial recognition. Goal is "person ok", "person has expired passport", "person is a known terrorist"
+
+1. If classify ok, but was terrorist, lose 1000000
+1. If classify ok, but expired passport, lose 2
+1. If classify terrorist, but was ok, lose 100
+1. If classify terrorist, but was expired passport, lose 10
+1. etc.
+
+Results in a 3x3 matrix of losses with 0 on the diagonal.
+
+
+```
+##         [,1]  [,2] [,3]
+## [1,]       0     2   30
+## [2,]      10     0  100
+## [3,] 1000000 50000    0
+```
+
+---
+
+## Deviance loss
+
+Sometimes we output **probabilities** as well as class labels.
+
+For example, logistic regression returns the probability that an observation is in class 1. `\(P(Y_i = 1) = 1 / (1 + \exp\{-x'_i \hat\beta\})\)`
+
+LDA and QDA produce probabilities as well. So do Neural Networks (typically)
+
+(Trees "don't", neither does KNN, though you could fake it)
+
+--
+
+ ---
+
+* Deviance loss for 2-class classification is `\(\sum_{i=1}^n -2\textrm{log-likelihood}(y, \hat{p}) = \sum_{i=1}^n -2 (y_i x'_i\hat{\beta} - \log (1-\hat{p}))\)`
+
+(Technically, it's the difference between this and the loss of the null model, but people play fast and loose)
+
+* Could also use cross entropy or Gini index.
+
+---
+
+## Calibration
+
+Suppose we predict some probabilities for our data, how often do those events happen?
+
+In principle, if we predict `\(\hat{p}(x_i)=0.2\)` for a bunch of events observations `\(i\)`, we'd like to see about 20% 1 and 80% 0.
+
+The same goes for the other probabilities. If we say "20% chance of rain" it should rain 20% of such days.
+
+
+Of course, we didn't predict **exactly** `\(\hat{p}(x_i)=0.2\)` ever, so lets look at `\([.15, .25]\)`.
+
+
+```r
+x &lt;- seq(-5, 5, length.out = 1000)
+p &lt;- 1 / (1 + exp(-x))
+y &lt;- rbinom(1000, 1, p)
+dat &lt;- data.frame(y = y, x = x)
+fit &lt;- glm(y ~ x, family = binomial, data = dat)
+dat$phat &lt;- predict(fit, type = "response") # predicted probabilities
+mean(dat$y[dat$phat &gt; 0.15 &amp; dat$phat &lt; 0.25])
+```
+
+```
+## [1] 0.2272727
+```
+
+---
+
+## Calibration plot
+
+
+```r
+binary_calibration_plot &lt;- function(y, phat, nbreaks = 10) {
+  dat &lt;- data.frame(y = y, phat = phat) %&gt;%
+    mutate(bins = cut_number(phat, n = nbreaks))
+  midpts &lt;- quantile(dat$phat, seq(0, 1, length.out = nbreaks + 1), na.rm = TRUE)
+  midpts &lt;- midpts[-length(midpts)] + diff(midpts) / 2
+  sum_dat &lt;- dat %&gt;% 
+    group_by(bins) %&gt;%
+    summarise(p = mean(y, na.rm = TRUE), 
+              se = sqrt(p * (1 - p) / n())) %&gt;%
+    arrange(p)
+  sum_dat$x &lt;- midpts
+  
+  ggplot(sum_dat, aes(x = x)) + 
+    geom_errorbar(aes(ymin = pmax(p - 1.96*se, 0), ymax = pmin(p + 1.96*se, 1))) +
+    geom_point(aes(y = p), color = blue) + 
+    geom_abline(slope = 1, intercept = 0, color = orange) +
+    ylab("observed frequency") + xlab("average predicted probability") +
+    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    geom_rug(data = dat, aes(x = phat), sides = 'b')
+}
+```
+
+---
+
+## Amazingly well-calibrated
+
+
+```r
+binary_calibration_plot(y, dat$phat, 20L)
+```
+
+&lt;img src="rmd_gfx/00-classification-losses/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Less well-calibrated
+
+&lt;img src="rmd_gfx/00-classification-losses/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## True positive, false negative, sensitivity, specificity
+
+**True positive rate** - # correct predict positive  / # actual positive (1 - FNR)
+
+**False negative rate** - # incorrect predict negative  / # actual positive (1 - TPR), Type II Error
+
+**True negative rate** - # correct predict negative  / # actual negative
+
+**False positive rate** - # incorrect predict positive  / # actual negative (1 - TNR), Type I Error
+
+
+**Sensitivity** - TPR, 1 - Type II error
+
+**Specificity** - TNR, 1 - Type I error
+
+--
+
+ ---
+ 
+**ROC (Receiver Operating Characteristic) Curve** - TPR (sensitivity) vs. FPR (1 - specificity)
+ 
+**AUC (Area under the curve)** - Integral of ROC. Closer to 1 is better.
+ 
+So far, we've been thresholding at 0.5, though you shouldn't always do that. 
+ 
+With unbalanced data (say 10% 0 and 90% 1), if you care equally about predicting both classes, you might want to choose a different cutoff (like in LDA).
+ 
+To make the **ROC** we look at our errors **as we vary the cutoff**
+ 
+---
+
+## ROC curve
+
+
+.pull-left[
+
+
+```r
+roc &lt;- function(prediction, y) {
+  op &lt;- order(prediction, decreasing = TRUE)
+  preds &lt;- prediction[op]
+  y &lt;- y[op]
+  noty &lt;- 1 - y
+  if (any(duplicated(preds))) {
+    y &lt;- rev(tapply(y, preds, sum))
+    noty &lt;- rev(tapply(noty, preds, sum))
+  }
+  data.frame(
+    FPR = cumsum(noty) / sum(noty), 
+    TPR = cumsum(y) / sum(y))
+}
+
+roc_plt &lt;- ggplot(roc(dat$phat, dat$y), 
+                  aes(FPR, TPR)) +
+  geom_step(color = blue, size = 2) +
+  geom_abline(slope = 1, intercept = 0)
+```
+
+]
+
+.pull-right[
+
+![](rmd_gfx/00-classification-losses/unnamed-chunk-7-1.svg)&lt;!-- --&gt;
+
+]
+
+---
+
+## Other stuff
+
+![:scale 75%](gfx/huge-roc.png)
+
+* Source: worth exploring [Wikipedia](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

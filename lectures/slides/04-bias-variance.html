@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>04 Bias and variance</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 04 Bias and variance
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-09-19
+]
+
+---
+
+class: middle
+
+
+
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+$$
+\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+$$
+
+
+
+.alert[
+We just talked about 
+
+* Variance of an estimator.
+
+* Irriducible error when making predictions.
+
+* These are 2 of the 3 components of the "Prediction Risk" `\(R_n\)`
+]
+
+
+
+---
+
+## Component 3, the Bias
+
+
+
+
+We need to be more specific about what we mean when we say __bias__.
+
+Bias is neither good nor bad in and of itself.
+
+A very simple example: let `\(Z_1,\ldots,Z_n \sim N(\mu, 1)\)`.
+  - We don't know `\(\mu\)`, so we try to use the data (the `\(Z_i\)`'s) to estimate it.
+  
+  - I propose 3 estimators: 
+      1. `\(\widehat{\mu}_1 = 12\)`, 
+  
+      2. `\(\widehat{\mu}_2=Z_6\)`, 
+  
+      3. `\(\widehat{\mu}_3=\overline{Z}\)`.
+  
+  - The __bias__ (by definition) of my estimator is `\(E\left[\widehat{\mu_i}\right]-\mu\)`.
+  
+--
+
+Calculate the bias and variance of each estimator.
+
+  
+---
+
+
+## Regression in general
+
+If I want to predict `\(Y\)` from `\(X\)`, it is almost always the case that
+
+$$
+\mu(x) = \Expect{Y\given X=x} \neq x^{\top}\beta
+$$
+
+So the __bias__ of using a linear model is __not__ zero.
+
+ ---
+
+Why? Because
+
+$$
+\Expect{Y\given X=x}-x^\top\beta \neq \Expect{Y\given X=x} - \mu(x) = 0.
+$$
+
+We can include as many predictors as we like, 
+
+but this doesn't change the fact that the world is __non-linear__.
+
+---
+
+## Predicting new Y's
+
+.emphasis[
+Suppose we know that we want to predict a quantity `\(Y\)`, 
+
+where `\(E[Y]= \mu \in \mathbb{R}\)` and `\(\textrm{Var}[Y] = 1\)`.  
+
+
+Our data is `\(\{y_1,\ldots,y_n\}\)`
+
+We want to estimate `\(\mu\)` 
+]
+
+--
+
+Let's try one more: `\(\widehat Y_a = a\overline{Y}_n\)` for some `\(a \in (0,1]\)`.
+  
+$$
+  R_n(\widehat Y_a) = \Expect{(\widehat Y_a-Y)^2} = (1 - a)^2\mu^2 +
+  \frac{a^2}{n} +1 
+$$
+  
+We can minimize this in `\(a\)` to get the best possible prediction risk for an estimator of the form `\(\widehat Y_a\)`: 
+  
+$$
+\arg\min_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)
+$$
+
+--
+
+What happens if `\(\mu \ll 1\)`?
+  
+---
+class: middle
+  
+.alert[
+Wait a minute! You're saying there is a __better__ estimator than `\(\overline{Y}_n\)`?
+]
+
+
+
+---
+
+## Bias-variance tradeoff: Estimating the mean
+
+$$
+R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
+$$
+
+
+```r
+mu = 1; n = 5; sig2 = 1
+```
+
+&lt;img src="rmd_gfx/04-bias-variance/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## To restate
+
+If `\(\mu=\)` 1 and `\(n=\)` 5 
+
+then it is better to predict with 0.83 `\(\overline{Y}_5\)` 
+
+than with `\(\overline{Y}_5\)` itself.  
+
+--
+
+For this `\(a =\)` 0.83 and `\(n=5\)`
+
+1. `\(R_5(\widehat{Y}_a) =\)` 1.17
+
+2. `\(R_5(\overline{Y}_5)=\)` 1.2
+
+---
+
+## Prediction risk
+
+
+$$
+R_n(f) = \Expect{(Y - f(X))^2}
+$$
+  
+Why care about `\(R_n(f)\)`? 
+
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"/></svg> Measures predictive accuracy on average.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"/></svg> How much confidence should you have in `\(f\)`'s predictions.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"/></svg> Compare with other models.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#a8201a;overflow:visible;position:relative;"><path d="M440.8 4.994C441.9 1.99 444.8 0 448 0C451.2 0 454.1 1.99 455.2 4.994L469.3 42.67L507 56.79C510 57.92 512 60.79 512 64C512 67.21 510 70.08 507 71.21L469.3 85.33L455.2 123C454.1 126 451.2 128 448 128C444.8 128 441.9 126 440.8 123L426.7 85.33L388.1 71.21C385.1 70.08 384 67.21 384 64C384 60.79 385.1 57.92 388.1 56.79L426.7 42.67L440.8 4.994zM289.4 97.37C301.9 84.88 322.1 84.88 334.6 97.37L363.3 126.1L380.7 108.7C386.9 102.4 397.1 102.4 403.3 108.7C409.6 114.9 409.6 125.1 403.3 131.3L385.9 148.7L414.6 177.4C427.1 189.9 427.1 210.1 414.6 222.6L403.8 233.5C411.7 255.5 416 279.3 416 304C416 418.9 322.9 512 208 512C93.12 512 0 418.9 0 304C0 189.1 93.12 96 208 96C232.7 96 256.5 100.3 278.5 108.3L289.4 97.37zM95.1 296C95.1 238.6 142.6 192 199.1 192H207.1C216.8 192 223.1 184.8 223.1 176C223.1 167.2 216.8 160 207.1 160H199.1C124.9 160 63.1 220.9 63.1 296V304C63.1 312.8 71.16 320 79.1 320C88.84 320 95.1 312.8 95.1 304V296z"/></svg> __This is hard:__  Don't know the distribution of the data (if I knew the truth, this would be easy)
+
+  
+---
+
+## Bias-variance decomposition
+
+
+
+`$$R_n(\widehat{Y}_a)=(a - 1)^2\mu^2 + \frac{a^2}{n} + 1$$`
+
+
+1. prediction risk  =  `\(\textrm{bias}^2\)`  +  variance  +  irreducible error 
+
+2. estimation risk  =  `\(\textrm{bias}^2\)`  +  variance
+    
+
+What is `\(R_n(\widehat{Y}_a)\)` for our estimator `\(\widehat{Y}_a=a\overline{Y}_n\)`?
+
+
+`\begin{aligned}
+\textrm{bias}(\widehat{Y}_a) &amp;= \Expect{a\overline{Y}_n} - \mu=(a-1)\mu\\
+\textrm{var}(\widehat f(x)) &amp;= \Expect{ \left(a\overline{Y}_n - \Expect{a\overline{Y}_n}\right)^2}
+=a^2\Expect{\left(\overline{Y}_n-\mu\right)^2}=\frac{a^2}{n} \\
+\sigma^2 &amp;= \Expect{(Y-\mu)^2}=1
+\end{aligned}`
+
+---
+class: inverse
+
+## This decomposition holds generally
+
+`\begin{aligned}
+R_n(\hat{Y}) 
+&amp;= \Expect{(Y-\hat{Y})^2} \\
+&amp;= \Expect{(Y-\mu + \mu - \hat{Y})^2} \\
+&amp;= \Expect{(Y-\mu)^2} + \Expect{(\mu - \hat{Y})^2} + 
+2\Expect{(Y-\mu)(\mu-\hat{Y})}\\
+&amp;= \Expect{(Y-\mu)^2} + \Expect{(\mu - \hat{Y})^2} + 0\\
+&amp;= \text{irr. error} + \text{estimation risk}\\
+&amp;= \sigma^2 + \Expect{(\mu - E[\hat{Y}] + E[\hat{Y}] - \hat{Y})^2}\\
+&amp;= \sigma^2 + \Expect{(\mu - E[\hat{Y}])^2} + \Expect{(E[\hat{Y}] - \hat{Y})^2} + 2\Expect{(\mu-E[\hat{Y}])(E[\hat{Y}] - \hat{Y})}\\
+&amp;= \sigma^2 + \Expect{(\mu - E[\hat{Y}])^2} + \Expect{(E[\hat{Y}] - \hat{Y})^2} + 0\\
+&amp;= \text{irr. error} + \text{squared bias} + \text{variance}
+\end{aligned}`
+
+
+---
+
+## Bias-variance decomposition
+
+`\begin{aligned}
+R_n(\hat{Y}) 
+&amp;= \Expect{(Y-\hat{Y})^2} \\
+&amp;= \text{irr. error} + \text{estimation risk}\\
+&amp;= \text{irr. error} + \text{squared bias} + \text{variance}
+\end{aligned}`
+
+
+
+.alert[  
+__Important implication:__ prediction risk is proportional to estimation risk.  However, defining estimation risk requires stronger assumptions.
+]
+
+--
+
+.emphasis[
+In order to make good predictions, we want our prediction risk to be small.  This means that we want to "balance" the bias and variance.
+]
+
+---
+  
+
+
+&lt;img src="rmd_gfx/04-bias-variance/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Bias-variance tradeoff: Overview
+
+ __bias:__ how well does `\(\widehat{f}(x)\)` approximate the truth `\(\Expect{Y\given X=x}\)`
+
+* If we allow more complicated possible `\(f\)`, lower bias. Flexibility `\(\Rightarrow\)` Expressivity
+
+* But, more flexibility `\(\Rightarrow\)` larger variance
+
+* Complicated models are hard to estimate precisely for fixed `\(n\)`
+
+* Irreducible error
+
+--
+
+
+.emphasis[
+Since we can't evaluate any expectations with real data...
+]
+
+
+---
+class: inverse, center, middle
+
+# Next time...
+
+
+Estimating risk
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

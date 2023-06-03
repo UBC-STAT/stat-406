@@ -1,0 +1,329 @@
+---
+title: "11 Local methods"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+## Last time...
+
+
+.pull-left[
+We looked at __feature maps__ as a way to do nonlinear regression:
+
+We used new "features" $\Phi(x) = \bigg(\phi_1(x),\ \phi_2(x),\ldots,\phi_k(x)\bigg)$
+
+Now we examine an alternative
+
+Suppose I just look at the "neighbors" of some point (based on the $x$-values)
+
+I just average the $y$'s at those locations together
+
+Let's use 3 neighbors
+]
+
+--
+
+.pull-right[
+```{r load-lidar, echo=FALSE}
+library(cowplot)
+data(lidar, package = "SemiPar")
+set.seed(12345)
+lidar_unif <- lidar[sample.int(nrow(lidar), 40),] %>% arrange(range)
+pt = 15
+nn = 3
+neibs = sort.int(abs(lidar_unif$range-lidar_unif$range[pt]), 
+                     index.return = TRUE)$ix[1:nn]
+lidar_unif$neighbors = 1:40 %in% neibs
+g1 = ggplot(lidar_unif, aes(range,logratio,color=neighbors)) + 
+  geom_point() +
+  scale_color_manual(values = c(blue, red)) + 
+  geom_vline(xintercept = lidar_unif$range[pt], color=red) + 
+  annotate("rect", fill=red, alpha=.25, ymin=-Inf, ymax=Inf,
+           xmin=min(lidar_unif$range[neibs]), 
+           xmax = max(lidar_unif$range[neibs])) +
+  theme(legend.position = "none")
+g2 = ggplot(lidar_unif, aes(range,logratio)) + 
+  geom_point(color=blue) + 
+  geom_line(data=tibble(
+    range=seq(min(lidar_unif$range),max(lidar_unif$range),length.out = 101),
+    logratio=FNN::knn.reg(
+      lidar_unif$range, matrix(range,ncol=1), y=lidar_unif$logratio)$pred), 
+    color=orange)
+plot_grid(g1,g2,nrow=2)
+```
+
+]
+
+---
+
+## KNN 
+
+
+.pull-left[
+```{r small-lidar-again, echo=FALSE}
+g2
+```
+]
+
+
+.pull-right[
+
+```{r, eval=FALSE, echo = TRUE}
+data(lidar, package="SemiPar")
+library(FNN)
+lidar_unif <- lidar[sample.int(nrow(lidar), 40),] %>% 
+  arrange(range)
+new_range <- seq(min(lidar_unif$range), 
+                 max(lidar_unif$range),
+                 length.out = 101)
+knn3 <- knn.reg(
+  train = lidar_unif$range, 
+  test = matrix(range, ncol = 1), 
+  y = lidar_unif$logratio, 
+  k = 3)
+```
+
+
+This method is $K$-nearest neighbors.
+
+It's a __linear smoother__ just like in previous lectures: $\widehat{\mathbf{y}} = S \mathbf{y}$ for some matrix $S$.
+
+You should imagine what $S$ looks like.
+
+What is the effective degrees of freedom of KNN?
+
+KNN averages the neighbors with equal weight.
+
+But some neighbors are "closer" than other neighbors.
+]
+
+---
+
+## Local averages
+
+Instead of choosing the number of neighbors to average, we can average any observations within a certain distance.
+
+```{r, fig.height = 4, fig.align='center', fig.width=8, echo=FALSE,fig.height=4}
+ggplot(lidar_unif, aes(range, logratio)) + geom_point(color=blue) + 
+  coord_cartesian(ylim=c(-1,0)) + 
+  geom_segment(aes(x=range[15],y=-1,xend=range[15],yend=logratio[15]),color=blue) + 
+  geom_segment(aes(x=range[25],y=-1,xend=range[25],yend=logratio[25]),color=green) +
+  geom_rect(aes(xmin=range[15]-15,xmax=range[15]+15,ymin=-1,ymax=-.7),fill=blue) +
+  geom_rect(aes(xmin=range[25]-15,xmax=range[25]+15,ymin=-1,ymax=-.7),fill=green)
+```
+
+--
+
+The boxes have width 30. 
+
+---
+
+## What is a "kernel" smoother?
+
+* The mathematics:
+
+> A kernel is any function $K$ such that for any $u$, $K(u) \geq 0$, $\int du K(u)=1$ and $\int uK(u)du=0$.
+
+* The idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.
+
+* The previous example is called the __boxcar__ kernel. It looks like this:
+
+```{r boxcar, fig.width=8, fig.height=3, echo=FALSE, fig.align="center"}
+testpts = seq(min(lidar_unif$range),max(lidar_unif$range),length.out = 101)
+dmat = abs(outer(testpts, lidar_unif$range, "-"))
+S = (dmat*(dmat<15))
+S = S / rowSums(S)
+boxcar = tibble(range=testpts, logratio=S %*% lidar_unif$logratio)
+ggplot(lidar_unif, aes(range, logratio)) + geom_point(color=blue) + 
+  geom_line(data=boxcar,color=orange)
+```
+
+This one gives the same non-zero weight to all points within $\pm 15$ range.
+
+---
+
+
+## Other kernels
+
+Most of the time, we don't use the boxcar because the weights are weird. (constant)
+
+A more common one is the Gaussian kernel:
+
+```{r, fig.height = 4, fig.align='center', fig.width=6, echo=FALSE}
+gaussian_kernel = function(x) dnorm(x, mean=lidar_unif$range[15],sd=7.5)*3
+ggplot(lidar_unif, aes(range, logratio+1)) + geom_point(color=blue) + 
+  coord_cartesian(ylim=c(0,1)) + 
+  geom_segment(aes(x=range[15],y=0,xend=range[15],yend=logratio[15]+1),color=orange)+
+  stat_function(fun=gaussian_kernel, geom="area",fill=orange)
+```
+
+For the plot, I made $\sigma=7.5$. 
+
+Now the weights "die away" for points farther from where we're predicting. (but all nonzero!!)
+
+---
+
+## Other kernels
+
+What if I made $\sigma=15$?
+
+
+```{r, fig.height = 4, fig.align='center', fig.width=6, echo=FALSE}
+gaussian_kernel = function(x) dnorm(x, mean=lidar_unif$range[15],sd=15)*3
+ggplot(lidar_unif, aes(range, logratio+1)) + geom_point(color=blue) + 
+  coord_cartesian(ylim=c(0,1)) +
+  geom_segment(aes(x=range[15],y=0,xend=range[15],yend=logratio[15]+1),color=orange)+
+  stat_function(fun=gaussian_kernel, geom="area",fill=orange)
+x = lidar_unif$range
+```
+
+Before, points far from $x_{15}$ got very small weights, now they have more influence.
+
+For the Gaussian kernel, $\sigma$ determines something like the "range" of the smoother.
+
+
+---
+
+## Many Gaussians
+
+The following code gives $S$ for Gaussian kernel smoothers with different $\sigma$
+
+```{r, eval = FALSE}
+dmat = as.matrix(dist(x))
+Sgauss <- function(sigma) {
+  gg <-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat
+  sweep(gg, 1, rowSums(gg), '/') # make the rows sum to 1.
+}
+```
+
+```{r, fig.height = 4, fig.align='center', fig.width=8, echo=FALSE}
+Sgauss <- function(sigma) {
+  gg <-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat
+  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.
+}
+boxcar$S15 = with(lidar_unif, Sgauss(15) %*% logratio)
+boxcar$S08 = with(lidar_unif, Sgauss(8) %*% logratio)
+boxcar$S30 = with(lidar_unif, Sgauss(30) %*% logratio)
+bc = boxcar %>% select(range, S15,S08,S30) %>% 
+  pivot_longer(-range, names_to = "Sigma")
+ggplot(lidar_unif, aes(range, logratio)) + 
+  geom_point(color=blue) + 
+  geom_line(data=bc, aes(range, value, color=Sigma)) +
+  scale_color_brewer(palette="Set1")
+```
+
+---
+
+## The bandwidth
+
+* Choosing $\sigma$ is __very__ important.
+
+* This "range" parameter is called the __bandwidth__.
+
+* It is way more important than which kernel you use.
+
+* The default kernel in `ksmooth()` is something called 'Epanechnikov':
+
+```{r}
+epan <- function(x) 3/4 * (1 - x^2) * (abs(x) < 1)
+```
+
+```{r,fig.height=3, fig.width=8, fig.align='center', echo=FALSE}
+ggplot(data.frame(x=c(-2,2)), aes(x)) + stat_function(fun=epan,color=green)
+```
+
+---
+
+## Choosing the bandwidth
+
+As we have discussed, kernel smoothing (and KNN) are linear smoothers
+
+$$\widehat{\mathbf{y}} = S\mathbf{y}$$
+
+This has easy implications:
+
+--
+
+```{r} 
+loocv <- function(y, S){
+  yhat = S %*% y
+  mean( (y - yhat)^2 / (1 - diag(S))^2 )
+}
+``` 
+
+--
+
+The __effective degrees of freedom__ is $\textrm{tr}(S)$
+
+Therefore we can use our model selection criteria from before 
+
+---
+
+## Smoothing the full Lidar data
+
+```{r}
+dmat <- as.matrix(dist(lidar$range))
+sigmas <- 10^(seq(log10(300), log10(.3), length=100))
+loocvs <- map_dbl(sigmas, ~ loocv(lidar$logratio, Sgauss(.x)))
+best_s <- sigmas[which.min(loocvs)]
+lidar$smoothed <- Sgauss(best_s) %*% lidar$logratio
+```
+
+```{r smoothed-lidar, echo=FALSE, fig.width=10, fig.height=4,fig.align="center"}
+g3 = ggplot(data.frame(sigma=sigmas, loocv=loocvs), aes(sigma,loocv)) + 
+  geom_point(color=blue) + geom_vline(xintercept=best_s, color=red) +
+  scale_x_log10() + 
+  xlab(sprintf("Sigma, best is sig = %.2f", best_s))
+g4 = ggplot(lidar, aes(range, logratio)) + geom_point(color=blue) +
+  geom_line(aes(y=smoothed), color=orange, size=2)
+plot_grid(g3,g4,nrow=1)
+```
+
+I considered $\sigma \in [0.3,\ 300]$ and used $`r round(best_s, 2)`$.
+
+---
+
+## Smoothing manually
+
+I did Kernel Smoothing "manually"
+
+1. For a fixed bandwidth
+
+2. Compute the smoothing matrix
+
+3. Make the predictions
+
+4. Repeat and compute CV using our "nice" formula
+
+The point is to "show how it works". It's also really easy.
+
+There are a number of other ways to do this in R
+
+```{r, eval=FALSE, echo=TRUE, error=TRUE}
+loess()
+ksmooth()
+KernSmooth::locpoly()
+mgcv::gam()
+np::npreg()
+```
+
+These have tricks and ways of doing CV and other things automatically.
+
+Note: all I needed was the distance matrix `dist(x)`. Given a distance function (say, $d(\mathbf{x}_i, \mathbf{x}_j) = ||\mathbf{x}_i - \mathbf{x}_j||_2 + I(x_{i,3} = x_{j,3})$), I can use these methods.
+
+---
+class: middle, center, inverse
+
+# Next time...
+
+Why don't we just smooth everything all the time?

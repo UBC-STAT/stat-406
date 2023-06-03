@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>13 GAMs and Trees</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 13 GAMs and Trees
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-10-03
+]
+
+---
+
+
+
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+
+## GAMs
+
+Last time we discussed smoothing in multiple dimensions.
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+
+Here we introduce the concept of GAMs (__G__eneralized __A__dditive __M__odels)
+
+The basic idea is to imagine that the response is the sum of some functions of the predictors:
+
+`$$\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}).$$`
+
+
+Note that OLS __is__ a GAM (take `\(f_j(x_{j})=\beta_j x_{j}\)`):
+
+`$$\Expect{Y \given X=x} = \beta_0 + \beta_1 x_{1}+\cdots+\beta_p x_{p}.$$`
+
+--
+
+These work by estimating each `\(f_i\)` using basis expansions in predictor `\(i\)`
+
+The algorithm for fitting these things is called "backfitting":
+
+.emphasis[    
+1. Center `\(\y\)` and `\(\X\)`.
+2. Hold `\(f_k\)` for all `\(k\neq j\)` fixed, and regress `\(f_j\)` on the partial residuals using your favorite smoother.
+3. Repeat for `\(1\leq j\leq p\)`.
+4. Repeat steps 2 and 3 until the estimated functions "stop moving" (iterate)
+5. Return the results.
+]
+
+---
+
+## Very small example
+
+.pull-left[
+
+
+```r
+library(mgcv)
+set.seed(12345)
+n &lt;- 500
+simple &lt;- tibble(
+  x1 = runif(n, 0, 2*pi),
+  x2 = runif(n),
+  y = 5 + 2*sin(x1) + 8*sqrt(x2) + rnorm(n, sd = .25))
+```
+
+&lt;img src="rmd_gfx/13-gams-trees/simple-data-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+
+Smooth each coordinate independently
+
+
+```r
+ex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)
+# s(z) means "smooth" z (uses splines)
+plot(ex_smooth, pages = 1, scale = 0, shade = TRUE, 
+     resid = TRUE, se = 2, las = 1)
+```
+
+![](rmd_gfx/13-gams-trees/gam-mod-1.svg)&lt;!-- --&gt;
+
+
+
+
+]
+
+---
+
+## Wherefore GAMs?
+
+
+.pull-left[
+If 
+
+`\(\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}),\)`
+
+then
+
+`\(\textrm{MSE}(\hat f) = \frac{Cp}{n^{4/5}} + \sigma^2.\)`
+
+* Exponent no longer depends on `\(p\)`. Converges faster. (if truth separates like this)
+
+* You could also use the same methods to include "some" interactions like
+
+`$$\begin{aligned}&amp;\Expect{Y \given X=x}\\ &amp;= \beta_0 + f_{12}(x_{1},\ x_{2})+f_3(x_3)+\cdots+f_p(x_{p}),\end{aligned}$$`
+]
+
+.pull-right[
+
+Smooth two coordinates together
+
+
+```r
+ex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)
+plot(ex_smooth2, scheme = 2, scale = 0, shade = TRUE, 
+     resid = TRUE, se = 2, las=1)
+```
+
+&lt;img src="rmd_gfx/13-gams-trees/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+## Regression trees
+
+Trees involve stratifying or segmenting the predictor space into a number of simple regions.
+
+Trees are simple and useful for interpretation.  
+
+Basic trees are not great at prediction. 
+
+Modern methods that use trees are much better (Module 4)
+
+--
+
+Regression trees estimate piece-wise constant functions
+
+The slabs are axis-parallel rectangles `\(R_1,\ldots,R_K\)` based on `\(\X\)`
+
+In each region, we average the `\(y_i\)`'s: `\(\hat\mu_1,\ldots,\hat\mu_k\)`
+
+Minimize `\(\sum_{k=1}^K \sum_{i=1}^n (y_i-\mu_k)^2\)` over `\(R_k,\mu_k\)` for `\(k\in \{1,\ldots,K\}\)`
+
+--
+
+This sounds more complicated than it is.
+
+The minimization is performed __greedily__ (like forward stepwise regression).
+
+
+
+---
+
+
+![](https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png)
+
+
+
+---
+
+## Mobility data
+
+
+
+
+```r
+bigtree &lt;- tree(Mobility ~ ., data = mob)
+smalltree = prune.tree(bigtree, k = .09)
+draw.tree(smalltree, digits = 2)
+```
+
+&lt;img src="rmd_gfx/13-gams-trees/small-tree-1.svg" style="display: block; margin: auto;" /&gt;
+
+This is called the __dendrogram__
+
+---
+
+## Partition view
+
+
+```r
+mob$preds &lt;- predict(smalltree)
+par(mfrow = c(1, 2), mar = c(5, 3, 0, 0))
+draw.tree(smalltree, digits = 2)
+cols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]
+plot(mob$Black, mob$Commute, pch = 19, cex = .4, bty = 'n', las = 1, col = cols, 
+     ylab = "Commute time", xlab = "% Black")
+partition.tree(smalltree, add = TRUE, ordvars = c("Black","Commute"))
+```
+
+&lt;img src="rmd_gfx/13-gams-trees/partition-view-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+We predict all observations in a region with the same value.
+`\(\bullet\)` The three regions correspond to the leaves of the tree.
+
+
+---
+
+&lt;img src="rmd_gfx/13-gams-trees/big-tree-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+__Terminology__
+
+We call each split or end point a node.  Each terminal node is referred to as a leaf.  
+
+The interior nodes lead to branches.  
+
+---
+
+## Advantages and disadvantages of trees
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M128 447.1V223.1c0-17.67-14.33-31.1-32-31.1H32c-17.67 0-32 14.33-32 31.1v223.1c0 17.67 14.33 31.1 32 31.1h64C113.7 479.1 128 465.6 128 447.1zM512 224.1c0-26.5-21.48-47.98-48-47.98h-146.5c22.77-37.91 34.52-80.88 34.52-96.02C352 56.52 333.5 32 302.5 32c-63.13 0-26.36 76.15-108.2 141.6L178 186.6C166.2 196.1 160.2 210 160.1 224c-.0234 .0234 0 0 0 0L160 384c0 15.1 7.113 29.33 19.2 38.39l34.14 25.59C241 468.8 274.7 480 309.3 480H368c26.52 0 48-21.47 48-47.98c0-3.635-.4805-7.143-1.246-10.55C434 415.2 448 397.4 448 376c0-9.148-2.697-17.61-7.139-24.88C463.1 347 480 327.5 480 304.1c0-12.5-4.893-23.78-12.72-32.32C492.2 270.1 512 249.5 512 224.1z"/></svg> Trees are very easy to explain (much easier than even linear regression).  
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M128 447.1V223.1c0-17.67-14.33-31.1-32-31.1H32c-17.67 0-32 14.33-32 31.1v223.1c0 17.67 14.33 31.1 32 31.1h64C113.7 479.1 128 465.6 128 447.1zM512 224.1c0-26.5-21.48-47.98-48-47.98h-146.5c22.77-37.91 34.52-80.88 34.52-96.02C352 56.52 333.5 32 302.5 32c-63.13 0-26.36 76.15-108.2 141.6L178 186.6C166.2 196.1 160.2 210 160.1 224c-.0234 .0234 0 0 0 0L160 384c0 15.1 7.113 29.33 19.2 38.39l34.14 25.59C241 468.8 274.7 480 309.3 480H368c26.52 0 48-21.47 48-47.98c0-3.635-.4805-7.143-1.246-10.55C434 415.2 448 397.4 448 376c0-9.148-2.697-17.61-7.139-24.88C463.1 347 480 327.5 480 304.1c0-12.5-4.893-23.78-12.72-32.32C492.2 270.1 512 249.5 512 224.1z"/></svg> Some people believe that decision trees mirror human decision.  
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M128 447.1V223.1c0-17.67-14.33-31.1-32-31.1H32c-17.67 0-32 14.33-32 31.1v223.1c0 17.67 14.33 31.1 32 31.1h64C113.7 479.1 128 465.6 128 447.1zM512 224.1c0-26.5-21.48-47.98-48-47.98h-146.5c22.77-37.91 34.52-80.88 34.52-96.02C352 56.52 333.5 32 302.5 32c-63.13 0-26.36 76.15-108.2 141.6L178 186.6C166.2 196.1 160.2 210 160.1 224c-.0234 .0234 0 0 0 0L160 384c0 15.1 7.113 29.33 19.2 38.39l34.14 25.59C241 468.8 274.7 480 309.3 480H368c26.52 0 48-21.47 48-47.98c0-3.635-.4805-7.143-1.246-10.55C434 415.2 448 397.4 448 376c0-9.148-2.697-17.61-7.139-24.88C463.1 347 480 327.5 480 304.1c0-12.5-4.893-23.78-12.72-32.32C492.2 270.1 512 249.5 512 224.1z"/></svg>  Trees can easily be displayed graphically no matter the dimension of the data.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#0a8754;overflow:visible;position:relative;"><path d="M128 447.1V223.1c0-17.67-14.33-31.1-32-31.1H32c-17.67 0-32 14.33-32 31.1v223.1c0 17.67 14.33 31.1 32 31.1h64C113.7 479.1 128 465.6 128 447.1zM512 224.1c0-26.5-21.48-47.98-48-47.98h-146.5c22.77-37.91 34.52-80.88 34.52-96.02C352 56.52 333.5 32 302.5 32c-63.13 0-26.36 76.15-108.2 141.6L178 186.6C166.2 196.1 160.2 210 160.1 224c-.0234 .0234 0 0 0 0L160 384c0 15.1 7.113 29.33 19.2 38.39l34.14 25.59C241 468.8 274.7 480 309.3 480H368c26.52 0 48-21.47 48-47.98c0-3.635-.4805-7.143-1.246-10.55C434 415.2 448 397.4 448 376c0-9.148-2.697-17.61-7.139-24.88C463.1 347 480 327.5 480 304.1c0-12.5-4.893-23.78-12.72-32.32C492.2 270.1 512 249.5 512 224.1z"/></svg> Trees can easily handle qualitative predictors without the need to create dummy variables.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#e98a15;overflow:visible;position:relative;"><path d="M440.8 4.994C441.9 1.99 444.8 0 448 0C451.2 0 454.1 1.99 455.2 4.994L469.3 42.67L507 56.79C510 57.92 512 60.79 512 64C512 67.21 510 70.08 507 71.21L469.3 85.33L455.2 123C454.1 126 451.2 128 448 128C444.8 128 441.9 126 440.8 123L426.7 85.33L388.1 71.21C385.1 70.08 384 67.21 384 64C384 60.79 385.1 57.92 388.1 56.79L426.7 42.67L440.8 4.994zM289.4 97.37C301.9 84.88 322.1 84.88 334.6 97.37L363.3 126.1L380.7 108.7C386.9 102.4 397.1 102.4 403.3 108.7C409.6 114.9 409.6 125.1 403.3 131.3L385.9 148.7L414.6 177.4C427.1 189.9 427.1 210.1 414.6 222.6L403.8 233.5C411.7 255.5 416 279.3 416 304C416 418.9 322.9 512 208 512C93.12 512 0 418.9 0 304C0 189.1 93.12 96 208 96C232.7 96 256.5 100.3 278.5 108.3L289.4 97.37zM95.1 296C95.1 238.6 142.6 192 199.1 192H207.1C216.8 192 223.1 184.8 223.1 176C223.1 167.2 216.8 160 207.1 160H199.1C124.9 160 63.1 220.9 63.1 296V304C63.1 312.8 71.16 320 79.1 320C88.84 320 95.1 312.8 95.1 304V296z"/></svg> Trees aren't very good at prediction.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#e98a15;overflow:visible;position:relative;"><path d="M440.8 4.994C441.9 1.99 444.8 0 448 0C451.2 0 454.1 1.99 455.2 4.994L469.3 42.67L507 56.79C510 57.92 512 60.79 512 64C512 67.21 510 70.08 507 71.21L469.3 85.33L455.2 123C454.1 126 451.2 128 448 128C444.8 128 441.9 126 440.8 123L426.7 85.33L388.1 71.21C385.1 70.08 384 67.21 384 64C384 60.79 385.1 57.92 388.1 56.79L426.7 42.67L440.8 4.994zM289.4 97.37C301.9 84.88 322.1 84.88 334.6 97.37L363.3 126.1L380.7 108.7C386.9 102.4 397.1 102.4 403.3 108.7C409.6 114.9 409.6 125.1 403.3 131.3L385.9 148.7L414.6 177.4C427.1 189.9 427.1 210.1 414.6 222.6L403.8 233.5C411.7 255.5 416 279.3 416 304C416 418.9 322.9 512 208 512C93.12 512 0 418.9 0 304C0 189.1 93.12 96 208 96C232.7 96 256.5 100.3 278.5 108.3L289.4 97.37zM95.1 296C95.1 238.6 142.6 192 199.1 192H207.1C216.8 192 223.1 184.8 223.1 176C223.1 167.2 216.8 160 207.1 160H199.1C124.9 160 63.1 220.9 63.1 296V304C63.1 312.8 71.16 320 79.1 320C88.84 320 95.1 312.8 95.1 304V296z"/></svg> Full trees badly overfit, so we "prune" them using CV 
+
+--
+
+
+.hand[
+We'll talk more about trees next module for Classification.
+]
+
+---
+class: middle
+background-image: url("gfx/proforhobo.png")
+background-size: cover
+
+.pull-left[
+.hand[.secondary[.larger[Next time...]]]
+
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+]
+
+.pull-right[.center[
+.fourth-color[.hand[.large[classification: 
+
+Professor or Hobo? 
+
+You decide.]]]
+
+
+.small[.fourth-color[
+Source: proforhobo.com
+]]
+]]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

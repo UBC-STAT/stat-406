@@ -1,0 +1,279 @@
+---
+title: "26 Manifold learning"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+---
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+## Last time
+
+We examined kernel PCA:
+
+$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$
+
+
+1.  Specify a kernel $k$, for example $k(x,x') = \exp\left( -\norm{x - x'}_2^2/\gamma\right)$
+
+2.  Form $\mathbf{K}_{i,i'} = k(x_i,x_{i'})$
+
+3.  Standardize and take eigendecomposition $\mathbf{K} = \U\D^2\U^{\top}$
+
+Why $(i,\ i')$? These are two rows of $\X$. Rows of $\X$ denoted by $i$, columns by $j$
+
+Closely related to this is
+
+__Classical Multidimensional Scaling__
+
+---
+
+## CMDS
+
+
+1. Calculate a matrix of distances (or dissimilarities) between data points $\Delta$, and square them $\Delta^2$
+
+3. .hand[Double center] $\mathbf{B} = (I-\frac{1}{n}11^\top)\Delta^2(I-\frac{1}{n}11^\top)$
+
+3. Write $\mathbf{B} = \U\D^2 \U^\top$ (find the eigendecomposition == SVD of square symmetric matrix)
+
+4. Approximate your data with $\U_{M}\D_{M}$, "the first $M$ columns"
+
+CMDS is embedding .hand[dissimilarities] by using the eigendecomposition.
+
+--
+
+__Distances v. Dissimilarities__
+
+Euclidean distance: $d(x,y) = \sqrt{\sum_{j=1}^p (x_j-y_j)^2} = \sqrt{(x-y)^\top(x-y)} =\sqrt{x^\top x + y^\top y - 2x^\top y}$
+
+Euclidean dissimilarity: $\delta(x,y) = x^\top y$
+
+--
+
+.pull-left[
+
+```{r, echo=FALSE, fig.width=8,fig.height=1.5,fig.align='center'}
+library(ggplot2)
+library(tibble)
+library(ggforce)
+df = tibble(x = c(-2,2), y=c(0,0), lab = c("CMDS","KPCA"), rad=c(3,3),
+            xlab=x-c(1,-1))
+ggplot(df) + 
+  geom_circle(aes(x0=x,y0=y,r=rad,fill=lab,color=lab),alpha=.6) + 
+  coord_fixed() + theme_void() + 
+  scale_fill_manual(values=c(blue,orange)) +
+  scale_color_manual(values=c(blue,orange)) +
+  geom_text(aes(xlab,y,label=lab),size=4) + 
+  theme(legend.position = "none") + 
+  geom_point(data=tibble(x=0,y=0), aes(x,y))
+```
+]
+
+
+--
+
+.pull-right[
+
+```{r, echo=FALSE, fig.width=8,fig.height=1.5,fig.align='center'}
+df = tibble(x = c(-2,0), y=c(0,0), lab = c("CMDS","KPCA"), rad=c(3,1),
+            xlab=x-c(1,0))
+ggplot(df) + 
+  geom_circle(aes(x0=x,y0=y,r=rad,fill=lab,color=lab),alpha=.6) + 
+  coord_fixed() + theme_void() + 
+  scale_fill_manual(values=c(blue,orange)) +
+  scale_color_manual(values=c(blue,orange)) +
+  geom_text(aes(xlab,y,label=lab),size=4) + 
+  theme(legend.position = "none")
+```
+
+]
+
+
+---
+
+## Manifold learning
+
+.pull-left[
+
+Suppose my data don't lie on hyperplanes (so I don't want to use PCA)
+
+I could use kernel PCA, but there's another way to think of the problem
+
+How good of an approximation is Euclidean distance to the distance along the data?
+
+This question is equivalent to asking: how quickly does the
+tangent (space) change?
+
+
+Therefore, the quality of the (local) Euclidean distance, depends on the
+second derivative (ie: how fast does the first derivative change?)
+
+
+In higher dimensions, the second derivative is known as the
+__Laplacian__:
+$\sum_{j} \frac{\partial^2 f}{\partial x_j^2}$ (Note: This is also
+known as the divergence of the gradient)
+]
+
+.pull-right[
+
+In 1-D, the tangent space is just the first derivative at that point:
+$$f(x) = x^2 \Rightarrow f'(x) = 2x.$$
+
+
+
+```{r echo=FALSE, fig.align='center',fig.height=4,fig.width=4}
+quad <- function(x) x^2
+ggplot(data.frame(x=c(-1,1)), aes(x)) + stat_function(fun=quad, color=blue) +
+  geom_abline(slope = 1, intercept = -.25, color=red)
+```
+
+]
+
+---
+
+## What are Laplacian Eigenmaps, then?
+
+Imagine the operator $\mathbf{L}$ that performs this operation:
+$$\mathbf{L} f = \sum_{j} \frac{\partial^2 f}{\partial x_j^2}$$
+
+Then $\mathbf{L}$ is the __Laplacian__, mapping
+a function to the divergence of its gradient
+
+
+__Key Idea:__   We can get the eigenvectors/eigenvalues of $\mathbf{L}$. Analogously to PCA, we can now do inference with these eigenvectors.
+
+
+
+.emphasis[Collect data: $x_1,\ldots,x_n$ where $x_i\in\R^p$.
+
+1. Center and scale the data matrix $\X$
+2. Compute $\mathbf{K}$ where
+    $\mathbf{K}_{i,i'} = \exp\left(-\|x_i-x_{i'}\|_2^2/\gamma\right)$
+4. __Optionally__: (a) allow only the $k$ nearest neighbors $i'$ to $i$ to have $\mathbf{K}_{i,i'}$ nonzero (b) set $\mathbf{K}_{i,i'}=1$ if nonzero.
+3. Form the Laplacian $\mathbf{L} = \mathbf{I} -\mathbf{G}^{-1}\mathbf{K}$ where $\mathbf{G} =$ `diag(rowSums(` $\mathbf{K}$ `))`
+4. Compute the Eigendecomposition of $\mathbf{L} = \U\D\U^\top$.
+5. Return $\mathbf{U}_M\D_M^{-1}$, where $\D_M$ contains the __smallest__ $M$ nonzero
+    eigenvalues of $\mathbf{L}$
+]
+
+---
+
+## Here's our manifold
+
+```{r elephant, include=FALSE}
+tt = -100:500/100
+elephant <- function(tt,eye=TRUE){
+  x = 12*cos(3*tt) - 14*cos(5*tt) + 50*sin(tt) + 18*sin(2*tt)
+  y = -30*sin(tt) + 8*sin(2*tt) - 10*sin(3*tt) - 60*cos(tt)
+  if(eye) return(data.frame(y=c(y,20),x=c(-x,20)))
+  else return(data.frame(y=y,x=-x))
+}
+ele = elephant(tt,FALSE)
+ele$tt = tt
+noisy_ele = ele %>% 
+  mutate(y=y+rnorm(nrow(ele),0,5), x=x+rnorm(nrow(ele),0,5), z=rnorm(nrow(ele),0,5)) %>%
+  relocate(tt, .after=last_col()) %>%
+  rename(colors=tt)
+```
+
+```{r plot-elephant, echo=FALSE, fig.align='center',fig.width=8,fig.height=5}
+ggplot(noisy_ele, aes(x=y,y=x,col=tt)) + geom_point() + 
+  scale_color_viridis_c() + 
+  theme(legend.position = 'none') +
+  geom_path(data=ele, aes(x=y,y=x), color="black",size=2)
+```
+
+---
+
+## PCA, CMDS, and Laplacian eigenmaps
+
+```{r manifold-meths}
+library(maniTools)
+elef = noisy_ele[,1:2]
+pca = elef %>% center_and_standardise() %>% prcomp()
+pca = as.matrix(elef) %*% pca$rotation[,1] 
+cmds = cmdscale(dist(elef), k = 1) 
+le = Laplacian_Eigenmaps(elef, 5, 1)$eigenvectors 
+```
+
+```{r mani-plots, echo=FALSE,fig.align='center',fig.width=10,fig.height=4.5}
+all = cbind(rbind(as.matrix(elef), cbind(pca,pca), 
+                  cbind(cmds,cmds), cbind(le,le)), noisy_ele$colors)
+colnames(all) = c('y','x','col')
+all = as_tibble(all)
+all$method = rep(c("data","pca","cmds","le"), each=nrow(elef)) 
+ggplot(all, aes(y,x,color=col)) + geom_point() + 
+  scale_color_viridis_c() +
+  facet_wrap(~method, scales="free", ncol = 4) +
+  theme(legend.position = "none", 
+        axis.line = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), axis.title = element_blank())
+```
+
+---
+
+## Scratching the Laplacian
+
+There are lots of other manifold learning techniques
+
+To name a few
+
+* Hessian maps
+* Locally linear embeddings
+* Diffusion maps
+* Local tangent space alignment
+* Isomap
+
+Issues with nonlinear techniques:
+
+1. Need to choose $M$ (also with linear)
+2. Also other tuning parameters.
+3. These others can have __huge__ effects
+4. The difference between the data lying .hand[on] the manifold and the data lying .hand[near] the manifold is important
+
+```{r, echo=FALSE, fig.align="center", fig.width=6, fig.height=2}
+all_ele = bind_rows(
+  near=noisy_ele %>% mutate(tt=colors) %>% select(x,y,tt), 
+  on=ele, .id = "on_near")
+all_ele %>% ggplot(aes(x=y,y=x,col=tt)) + geom_point() + 
+  facet_wrap(~on_near) +
+  scale_color_viridis_c() + 
+  theme(legend.position = 'none',
+        axis.line = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), axis.title = element_blank())
+```
+
+---
+class: inverse, center, middle
+
+# Next time...
+
+Clustering

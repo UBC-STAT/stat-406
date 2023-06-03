@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>08 Ridge regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 08 Ridge regression
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-10-03
+]
+
+---
+
+class: middle, center
+background-image: url("https://disher.com/wp-content/uploads/2017/02/Product-Constraints.jpg")
+background-size: cover
+
+
+
+
+
+.primary[.larger[Module]] .huge-blue-number[2]
+
+.primary[regularization, constraints, and nonparametrics]
+
+---
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+
+
+## Recap
+
+So far, we thought of __model selection__ as
+
+.hand[Decide which predictors we would like to use in our linear model]
+
+Or similarly:
+
+.hand[Decide which of a few linear models to use]
+
+To do this, we used a risk estimate, and chose the "model" with the lowest estimate
+
+--
+
+Let's call what we've done __variable selection__, a specific case of __model selection__.
+
+--
+
+Moving forward, we need to generalize this to
+
+.hand[Decide which of possibly infinite prediction functions] `\(f\in\mathcal{F}\)` .hand[to use]
+
+Thankfully, this isn't really any different. We still use those same risk estimates.
+
+
+__Remember:__ We were choosing models that balance bias and variance (and hence have low prediction risk).
+
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\E}{E}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+---
+
+## Regularization
+
+* Another way to control bias and variance is through __regularization__ or
+__shrinkage__.  
+
+
+* Rather than selecting a few predictors that seem reasonable, maybe trying a few combinations, use them all.
+
+* I mean __ALL__.
+
+* But, make your estimates of `\(\beta\)` "smaller"
+
+---
+
+## Brief aside on optimization
+
+* An optimization problem has 2 components:
+
+    1. The "Objective function": e.g. `\(\frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2\)`.
+    2. The "constraint": e.g. "fewer than 5 non-zero entries in `\(\beta\)`".
+    
+* A constrained minimization problem is written
+
+
+`$$\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)$$`
+
+* `\(f(\beta)\)` is the objective function
+* `\(C(\beta)\)` is the constraint
+
+---
+
+## Ridge regression (constrained version)
+
+One way to do this for regression is to solve (say):
+
+`\begin{aligned}
+\min_\beta &amp;\ \ \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 \\
+\mbox{s.t.} &amp;\ \ \sum_j \beta^2_j &lt; s
+\end{aligned}`
+
+for some `\(s&gt;0\)`.
+
+* This is called "ridge regression".
+
+* The __minimizer__ of this problem is called `\(\brt\)`
+
+--
+
+Compare this to ordinary least squares:
+
+`\begin{aligned}
+\min_\beta &amp;\ \ \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 \\
+\mbox{s.t.} &amp;\ \ \beta \in \R^p
+\end{aligned}`
+
+
+---
+
+## Geometry of ridge regression (2 dimensions)
+
+
+
+&lt;img src="rmd_gfx/08-ridge-regression/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Brief aside on norms
+
+Recall, for a vector `\(z \in \R^p\)`
+
+
+`$$\norm{z}_2 = \sqrt{z_1^2 + z_2^2 + \cdots + z^2_p} = \sqrt{\sum_{j=1}^p z_j^2}$$`
+
+
+So, 
+
+`$$\norm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.$$`
+
+
+--
+
+Other norms we should remember:
+
+`\(\ell_q\)`-norm
+: `\(\left(\sum_{j=1}^p |z_j|^q\right)^{1/q}\)`
+
+`\(\ell_1\)`-norm (special case)
+: `\(\sum_{j=1}^p |z_j|\)`
+
+`\(\ell_0\)`-norm
+: `\(\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert\)`
+
+
+---
+
+## Ridge regression
+
+An equivalent way to write
+
+`$$\brt = \arg \min_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2$$`
+
+
+is in the __Lagrangian__ form
+
+
+`$$\brl = \arg \min_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.$$`
+
+
+
+
+For every `\(\lambda\)` there is a unique `\(s\)` (and vice versa) that makes 
+
+`$$\brt = \brl$$`
+
+--
+
+Observe:
+
+* `\(\lambda = 0\)` (or `\(s = \infty\)`) makes `\(\brl = \bls\)`
+* Any `\(\lambda &gt; 0\)` (or `\(s &lt;\infty\)`)  penalizes larger values of `\(\beta\)`, effectively shrinking them.
+
+
+Note: `\(\lambda\)` and `\(s\)` are known as __tuning parameters__
+
+
+---
+
+## Example data
+
+__prostate__ data from [ESL]
+
+
+```r
+data(prostate, package = "ElemStatLearn")
+head(prostate)
+```
+
+```
+##       lcavol  lweight age      lbph svi       lcp gleason pgg45       lpsa train
+## 1 -0.5798185 2.769459  50 -1.386294   0 -1.386294       6     0 -0.4307829  TRUE
+## 2 -0.9942523 3.319626  58 -1.386294   0 -1.386294       6     0 -0.1625189  TRUE
+## 3 -0.5108256 2.691243  74 -1.386294   0 -1.386294       7    20 -0.1625189  TRUE
+## 4 -1.2039728 3.282789  58 -1.386294   0 -1.386294       6     0 -0.1625189  TRUE
+## 5  0.7514161 3.432373  62 -1.386294   0 -1.386294       6     0  0.3715636  TRUE
+## 6 -1.0498221 3.228826  50 -1.386294   0 -1.386294       6     0  0.7654678  TRUE
+```
+
+???
+
+Use lpsa as response.
+
+---
+
+## Ridge regression path
+
+
+
+```r
+Y &lt;- prostate$lpsa
+X &lt;- prostate %&gt;% select(-train,-lpsa) %&gt;% as.matrix()
+library(glmnet)
+ridge &lt;- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
+```
+
+.pull-left-wide[
+
+```r
+plot(ridge, xvar = "lambda")
+```
+
+&lt;img src="rmd_gfx/08-ridge-regression/plot-prostate-ridge-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right-narrow[
+
+Model selection here: 
+
+* means __choose__ some `\(\lambda\)` 
+
+* A value of `\(\lambda\)` is a vertical line.
+
+* This graphic is a "path" or "coefficient trace"
+
+* Coefficients for varying `\(\lambda\)`
+]
+
+---
+
+## Solving the minimization
+
+* One nice thing about ridge regression is that it has a closed-form solution (like OLS)
+
+
+`$$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$`
+
+* This is easy to calculate in `R` for any `\(\lambda\)`.
+
+* However, computations and interpretation are simplified if we examine the Singular Value Decomposition of `\(\X = \mathbf{UDV}^\top\)`.
+
+* Recall: any matrix has an SVD.
+
+* Here `\(\mathbf{D}\)` is diagonal and `\(\mathbf{U}\)` and `\(\mathbf{V}\)` are orthonormal: `\(\mathbf{U}^\top\mathbf{U} = \mathbf{I}\)`.
+
+* Note that `\(\mathbf{X}^\top\mathbf{X} = \mathbf{VDU}^\top\mathbf{UDV}^\top = \mathbf{V}\mathbf{D}^2\mathbf{V}^\top\)`.
+
+
+
+* Then,
+
+
+`$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top + \lambda \mathbf{I})^{-1}\mathbf{VDU}^\top \y
+= \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.$$`
+
+* For computations, now we only need to invert `\(\mathbf{D}\)`.
+
+---
+
+## Comparing with OLS
+
+
+* `\(\mathbf{D}\)` is a diagonal matrix
+
+`$$\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-2}\mathbf{D}}\mathbf{U}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-1}}\mathbf{U}^\top \y$$`
+
+`$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}\color{red}{(\mathbf{D}^2+\lambda \mathbf{I})^{-1}} \mathbf{DU}^\top \y.$$`
+
+
+* Notice that `\(\bls\)` depends on `\(d_j/d_j^2\)` while `\(\brl\)` depends on `\(d_j/(d_j^2 + \lambda)\)`.
+
+* Ridge regression makes the coefficients smaller relative to OLS.
+
+* But if `\(\X\)` has small singular values, ridge regression compensates with `\(\lambda\)` in the denominator.
+
+
+---
+
+## Ridge regression and multicollinearity
+
+__Multicollinearity:__  a linear combination of predictor variables is nearly equal to another predictor variable. 
+
+Some comments:
+
+* A better phrase: `\(\X\)` is ill-conditioned
+
+* AKA "(numerically) rank-deficient".
+
+* `\(\X = \mathbf{U D V}^\top\)` ill-conditioned `\(\Longleftrightarrow\)` some elements of `\(\mathbf{D} \approx 0\)`
+
+* `\(\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y\)`, so small entries of `\(\mathbf{D}\)` `\(\Longleftrightarrow\)` huge elements of `\(\mathbf{D}^{-1}\)`
+
+* Means huge variance: `\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top\)`
+
+
+Ridge Regression fixes this problem by preventing the division by a near-zero number
+
+__Conclusion:__ `\((\X^{\top}\X)^{-1}\)` can be really unstable, while `\((\X^{\top}\X + \lambda \mathbf{I})^{-1}\)` is not.
+
+__Aside:__ Engineering approach to solving linear systems is to always do this with small `\(\lambda\)`. The thinking is about the numerics rather than the statistics.
+
+---
+layout: true
+
+## Can we get the best of both worlds?
+
+---
+To recap:
+
+* Deciding which predictors to include, adding quadratic terms, or interactions is __model selection__ (more precisely __variable selection__ within a linear model).
+
+* Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.  
+
+* If the LM is **true**, 
+    1. OLS is unbiased, but Variance depends on `\(\mathbf{D}^{-2}\)`. Can be big.
+    
+    2. Ridge is biased (can you find the bias?). But Variance is smaller than OLS.
+
+* Ridge regression does not perform variable selection.
+
+* But .hand[picking] `\(\lambda=3.7\)` and thereby .hand[deciding] to predict with `\(\widehat{\beta}^R_{3.7}\)` is __model selection__.
+
+---
+
+__Ridge regression__: `\(\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_2^2 \leq s\)` 
+
+__Best (in-sample) linear regression model of size `\(s\)`__: `\(\min \frac{1}{n}||\y-\X\beta||_2^2 \textrm{ subject to } ||\beta||_0 \leq s\)`
+
+
+`\(||\beta||_0\)` is the number of nonzero elements in `\(\beta\)`
+
+Finding the best in-sample linear model (of size `\(s\)`, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)
+
+Ridge regression is convex (easy to solve), but doesn't do __variable__ selection
+
+Can we somehow "interpolate" to get both?
+
+
+Note: selecting `\(\lambda\)` is still __model__ selection, but we've included __all__ the variables.
+
+---
+class: center, middle, inverse
+layout: false
+
+# Next time...
+
+The lasso, interpolating variable selection and model selection
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

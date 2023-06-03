@@ -1,0 +1,219 @@
+---
+title: "02 Linear model example"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+---
+
+```{r setup, include=FALSE}
+source("rmd_config.R")
+```
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+## Economic mobility
+
+
+```{r}
+library(tidyverse)
+data(mobility, package = "Stat406")
+mobility
+```
+
+???
+
+Note how many observations and predictors it has.
+
+We'll use `Mobility` as the response
+
+
+---
+
+## A linear model
+
+
+$$\mbox{Mobility}_i = \beta_0 + \beta_1 \, \mbox{State}_i + \beta_2 \, \mbox{Urban}_i + \cdots + \epsilon_i$$ 
+    
+or equivalently
+
+$$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban}, 
+    \ldots \right]  = \beta_0 + \beta_1 \, \mbox{State} + 
+    \beta_2 \, \mbox{Urban} + \cdots$$
+
+---
+
+## Analysis
+
+
+-   Randomly split into a training (say 3/4) and a test set (1/4)
+
+-   Use training set to fit a model 
+
+-   Fit the "full" model
+
+-   "Look" at the fit
+
+--
+
+```{r}
+set.seed(20220914)
+mob <- mobility[complete.cases(mobility), ]
+n <- nrow(mob)
+mob <- mob %>% select(-Name, -ID, -State)
+set <- sample.int(n, floor(n * .75), FALSE)
+train <- mob[set, ]
+test <- mob[setdiff(1:n, set), ]
+full <- lm(Mobility ~ ., data = train)
+```
+
+???
+
+Why don't we include `Name` or `ID`?
+
+
+---
+
+## Results
+
+```{r}
+summary(full)
+```
+
+---
+
+## Diagnostic plots
+
+.pull-left[
+```{r}
+plot(full, 1)
+```
+]
+
+.pull-right[
+```{r}
+plot(full, 2)
+```
+
+]
+
+---
+
+(Those were `plot` methods for objects of class `lm`)
+### Same thing in `ggplot`
+
+.pull-left[
+
+```{r, fig.height=5}
+stuff <- tibble(residuals = residuals(full), 
+                fitted = fitted(full),
+                stdresiduals = rstandard(full))
+ggplot(stuff, aes(fitted, residuals)) +
+  geom_point(colour = "salmon") +
+  geom_smooth(se = FALSE, colour = "steelblue") +
+  ggtitle("Residuals vs Fitted")
+```
+]
+
+.pull-right[
+```{r, fig.height=5}
+ggplot(stuff, aes(sample = stdresiduals)) +
+  geom_qq(colour = "plum") +
+  geom_qq_line(colour = "peachpuff") +
+  labs(x = "Theoretical quantiles", 
+       y = "Standardized residuals",
+       title = "Normal Q-Q")
+```
+]
+
+---
+
+## Fit a reduced model
+
+```{r}
+reduced <- lm(
+  Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
+    Manufacturing + Migration_in + Religious + Single_mothers, 
+  data = train)
+summary(reduced)$coefficients %>% as_tibble()
+reduced %>% broom::glance() %>% print(width = 120)
+```
+
+---
+
+## Diagnostic plots for reduced model
+
+.pull-left[
+```{r}
+plot(reduced, 1)
+```
+]
+
+.pull-right[
+```{r}
+plot(reduced, 2)
+```
+
+]
+
+
+---
+
+## How do we decide which model is better?
+
+.pull-left[
+
+* Goodness of fit versus prediction power
+
+```{r}
+map( # smaller AIC is better
+  list(full = full, reduced = reduced), 
+  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq))
+```
+
+* Use both models to predict `Mobility` 
+
+* Compare both sets of predictions
+
+
+```{r}
+mses <- function(preds, obs) round(mean((obs - preds)^2), 5)
+c(full = mses(predict(full, newdata = test), 
+              test$Mobility),
+  reduced = mses(predict(reduced, newdata = test), 
+                 test$Mobility))
+```
+]
+
+.pull-right[
+```{r, echo=FALSE}
+test$full <- predict(full, newdata = test)
+test$reduced <- predict(reduced, newdata = test)
+test %>% 
+  select(Mobility, full, reduced) %>%
+  pivot_longer(-Mobility) %>%
+  ggplot(aes(Mobility,value)) + 
+  geom_point(color = "orange") + 
+  facet_wrap(~name, 2) +
+  xlab('observed mobility') + 
+  ylab('predicted mobility') +
+  geom_abline(slope = 1, intercept = 0, col = "blue")
+```
+
+]
+
+---
+class: middle, center
+background-image: url("https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG")
+background-size: cover
+
+.secondary[.larger[Next time...]]
+
+.secondary[.larger[Module]] .huge-orange-number[1]
+
+.secondary[.large[selecting models]]
+
+
+

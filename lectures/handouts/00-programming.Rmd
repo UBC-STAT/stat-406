@@ -1,0 +1,688 @@
+---
+title: "00 Programming"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+output: pdf_document
+---
+
+
+## General advice
+
+When writing R code (or any code), there are some important rules
+
+1. Write script files (which you save) and source them. Don't do everything in the console.
+2. Don't write anything more than once. This has three corollaries:
+    a. If you are tempted to copy/paste, don't.
+    b. Don't use _magic numbers_. Define all constants at the top of the script.
+    c. Write functions.
+3. The third is __very important__. Functions are easy to test. You give different inputs and check
+whether the output is as expected. This helps catch mistakes.
+4. There are two kinds of errors: syntax and function.  
+    a. The first R can find (missing close parenthesis, wrong arguments, etc.  
+    b. The second you can only catch by thorough testing (see the HW)
+5. Don't use __magic numbers__. 
+6. Use meaningful names. Don't do this:
+```{r general-advice}
+data("ChickWeight")
+out <-lm(weight ~ Time + Chick + Diet, data = ChickWeight)
+```
+7. Comment things that aren't clear from the (meaningful) names
+8. Comment long formulas that don't immediately make sense: 
+```{r general-advice-2}
+garbage = with(ChickWeight, 
+               by(weight, Chick, 
+                  function(x) (x^2 + 23) / length(x)
+                  )
+               ) ## WTF???
+```
+
+## Simple stuff
+
+* Vectors:
+```{r}
+x <- c(1, 3, 4)
+x
+x[1]
+x[-1]
+```
+
+* Matrices:
+```{r}
+x <- matrix(1:25, 5, 5)
+x
+x[1,]
+x[,-1]
+x[c(1,3),  2:3]
+```
+
+
+## Functions
+
+Write lots of functions. I can't emphasize this enough.
+
+```{r functions}
+f <- function(arg1, arg2, arg3=12, ...){
+  stuff <- arg1*arg3
+  stuff2 <- stuff + arg2
+  plot(arg1, stuff2, ...)
+  return(stuff2)
+}
+x <- rnorm(100)
+y1 <- f(x, 3, 15, col=2, pch=19)
+f(x, 3)
+```
+
+## Outputs vs. Side effects
+
+* Side effects are things a function does, outputs can be assigned to variables
+* A good example is the `hist` function
+* You have probably only seen the side effect which is to plot the histogram
+```{r,fig.align='center'}
+myHistogram <- hist(rnorm(1000))
+```
+
+## The output
+
+```{r}
+myHistogram
+```
+
+## Assignment
+
+> What's up with `<-` and `=`?
+
+* These two work mostly the same but not always.
+* The code `<-` means to assign the stuff on the right to the name on the left:
+```{r}
+x <- 12
+x; rm(x) # removing it so I can demonstrate 
+```
+This gives `x` the value `12`.
+
+* Technically, this is the same as
+```{r}
+assign('x', 12)
+x; rm(x)
+```
+
+## Versatility
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error=TRUE)
+```
+* In that simple case `=` does the same thing. However, `<-` is more versatile. Consider:
+```{r}
+median(x = 1:10)
+x
+```
+```{r}
+median(x <- 1:10)
+x
+```
+
+## General practice
+
+* Many style guides say to __always__ use `<-`.
+* If you use `<-`, you should put a space on both sides. This avoids issues like
+```{r}
+x< -3
+```
+when you meant
+```{r}
+x <- 3
+```
+* One reason to avoid `=` is due to confusion with logical operators like "Does x=1?"
+```{r}
+x=1
+x==1
+```
+
+## Flow control
+
+```{r flow-control}
+x = 1
+y = c(2,3,4,1,-1,0)
+# bad  if(x=1) print(x)
+if (x == 1) print(x)
+y > x
+any(y > x)
+! x
+all(y > x)
+while(x < 4){
+  print(x)
+  x = x + 1
+}
+for (i in 1:4) print(x + i)
+ifelse(any(y > x), 'yes', 'no')
+```
+
+## Some functions
+
+```{r}
+qpareto1 <- function(p, exponent, threshold) { 
+  # gives the inverse cdf (quantile) of a Pareto distribution 
+  # takes 3 parameters, exponent and threshold are for the distribution
+  # p is the probability you want
+  # See https://en.wikipedia.org/wiki/Pareto_distribution
+  threshold * ( (1 - p) ^ (-1 / (exponent - 1))) # returns the last object
+}
+
+qpareto3 <- function(p, exponent, threshold, lower.tail=TRUE) {
+  # add a *default* argument to decide whether we want the lower/upper tail
+  if (!lower.tail) p <- 1 - p 
+  q <- qpareto1(p, exponent, threshold)
+  return(q) # explicitly say waht to return, this line is not required
+}
+```
+```{r}
+qpareto1(.4, 2, 2)
+qpareto3(.4, 2, 2)
+qpareto3(.4, 2, 2, FALSE)
+qpareto3(.6, 2, 2)
+```
+
+
+
+## Traceback
+
+```{r}
+qpareto4 <- function(p, exponent, threshold, lower.tail = TRUE) {
+  # just like qpareto 3, but now we check that our inputs make sense
+  stopifnot(p >= 0, p <= 1, exponent > 1, threshold > 0) 
+  q <- qpareto3(p, exponent, threshold, lower.tail)
+  return(q)
+}
+rpareto <- function(n, exponent, threshold) { 
+  # generates random numbers
+  # Uses the "inverse cdf" method
+  # https://en.wikipedia.org/wiki/Inverse_transform_sampling
+  x <- vector(length = n)
+  for (i in 1:n) 
+    x[i] <- qpareto4(rnorm(1), exponent, threshold) # there's an error here
+  x
+}
+```
+```{r}
+rpareto(10, 3, 1)
+```
+
+* Try `traceback` in RStudio
+
+## Vectorizing
+
+```{r}
+rpareto <- function(n, exponent, threshold) {
+  x <- double(n) # always preallocate space to fill in a loop
+  for (i in 1:n) 
+    x[i] <- qpareto4(p=runif(1), exponent, threshold) # this one is correct
+  x
+}
+rpareto_better <- function(n, exponent, threshold) {
+  qpareto4(runif(n), exponent, threshold)
+  # we don't need to loop because these operations operate on the vector
+}
+system.time(rpareto(1e6, 2, 1))
+system.time(rpareto_better(1e6, 2, 1))
+```
+
+## When might loops bad?
+
+
+* The short answer is that `R` is not a __compiled__ language.
+* This means that whenever you write a loop, `R` has to re-read all the code within the loop each iteration
+* This is muy slow.
+* The only thing slower, is if you don't preallocate.
+* Remember that line `x <- vector(length=n)`?
+* Without that line, `x` would get built within the loop, starting with length 1, then length 2, etc.
+* Preallocation is the most important issue to address when writing loops.
+
+
+## lapply vs. apply vs. sapply
+
+* Many functions are __vectorized__, but not all.
+* Arithmetic functions __are__
+```{r}
+1 + 1
+c(1,2,3) + c(4,5,6)
+c(1,2,3) + 1
+```
+* Some strange ones
+```{r}
+min(5:1,pi)
+pmin(5:1,pi)
+```
+
+## The apply variants
+
+* These try to do things where simple loops would suffice.
+* `apply` is for matrices (or arrays). If you want to __apply__ a function along a dimension
+```{r}
+(mat <- matrix(1:100,10)) # the parenthesis makes the result print
+sum(mat)
+apply(mat,2,sum) # "applies" the function "sum" to each column (2nd dimension)
+for(i in seq_len(ncol(mat))) sum(mat[ ,i]) # same in a loop
+```
+
+## lapply and sapply
+
+
+* These work for lists
+```{r}
+(z <- list(a = 1:5, b = matrix(rnorm(10), 2), c = 25))
+lapply(z, sum)
+sapply(z, sum)
+```
+
+## lapply craziness
+
+What does this do?
+
+```{r}
+sapply(lapply(1:10, rnorm), mean)
+```
+
+# Linear models
+
+## Predict and Friends
+
+* R has lots of functions for working with different sorts of 
+predictive models.
+
+* We should review how they work with `lm`, and how they generalize to other sorts of models.  
+
+* We'll use the __Mobility__ data we saw earlier:
+
+```{r}
+mob <- readRDS("../data/mobility.RDS")
+```
+
+## Estimation Functions and Formulas
+
+
+* To estimate a linear model in `R`: you use `lm`.  
+
+```{r}
+mob.lm1 <- lm(mob$Mobility ~ mob$Population +
+                mob$Seg_racial + mob$Commute + mob$Income + mob$Gini)
+```
+
+* What `lm` returns is a complex object containing the estimated coefficients, the fitted values, a lot of diagnostic statistics, and a lot of information about exactly what work R did to do the estimation.  We will come back to some of this later.  
+
+* The thing to focus on for now is the argument to `lm` in the
+line of code above, which tells the function exactly what model to estimate 
+
+* it __specifies__ the model.  The `R` jargon term for that sort of specification is that it is the **formula** of the model.
+
+
+## The data argument
+
+* While the line of code above works, it's not very elegant, because we have to
+keep typing `mob$` over and over. 
+
+* More abstractly, it runs specifying which
+variables we want to use (and how we want to use them) together with telling R
+where to look up the variables.  This gets annoying if we want to, say, compare
+estimates of the same model on two different data sets (in this example,
+perhaps from different years).  
+
+* The solution is to separate the formula
+from the data source:
+
+```{r}
+mob.lm2 <- lm(Mobility ~ Population + Seg_racial + Commute + Income + Gini, data=mob)
+```
+
+* The `data` argument tells `lm` to look up variable names appearing in the
+formula (the first argument) in a dataframe called `mob`.  
+
+* It therefore works
+even if there aren't variables in our workspace called `Mobility`,
+`Population`, etc., those just have to be column names in `mob`.  
+
+* In addition
+to being easier to write, read and re-use than our first effort, this format
+works better when we use the model for prediction, as explained below.
+
+## Transformations 
+
+
+```{r}
+mob.lm3 <- lm(
+  Mobility ~ log(Population) + Seg_racial + Commute + Income + Gini, 
+  data = mob
+)
+```
+
+* Formulas are so important that `R` knows about them as a special data type. 
+
+* They _look_ like ordinary strings, but they _act_ differently, so there are special
+functions for converting strings (or potentially other things) to formulas, and
+for manipulating them.  
+
+* For instance, if we want to keep around the formula
+with log-transformed population, we can do as follows:
+
+```{r}
+form.logpop <- "Mobility ~ log(Population) + Seg_racial + Commute + Income + Gini"
+form.logpop <- as.formula(form.logpop)
+mob.lm4 <- lm(form.logpop, data = mob)
+```
+
+## Why formulas?
+
+
+* Being able to turn strings into formulas is very convenient if we want to try out a bunch of different model specifications, because R has lots of tools for building strings according to regular patterns, and then we can turn all those
+into formulas.  
+
+
+
+* If we have already estimated a model and want the formula it used as the specification, we can extract that with the `formula` function:
+
+```{r}
+formula(mob.lm3)
+formula(mob.lm3) == form.logpop
+```
+
+## Extracting Coefficients, Confidence Intervals, Fitted Values, Residuals, etc.
+
+If we want the coefficients of a model we've estimated, we can get that
+with the `coefficients` function:
+
+```{r}
+coefficients(mob.lm3)
+```
+
+```{r}
+mob.lm3$coefficients
+```
+
+## Or even
+
+
+```{r}
+summary(mob.lm3)$coef
+```
+
+## Confidence Intervals
+
+* If we want confidence intervals for the coefficients, we can use `confint`:
+
+```{r}
+confint(mob.lm3, level = 0.90) # default confidence level is 0.95
+```
+
+## Warning!!
+
+
+* This calculates confidence intervals assuming independent, constant-variance
+Gaussian noise everywhere, etc., etc., so it's not to be taken too seriously
+unless you've checked those assumptions somehow; 
+
+
+## Fitted values and residuals
+
+For every data point in the original data set, we have both a fitted
+value ($\widehat{y}$) and a residual ($y-\widehat{y}$).  These are vectors, and
+can be extracted with the `fitted` and `residuals` functions:
+
+```{r}
+head(fitted(mob.lm2)) # head() gives the first few elements
+tail(residuals(mob.lm2)) # tail() gives the last few elements
+```
+
+
+## Using bits of the lm output
+
+
+* You may be more used to accessing all these things as parts of the estimated
+model --- writing something like `mob.lm2$coefficients` to get the coefficients.
+
+* This is fine as far as it goes, but we will work with many different sorts of
+statistical models in this course, and those internal names can change from
+model to model.  
+
+* If the people implementing the models did their job, however,
+functions like `fitted`, `residuals`, `coefficients` and `confint` will all, to
+the extent they apply, work, and work in the same way.
+
+```{r}
+names(mob.lm2)
+```
+
+
+## Methods and Classes (R-Geeky But Important)
+
+
+* In R things like `residuals` or `coefficients` are a special kind of function,
+called **methods**. (in `python`, these are like `obj.residuals`. The dot after the object accesses methods defined for that type of object.)  
+
+* Other methods, which you've used a lot without perhaps
+realizing it, are `plot`, `print` and `summary`.  
+
+* These are a sort of generic
+or meta-function, which looks up the class of model being used, and then calls
+a specialized function which how to work with that class.  
+
+* The convention is
+that the specialized function is named _method_`.`_class_, e.g., `summary.lm`.
+
+* If no specialized function is defined, R will try to use _method_`.default`.
+
+## Wherefore methods?
+
+
+* The advantage of methods is that you, as a user, don't have to learn a totally
+new syntax to get the coefficients or residuals of every new model class
+
+* you just use `residuals(mdl)` whether `mdl` comes from a linear regression which
+could have been done two centuries ago, or is a Batrachian Emphasis Machine
+which won't be invented for another five years.  
+
+* (It also means that core parts
+of R don't have to be re-written every time someone comes up with a new model
+class.)  
+
+* The one draw-back is that the help pages for the generic methods tend
+to be pretty vague, and you may have to look at the help for the class-specific
+functions 
+
+* Compare `?summary` with `?summary.lm`.  
+
+(If you are not sure what
+the class of your model, `mdl`, is called, use `class(mdl)`.)
+
+
+
+
+## Making Predictions
+
+
+* The point of a regression model is to do prediction, and the method for doing
+so is, naturally enough, called `predict`.  It works like so:  
+```{r, eval=FALSE}
+predict(object, newdata)
+```
+
+* Here `object` is an already estimated model, and `newdata` is a data frame
+containing the new cases, real or imaginary, for which we want to make
+predictions.  
+
+* The output is (generally) a vector, with a predicted value for
+each row of `newdata`.  
+
+* If the rows of `newdata` have names, those will be
+carried along as names in the output vector.  
+
+```{r}
+predict(mob.lm2, newdata = mob[which(mob$State == "AL"),])
+```
+
+```{r, message=FALSE}
+library(tidyverse)
+predict(mob.lm2, newdata = filter(mob, State == "AL"))
+```
+
+## Remember
+
+
+* It is important to remember that making a prediction does _not_ mean "changing
+the data and re-estimating the model"; 
+
+* It means taking the unchanged estimate
+of the model, and putting in new values for the covariates or independent
+variables.  
+
+* (In terms of the linear model, we change $x$, not $\widehat{\beta}$.)
+
+* Notice that I used `mob.lm2` here, rather than the mathematically-equivalent `mob.lm1`.
+
+* Because I specified `mob.lm2` with a formula that just referred to column names,
+`predict` looks up columns with those names in `newdata`, puts them into the
+function estimated in `mob.lm2`, and calculates the predictions.  
+
+* Had I tried to
+use `mob.lm1`, it would have completely ignored `newdata`.  
+
+* This is one crucial
+reason why it is best to use clean formulas and a `data` argument when
+estimating the model.
+
+## Transformations
+
+
+* If the formula specifies transformations, those will also be done on `newdata`;
+
+* we don't have to do the transformations ourselves:
+
+```{r}
+predict(mob.lm3, newdata = filter(mob, State=="AL"))
+```
+
+* The `newdata` does not have to be a subset of the original data used for
+estimation, or related to it in any way at all
+
+## Fun with predict
+
+
+* It just has to have columns
+whose names match those in the right-hand side of the formula.
+
+```{r}
+predict(
+  mob.lm3, 
+  newdata = data.frame(
+    Population=1.5e6, Seg_racial=0, Commute=0.5, 
+    Income=3e4, Gini = median(mob$Gini)
+  )
+)
+predict(
+  mob.lm3, 
+  newdata = data.frame(
+    Population=1.5e6, Seg_racial=0, 
+    Commute=0.5, Income = quantile(mob$Income, c(0.05,0.5,0.95)),
+    Gini=quantile(mob$Gini,c(0.05,0.5,0.95))
+  )
+)
+```
+
+## Problems w/ predict
+
+
+* A very common programming error is to run `predict` and get out a vector whose length equals the number of rows in the original estimation data
+
+* and which
+doesn't change no matter what you do to `newdata`.  
+
+* This is because if `newdata` is missing, or if R cannot find all the variables it needs in it, the default is the predictions of the model on the original data.
+
+* An even more annoying form of this error consists of forgetting that the
+argument is called `newdata` and not `data`:
+
+```{r}
+head(predict(mob.lm3)) # Equivalent to head(fitted(mob.lm3))
+```
+
+## More problems
+
+
+```{r}
+head(predict(
+  mob.lm3,
+  data=data.frame(Population=1.5e6, Seg_racial=0, 
+                  Commute=0.5, Income=3e4, Gini=median(mob$Gini))
+  )
+) 
+# Don't do this!
+```
+
+* Returning the original fitted values when `newdata` is missing or messed up is
+not what I would have chosen, but nobody asked me.
+
+* Because `predict` is a method, the generic help file is fairly vague, and many
+options are only discussed on the help pages for the class-specific functions
+
+* compare `?predict` with `?predict.lm`.  
+
+* Common options include giving standard errors for predictions (as well point forecasts), and giving various sorts of intervals.
+
+
+## Using Different Model Classes
+
+
+* All of this carries over to different model classes, at least if they've been well-designed.  
+
+* For instance, suppose we want to estimate a kernel regression
+on the same data, using the same variables.  
+
+```{r test, message = FALSE, warning=FALSE, results="hide"}
+library(np)
+mob.npbw <- npregbw(formula=formula(mob.lm2), data=mob, tol=1e-2, ftol=1e-2)
+mob.np <- npreg(mob.npbw, data=mob)
+```
+
+(no need to know what all these arguments mean at the moment.)
+
+
+## Why this is easy
+
+* We can re-use the formula, because it's just saying what the input and target variables of the regression are, and we want that to stay the same.  
+
+* More importantly, both `lm` and `npreg` use the same mechanism, of separating the formula specifying the model from the data set containing the actual values of the variables.  
+
+* Of course, some models have variations in allowable formulas  
+
+    - interactions make sense for `lm` but not for `npreg`, 
+    - the latter has a special way of dealing with ordered categorical variables that `lm` doesn't
+    - etc.
+
+* After estimating the model, we can do most of the same things to it that we could do to a linear model.  
+
+## We can look at a summary:
+
+
+```{r}
+summary(mob.np)
+```
+
+## We can look at fitted values and residuals:
+
+```{r}
+head(fitted(mob.np))
+tail(residuals(mob.np))
+```
+
+## We can make predictions:
+
+```{r}
+predict(mob.np, newdata=data.frame(Population=1.5e6, Seg_racial=0, 
+        Commute=0.5, Income=3e4, Gini=median(mob$Gini)))
+```
+
+## and we can plot things
+
+```{r, fig.align='center',fig.height=12,fig.width=10}
+par(mar=c(5,5,1,1),cex.lab=3,cex.axis=2,lwd=2,col=4,bty='n')
+plot(mob.np,plot.errors.method='bootstrap')
+```

@@ -1,0 +1,366 @@
+---
+title: "14 Classification"
+author: 
+  - "STAT 406"
+  - "Daniel J. McDonald"
+date: 'Last modified - `r Sys.Date()`'
+---
+
+
+
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+source("rmd_config.R")
+```
+
+class: middle, center
+background-image: url("gfx/proforhobo.png")
+background-size: cover
+
+
+
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+
+
+.fourth-color[.hand[.larger[
+Professor or Hobo? 
+]]]
+
+
+---
+
+
+```{r css-extras, file="css-extras.R", echo=FALSE}
+```
+
+
+
+## An Overview of Classification
+
+$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$
+
+
+
+* A person arrives at an emergency room with a set of symptoms that
+could be 1 of 3 possible conditions. Which one is it?
+
+* An online banking service must be able to determine whether each
+transaction is fraudulent or not, using a customer's location, past
+transaction history, etc.
+
+* Given a set of individuals sequenced DNA, can we determine whether
+various mutations are associated with different phenotypes?
+
+--
+
+These problems are __not__ regression
+problems. They are __classification__ problems.
+
+---
+
+## The Set-up
+
+It begins just like regression: suppose we have observations
+$$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$
+
+Again, we want to estimate a function that maps $X$ to $Y$ to
+predict as yet observed data.
+
+(This function is known as a __classifier__)
+
+
+The same constraints apply:
+
+* We want a classifier that predicts test data, not just the training
+data.
+
+* Often, this comes with the introduction of some bias to get lower
+variance and better predictions.
+
+---
+layout: true
+
+## How do we measure quality?
+
+Before in regression, we have $y_i \in \mathbb{R}$ and use squared error loss to measure accuracy: $(y - \hat{y})^2$.
+
+Instead, let $y \in \mathcal{K} = \{1,\ldots, K\}$
+
+(This is arbitrary, sometimes other numbers, such as $\{-1,1\}$ will be
+used)
+
+We can always take "factors": $\{\textrm{cat},\textrm{dog}\}$ and convert to integers, which is what we assume.
+
+
+We again make predictions $\hat{y}=k$ based on the data
+
+
+* We get zero loss if we predict the right class
+* We lose $\ell(k,k')$ on $(k\neq k')$ for incorrect predictions
+
+
+---
+
+Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | Infect others |
+| Are - | Isolation | 0 |
+
+---
+
+Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
+
+---
+
+**We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.**
+
+---
+layout: false
+
+## How do we measure quality?
+
+Again, we appeal to risk
+$$R_n(g) = E [\ell(Y,g(X))]$$ If we use the law of
+total probability, this can be written
+$$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$
+We minimize this over a class of options $\mathcal{G}$, to produce
+$$g_*(X) = \arg\min_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
+
+
+$g_*$ is named the __Bayes' classifier__ for loss $\ell$ in class $\mathcal{G}$. 
+
+$R_n(g_*)$ is the called the __Bayes' limit__ or __Bayes' Risk__. 
+
+.hand[It's the best we could hope to do in terms of] $\ell$ .hand[if we knew the distribution of the data.]
+
+--
+
+But we don't, so we'll try to do our best to estimate $g_*$.
+
+---
+layout: true
+
+## Best classifier overall
+
+(now we limit to 2 classes)
+
+Once we make a specific choice for $\ell$, we can find $g_*$ exactly (pretending we know the distribution)
+
+
+As $Y$ takes only a few values, __zero-one__
+prediction risk is natural (but not the only option)
+$$\ell(y,\ g(x)) = \begin{cases}0 & y=g(x)\\1 & y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),$$
+
+---
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
+---
+
+This means we want to __label__ or
+__classify__ a new observation $(x_0,y_0)$ such that
+$g(x_0) = y_0$ as often as possible
+
+
+Under this loss, we have
+$$g_*(X) = \argmin_{g} Pr(g(X) \neq Y) = \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g} Pr(Y = g(x) | X=x )$$
+
+ ---
+
+--
+
+**Classifier approach 1** (empirical risk minimization):
+
+Choose some class of classifiers $\mathcal{G}$. 
+
+Find $\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)$
+
+---
+layout: false
+
+## Bayes' Classifier and class densities (2 classes)
+
+Using **Bayes' theorem**, and recalling that $f_*(X) = E[Y \given X]$
+
+$$\begin{aligned}
+f_*(X) & = E[Y \given X] = Pr(Y = 1 \given X) \\ 
+&= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
+& =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ & = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$
+
+* We call $p_k(X)$ the __class (conditional) densities__
+
+* $\pi$ is the __marginal probability__ $P(Y=1)$
+
+The Bayes' Classifier (best classifier for 0-1 loss) can be rewritten 
+
+$$g_*(X) = \begin{cases}
+1 & \textrm{ if } \frac{p_1(X)}{p_0(X)} > \frac{1-\pi}{\pi} \\
+0  &  \textrm{ otherwise}
+\end{cases}$$
+
+--
+
+**Approach 2:** estimate everything in the expression above.
+
+---
+layout: false
+
+## An alternative easy classifier
+
+
+Zero-One loss was natural, but try something else
+
+--
+
+**Just for fun,** let's try using __squared error loss__ instead:
+$\ell(y,\ f(x)) = (y - f(x))^2$
+
+
+Then, the Bayes' Classifier (the function that minimizes the Bayes Risk) is
+$$g_*(x) = f_*(x) = E[ Y \given X = x] = Pr(Y = 1 \given X)$$ 
+(recall that $f_* \in [0,1]$ is _still_ the regression function)
+
+In this case, our "class" will actually just be a probability. But this isn't a class, so it's a bit unsatisfying.
+
+How do we get a class prediction?
+
+--
+
+Discretize the probability:
+
+$$g(x) = \begin{cases}0 & f_*(x) < 1/2\\1 & \textrm{else}\end{cases}$$
+
+--
+
+**Approach 3**:
+1. Estimate $f_*$ using any method we've learned so far. 
+2. Predict 0 if $\hat{f}(x)$ is less than 1/2, else predict 1.
+
+---
+layout: true
+
+
+## Claim: Classification is easier than regression
+
+
+.emphasis[
+1. Let $\hat{f}$ be any estimate of $f_*$
+
+2. Let $\widehat{g} (x) = \begin{cases}0 & \hat f(x) < 1/2\\1 & else\end{cases}$
+
+.hand[Proof by picture.]
+]
+
+---
+
+---
+
+
+```{r, echo=FALSE}
+set.seed(12345)
+x <- 1:99 / 100
+y <- rbinom(99, 1, 
+            .25 + .5 * (x > .3 & x < .5) + 
+              .6 * (x > .7))
+dmat <- as.matrix(dist(x))
+ksm <- function(sigma) {
+  gg <-  dnorm(dmat, sd = sigma) 
+  sweep(gg, 1, rowSums(gg), '/') %*% y
+}
+fstar <- ksm(.04)
+```
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+gg <- tibble(x = x, fstar = fstar, y = y) %>%
+  ggplot(aes(x)) +
+  geom_point(aes(y = y), color = blue) +
+  geom_line(aes(y = fstar), color = orange, size = 2) +
+  coord_cartesian(ylim = c(0,1), xlim = c(0,1)) +
+  annotate("label", x = .75, y = .65, label = "f_star", size = 5)
+gg
+```
+
+---
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+gg + geom_hline(yintercept = .5, color = green)
+```
+
+---
+
+```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+tib <- tibble(x = x, fstar = fstar, y = y)
+ggplot(tib) +
+  geom_vline(data = filter(tib, fstar > 0.5), aes(xintercept = x), alpha = .5, color = green) +
+  annotate("label", x = .75, y = .65, label = "f_star", size = 5) + 
+  geom_point(aes(x = x, y = y), color = blue) +
+  geom_line(aes(x = x, y = fstar), color = orange, size = 2) +
+  coord_cartesian(ylim = c(0,1), xlim = c(0,1))
+```
+
+
+---
+layout: false
+
+## How to find a classifier
+
+.hand[Why did we go through that math?]
+
+Each of these approaches suggests a way to find a classifier
+
+* __Empirical risk minimization:__ Choose a set
+of classifiers $\mathcal{G}$ and find $g \in \mathcal{G}$ that minimizes
+some estimate of $R_n(g)$
+    
+> (This can be quite challenging as, unlike in regression, the
+training error is nonconvex)
+
+* __Density estimation:__ Estimate $\pi$ and $p_k$
+
+* __Regression:__ Find an
+estimate $\hat{f}$ of $f^*$ and compare the predicted value to 1/2
+
+
+
+
+--
+
+Easiest classifier when $y\in \{0,\ 1\}$:
+
+(stupidest version of the third case...)
+
+```{r eval=FALSE}
+ghat <- round(predict(lm(y ~ ., data = trainingdata)))
+```
+
+Think about why this may not be very good. (At least 2 reasons I can think of.)
+
+---
+class: middle, inverse, center
+
+# Next time:
+
+Estimating the densities
