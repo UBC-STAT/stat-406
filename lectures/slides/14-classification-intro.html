@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>14 Classification</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 14 Classification
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-10-17
+]
+
+---
+
+
+
+
+
+
+
+class: middle, center
+background-image: url("gfx/proforhobo.png")
+background-size: cover
+
+
+
+.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
+
+
+
+.fourth-color[.hand[.larger[
+Professor or Hobo? 
+]]]
+
+
+---
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+
+
+## An Overview of Classification
+
+`$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}$$`
+
+
+
+* A person arrives at an emergency room with a set of symptoms that
+could be 1 of 3 possible conditions. Which one is it?
+
+* An online banking service must be able to determine whether each
+transaction is fraudulent or not, using a customer's location, past
+transaction history, etc.
+
+* Given a set of individuals sequenced DNA, can we determine whether
+various mutations are associated with different phenotypes?
+
+--
+
+These problems are __not__ regression
+problems. They are __classification__ problems.
+
+---
+
+## The Set-up
+
+It begins just like regression: suppose we have observations
+`$$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$`
+
+Again, we want to estimate a function that maps `\(X\)` to `\(Y\)` to
+predict as yet observed data.
+
+(This function is known as a __classifier__)
+
+
+The same constraints apply:
+
+* We want a classifier that predicts test data, not just the training
+data.
+
+* Often, this comes with the introduction of some bias to get lower
+variance and better predictions.
+
+---
+layout: true
+
+## How do we measure quality?
+
+Before in regression, we have `\(y_i \in \mathbb{R}\)` and use squared error loss to measure accuracy: `\((y - \hat{y})^2\)`.
+
+Instead, let `\(y \in \mathcal{K} = \{1,\ldots, K\}\)`
+
+(This is arbitrary, sometimes other numbers, such as `\(\{-1,1\}\)` will be
+used)
+
+We can always take "factors": `\(\{\textrm{cat},\textrm{dog}\}\)` and convert to integers, which is what we assume.
+
+
+We again make predictions `\(\hat{y}=k\)` based on the data
+
+
+* We get zero loss if we predict the right class
+* We lose `\(\ell(k,k')\)` on `\((k\neq k')\)` for incorrect predictions
+
+
+---
+
+Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | Infect others |
+| Are - | Isolation | 0 |
+
+---
+
+Suppose you have a fever of 39º C. You get a rapid test on campus.
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
+
+---
+
+**We're going to use `\(g(x)\)` to be our classifier. It takes values in `\(\mathcal{K}\)`.**
+
+---
+layout: false
+
+## How do we measure quality?
+
+Again, we appeal to risk
+`$$R_n(g) = E [\ell(Y,g(X))]$$` If we use the law of
+total probability, this can be written
+`$$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$`
+We minimize this over a class of options `\(\mathcal{G}\)`, to produce
+`$$g_*(X) = \arg\min_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$`
+
+
+`\(g_*\)` is named the __Bayes' classifier__ for loss `\(\ell\)` in class `\(\mathcal{G}\)`. 
+
+`\(R_n(g_*)\)` is the called the __Bayes' limit__ or __Bayes' Risk__. 
+
+.hand[It's the best we could hope to do in terms of] `\(\ell\)` .hand[if we knew the distribution of the data.]
+
+--
+
+But we don't, so we'll try to do our best to estimate `\(g_*\)`.
+
+---
+layout: true
+
+## Best classifier overall
+
+(now we limit to 2 classes)
+
+Once we make a specific choice for `\(\ell\)`, we can find `\(g_*\)` exactly (pretending we know the distribution)
+
+
+As `\(Y\)` takes only a few values, __zero-one__
+prediction risk is natural (but not the only option)
+`$$\ell(y,\ g(x)) = \begin{cases}0 &amp; y=g(x)\\1 &amp; y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),$$`
+
+---
+
+| Loss | Test + | Test - |
+|:---: | :---: | :---: |
+| Are + | 0 | 1 |
+| Are - | 1 | 0 |
+
+---
+
+This means we want to __label__ or
+__classify__ a new observation `\((x_0,y_0)\)` such that
+`\(g(x_0) = y_0\)` as often as possible
+
+
+Under this loss, we have
+`$$g_*(X) = \argmin_{g} Pr(g(X) \neq Y) = \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g} Pr(Y = g(x) | X=x )$$`
+
+ ---
+
+--
+
+**Classifier approach 1** (empirical risk minimization):
+
+Choose some class of classifiers `\(\mathcal{G}\)`. 
+
+Find `\(\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)\)`
+
+---
+layout: false
+
+## Bayes' Classifier and class densities (2 classes)
+
+Using **Bayes' theorem**, and recalling that `\(f_*(X) = E[Y \given X]\)`
+
+`$$\begin{aligned}
+f_*(X) &amp; = E[Y \given X] = Pr(Y = 1 \given X) \\ 
+&amp;= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
+&amp; =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ &amp; = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$`
+
+* We call `\(p_k(X)\)` the __class (conditional) densities__
+
+* `\(\pi\)` is the __marginal probability__ `\(P(Y=1)\)`
+
+The Bayes' Classifier (best classifier for 0-1 loss) can be rewritten 
+
+`$$g_*(X) = \begin{cases}
+1 &amp; \textrm{ if } \frac{p_1(X)}{p_0(X)} &gt; \frac{1-\pi}{\pi} \\
+0  &amp;  \textrm{ otherwise}
+\end{cases}$$`
+
+--
+
+**Approach 2:** estimate everything in the expression above.
+
+---
+layout: false
+
+## An alternative easy classifier
+
+
+Zero-One loss was natural, but try something else
+
+--
+
+**Just for fun,** let's try using __squared error loss__ instead:
+`\(\ell(y,\ f(x)) = (y - f(x))^2\)`
+
+
+Then, the Bayes' Classifier (the function that minimizes the Bayes Risk) is
+`$$g_*(x) = f_*(x) = E[ Y \given X = x] = Pr(Y = 1 \given X)$$` 
+(recall that `\(f_* \in [0,1]\)` is _still_ the regression function)
+
+In this case, our "class" will actually just be a probability. But this isn't a class, so it's a bit unsatisfying.
+
+How do we get a class prediction?
+
+--
+
+Discretize the probability:
+
+`$$g(x) = \begin{cases}0 &amp; f_*(x) &lt; 1/2\\1 &amp; \textrm{else}\end{cases}$$`
+
+--
+
+**Approach 3**:
+1. Estimate `\(f_*\)` using any method we've learned so far. 
+2. Predict 0 if `\(\hat{f}(x)\)` is less than 1/2, else predict 1.
+
+---
+layout: true
+
+
+## Claim: Classification is easier than regression
+
+
+.emphasis[
+1. Let `\(\hat{f}\)` be any estimate of `\(f_*\)`
+
+2. Let `\(\widehat{g} (x) = \begin{cases}0 &amp; \hat f(x) &lt; 1/2\\1 &amp; else\end{cases}\)`
+
+.hand[Proof by picture.]
+]
+
+---
+
+---
+
+
+
+
+&lt;img src="rmd_gfx/14-classification-intro/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="rmd_gfx/14-classification-intro/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="rmd_gfx/14-classification-intro/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+---
+layout: false
+
+## How to find a classifier
+
+.hand[Why did we go through that math?]
+
+Each of these approaches suggests a way to find a classifier
+
+* __Empirical risk minimization:__ Choose a set
+of classifiers `\(\mathcal{G}\)` and find `\(g \in \mathcal{G}\)` that minimizes
+some estimate of `\(R_n(g)\)`
+    
+&gt; (This can be quite challenging as, unlike in regression, the
+training error is nonconvex)
+
+* __Density estimation:__ Estimate `\(\pi\)` and `\(p_k\)`
+
+* __Regression:__ Find an
+estimate `\(\hat{f}\)` of `\(f^*\)` and compare the predicted value to 1/2
+
+
+
+
+--
+
+Easiest classifier when `\(y\in \{0,\ 1\}\)`:
+
+(stupidest version of the third case...)
+
+
+```r
+ghat &lt;- round(predict(lm(y ~ ., data = trainingdata)))
+```
+
+Think about why this may not be very good. (At least 2 reasons I can think of.)
+
+---
+class: middle, inverse, center
+
+# Next time:
+
+Estimating the densities
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

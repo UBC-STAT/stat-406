@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>26 PCA v KPCA</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="STAT 406" />
+    <meta name="author" content="Daniel J. McDonald" />
+    <script src="materials/libs/header-attrs/header-attrs.js"></script>
+    <script src="materials/libs/fabric/fabric.min.js"></script>
+    <link href="materials/libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#e98a15"],"pen_size":3,"eraser_size":30,"palette":["#2c365e","#e98a15","#0a8754","#a8201a","#E41A1C","#377EB8","#4DAF4A","#984EA3","#FF7F00","#FFFF33"]}) })</script>
+    <link href="materials/libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="materials/libs/panelset/panelset.js"></script>
+    <script src="materials/libs/clipboard/clipboard.min.js"></script>
+    <link href="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="materials/libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"<i class=\"fa fa-clipboard\"><\/i>","success":"<i class=\"fa fa-check\" style=\"color: #90BE6D\"><\/i>","error":"Press Ctrl+C to Copy"})</script>
+    <link href="materials/libs/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="materials/libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/ae71192e04.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="materials/xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="materials/slides-style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# 26 PCA v KPCA
+]
+.author[
+### STAT 406
+]
+.author[
+### Daniel J. McDonald
+]
+.date[
+### Last modified - 2022-11-23
+]
+
+---
+
+
+
+
+
+
+<style>.panelset{--panel-tab-active-foreground: #2c365e;--panel-tab-hover-foreground: #e98a15;}</style>
+
+
+## PCA v KPCA
+
+
+
+`$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\argmin}{\arg\min}
+\newcommand{\argmax}{\arg\max}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{P}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\renewcommand{\hat}{\widehat}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}$$`
+
+(We assume `\(\X\)` is already centered/scaled, `\(n\)` rows, `\(p\)` columns)
+
+
+.pull-left[
+__PCA:__
+
+0. Start with data.
+1. Decompose `\(\X=\U\D\V^\top\)` (SVD). 
+2. Embed into `\(M\leq p\)` dimensions: 
+`$$\U_M \D_M = \X\V_M$$`
+
+The "embedding" is `\(\U_M \D_M\)`.
+
+(called the "Principal Components" or the "scores" or occasionally the "factors")
+
+The "loadings" are `\(\V_M\)`
+]
+
+--
+
+.pull-right[
+__KPCA:__
+
+1. Choose `\(k(x_i, x_{i'})\)`. Create `\(\mathbf{K}\)`.
+1. Double center `\(\mathbf{K} = \mathbf{PKP}\)`.
+1. Decompose `\(\mathbf{K} = \U \D^2 \U^\top\)` (eigendecomposition).
+1. Embed into `\(M\leq p\)` dimensions:
+`$$\U_M \D_M$$`
+
+The "embedding" is `\(\U_M \D_M\)`.
+
+There are no "loadings"  
+(there exists no matrix `\(\mathbf{B}\)` such that `\(\X\mathbf{B} = \U_M \D_M\)`)
+]
+
+---
+
+## Why is this the solution?
+
+The "maximize variance" version of PCA:
+
+`$$\max_\alpha \Var{\X\alpha} \quad \textrm{ subject to } \quad \left|\left| \alpha \right|\right|_2^2 = 1$$`
+
+( `\(\Var{\X\alpha} = \alpha^\top\X^\top\X\alpha\)` )
+
+This is equivalent to solving (Lagrangian):
+
+`$$\max_\alpha \alpha^\top\X^\top\X\alpha - \lambda\left|\left| \alpha \right|\right|_2^2$$`
+
+Take derivative wrt `\(\alpha\)` and set to 0:
+
+`$$0 = 2\X^\top\X\alpha - 2\lambda\alpha$$`
+
+This is the equation for an eigenproblem. The solution is `\(\alpha=\V_1\)` and the maximum is `\(\D_1^2\)`.
+
+---
+
+## Example (not real unless there's code)
+
+
+```r
+data("mobility", package = "Stat406")
+X &lt;- mobility %&gt;% select(Black:Married) %&gt;% as.matrix()
+not_missing &lt;- X %&gt;% complete.cases()
+X &lt;- scale(X[not_missing, ], center = TRUE, scale = TRUE)
+colors &lt;- mob$Mobility[not_missing] 
+M &lt;- 2 # embedding dimension
+P &lt;- diag(nrow(X)) - 1 / nrow(X)
+```
+
+--
+
+.pull-left[
+__PCA:__ (all 3 are equivalent)
+
+
+```r
+s &lt;- svd(X) # use svd 
+pca_loadings &lt;- s$v[,1:M]
+pca_scores &lt;- X %*% pca_loadings
+```
+
+
+
+```r
+s &lt;- eigen(t(X) %*% X) # V D^2 V'
+pca_loadings &lt;- s$vectors[,1:M]
+pca_scores &lt;- X %*% pca_loadings
+```
+
+
+
+```r
+s &lt;- eigen(X %*% t(X)) # U D^2 U'
+D &lt;- sqrt(diag(s$values[1:M]))
+U &lt;- s$vectors[,1:M]
+pca_scores &lt;- U %*% D
+pca_loadings = (1/D) %*% t(U) %*% X
+```
+
+
+
+]
+
+.pull-right[
+__KPCA:__
+
+
+```r
+d &lt;- 2
+K &lt;- P %*% (1 + X %*% t(X))^d %*% P # polynomial
+e &lt;- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U &lt;- e$vectors[,1:M]
+D &lt;- diag(sqrt(e$values[1:M]))
+kpca_poly &lt;- U %*% D
+```
+
+
+```r
+K &lt;- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel
+e &lt;- eigen(K) # U D^2 U' 
+# (different from the PCA one, K /= XX')
+U &lt;- e$vectors[,1:M]
+D &lt;- diag(sqrt(e$values[1:M]))
+kpca_sigmoid &lt;- U %*% D
+```
+
+
+]
+
+---
+
+## Plotting
+
+&lt;img src="rmd_gfx/26-pca-v-kpca/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## PCA loadings
+
+Showing the first 10 PCA loadings:
+
+* First column are the weights on the first score
+* each number corresponds to a variable in the original data
+* How much does that variable contribute to that score?
+
+
+```r
+head(round(pca_loadings,2), 10)
+```
+
+```
+##        [,1]  [,2]
+##  [1,]  0.25  0.07
+##  [2,]  0.13 -0.14
+##  [3,]  0.17 -0.34
+##  [4,]  0.18 -0.33
+##  [5,]  0.16 -0.34
+##  [6,] -0.24  0.11
+##  [7,] -0.04 -0.35
+##  [8,]  0.28  0.00
+##  [9,]  0.13 -0.14
+## [10,]  0.29  0.10
+```
+
+---
+
+## KPCA, feature map version
+
+
+```r
+p &lt;- ncol(X)
+scX &lt;- scale(X)
+width &lt;- p*(p-1)/2 + p # ~630
+Z &lt;- matrix(NA, nrow(X), width)
+k &lt;-  0
+for(i in 1:p){
+  for(j in i:p){
+    k &lt;- k + 1
+    Z[,k] &lt;- X[,i] * X[,j]
+  }
+}
+wideX &lt;- scale(cbind(X, Z))
+s &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow
+fkpca_scores &lt;- s$u %*% diag(s$d)
+```
+
+* Unfortunately, can't easily compare to check whether the result is the same
+* Also can cause numerical issues
+* But should be the "same" (assuming I didn't screw up...)
+* Would also allow me to get the loadings, though they'd depend on polynomials
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="materials/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
