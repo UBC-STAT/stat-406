@@ -1,7 +1,9 @@
-rmd_filename <- stringr::str_remove(knitr::current_input(),"\\.Rmd")
+qmd_filename <- stringr::str_remove(knitr::current_input(),"\\.qmd")
 knitr::opts_chunk$set(
-  fig.path = stringr::str_c("rmd_gfx/", rmd_filename, '/'),
-  warning=FALSE, message=FALSE, dev="svg"
+  fig.path = stringr::str_c("qmd_gfx/", qmd_filename, '/'),
+  warning = FALSE, 
+  message = FALSE, 
+  dev = "svg"
 )
 options(htmltools.dir.version = FALSE)
 secondary = "#e98a15"
