@@ -1,6 +1,9 @@
 knitr::opts_chunk$set(
   message = FALSE, 
-  dev = "svg"
+  dev = "svg",
+  fig.width = 5.33,
+  fig.height = 3,
+  fig.align = "center"
 )
 options(htmltools.dir.version = FALSE)
 secondary = "#e98a15"

@@ -1,36 +1,30 @@
 ---
-title: "02 Linear model example"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "02 Linear model example"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-```{r setup, include=FALSE}
-source("rmd_config.R")
-```
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
+{{< include _titleslide.qmd >}}
 
 
 ## Economic mobility
 
 
 ```{r}
-library(tidyverse)
-data(mobility, package = "Stat406")
+data("mobility", package = "Stat406")
 mobility
 ```
 
-???
+::: {.notes}
 
 Note how many observations and predictors it has.
 
 We'll use `Mobility` as the response
 
+:::
 
----
+
 
 ## A linear model
 
@@ -43,7 +37,7 @@ $$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban},
     \ldots \right]  = \beta_0 + \beta_1 \, \mbox{State} + 
     \beta_2 \, \mbox{Urban} + \cdots$$
 
----
+
 
 ## Analysis
 
@@ -56,25 +50,25 @@ $$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban},
 
 -   "Look" at the fit
 
---
+. . .
 
 ```{r}
 set.seed(20220914)
 mob <- mobility[complete.cases(mobility), ]
 n <- nrow(mob)
-mob <- mob %>% select(-Name, -ID, -State)
+mob <- mob |> select(-Name, -ID, -State)
 set <- sample.int(n, floor(n * .75), FALSE)
 train <- mob[set, ]
 test <- mob[setdiff(1:n, set), ]
 full <- lm(Mobility ~ ., data = train)
 ```
 
-???
+::: {.notes}
 
 Why don't we include `Name` or `ID`?
 
+:::
 
----
 
 ## Results
 
@@ -82,53 +76,56 @@ Why don't we include `Name` or `ID`?
 summary(full)
 ```
 
----
 
 ## Diagnostic plots
 
-.pull-left[
 ```{r}
+#| output-location: column
+par(mar = c(5, 3, 0, 0))
 plot(full, 1)
 ```
-]
 
-.pull-right[
 ```{r}
+#| output-location: column
 plot(full, 2)
 ```
 
-]
 
----
+##
 
 (Those were `plot` methods for objects of class `lm`)
-### Same thing in `ggplot`
 
-.pull-left[
 
-```{r, fig.height=5}
-stuff <- tibble(residuals = residuals(full), 
-                fitted = fitted(full),
-                stdresiduals = rstandard(full))
+Same thing in `ggplot`
+
+
+```{r}
+#| output-location: column
+stuff <- tibble(
+  residuals = residuals(full), 
+  fitted = fitted(full),
+  stdresiduals = rstandard(full)
+)
 ggplot(stuff, aes(fitted, residuals)) +
   geom_point(colour = "salmon") +
-  geom_smooth(se = FALSE, colour = "steelblue") +
+  geom_smooth(
+    se = FALSE, 
+    colour = "steelblue", 
+    linewidth = 2) +
   ggtitle("Residuals vs Fitted")
 ```
-]
 
-.pull-right[
-```{r, fig.height=5}
+```{r}
+#| output-location: column
 ggplot(stuff, aes(sample = stdresiduals)) +
-  geom_qq(colour = "plum") +
-  geom_qq_line(colour = "peachpuff") +
-  labs(x = "Theoretical quantiles", 
-       y = "Standardized residuals",
-       title = "Normal Q-Q")
+  geom_qq(colour = "purple", size = 2) +
+  geom_qq_line(colour = "peachpuff", linewidth = 2) +
+  labs(
+    x = "Theoretical quantiles", 
+    y = "Standardized residuals",
+    title = "Normal Q-Q")
 ```
-]
 
----
 
 ## Fit a reduced model
 
@@ -137,33 +134,33 @@ reduced <- lm(
   Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
     Manufacturing + Migration_in + Religious + Single_mothers, 
   data = train)
-summary(reduced)$coefficients %>% as_tibble()
-reduced %>% broom::glance() %>% print(width = 120)
+
+summary(reduced)$coefficients |> as_tibble()
+
+reduced |> broom::glance() |> print(width = 120)
 ```
 
----
 
 ## Diagnostic plots for reduced model
 
-.pull-left[
 ```{r}
+#| output-location: column
 plot(reduced, 1)
 ```
-]
 
-.pull-right[
 ```{r}
+#| output-location: column
 plot(reduced, 2)
 ```
 
-]
 
 
----
 
 ## How do we decide which model is better?
 
-.pull-left[
+:::: {.columns}
+
+::: {.column width="50%"}
 
 * Goodness of fit versus prediction power
 
@@ -178,42 +175,53 @@ map( # smaller AIC is better
 * Compare both sets of predictions
 
 
-```{r}
-mses <- function(preds, obs) round(mean((obs - preds)^2), 5)
-c(full = mses(predict(full, newdata = test), 
-              test$Mobility),
-  reduced = mses(predict(reduced, newdata = test), 
-                 test$Mobility))
-```
-]
 
-.pull-right[
-```{r, echo=FALSE}
+:::
+
+::: {.column width="50%"}
+
+```{r}
+mses <- function(preds, obs) {
+  round(mean((obs - preds)^2), 5)
+}
+c(
+  full = mses(
+    predict(full, newdata = test), 
+    test$Mobility),
+  reduced = mses(
+    predict(reduced, newdata = test), 
+    test$Mobility)
+)
+```
+
+
+```{r}
+#| echo: false
+#| fig-height: 4
+#| fig-width: 8
 test$full <- predict(full, newdata = test)
 test$reduced <- predict(reduced, newdata = test)
-test %>% 
-  select(Mobility, full, reduced) %>%
-  pivot_longer(-Mobility) %>%
-  ggplot(aes(Mobility,value)) + 
+test |> 
+  select(Mobility, full, reduced) |>
+  pivot_longer(-Mobility) |>
+  ggplot(aes(Mobility, value)) + 
   geom_point(color = "orange") + 
   facet_wrap(~name, 2) +
   xlab('observed mobility') + 
   ylab('predicted mobility') +
-  geom_abline(slope = 1, intercept = 0, col = "blue")
+  geom_abline(slope = 1, intercept = 0, col = "darkblue")
 ```
 
-]
+:::
+::::
 
----
-class: middle, center
-background-image: url("https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG")
-background-size: cover
 
-.secondary[.larger[Next time...]]
+# Next time... {background-image="https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG"}
 
-.secondary[.larger[Module]] .huge-orange-number[1]
 
-.secondary[.large[selecting models]]
+[Module 1]{.secondary .large}
+
+[Selecting models]{.secondary .large}
 
 
 
