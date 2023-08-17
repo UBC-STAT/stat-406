@@ -1,7 +1,4 @@
-qmd_filename <- stringr::str_remove(knitr::current_input(),"\\.qmd")
 knitr::opts_chunk$set(
-  fig.path = stringr::str_c("qmd_gfx/", qmd_filename, '/'),
-  warning = FALSE, 
   message = FALSE, 
   dev = "svg"
 )
@@ -19,13 +16,11 @@ green = tertiary
 red = fourth_color
 
 library(tidyverse)
-# library(cowplot)
 library(fontawesome)
 library(knitr)
 theme_set(theme_bw(18))
-# library(countdown)
 
-pro = fa("thumbs-up", fill=green)
-con = fa("bomb", fill=orange)
+pro = fa("thumbs-up", fill = green)
+con = fa("bomb", fill = orange)
 
 set.seed(12345)
