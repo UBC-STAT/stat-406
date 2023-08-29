@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.3.450">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – intro-to-class</title>
+  <title>UBC Stat406 2023W – lm-example</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -29,6 +29,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto.css">
   <link href="../../site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
@@ -328,408 +393,369 @@
 
 
 <section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>00 Intro to class</h2>
+<h2>02 Linear model example</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 16 August 2023</p>
+<p>Last modified – 17 August 2023</p>
+<p><span class="math display">\[
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\find}{find}
+\DeclareMathOperator{\st}{subject\,\,to}
+\]</span></p>
 </section>
-<section id="about-me" class="slide level2">
-<h2>About me</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
+<section id="economic-mobility" class="slide level2">
+<h2>Economic mobility</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">data</span>(<span class="st">"mobility"</span>, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>mobility</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 741 × 43
+      ID Name        Mobility State Population Urban Black Seg_racial Seg_income
+   &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+ 1   100 Johnson Ci…   0.0622 TN        576081     1 0.021      0.09       0.035
+ 2   200 Morristown    0.0537 TN        227816     1 0.02       0.093      0.026
+ 3   301 Middlesbor…   0.0726 TN         66708     0 0.015      0.064      0.024
+ 4   302 Knoxville     0.0563 TN        727600     1 0.056      0.21       0.092
+ 5   401 Winston-Sa…   0.0448 NC        493180     1 0.174      0.262      0.072
+ 6   402 Martinsvil…   0.0518 VA         92753     0 0.224      0.137      0.024
+ 7   500 Greensboro    0.0474 NC       1055133     1 0.218      0.22       0.068
+ 8   601 North Wilk…   0.0517 NC         90016     0 0.032      0.114      0.012
+ 9   602 Galax         0.0796 VA         64676     0 0.029      0.131      0.005
+10   700 Spartanburg   0.0431 SC        354533     1 0.207      0.139      0.045
+# ℹ 731 more rows
+# ℹ 34 more variables: Seg_poverty &lt;dbl&gt;, Seg_affluence &lt;dbl&gt;, Commute &lt;dbl&gt;,
+#   Income &lt;dbl&gt;, Gini &lt;dbl&gt;, Share01 &lt;dbl&gt;, Gini_99 &lt;dbl&gt;, Middle_class &lt;dbl&gt;,
+#   Local_tax_rate &lt;dbl&gt;, Local_gov_spending &lt;dbl&gt;, Progressivity &lt;dbl&gt;,
+#   EITC &lt;dbl&gt;, School_spending &lt;dbl&gt;, Student_teacher_ratio &lt;dbl&gt;,
+#   Test_scores &lt;dbl&gt;, HS_dropout &lt;dbl&gt;, Colleges &lt;dbl&gt;, Tuition &lt;dbl&gt;,
+#   Graduation &lt;dbl&gt;, Labor_force_participation &lt;dbl&gt;, Manufacturing &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>Note how many observations and predictors it has.</p>
+<p>We’ll use <code>Mobility</code> as the response</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="a-linear-model" class="slide level2">
+<h2>A linear model</h2>
+<p><span class="math display">\[\mbox{Mobility}_i = \beta_0 + \beta_1 \, \mbox{State}_i + \beta_2 \, \mbox{Urban}_i + \cdots + \epsilon_i\]</span></p>
+<p>or equivalently</p>
+<p><span class="math display">\[E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban},
+    \ldots \right]  = \beta_0 + \beta_1 \, \mbox{State} +
+    \beta_2 \, \mbox{Urban} + \cdots\]</span></p>
+</section>
+<section id="analysis" class="slide level2">
+<h2>Analysis</h2>
 <ul>
-<li><p>Daniel J. McDonald</p></li>
-<li><p><a href="mailto:daniel@stat.ubc.ca" class="email">daniel@stat.ubc.ca</a></p></li>
-<li><p><a href="http://dajmcdon.github.io/" class="uri">http://dajmcdon.github.io/</a></p></li>
-<li><p>Associate Professor, Department of Statistics</p></li>
+<li><p>Randomly split into a training (say 3/4) and a test set (1/4)</p></li>
+<li><p>Use training set to fit a model</p></li>
+<li><p>Fit the “full” model</p></li>
+<li><p>“Look” at the fit</p></li>
 </ul>
-</div><div class="column" style="width:50%;">
-<p><img data-src="https://dajmcdon.github.io/assets/img/big-bio-photo.jpeg"></p>
-</div>
-</div>
-</section>
-<section id="philosophy-of-the-class" class="slide level2">
-<h2>Philosophy of the class</h2>
-<p>I and the TAs are here to <span class="secondary">help you learn</span>. Ask questions.</p>
-<p>We encourage <span class="secondary">engagement</span>, <span class="secondary">curiosity</span> and <span class="secondary">generosity</span></p>
-<p>We favour <span class="secondary">steady work</span> through the Term (vs.&nbsp;sleeping until finals)</p>
 <div class="fragment">
-<p>The assessments attempt to reflect this ethos.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">set.seed</span>(<span class="dv">20220914</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ]</span>
+<span id="cb3-3"><a href="#cb3-3"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>mob <span class="ot">&lt;-</span> mob <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>Name, <span class="sc">-</span>ID, <span class="sc">-</span>State)</span>
+<span id="cb3-5"><a href="#cb3-5"></a>set <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>), <span class="cn">FALSE</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>train <span class="ot">&lt;-</span> mob[set, ]</span>
+<span id="cb3-7"><a href="#cb3-7"></a>test <span class="ot">&lt;-</span> mob[<span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, set), ]</span>
+<span id="cb3-8"><a href="#cb3-8"></a>full <span class="ot">&lt;-</span> <span class="fu">lm</span>(Mobility <span class="sc">~</span> ., <span class="at">data =</span> train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<aside class="notes">
+<p>Why don’t we include <code>Name</code> or <code>ID</code>?</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </div>
 </section>
-<section id="more-philosophy" class="slide level2">
-<h2>More philosophy</h2>
-<p>When the term ends, I want</p>
-<ul>
-<li>You to be better at coding.</li>
-<li>You to have an understanding of the variety of methods available to do prediction and data analysis.</li>
-<li>You to articulate their strengths and weaknesses.</li>
-<li>You to be able to choose between different methods using <strong>your intuition</strong> and <strong>the data</strong>.</li>
-</ul>
-<div class="fragment">
-<p>I do not want</p>
-<ul>
-<li>You to be under undo stress</li>
-<li>You to feel the need to cheat, plagiarize, or drop the course</li>
-<li>You to feel treated unfairly.</li>
-</ul>
+<section id="results" class="slide level2">
+<h2>Results</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">summary</span>(full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Mobility ~ ., data = train)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.072092 -0.010256 -0.001452  0.009170  0.090428 
+
+Coefficients:
+                            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                1.849e-01  8.083e-02   2.288 0.022920 *  
+Population                 3.378e-09  2.478e-09   1.363 0.173916    
+Urban                      2.853e-03  3.892e-03   0.733 0.464202    
+Black                      7.807e-02  2.859e-02   2.731 0.006735 ** 
+Seg_racial                -5.626e-02  1.780e-02  -3.160 0.001754 ** 
+Seg_income                 8.677e-01  9.355e-01   0.928 0.354453    
+Seg_poverty               -7.416e-01  5.014e-01  -1.479 0.140316    
+Seg_affluence             -2.224e-01  4.763e-01  -0.467 0.640874    
+Commute                    6.313e-02  2.838e-02   2.225 0.026915 *  
+Income                     4.207e-07  6.997e-07   0.601 0.548112    
+Gini                       3.592e+00  3.357e+00   1.070 0.285578    
+Share01                   -3.635e-02  3.357e-02  -1.083 0.279925    
+Gini_99                   -3.657e+00  3.356e+00  -1.090 0.276704    
+Middle_class               1.031e-01  4.835e-02   2.133 0.033828 *  
+Local_tax_rate             2.268e-01  2.620e-01   0.866 0.387487    
+Local_gov_spending         1.273e-07  3.016e-06   0.042 0.966374    
+Progressivity              4.983e-03  1.324e-03   3.764 0.000205 ***
+EITC                      -3.324e-04  4.528e-04  -0.734 0.463549    
+School_spending           -9.019e-04  2.272e-03  -0.397 0.691658    
+Student_teacher_ratio     -1.639e-03  1.123e-03  -1.459 0.145748    
+Test_scores                2.487e-04  3.137e-04   0.793 0.428519    
+HS_dropout                -1.698e-01  9.352e-02  -1.816 0.070529 .  
+Colleges                  -2.811e-02  7.661e-02  -0.367 0.713942    
+Tuition                    3.459e-07  4.362e-07   0.793 0.428417    
+Graduation                -1.702e-02  1.425e-02  -1.194 0.233650    
+Labor_force_participation -7.850e-02  5.405e-02  -1.452 0.147564    
+Manufacturing             -1.605e-01  2.816e-02  -5.700  3.1e-08 ***
+Chinese_imports           -5.165e-04  1.004e-03  -0.514 0.607378    
+Teenage_labor             -1.019e+00  2.111e+00  -0.483 0.629639    
+Migration_in               4.490e-02  3.480e-01   0.129 0.897436    
+Migration_out             -4.475e-01  4.093e-01  -1.093 0.275224    
+Foreign_born               9.137e-02  5.494e-02   1.663 0.097454 .  
+Social_capital            -1.114e-03  2.728e-03  -0.408 0.683245    
+Religious                  4.570e-02  1.298e-02   3.520 0.000506 ***
+Violent_crime             -3.393e+00  1.622e+00  -2.092 0.037373 *  
+Single_mothers            -3.590e-01  9.442e-02  -3.802 0.000177 ***
+Divorced                   1.707e-02  1.603e-01   0.107 0.915250    
+Married                   -5.894e-02  7.246e-02  -0.813 0.416720    
+Longitude                 -4.239e-05  2.239e-04  -0.189 0.850001    
+Latitude                   6.725e-04  5.687e-04   1.182 0.238037    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.02128 on 273 degrees of freedom
+Multiple R-squared:  0.7808,    Adjusted R-squared:  0.7494 
+F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="diagnostic-plots" class="slide level2">
+<h2>Diagnostic plots</h2>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="fu">plot</span>(full, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-4-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">plot</span>(full, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-5-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
 </div>
 </section>
 <section id="section" class="slide level2">
 <h2></h2>
-<p>I promise</p>
-<ul>
-<li>To grade/mark fairly. Good faith effort will be rewarded</li>
-<li>To be flexible. This semester (like the last 4) is different for everyone.</li>
-<li>To understand and adapt to issues.</li>
-</ul>
-<div class="fragment">
-<p><span class="secondary">I do not promise that you will all get the grade you want.</span></p>
-</div>
-</section>
-<section>
-<section id="covid-considerations" class="title-slide slide level1 center">
-<h1>COVID considerations</h1>
-
-</section>
-<section id="on-covid" class="slide level2">
-<h2>On COVID</h2>
-<div class="columns">
-<div class="column" style="width:60%;">
-<ul>
-<li><p>I work on COVID a lot.</p></li>
-<li><p>Statistics is hugely important.</p></li>
-</ul>
-<h3 id="policies-tl-dr">Policies (TL; DR)</h3>
-<ul>
-<li><p>I encourage you to wear a mask</p></li>
-<li><p>Do <span class="secondary">NOT</span> come to class if you are possibly sick</p></li>
-<li><p>Be kind and considerate to others</p></li>
-<li><p>The Marking scheme is flexible enough to allow some missed classes</p></li>
-</ul>
-</div><div class="column" style="width:40%;">
-<p><img data-src="gfx/delphi.jpg"> <img data-src="gfx/bccovid.png"></p>
+<p>(Those were <code>plot</code> methods for objects of class <code>lm</code>)</p>
+<p>Same thing in <code>ggplot</code></p>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>stuff <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb8-2"><a href="#cb8-2"></a>  <span class="at">residuals =</span> <span class="fu">residuals</span>(full), </span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="at">fitted =</span> <span class="fu">fitted</span>(full),</span>
+<span id="cb8-4"><a href="#cb8-4"></a>  <span class="at">stdresiduals =</span> <span class="fu">rstandard</span>(full)</span>
+<span id="cb8-5"><a href="#cb8-5"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(fitted, residuals)) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"salmon"</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">geom_smooth</span>(</span>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="at">se =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb8-10"><a href="#cb8-10"></a>    <span class="at">colour =</span> <span class="st">"steelblue"</span>, </span>
+<span id="cb8-11"><a href="#cb8-11"></a>    <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>  <span class="fu">ggtitle</span>(<span class="st">"Residuals vs Fitted"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-6-1.svg"></p>
+</figure>
 </div>
 </div>
-</section></section>
-<section>
-<section id="course-map" class="title-slide slide level1 center">
-<h1>Course map</h1>
-
-</section>
-<section id="section-1" class="slide level2" data-background-image="gfx/ml-black-box.png" data-background-size="contain">
-<h2></h2>
-<aside class="notes">
-<ul>
-<li>We’ll talk about lots of ML models</li>
-<li>But our focus is on how to “understand” everything in this diagram.</li>
-<li>How do we interpret? Evaluate? Choose a model?</li>
-<li>What are the implications / assumptions implied by our choices?</li>
-<li>Deep understanding of statistics helps with intuition.</li>
-</ul>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="section-2" class="slide level2" data-background-image="https://images-na.ssl-images-amazon.com/images/I/41xca5fHw3L.jpg" data-background-size="contain">
-<h2></h2>
-</section>
-<section id="section-3" class="slide level2" data-background-image="https://images-na.ssl-images-amazon.com/images/I/81jfPTGbRkL.jpg" data-background-size="contain">
-<h2></h2>
-</section>
-<section id="section-4" class="slide level2" data-background-image="https://images-na.ssl-images-amazon.com/images/I/916Fx6LagOL.jpg" data-background-size="contain">
-<h2></h2>
-</section>
-<section id="predictive-models" class="slide level2">
-<h2>Predictive models</h2>
-<p><br><br></p>
-<h3 id="preprocessing">1. Preprocessing</h3>
-<p>centering / scaling / factors-to-dummies / basis expansion / missing values / dimension reduction / discretization / transformations</p>
-<h3 id="model-fitting">2. Model fitting</h3>
-<p>Which box do you use?</p>
-<h3 id="prediction">3. Prediction</h3>
-<p>Repeat all the preprocessing on new data. But be careful.</p>
-<h3 id="postprocessing-interpretation-and-evaluation">4. Postprocessing, interpretation, and evaluation</h3>
-</section>
-<section id="section-5" class="slide level2">
-<h2></h2>
-
-<img data-src="https://i.vas3k.blog/7vx.jpg" class="r-stretch quarto-figure-center"><p><span class="smallest">Source: https://vas3k.com/blog/machine_learning/</span></p>
-</section>
-<section id="modules" class="slide level2">
-<h2>6 modules</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<ol start="0" type="1">
-<li>Review (today and next week)</li>
-<li>Model accuracy and selection</li>
-<li>Regularization, smoothing, trees</li>
-<li>Classifiers</li>
-<li>Modern techniques (classification and regression)</li>
-<li>Unsupervised learning</li>
-</ol>
-</div><div class="column" style="width:50%;">
-<ul>
-<li><p>Each module is approximately 2 weeks long</p></li>
-<li><p>Each module is based on a collection of readings and lectures</p></li>
-<li><p>Each module (except the review) has a homework assignment</p></li>
-</ul>
 </div>
 </div>
-</section>
-<section id="assessments" class="slide level2">
-<h2>Assessments</h2>
-<p><span class="fourth-colour">Effort-based</span></p>
-<p>Total across three components: 65 points, any way you want</p>
-<ol type="1">
-<li><span class="secondary">Labs</span>, up to 20 points (2 each)</li>
-<li><span class="secondary">Assignments</span>, up to 50 points (10 each)</li>
-<li><span class="secondary">Clickers</span>, up to 10 points</li>
-</ol>
-<div class="fragment">
-<p><span class="fourth-colour">Knowledge-based</span></p>
-<p>Final Exam, 35 points</p>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(<span class="at">sample =</span> stdresiduals)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="fu">geom_qq</span>(<span class="at">colour =</span> <span class="st">"purple"</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>  <span class="fu">geom_qq_line</span>(<span class="at">colour =</span> <span class="st">"peachpuff"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="at">x =</span> <span class="st">"Theoretical quantiles"</span>, </span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="at">y =</span> <span class="st">"Standardized residuals"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="at">title =</span> <span class="st">"Normal Q-Q"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-7-1.svg"></p>
+</figure>
 </div>
-</section>
-<section id="why-this-scheme" class="slide level2">
-<h2>Why this scheme?</h2>
-<ul>
-<li><p>You stay on top of the material</p></li>
-<li><p>You come to class and participate</p></li>
-<li><p>You gain coding practice in the labs</p></li>
-<li><p>You work hard on the assignments</p></li>
-</ul>
-<div class="callout callout-tip callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Most of this is Effort Based</strong></p>
-</div>
-<div class="callout-content">
-<p>work hard, guarantee yourself 65%</p>
 </div>
 </div>
 </div>
 </section>
-<section id="time-expectations-per-week" class="slide level2">
-<h2>Time expectations per week:</h2>
-<ul>
-<li><p>Coming to class – 3 hours</p></li>
-<li><p>Reading the book – 1 hour</p></li>
-<li><p>Labs – 1 hour</p></li>
-<li><p>Homework – 4 hours</p></li>
-<li><p>Study / thinking / playing – 1 hour</p></li>
-</ul>
-<aside class="notes">
-<p>Show the course website https://ubc-stat.github.io/stat-406/</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="labs-assignments" class="slide level2">
-<h2>Labs / Assignments</h2>
-<p>The goal is to “Do the work”</p>
-<div class="columns">
-<div class="column" style="width:45%;">
-<p><span class="secondary">Assignments</span></p>
-<ul>
-<li><p>Not easy, especially the first 2, especially if you are unfamiliar with R / Rmarkdown / ggplot</p></li>
-<li><p>You may revise to raise your score to 7/10, see <a href="https://ubc-stat.github.io/stat-406/syllabus/">Syllabus</a>. Only if you get lose 3+ for content (penalties can’t be redeemed).</p></li>
-<li><p>Don’t leave these for the last minute</p></li>
-</ul>
-</div><div class="column" style="width:50%;">
-<p><span class="secondary">Labs</span></p>
-<ul>
-<li><p>Labs should give you practice, allow for questions with the TAs.</p></li>
-<li><p>They are due at 2300 on the day of your lab, lightly graded.</p></li>
-<li><p>You may do them at home, but you must submit individually (in lab, you may share submission)</p></li>
-<li><p>Labs are lightly graded</p></li>
-</ul>
+<section id="fit-a-reduced-model" class="slide level2">
+<h2>Fit a reduced model</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>reduced <span class="ot">&lt;-</span> <span class="fu">lm</span>(</span>
+<span id="cb10-2"><a href="#cb10-2"></a>  Mobility <span class="sc">~</span> Commute <span class="sc">+</span> Gini_99 <span class="sc">+</span> Test_scores <span class="sc">+</span> HS_dropout <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>    Manufacturing <span class="sc">+</span> Migration_in <span class="sc">+</span> Religious <span class="sc">+</span> Single_mothers, </span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="at">data =</span> train)</span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a><span class="fu">summary</span>(reduced)<span class="sc">$</span>coefficients <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 4
+   Estimate `Std. Error` `t value` `Pr(&gt;|t|)`
+      &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+1  0.166        0.0178        9.36   1.83e-18
+2  0.0637       0.0149        4.27   2.62e- 5
+3 -0.109        0.0390       -2.79   5.64e- 3
+4  0.000500     0.000256      1.95   5.19e- 2
+5 -0.216        0.0820       -2.64   8.81e- 3
+6 -0.159        0.0202       -7.89   5.65e-14
+7 -0.389        0.172        -2.26   2.42e- 2
+8  0.0436       0.0105        4.16   4.08e- 5
+9 -0.286        0.0466       -6.15   2.44e- 9</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>reduced <span class="sc">|&gt;</span> broom<span class="sc">::</span><span class="fu">glance</span>() <span class="sc">|&gt;</span> <span class="fu">print</span>(<span class="at">width =</span> <span class="dv">120</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 12
+  r.squared adj.r.squared  sigma statistic  p.value    df logLik    AIC    BIC
+      &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+1     0.718         0.711 0.0229      96.9 5.46e-79     8   743. -1466. -1429.
+  deviance df.residual  nobs
+     &lt;dbl&gt;       &lt;int&gt; &lt;int&gt;
+1    0.159         304   313</code></pre>
 </div>
 </div>
 </section>
-<section id="clickers" class="slide level2">
-<h2>Clickers</h2>
-<ul>
-<li><p>Questions are similar to the Final</p></li>
-<li><p>0 points for skipping, 2 points for trying, 4 points for correct</p>
-<ul>
-<li>Average of 3 = 10 points (the max)</li>
-<li>Average of 2 = 5 points</li>
-<li>Average of 1 = 0 points</li>
-<li><code>total = max(0, min(5 * points / N - 5, 10))</code></li>
-</ul></li>
-<li><p>Be sure to sync your device in Canvas.</p></li>
-</ul>
-<div class="callout callout-important callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<section id="diagnostic-plots-for-reduced-model" class="slide level2">
+<h2>Diagnostic plots for reduced model</h2>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">plot</span>(reduced, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-9-1.svg"></p>
+</figure>
 </div>
-<p><strong>Don’t do this!</strong></p>
 </div>
-<div class="callout-content">
-<p>Average &lt; 1 drops your Final Mark 1 letter grade.</p>
-<p>A- becomes B-, C+ becomes D.</p>
+</div>
+</div>
+<div class="cell columns column-output-location" data-layout-align="center">
+<div class="column">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="fu">plot</span>(reduced, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div><div class="column">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-10-1.svg"></p>
+</figure>
+</div>
 </div>
 </div>
 </div>
 </section>
-<section id="final-exam" class="slide level2">
-<h2>Final Exam</h2>
-<ul>
-<li><p>Scheduled by the university.</p></li>
-<li><p>It is hard</p></li>
-<li><p>The median last year was 50% <span class="math inline">\(\Rightarrow\)</span> A-</p></li>
-</ul>
-<p><span class="secondary">Philosophy:</span></p>
-<blockquote>
-<p>If you put in the effort, you’re guaranteed a C+.<br>
-But to get an A+, you should really deeply understand the material.</p>
-</blockquote>
-<p>No penalty for skipping the final.</p>
-<p>If you’re cool with C+ and hate tests, then that’s fine.</p>
-</section>
-<section id="advice" class="slide level2">
-<h2>Advice</h2>
-<ul>
-<li><p>Skipping HW makes it difficult to get to 65</p></li>
-<li><p>Come to class!</p></li>
-<li><p>Yes it’s at 8am. I hate it too.</p></li>
-<li><p>To compensate, I will record the class and post to Canvas.</p></li>
-<li><p>In terms of last year’s class, attendance in lecture and active engagement (asking questions, coming to office hours, etc.) is the best predictor of success.</p></li>
-</ul>
-<div class="fragment">
-<h3 id="questions"><span class="secondary">Questions?</span></h3>
-</div>
-</section>
-<section id="textbooks" class="slide level2">
-<h2>Textbooks</h2>
-<div class="callout callout-important callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>An Introduction to Statistical Learning</strong></p>
-</div>
-<div class="callout-content">
-<p>James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted [ISLR])</p>
-<p>Available <strong>free</strong> online: http://statlearning.com/</p>
-</div>
-</div>
-</div>
-<div class="callout callout-tip callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>The Elements of Statistical Learning</strong></p>
-</div>
-<div class="callout-content">
-<p>Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted [ESL])</p>
-<p>Also available <strong>free</strong> online: https://web.stanford.edu/~hastie/ElemStatLearn/</p>
-</div>
-</div>
-</div>
-<div class="fragment">
-<p>It’s worth your time to read.</p>
-<p>If you need more practice, read the Worksheets.</p>
-</div>
-</section>
-<section id="computer" class="slide level2">
-<h2>Computer</h2>
+<section id="how-do-we-decide-which-model-is-better" class="slide level2">
+<h2>How do we decide which model is better?</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<p><img data-src="https://upload.wikimedia.org/wikipedia/commons/0/06/Apple_IIe_running_ProDOS.jpg"></p>
+<ul>
+<li>Goodness of fit versus prediction power</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="fu">map</span>( <span class="co"># smaller AIC is better</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="fu">list</span>(<span class="at">full =</span> full, <span class="at">reduced =</span> reduced), </span>
+<span id="cb16-3"><a href="#cb16-3"></a>  <span class="sc">~</span> <span class="fu">c</span>(<span class="at">aic =</span> <span class="fu">AIC</span>(.x), <span class="at">rsq =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$full
+          aic           rsq 
+-1482.5981023     0.7807509 
+
+$reduced
+         aic          rsq 
+-1466.088492     0.718245 </code></pre>
+</div>
+</div>
+<ul>
+<li><p>Use both models to predict <code>Mobility</code></p></li>
+<li><p>Compare both sets of predictions</p></li>
+</ul>
 </div><div class="column" style="width:50%;">
-<ul>
-<li><p>All coding in <code>R</code></p></li>
-<li><p>Suggest you use <strong>RStudio</strong> IDE</p></li>
-<li><p>See <a href="https://ubc-stat.github.io/stat-406/" class="uri">https://ubc-stat.github.io/stat-406/</a> for instructions</p></li>
-<li><p>It tells you how to install what you will need, hopefully all at once, for the whole Term.</p></li>
-<li><p>We will use R and we assume some background knowledge.</p></li>
-<li><p>Links to useful supplementary resources are available on the website.</p></li>
-</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>mses <span class="ot">&lt;-</span> <span class="cf">function</span>(preds, obs) {</span>
+<span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">round</span>(<span class="fu">mean</span>((obs <span class="sc">-</span> preds)<span class="sc">^</span><span class="dv">2</span>), <span class="dv">5</span>)</span>
+<span id="cb18-3"><a href="#cb18-3"></a>}</span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="fu">c</span>(</span>
+<span id="cb18-5"><a href="#cb18-5"></a>  <span class="at">full =</span> <span class="fu">mses</span>(</span>
+<span id="cb18-6"><a href="#cb18-6"></a>    <span class="fu">predict</span>(full, <span class="at">newdata =</span> test), </span>
+<span id="cb18-7"><a href="#cb18-7"></a>    test<span class="sc">$</span>Mobility),</span>
+<span id="cb18-8"><a href="#cb18-8"></a>  <span class="at">reduced =</span> <span class="fu">mses</span>(</span>
+<span id="cb18-9"><a href="#cb18-9"></a>    <span class="fu">predict</span>(reduced, <span class="at">newdata =</span> test), </span>
+<span id="cb18-10"><a href="#cb18-10"></a>    test<span class="sc">$</span>Mobility)</span>
+<span id="cb18-11"><a href="#cb18-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   full reduced 
+0.00072 0.00084 </code></pre>
 </div>
 </div>
-<div class="callout callout-important no-icon callout-style-simple">
-<div class="callout-body">
-<div class="callout-content">
-<p>This course is <span class="fourth-colour">not</span> an intro to R / python / MongoDB / SQL.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="02-lm-example_files/figure-revealjs/unnamed-chunk-13-1.svg"></p>
+</figure>
 </div>
 </div>
 </div>
-</section>
-<section id="other-resources" class="slide level2">
-<h2>Other resources</h2>
-<dl>
-<dt>Canvas</dt>
-<dd>
-Grades, links to videos from class
-</dd>
-<dt>Course website</dt>
-<dd>
-All the material (slides, extra worksheets) <a href="https://ubc-stat.github.io/stat-406" class="uri">https://ubc-stat.github.io/stat-406</a>
-</dd>
-<dt>Slack</dt>
-<dd>
-Discussion board, questions.
-</dd>
-<dt>Github</dt>
-<dd>
-Homework / Lab submission
-</dd>
-</dl>
-<div class="fragment">
-<hr>
-<ul>
-<li><p>All lectures will be recorded and posted</p></li>
-<li><p>I cannot guarantee that they will all work properly (sometimes I mess it up)</p></li>
-</ul>
+</div>
 </div>
 </section>
-<section id="some-more-words" class="slide level2">
-<h2>Some more words</h2>
-<ul>
-<li><p>Lectures are hard. It’s 8am, everyone’s tired.</p></li>
-<li><p>Coding is hard. I hope you’ll get better at it.</p></li>
-<li><p>I strongly urge you to get up at the same time everyday. My plan is to go to the gym on MWF. It’s really hard to sleep in until 10 on MWF and make class at 8 on T/Th.</p></li>
-</ul>
-<div class="fragment">
-<hr>
-<p>Let’s be kind and understanding to each other.</p>
-<p>I have to give you a grade, but I want that grade to reflect your learning and effort, not other junk.</p>
-</div>
-<div class="fragment">
-<hr>
-<p><span class="secondary">If you need help, please ask.</span></p>
-</div>
-</section></section>
-<section id="questions-1" class="title-slide slide level1 center">
-<h1>Questions?</h1>
-<p><a href="https://ubc-stat.github.io/stat-406/" class="uri">https://ubc-stat.github.io/stat-406/</a></p>
-<p><a href="https://github.com/stat-406-2023/" class="uri">https://github.com/stat-406-2023/</a></p>
+<section id="next-time" class="title-slide slide level1 center" data-background-image="https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG">
+<h1>Next time…</h1>
+<p><span class="secondary large">Module 1</span></p>
+<p><span class="secondary large">Selecting models</span></p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>

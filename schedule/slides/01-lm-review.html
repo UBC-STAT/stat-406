@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.3.450">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – version-control</title>
+  <title>UBC Stat406 2023W – lm-review</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -393,595 +393,163 @@
 
 
 <section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>00 Git, Github, and Slack</h2>
+<h2>01 Linear model review</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 16 August 2023</p>
+<p>Last modified – 17 August 2023</p>
+<p><span class="math display">\[
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\minimize}{minimize}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\find}{find}
+\DeclareMathOperator{\st}{subject\,\,to}
+\]</span></p>
 </section>
-<section id="course-communication" class="slide level2">
-<h2>Course communication</h2>
-<h3 id="website">Website:</h3>
-<p><a href="https://ubc-stat.github.io/stat-406/" class="uri">https://ubc-stat.github.io/stat-406/</a></p>
-<ul>
-<li><p>Hosted on Github.</p></li>
-<li><p>Links to slides and all materials</p></li>
-<li><p>Syllabus is there. Be sure to read it.</p></li>
-</ul>
+<section id="the-normal-linear-model" class="slide level2">
+<h2>The normal linear model</h2>
+<p>Assume that</p>
+<p><span class="math display">\[
+y_i = x_i^\top \beta + \epsilon_i.
+\]</span></p>
+<div>
+<ol type="1">
+<li class="fragment">What is the mean of <span class="math inline">\(y_i\)</span>?</li>
+<li class="fragment">What is the distribution of <span class="math inline">\(\epsilon_i\)</span>?</li>
+<li class="fragment">What is the notation <span class="math inline">\(\mathbf{X}\)</span> or <span class="math inline">\(\mathbf{y}\)</span>?</li>
+</ol>
+</div>
 </section>
-<section id="course-communication-1" class="slide level2">
-<h2>Course communication</h2>
-<h3 id="slack">Slack:</h3>
-<ul>
-<li><p>Link to join on Canvas. This is our discussion board.</p></li>
-<li><p>Note that this data is hosted on servers outside of Canada. You may wish to use a pseudonym to protect your privacy.</p></li>
-<li><p>Anything super important will be posted to Slack and Canvas.</p></li>
-<li><p>Be sure you get Canvas email.</p></li>
-<li><p>If I am sick, I will cancel class or arrange a substitute.</p></li>
-</ul>
-</section>
-<section id="course-communication-2" class="slide level2">
-<h2>Course communication</h2>
-<h3 id="github-organization">Github organization</h3>
-<ul>
-<li><p>Linked from the website.</p></li>
-<li><p>This is where you complete / submit assignments / projects / in-class-work</p></li>
-<li><p>This is also hosted on Servers outside Canada <a href="https://github.com/stat-406-2022w/" class="uri">https://github.com/stat-406-2022w/</a></p></li>
-</ul>
-</section>
-<section id="why-these" class="slide level2">
-<h2>Why these?</h2>
-<ul>
-<li><p>Yes, some data is hosted on servers in the US.</p></li>
-<li><p>But in the real world, no one uses Canvas / Piazza, so why not learn things they do use?</p></li>
-<li><p>Much easier to communicate, “mark” or comment on your work</p></li>
-<li><p>Much more DS friendly</p></li>
-<li><p>Note that MDS uses both of these, the Stat and CS departments use both, many faculty use them, Google / Amazon / Facebook use things like these, etc.</p></li>
-</ul>
+<section id="drawing-a-sample" class="slide level2">
+<h2>Drawing a sample</h2>
+<p><span class="math display">\[
+y_i = x_i^\top \beta + \epsilon_i.
+\]</span></p>
+<p>How would I <strong>create</strong> data from this model (draw a sample)?</p>
 <div class="fragment">
-<p>Slack help from MDS <a href="https://ubc-mds.github.io/resources_pages/slack/">features</a> and <a href="https://ubc-mds.github.io/resources_pages/slack_asking_for_help/">rules</a></p>
-</div>
-</section>
-<section>
-<section id="git-and-github" class="title-slide slide level1 center">
-<h1>Git and Github</h1>
-
-</section>
-<section id="why-version-control" class="slide level2">
-<h2>Why version control?</h2>
-
-<img data-src="http://www.phdcomics.com/comics/archive/phd101212s.gif" class="r-stretch quarto-figure-center"><p><span class="smallest">Much of this lecture is based on material from Colin Rundel and Karl Broman</span></p>
-</section>
-<section id="why-version-control-1" class="slide level2">
-<h2>Why version control?</h2>
-<ul>
-<li>Simple formal system for tracking all changes to a project</li>
-<li>Time machine for your projects
-<ul>
-<li>Track blame and/or praise</li>
-<li>Remove the fear of breaking things</li>
-</ul></li>
-<li>Learning curve is steep, but when you need it you <span class="secondary">REALLY</span> need it</li>
-</ul>
-<div class="callout callout-tip no-icon callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<p><strong>Words of wisdom</strong></p>
-</div>
-<div class="callout-content">
-<p>Your closest collaborator is you six months ago, but you don’t reply to emails.</p>
-<p>– <em>Paul Wilson</em></p>
-</div>
-</div>
-</div>
-</section>
-<section id="why-git" class="slide level2">
-<h2>Why Git</h2>
-<div class="columns">
-<div class="column" style="width:60%;">
-<ul>
-<li>You could use something like Box or Dropbox</li>
-<li>These are poor-man’s version control</li>
-<li>Git is much more appropriate</li>
-<li>It works with large groups</li>
-<li>It’s very fast</li>
-<li>It’s much better at fixing mistakes</li>
-<li>Tech companies use it (so it’s in your interest to have some experience)</li>
-</ul>
-</div><div class="column" style="width:40%;">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="https://imgs.xkcd.com/comics/git.png"></p>
-</figure>
-</div>
+<p>Set up parameters</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>p <span class="ot">&lt;-</span> <span class="dv">3</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>sigma <span class="ot">&lt;-</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div class="fragment">
-<div class="callout callout-important callout-style-simple">
-<div class="callout-body">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-content">
-<p>This will hurt, but what doesn’t kill you, makes you stronger.</p>
-</div>
-</div>
+<p>Create the data</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>epsilon <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> sigma) <span class="co"># this is random</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>X <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">runif</span>(n <span class="sc">*</span> p), n, p) <span class="co"># treat this as fixed, but I need numbers</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>beta <span class="ot">&lt;-</span> (p <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="dv">1</span> <span class="co"># parameter, also fixed, but I again need numbers</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>Y <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, X) <span class="sc">%*%</span> beta <span class="sc">+</span> epsilon <span class="co"># epsilon is random, so this is</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="do">## Equiv: Y &lt;- beta[1] + X %*% beta[-1] + epsilon</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </section>
-<section id="overview" class="slide level2">
-<h2>Overview</h2>
-<ul>
-<li><code>git</code> is a command line program that lives on your machine</li>
-<li>If you want to track changes in a directory, you type <code>git init</code></li>
-<li>This creates a (hidden) directory called <code>.git</code></li>
-<li>The <code>.git</code> directory contains a history of all changes made to “versioned” files</li>
-<li>This top directory is referred to as a “repository” or “repo”</li>
-<li><a href="http://github.com" class="uri">http://github.com</a> is a service that hosts a repo remotely and has other features: issues, project boards, pull requests, renders <code>.ipynb</code> &amp; <code>.md</code></li>
-<li>Some IDEs (pycharm, RStudio, VScode) have built in <code>git</code></li>
-<li><code>git</code>/GitHub is broad and complicated. Here, just what you <span class="secondary">need</span></li>
-</ul>
-</section>
-<section id="aside-on-built-in-command-line" class="slide level2">
-<h2>Aside on “Built-in” &amp; “Command line”</h2>
-<div class="callout callout-tip callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Tip</strong></p>
-</div>
-<div class="callout-content">
-<p>First things first, RStudio and the Terminal</p>
-</div>
-</div>
-</div>
-<ul>
-<li><p>Command line is the “old” type of computing. You type commands at a prompt and the computer “does stuff”.</p></li>
-<li><p>You may not have seen where this is. RStudio has one built in called “Terminal”</p></li>
-<li><p>The Mac System version is also called “Terminal”. If you have a Linux machine, this should all be familiar.</p></li>
-<li><p>Windows is not great at this.</p></li>
-<li><p>To get the most out of Git, you have to use the command line.</p></li>
-</ul>
-</section>
-<section id="typical-workflow" class="slide level2 smaller">
-<h2>Typical workflow</h2>
+<section id="how-do-we-estimate-beta" class="slide level2">
+<h2>How do we estimate beta?</h2>
 <ol type="1">
-<li>Download a repo from Github</li>
+<li>Guess.</li>
+<li>Ordinary least squares (OLS).</li>
+<li>Maximum likelihood.</li>
+<li>Do something more creative.</li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a href="#cb1-1"></a>git clone https://github.com/stat550-2021/lecture-slides.git</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ol start="2" type="1">
-<li>Create a <strong>branch</strong></li>
-</ol>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb2-1"><a href="#cb2-1"></a>git branch &lt;branchname&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ol start="3" type="1">
-<li>Make changes to your files.</li>
-<li>Add your changes to be tracked (“stage” them)</li>
-</ol>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb3-1"><a href="#cb3-1"></a>git add &lt;name/of/tracked/file&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ol start="5" type="1">
-<li>Commit your changes</li>
-</ol>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb4-1"><a href="#cb4-1"></a>git commit -m "Some explanatory message"</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>Repeat 3–5 as needed. Once you’re satisfied</strong></p>
-<ul>
-<li>Push to Github</li>
-</ul>
-<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb5-1"><a href="#cb5-1"></a>git push</span>
-<span id="cb5-2"><a href="#cb5-2"></a>git push -u origin &lt;branchname&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
-<section class="slide level2">
-
-
-<img data-src="gfx/git-clone.png" class="r-stretch quarto-figure-center"></section>
-<section id="what-should-be-tracked" class="slide level2">
-<h2>What should be tracked?</h2>
-<p><br></p>
-<dl>
-<dt>Definitely</dt>
-<dd>
-code, markdown documentation, tex files, bash scripts/makefiles, …
-</dd>
-</dl>
-<p><br></p>
-<dl>
-<dt>Possibly</dt>
-<dd>
-logs, jupyter notebooks, images (that won’t change), …
-</dd>
-</dl>
-<p><br></p>
-<dl>
-<dt>Questionable</dt>
-<dd>
-processed data, static pdfs, …
-</dd>
-</dl>
-<p><br></p>
-<dl>
-<dt>Definitely not</dt>
-<dd>
-full data, continually updated pdfs, other things compiled from source code, …
-</dd>
-</dl>
-</section>
-<section id="what-things-to-track" class="slide level2">
-<h2>What things to track</h2>
-<ul>
-<li><p>You decide what is “versioned”.</p></li>
-<li><p>A file called <code>.gitignore</code> tells <code>git</code> files or types to never track</p></li>
-</ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb6-1"><a href="#cb6-1"></a># History files</span>
-<span id="cb6-2"><a href="#cb6-2"></a>.Rhistory</span>
-<span id="cb6-3"><a href="#cb6-3"></a>.Rapp.history</span>
-<span id="cb6-4"><a href="#cb6-4"></a></span>
-<span id="cb6-5"><a href="#cb6-5"></a># Session Data files</span>
-<span id="cb6-6"><a href="#cb6-6"></a>.RData</span>
-<span id="cb6-7"><a href="#cb6-7"></a></span>
-<span id="cb6-8"><a href="#cb6-8"></a># User-specific files</span>
-<span id="cb6-9"><a href="#cb6-9"></a>.Ruserdata</span>
-<span id="cb6-10"><a href="#cb6-10"></a></span>
-<span id="cb6-11"><a href="#cb6-11"></a># Compiled junk</span>
-<span id="cb6-12"><a href="#cb6-12"></a>*.o</span>
-<span id="cb6-13"><a href="#cb6-13"></a>*.so</span>
-<span id="cb6-14"><a href="#cb6-14"></a>*.DS_Store</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ul>
-<li>Shortcut to track everything (use carefully):</li>
-</ul>
-<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb7-1"><a href="#cb7-1"></a>git add .</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="rules" class="slide level2">
-<h2>Rules</h2>
-<h3 id="homework-and-labs">Homework and Labs</h3>
-<ul>
-<li><p>You each have your own repo</p></li>
-<li><p>You make a branch</p></li>
-<li><p><span class="secondary">DO NOT</span> rename files</p></li>
-<li><p>Make enough commits (3 for labs, 5 for HW).</p></li>
-<li><p>Push your changes (at anytime) and make a PR against <code>main</code> when done.</p></li>
-<li><p>TAs review your work.</p></li>
-<li><p>On HW, if you want to revise, make changes in response to feedback and push to the same branch. Then “request review”.</p></li>
-</ul>
-</section>
-<section id="whats-a-pr" class="slide level2">
-<h2>What’s a PR?</h2>
-<ul>
-<li>This exists on Github (not git)</li>
-<li>Demonstration</li>
-</ul>
-<div class="fragment">
-<p><img data-src="gfx/pr1.png"></p>
-</div>
-</section>
-<section id="whats-a-pr-1" class="slide level2">
-<h2>What’s a PR?</h2>
-<ul>
-<li>This exists on Github (not git)</li>
-<li>Demonstration</li>
-</ul>
-
-<img data-src="gfx/pr2.png" class="r-stretch"></section>
-<section id="some-things-to-be-aware-of" class="slide level2">
-<h2>Some things to be aware of</h2>
-<ul>
-<li><code>master</code> vs <code>main</code></li>
-<li>If you think you did something wrong, stop and ask for help</li>
-<li>There are guardrails in place. But those won’t stop a bulldozer.</li>
-<li>The hardest part is the initial setup. Then, this should all be rinse-and-repeat.</li>
-<li>This book is great: <a href="https://happygitwithr.com">Happy Git with R</a>
-<ol type="1">
-<li>See Chapter 6 if you have install problems.</li>
-<li>See Chapter 10 for credential caching (avoid typing a password all the time)</li>
-<li>See Chapter 13 if RStudio can’t find <code>git</code></li>
-</ol></li>
-</ul>
-</section>
-<section id="the-maindevelopbranch-workflow" class="slide level2">
-<h2>The <code>main/develop/branch</code> workflow</h2>
-<ul>
-<li>When working on your own
-<ol type="1">
-<li>Don’t NEED branches (but you should use them, really)</li>
-<li>I make a branch if I want to try a modification without breaking what I have.</li>
-</ol></li>
-<li>When working on a large team with production grade software
-<ol type="1">
-<li><code>main</code> is protected, released version of software (maybe renamed to <code>release</code>)</li>
-<li><code>develop</code> contains things not yet on <code>main</code>, but thoroughly tested</li>
-<li>On a schedule (once a week, once a month) <code>develop</code> gets merged to <code>main</code></li>
-<li>You work on a <code>feature</code> branch off <code>develop</code> to build your new feature</li>
-<li>You do a PR against <code>develop</code>. Supervisors review your contributions</li>
-</ol></li>
-</ul>
-<div class="fragment">
-<p>I and many DS/CS/Stat faculty use this workflow with my lab.</p>
-</div>
-</section>
-<section id="protection" class="slide level2">
-<h2>Protection</h2>
-<ul>
-<li><p>Typical for your PR to trigger tests to make sure you don’t break things</p></li>
-<li><p>Typical for team members or supervisors to review your PR for compliance</p></li>
-</ul>
-</section>
-<section id="guardrails" class="slide level2">
-<h2>Guardrails</h2>
-<ul>
-<li><p>The <code>.github</code> directory contains interactions with GitHub</p>
-<ol type="1">
-<li>Actions: On push / PR / other GitHub does something on their server (builds a website, runs tests on code)</li>
-<li>PR templates: Little admonitions when you open a PR</li>
-<li>Branch protection: prevent you from doing stuff</li>
-</ol></li>
-<li><p>In this course, I protect <code>main</code> so that you can’t push there</p></li>
-</ul>
-<div class="callout callout-warning callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Warning</strong></p>
-</div>
-<div class="callout-content">
-<p>If you try to push to <code>main</code>, it will give an error like</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb8-1"><a href="#cb8-1"></a>remote: error: GH006: Protected branch update failed for refs/heads/main.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The fix is: make a new branch, then push that.</p>
-</div>
-</div>
-</div>
-</section>
-<section class="slide level2">
-
-<ul>
-<li>I also use a PR template. It gives you some instructions that you should follow</li>
-</ul>
-<div class="callout callout-important callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Important</strong></p>
-</div>
-<div class="callout-content">
-<p>Read the PR template!!</p>
-</div>
-</div>
-</div>
-</section>
-<section id="operations-in-rstudio" class="slide level2">
-<h2>Operations in Rstudio</h2>
+<section id="method-2.-ols" class="slide level2">
+<h2>Method 2. OLS</h2>
+<p>I want to find an estimator <span class="math inline">\(\widehat\beta\)</span> that makes small errors on my data.</p>
+<p>I measure errors with the difference between predictions <span class="math inline">\(\mathbf{X}\widehat\beta\)</span> and the responses <span class="math inline">\(\mathbf{y}\)</span>.</p>
 <div class="columns">
 <div class="column" style="width:50%;">
-<ol type="1">
-<li>Stage</li>
-<li>Commit</li>
-<li>Push</li>
-<li>Pull</li>
-<li>Create a branch</li>
-</ol>
-<div class="callout callout-note callout-titled callout-style-default">
-<div class="callout-body">
-<div class="callout-title">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Covers:</strong></p>
-</div>
-<div class="callout-content">
-<ul>
-<li>Everything to do your HW / Project if you’re careful</li>
-<li>Plus most other things you “want to do”</li>
-</ul>
-</div>
-</div>
-</div>
-</div><div class="column" style="width:5%;">
-
-</div><div class="column" style="width:45%;">
-<h4 id="command-line-versions-of-the-same">Command line versions (of the same)</h4>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb9-1"><a href="#cb9-1"></a>git add &lt;name/of/file&gt;</span>
-<span id="cb9-2"><a href="#cb9-2"></a></span>
-<span id="cb9-3"><a href="#cb9-3"></a>git commit -m "some useful message"</span>
-<span id="cb9-4"><a href="#cb9-4"></a></span>
-<span id="cb9-5"><a href="#cb9-5"></a>git push</span>
-<span id="cb9-6"><a href="#cb9-6"></a></span>
-<span id="cb9-7"><a href="#cb9-7"></a>git pull</span>
-<span id="cb9-8"><a href="#cb9-8"></a></span>
-<span id="cb9-9"><a href="#cb9-9"></a>git checkout -b &lt;name/of/branch&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-</section>
-<section id="other-useful-stuff-but-command-line-only" class="slide level2">
-<h2>Other useful stuff (but command line only)</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h4 id="initializing">Initializing</h4>
-<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb10-1"><a href="#cb10-1"></a>git config user.name --global "Daniel J. McDonald"</span>
-<span id="cb10-2"><a href="#cb10-2"></a>git config user.email --global "daniel@stat.ubc.ca"</span>
-<span id="cb10-3"><a href="#cb10-3"></a>git config core.editor --global nano </span>
-<span id="cb10-4"><a href="#cb10-4"></a># or emacs or ... (default is vim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<h4 id="staging">Staging</h4>
-<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb11-1"><a href="#cb11-1"></a>git add name/of/file # stage 1 file</span>
-<span id="cb11-2"><a href="#cb11-2"></a>git add . # stage all</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<h4 id="committing">Committing</h4>
-<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a href="#cb12-1"></a># stage/commit simultaneously</span>
-<span id="cb12-2"><a href="#cb12-2"></a>git commit -am "message" </span>
-<span id="cb12-3"><a href="#cb12-3"></a></span>
-<span id="cb12-4"><a href="#cb12-4"></a># open editor to write long commit message</span>
-<span id="cb12-5"><a href="#cb12-5"></a>git commit </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<h4 id="pushing">Pushing</h4>
-<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb13-1"><a href="#cb13-1"></a># If branchname doesn't exist</span>
-<span id="cb13-2"><a href="#cb13-2"></a># on remote, create it and push</span>
-<span id="cb13-3"><a href="#cb13-3"></a>git push -u origin branchname</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Don’t care if the differences are positive or negative</p>
+<p><span class="math display">\[\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.\]</span></p>
+<p>This is hard to minimize (what is the derivative of <span class="math inline">\(|\cdot|\)</span>?)</p>
+<p><span class="math display">\[\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.\]</span></p>
 </div><div class="column" style="width:50%;">
-<h4 id="branching">Branching</h4>
-<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb14-1"><a href="#cb14-1"></a># switch to branchname, error if uncommitted changes</span>
-<span id="cb14-2"><a href="#cb14-2"></a>git checkout branchname </span>
-<span id="cb14-3"><a href="#cb14-3"></a># switch to a previous commit</span>
-<span id="cb14-4"><a href="#cb14-4"></a>git checkout aec356</span>
-<span id="cb14-5"><a href="#cb14-5"></a></span>
-<span id="cb14-6"><a href="#cb14-6"></a># create a new branch</span>
-<span id="cb14-7"><a href="#cb14-7"></a>git branch newbranchname</span>
-<span id="cb14-8"><a href="#cb14-8"></a># create a new branch and check it out</span>
-<span id="cb14-9"><a href="#cb14-9"></a>git checkout -b newbranchname</span>
-<span id="cb14-10"><a href="#cb14-10"></a></span>
-<span id="cb14-11"><a href="#cb14-11"></a># merge changes in branch2 onto branch1</span>
-<span id="cb14-12"><a href="#cb14-12"></a>git checkout branch1</span>
-<span id="cb14-13"><a href="#cb14-13"></a>git merge branch2</span>
-<span id="cb14-14"><a href="#cb14-14"></a></span>
-<span id="cb14-15"><a href="#cb14-15"></a># grab a file from branch2 and put it on current</span>
-<span id="cb14-16"><a href="#cb14-16"></a>git checkout branch2 -- name/of/file</span>
-<span id="cb14-17"><a href="#cb14-17"></a></span>
-<span id="cb14-18"><a href="#cb14-18"></a>git branch -v # list all branches</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<h4 id="check-the-status">Check the status</h4>
-<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a href="#cb15-1"></a>git status</span>
-<span id="cb15-2"><a href="#cb15-2"></a>git remote -v # list remotes</span>
-<span id="cb15-3"><a href="#cb15-3"></a>git log # show recent commits, msgs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><img data-src="gfx/islr3_4.png" style="width:70.0%"></p>
 </div>
 </div>
 </section>
-<section id="conflicts" class="slide level2">
-<h2>Conflicts</h2>
-<ul>
-<li><p>Sometimes you merge things and “conflicts” happen.</p></li>
-<li><p>Meaning that changes on one branch would overwrite changes on a different branch.</p></li>
-</ul>
-<div class="columns">
-<div class="column" style="width:50%;">
-<ul>
-<li>They look like this:</li>
-</ul>
-<pre><code>Here are lines that are either unchanged from
-the common ancestor, or cleanly resolved 
-because only one side changed.
-
-But below we have some troubles
-&lt;&lt;&lt;&lt;&lt;&lt;&lt; yours:sample.txt
-Conflict resolution is hard;
-let's go shopping.
-=======
-Git makes conflict resolution easy.
-&gt;&gt;&gt;&gt;&gt;&gt;&gt; theirs:sample.txt
-
-And here is another line that is cleanly 
-resolved or unmodified.</code></pre>
-</div><div class="column" style="width:5%;">
-
-</div><div class="column" style="width:45%;">
-<p>You get to decide, do you want to keep</p>
+<section id="method-2.-ols-solution" class="slide level2">
+<h2>Method 2. OLS solution</h2>
+<p>We write this as</p>
+<p><span class="math display">\[\widehat\beta = \argmin_\beta \sum_{i=1}^n ( y_i - x_i^\top \beta )^2.\]</span></p>
+<blockquote>
+<p>Find the <span class="math inline">\(\beta\)</span> which minimizes the sum of squared errors.</p>
+</blockquote>
+<div class="fragment">
+<p>Note that this is the same as</p>
+<p><span class="math display">\[\widehat\beta = \argmin_\beta \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2.\]</span></p>
+<blockquote>
+<p>Find the beta which minimizes the mean squared error.</p>
+</blockquote>
+</div>
+</section>
+<section id="method-2.-ok-do-it" class="slide level2 smaller">
+<h2>Method 2. Ok, do it</h2>
+<p>We differentiate and set to zero</p>
+<span class="math display">\[\begin{aligned}
+&amp; \frac{\partial}{\partial \beta} \frac{1}{n}\sum_{i=1}^n ( y_i - x_i^\top \beta )^2\\
+&amp;= -\frac{2}{n}\sum_{i=1}^n x_i (y_i - x_i^\top\beta)\\
+&amp;= \frac{2}{n}\sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
+0 &amp;\equiv \sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
+&amp;\Rightarrow \sum_{i=1}^n x_i x_i^\top \beta = \sum_{i=1}^n x_i y_i\\
+&amp;\Rightarrow \beta = \left(\sum_{i=1}^n x_i x_i^\top\right)^{-1}\sum_{i=1}^n x_i y_i
+\end{aligned}\]</span>
+</section>
+<section id="in-matrix-notation" class="slide level2">
+<h2>In matrix notation…</h2>
+<p>…this is</p>
+<p><span class="math display">\[\hat\beta = ( \mathbf{X}^\top  \mathbf{X})^{-1} \mathbf{X}^\top\mathbf{y}.\]</span></p>
+<p>The <span class="math inline">\(\beta\)</span> which “minimizes the sum of squared errors”</p>
+<p>AKA, the SSE.</p>
+</section>
+<section id="method-3-maximum-likelihood" class="slide level2">
+<h2>Method 3: maximum likelihood</h2>
+<p>Method 2 didn’t use anything about the distribution of <span class="math inline">\(\epsilon\)</span>.</p>
+<p>But if we know that <span class="math inline">\(\epsilon\)</span> has a normal distribution, we can write down the joint distribution of <span class="math inline">\(\mathbf{y}=(y_1,\ldots,y_n)^\top\)</span>:</p>
+<span class="math display">\[\begin{aligned}
+f_Y(\mathbf{y} ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
+  &amp;= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
+  &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
+\end{aligned}\]</span>
+</section>
+<section id="method-3-maximum-likelihood-1" class="slide level2">
+<h2>Method 3: maximum likelihood</h2>
+<p><span class="math display">\[
+f_Y(\mathbf{y} ; \beta) = \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
+\]</span></p>
+<p>In probability courses, we think of <span class="math inline">\(f_Y\)</span> as a function of <span class="math inline">\(\mathbf{y}\)</span> with <span class="math inline">\(\beta\)</span> fixed:</p>
 <ol type="1">
-<li>Your changes (above <code>======</code>)</li>
-<li>Their changes (below <code>======</code>)</li>
-<li>Both.</li>
-<li>Neither.</li>
+<li>If we integrate over <span class="math inline">\(\mathbf{y}\)</span>, it’s <span class="math inline">\(1\)</span>.</li>
+<li>If we want the probability of <span class="math inline">\((a,b)\)</span>, we integrate from <span class="math inline">\(a\)</span> to <span class="math inline">\(b\)</span>.</li>
+<li>etc.</li>
 </ol>
-<p>But always delete the <code>&lt;&lt;&lt;&lt;&lt;</code>, <code>======</code>, and <code>&gt;&gt;&gt;&gt;&gt;</code> lines.</p>
-<p>Once you’re satisfied, committing resolves the conflict.</p>
-</div>
-</div>
 </section>
-<section id="some-other-pointers" class="slide level2">
-<h2>Some other pointers</h2>
-<ul>
-<li>Commits have long names: <code>32b252c854c45d2f8dfda1076078eae8d5d7c81f</code>
-<ul>
-<li>If you want to use it, you need “enough to be unique”: <code>32b25</code></li>
-</ul></li>
-<li>Online help uses directed graphs in ways different from statistics:
-<ul>
-<li>In stats, arrows point from cause to effect, forward in time</li>
-<li>In <code>git</code> docs, it’s reversed, they point to the thing on which they depend</li>
-</ul></li>
-</ul>
-<h3 id="cheat-sheet">Cheat sheet</h3>
-<p><a href="https://training.github.com/downloads/github-git-cheat-sheet.pdf" class="uri">https://training.github.com/downloads/github-git-cheat-sheet.pdf</a></p>
+<section id="turn-it-around" class="slide level2">
+<h2>Turn it around…</h2>
+<p>…instead, think of it as a function of <span class="math inline">\(\beta\)</span>.</p>
+<p>We call this “the likelihood” of beta: <span class="math inline">\(\mathcal{L}(\beta)\)</span>.</p>
+<p>Given some data, we can <span class="secondary">evaluate</span> the likelihood for any value of <span class="math inline">\(\beta\)</span> (assuming <span class="math inline">\(\sigma\)</span> is known).</p>
+<p>It won’t integrate to 1 over <span class="math inline">\(\beta\)</span>.</p>
+<p>But it is “convex”,</p>
+<p>meaning we can maximize it (the second derivative wrt <span class="math inline">\(\beta\)</span> is everywhere negative).</p>
 </section>
-<section id="how-to-undo-in-3-scenarios" class="slide level2">
-<h2>How to undo in 3 scenarios</h2>
-<ul>
-<li>Suppose we’re concerned about a file named <code>README.md</code></li>
-<li>Often, <code>git status</code> will give some of these as suggestions</li>
-</ul>
-<div class="columns">
-<div class="column" style="width:50%;">
-<h3 id="saved-but-not-staged">1. Saved but not staged</h3>
-<ul>
-<li>In RStudio, select the file and click <svg aria-hidden="true" role="img" viewbox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"></path></svg> <svg aria-hidden="true" role="img" viewbox="0 0 320 512" style="height:1em;width:0.62em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"></path></svg> then select <svg aria-hidden="true" role="img" viewbox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M125.7 160H176c17.7 0 32 14.3 32 32s-14.3 32-32 32H48c-17.7 0-32-14.3-32-32V64c0-17.7 14.3-32 32-32s32 14.3 32 32v51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path></svg> Revert…</li>
-</ul>
-<div class="sourceCode" id="cb17"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb17-1"><a href="#cb17-1"></a># grab the previously committed version</span>
-<span id="cb17-2"><a href="#cb17-2"></a>git checkout -- README.md </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<h3 id="staged-but-not-committed">2. Staged but not committed</h3>
-<ul>
-<li>In RStudio, uncheck the box by the file, then use the method above.</li>
-</ul>
-<div class="sourceCode" id="cb18"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb18-1"><a href="#cb18-1"></a># unstage</span>
-<span id="cb18-2"><a href="#cb18-2"></a>git reset HEAD README.md</span>
-<span id="cb18-3"><a href="#cb18-3"></a>git checkout -- README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div><div class="column" style="width:50%;">
-<h3 id="committed">3. Committed</h3>
-<ul>
-<li>Not easy to do in RStudio…</li>
-</ul>
-<div class="sourceCode" id="cb19"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb19-1"><a href="#cb19-1"></a># check the log to see where you made the chg, </span>
-<span id="cb19-2"><a href="#cb19-2"></a>git log</span>
-<span id="cb19-3"><a href="#cb19-3"></a># go one step before that (eg to 32b252)</span>
-<span id="cb19-4"><a href="#cb19-4"></a># and grab that earlier version</span>
-<span id="cb19-5"><a href="#cb19-5"></a>git checkout 32b252 -- README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><br></p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb20-1"><a href="#cb20-1"></a># alternatively</span>
-<span id="cb20-2"><a href="#cb20-2"></a># if it happens to also be on another branch</span>
-<span id="cb20-3"><a href="#cb20-3"></a>git checkout otherbranch -- README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
+<section id="so-lets-maximize" class="slide level2 smaller">
+<h2>So let’s maximize</h2>
+<p>The derivative of this thing is kind of ugly.</p>
+<p>But if we’re trying to maximize over <span class="math inline">\(\beta\)</span>, we can take an increasing transformation without changing anything.</p>
+<p>I choose <span class="math inline">\(\log_e\)</span>.</p>
+<span class="math display">\[\begin{aligned}
+\mathcal{L}(\beta) &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)\\
+\ell(\beta) &amp;=-\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2
+\end{aligned}\]</span>
+<p>But we can ignore constants, so this gives</p>
+<p><span class="math display">\[\widehat\beta = \argmax_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2\]</span></p>
+<p>The same as before!</p>
 </section>
-<section id="recovering-from-things" class="slide level2">
-<h2>Recovering from things</h2>
-<ol type="1">
-<li>Accidentally did work on main, Tried to Push but got refused</li>
-</ol>
-<div class="sourceCode" id="cb21"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb21-1"><a href="#cb21-1"></a># make a new branch with everything, but stay on main</span>
-<span id="cb21-2"><a href="#cb21-2"></a>git branch newbranch</span>
-<span id="cb21-3"><a href="#cb21-3"></a># find out where to go to</span>
-<span id="cb21-4"><a href="#cb21-4"></a>git log</span>
-<span id="cb21-5"><a href="#cb21-5"></a># undo everything after ace2193</span>
-<span id="cb21-6"><a href="#cb21-6"></a>git reset --hard ace2193</span>
-<span id="cb21-7"><a href="#cb21-7"></a>git checkout newbranch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ol start="2" type="1">
-<li>Made a branch, did lots of work, realized it’s trash, and you want to burn it</li>
-</ol>
-<div class="sourceCode" id="cb22"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb22-1"><a href="#cb22-1"></a>git checkout main</span>
-<span id="cb22-2"><a href="#cb22-2"></a>git branch -d badbranch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ol start="3" type="1">
-<li><p>Anything more complicated, either post to Slack or LMGTFY</p></li>
-<li><p>In the Lab next week, you’ll practice</p>
-<ul>
-<li>Doing it right.</li>
-<li>Recovering from some mistakes.</li>
-</ul></li>
-</ol>
-</section></section>
-<section id="example-of-setting-up-labs" class="title-slide slide level1 center">
-<h1>Example of setting up labs</h1>
-<aside class="notes">
-<ul>
-<li><p>Cloning your repo.</p></li>
-<li><p>Creating a branch.</p></li>
-<li><p>Knitting the Rmd.</p></li>
-<li><p>Where to put answers.</p></li>
-</ul>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
+<section id="next-time" class="title-slide slide level1 center">
+<h1>Next time…</h1>
+<p>Recall how to do this in <code>R</code></p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
