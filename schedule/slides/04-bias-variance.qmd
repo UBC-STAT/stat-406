@@ -7,12 +7,13 @@ metadata-files:
 
 {{< include _titleslide.qmd >}}
 
-## {.background-color="#e98a15"}
-We just talked about 
+## {background-color="#e98a15"}
+
+### We just talked about 
 
 * Variance of an estimator.
 
-* Irriducible error when making predictions.
+* Irreducible error when making predictions.
 
 * These are 2 of the 3 components of the "Prediction Risk" $R_n$
 
@@ -21,7 +22,7 @@ We just talked about
 ## Component 3, the Bias
 
 
-We need to be more specific about what we mean when we say __bias__.
+We need to be specific about what we mean when we say _bias_.
 
 Bias is neither good nor bad in and of itself.
 
@@ -40,6 +41,8 @@ A very simple example: let $Z_1,\ \ldots,\ Z_n \sim N(\mu, 1)$.
 . . .
 
 Calculate the bias and variance of each estimator.
+
+
 
 ## Regression in general
 
@@ -64,48 +67,52 @@ We can include as many predictors as we like,
 but this doesn't change the fact that the world is [non-linear](.secondary).
 
 
-## Predicting new Y's
+## (Continuation) Predicting new Y's
 
-.emphasis[
-Suppose we know that we want to predict a quantity $Y$, 
+Suppose we want to predict $Y$, 
 
-where $E[Y]= \mu \in \mathbb{R}$ and $\textrm{Var}[Y] = 1$.  
-
+we know $E[Y]= \mu \in \mathbb{R}$ and $\textrm{Var}[Y] = 1$.  
 
 Our data is $\{y_1,\ldots,y_n\}$
 
-We want to estimate $\mu$ 
-]
+Last time: we considered estimating $\mu$ in various ways, and using $\widehat{Y} = \widehat{\mu}$
 
---
+. . .
+
+<br><br>
+
 
 Let's try one more: $\widehat Y_a = a\overline{Y}_n$ for some $a \in (0,1]$.
+
+## One can show... (wait for the proof)
+
+$\widehat Y_a = a\overline{Y}_n$ for some $a \in (0,1]$
   
 $$
-  R_n(\widehat Y_a) = \Expect{(\widehat Y_a-Y)^2} = (1 - a)^2\mu^2 +
-  \frac{a^2}{n} +1 
+R_n(\widehat Y_a) = \Expect{(\widehat Y_a-Y)^2} = (1 - a)^2\mu^2 +
+\frac{a^2}{n} +1 
 $$
+
+. . .
   
 We can minimize this in $a$ to get the best possible prediction risk for an estimator of the form $\widehat Y_a$: 
   
 $$
-\arg\min_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)
+\argmin_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)
 $$
 
---
+. . .
 
 What happens if $\mu \ll 1$?
   
----
-class: middle
+##
   
-.alert[
-Wait a minute! You're saying there is a __better__ estimator than $\overline{Y}_n$?
-]
+::: callout-important
+::: large
+Wait a minute! I'm saying there is a _better_ estimator than $\overline{Y}_n$!
+:::
+:::
 
-
-
----
 
 ## Bias-variance tradeoff: Estimating the mean
 
@@ -114,31 +121,33 @@ R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
 $$
 
 ```{r}
-mu = 1; n = 5; sig2 = 1
+mu = 1; n = 5; sig = 1
 ```
 
-```{r, fig.align='center',echo=FALSE,dev="svg",fig.width=8,fig.height=4}
-biasSqA <- function(a, mu=1) (a-1)^2 * mu
-varA <- function(a, n=1) a^2/n
-risk <- function(a, mu=1, n=1, sig2=1) biasSqA(a, mu) + varA(a, n) +  sig2
-meanrisk <- function(a, n=1, sig2=1) sig2+1/n
-aopt <- function(mu=1, n=1) mu^2/(mu^2+1/n)
-ggplot(data.frame(x=c(0,1),y=c(0,2)), aes(x,y)) + 
-  stat_function(fun=biasSqA, aes(color="squared bias"))+
-  stat_function(fun=varA, aes(color="variance"), args = list(n=n))+
-  stat_function(fun=risk, aes(color="risk"), args = list(mu=mu,n=n,sig2=sig2)) + 
-  ylab(bquote(R[n](a))) + xlab("a") +
-  stat_function(fun=meanrisk, aes(color="risk of mean"), args=list(n=n,sig2=sig2)) + 
-  geom_vline(xintercept = aopt(mu,n),color="black") +
-  scale_color_manual(guide="legend",
-    values = c("squared bias"=red, "variance"=blue,
-               "risk"=green, "risk of mean"= orange,
-               "best a"="black")
-    ) +
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 4
+biasSqA <- function(a, mu = 1) (a - 1)^2 * mu
+varA <- function(a, n = 1) a^2 / n
+risk <- function(a, mu = 1, n = 1, sig = 1) biasSqA(a, mu) + varA(a, n) + sig^2
+meanrisk <- function(a, n = 1, sig = 1) sig^2 + 1 / n
+aopt <- function(mu = 1, n = 1) mu^2 / (mu^2 + 1 / n)
+ggplot(data.frame(a = c(0, 1), y = c(0, 2)), aes(a, y)) +
+  stat_function(fun = ~biasSqA(.x), aes(color = "squared bias")) +
+  stat_function(fun = ~varA(.x), aes(color = "variance"), args = list(n = n)) +
+  stat_function(fun = ~risk(.x, mu, n, sig), aes(color = "risk")) +
+  ylab(bquote(R[n](a))) +
+  stat_function(fun = ~meanrisk(.x, n, sig), aes(color = "risk of mean")) +
+  geom_vline(xintercept = aopt(mu, n), color = "black") +
+  scale_color_manual(
+    guide = "legend",
+    values = c("squared bias" = red, "variance" = blue, "risk" = green, 
+               "risk of mean" = orange, "best a" = "black"
+    )
+  ) +
   theme(legend.title = element_blank())
 ```
-
----
 
 ## To restate
 
@@ -148,15 +157,15 @@ then it is better to predict with `r round(aopt(mu,n),2)` $\overline{Y}_5$
 
 than with $\overline{Y}_5$ itself.  
 
---
+. . .
 
 For this $a =$ `r round(aopt(mu,n),2)` and $n=5$
 
 1. $R_5(\widehat{Y}_a) =$ `r round(risk(aopt(mu, n), mu, n), 2)`
 
-2. $R_5(\overline{Y}_5)=$ `r 1 / n + sig2`
+2. $R_5(\overline{Y}_5)=$ `r 1 / n + sig^2`
 
----
+
 
 ## Prediction risk
 
@@ -165,19 +174,18 @@ $$
 R_n(f) = \Expect{(Y - f(X))^2}
 $$
   
-Why care about $R_n(f)$? 
+Why should we care about $R_n(f)$? 
 
 
-`r fa("plus", fill=green)` Measures predictive accuracy on average.
+`r fa("plus", fill = green)` Measures predictive accuracy on average.
 
-`r fa("plus", fill=green)` How much confidence should you have in $f$'s predictions.
+`r fa("plus", fill = green)` How much confidence should you have in $f$'s predictions.
 
-`r fa("plus", fill=green)` Compare with other models.
+`r fa("plus", fill = green)` Compare with other predictors: $R_n(f)$ vs $R_n(g)$
 
-`r fa("bomb", fill=red)` __This is hard:__  Don't know the distribution of the data (if I knew the truth, this would be easy)
+`r fa("bomb", fill = red)` _This is hard:_  Don't know the distribution of the data (if I knew the truth, this would be easy)
 
   
----
 
 ## Bias-variance decomposition
 
@@ -201,10 +209,8 @@ What is $R_n(\widehat{Y}_a)$ for our estimator $\widehat{Y}_a=a\overline{Y}_n$?
 \sigma^2 &= \Expect{(Y-\mu)^2}=1
 \end{aligned}
 
----
-class: inverse
 
-## This decomposition holds generally
+## This decomposition holds generally {background-color="#97D4E9"}
 
 \begin{aligned}
 R_n(\hat{Y}) 
@@ -221,7 +227,6 @@ R_n(\hat{Y})
 \end{aligned}
 
 
----
 
 ## Bias-variance decomposition
 
@@ -234,52 +239,57 @@ R_n(\hat{Y})
 
 
 
-.alert[  
-__Important implication:__ prediction risk is proportional to estimation risk.  However, defining estimation risk requires stronger assumptions.
-]
+::: callout-important
+::: bigger
+Implication: prediction risk is proportional to estimation risk.  However, defining estimation risk requires stronger assumptions.
+:::
+:::
 
---
 
-.emphasis[
+. . .
+
+::: callout-tip
 In order to make good predictions, we want our prediction risk to be small.  This means that we want to "balance" the bias and variance.
-]
+:::
 
----
-  
+##  
 
 
-```{r,fig.align='center',fig.height=6, fig.width=8, dpi=300, echo=FALSE, message=FALSE}
+```{r}
+#| fig-height: 6
+#| fig-width: 8
+#| echo: false
 cols = c(blue, red, green, orange)
+par(mfrow = c(2, 2), bty = "n", ann = FALSE, xaxt = "n", yaxt = "n", 
+    family = "serif", mar = c(0, 0, 0, 0), oma = c(0, 2, 2, 0))
+library(mvtnorm)
+mv <- matrix(c(0, 0, 0, 0, -.5, -.5, -.5, -.5), 4, byrow = TRUE)
+va <- matrix(c(.02, .02, .1, .1, .02, .02, .1, .1), 4, byrow = TRUE)
 
-par(mfrow=c(2,2),bty='n',ann=FALSE,xaxt='n',yaxt='n',family='serif',mar=c(0,0,0,0),oma=c(0,2,2,0))
-require(mvtnorm)
-mv = matrix(c(0,0,0,0,-.5,-.5,-.5,-.5),4,byrow=T)
-va = matrix(c(.02,.02,.1,.1,.02,.02,.1,.1),4,byrow=T)
-
-for(i in 1:4){
-  plot(0,0,ylim=c(-2,2),xlim=c(-2,2),pch=19,cex=42,col=blue,ann=FALSE,pty='s')
-  points(0,0,pch=19,cex=30,col='white')
-  points(0,0,pch=19,cex=18,col=green)
-  points(0,0,pch=19,cex=6,col=orange)
-  points(rmvnorm(20,mean=mv[i,],sigma=diag(va[i,])), cex=1, pch=19)
-  switch(i, 
-         '1'= {
-           mtext('low variance',3,cex=2)
-           mtext('low bias',2,cex=2)
-         },
-         '2'= mtext('high variance',3,cex=2),
-         '3' = mtext('high bias',2,cex=2)
+for (i in 1:4) {
+  plot(0, 0, ylim = c(-2, 2), xlim = c(-2, 2), pch = 19, cex = 42, 
+       col = blue, ann = FALSE, pty = "s")
+  points(0, 0, pch = 19, cex = 30, col = "white")
+  points(0, 0, pch = 19, cex = 18, col = green)
+  points(0, 0, pch = 19, cex = 6, col = orange)
+  points(rmvnorm(20, mean = mv[i, ], sigma = diag(va[i, ])), cex = 1, pch = 19)
+  switch(i,
+    "1" = {
+      mtext("low variance", 3, cex = 2)
+      mtext("low bias", 2, cex = 2)
+    },
+    "2" = mtext("high variance", 3, cex = 2),
+    "3" = mtext("high bias", 2, cex = 2)
   )
 }
 ```
 
----
 
 ## Bias-variance tradeoff: Overview
 
- __bias:__ how well does $\widehat{f}(x)$ approximate the truth $\Expect{Y\given X=x}$
+[bias:]{.secondary} how well does $\widehat{f}(x)$ approximate the truth $\Expect{Y\given X=x}$
 
-* If we allow more complicated possible $f$, lower bias. Flexibility $\Rightarrow$ Expressivity
+* If we allow more complicated possible $\widehat{f}$, lower bias. Flexibility $\Rightarrow$ Expressivity
 
 * But, more flexibility $\Rightarrow$ larger variance
 
@@ -287,16 +297,14 @@ for(i in 1:4){
 
 * Irreducible error
 
---
+. . .
 
 
-.emphasis[
+::: callout-note
 Since we can't evaluate any expectations with real data...
-]
+:::
 
 
----
-class: inverse, center, middle
 
 # Next time...
 
