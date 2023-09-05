@@ -1,57 +1,37 @@
 ---
-title: "06 Information criteria"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "06 Information criteria"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-```
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
+{{< include _titleslide.qmd >}}
 
 
 ## Generalized CV
 
-Last time we saw a nice trick
-
-If $\widehat{f}(x_i) = \widehat{y}_i = h_i^\top \mathbf{y}$, for some vector $h_i(\mathbf{X})$
-
---
-
-.hand[Same as "if] $\widehat{f}(\mathbf{X}) = \mathbf{H}\mathbf{y}$ .hand[for some matrix] $\mathbf{H}$ .hand["]
-
+Last time we saw a nice trick, that works some of the time (OLS, Ridge regression,...)
 
 $$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.$$
 
---
+1. $\widehat{\y} = \widehat{f}(\mathbf{X}) = \mathbf{H}\mathbf{y}$ for some matrix $\mathbf{H}$.
+2. A technical thing.
+
+$$\newcommand{\H}{\mathbf{H}}$$
+
+. . .
 
 ### This is another nice trick.
 
 Idea: replace $h_{ii}$ with $\frac{1}{n}\sum_{i=1}^n h_{ii} = \frac{1}{n}\textrm{tr}(\mathbf{H})$
 
-Let's call $\textrm{tr}(\mathbf{H})$ the __effective degrees-of-freedom__ (or just __df__)
+Let's call $\textrm{tr}(\mathbf{H})$ the _degrees-of-freedom_ (or just _df_)
 
 $$\textrm{GCV} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-\textrm{df}/n)^2} = \frac{\textrm{MSE}}{(1-\textrm{df}/n)^2}$$
 
---
 
-.hand[Where does this stuff come from?]
+[Where does this stuff come from?]{.hand}
 
-$$
-\newcommand{\Expect}[1]{E\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\y}{\mathbf{y}}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\H}{\mathbf{H}}
-$$
-
----
 
 ## What are `hatvalues`?
 
@@ -61,48 +41,48 @@ cv_nice <- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)
 
 In OLS, $\widehat{\y} = \X\widehat{\beta} = \X(\X^\top \X)^{-1}\X^\top \y$
 
-We often call $\H = \X(\X^\top \X)^{-1}\X^\top$ the Hat matrix, because it .hand[puts the hat] on $\y$
+We often call $\mathbf{H} = \X(\X^\top \X)^{-1}\X^\top$ the Hat matrix, because it [puts the hat]{.hand} on $\y$
 
-GCV uses $\textrm{tr}(\H)$. For `lm`, this is just `p`, the number of predictors (Why?)
+GCV uses $\textrm{tr}(\mathbf{H})$. For `lm()`, this is just `p`, the number of predictors (Why?)
 
-This is one way of understanding the name __effective degrees-of-freedom__
+This is one way of understanding the name _effective degrees-of-freedom_
 
----
+
 
 ## Alternative interpretation:
 
-Suppose, $Y_i$ comes (independently) from some distribution and has mean $\mu_i$ and variance $\sigma^2$
 
---
+Suppose, $Y_i$ comes (independently) from some distribution and has mean $\mu_i$ and variance $\sigma^2$
 
 (remember: in the linear model $\Expect{Y_i} = x_i^\top \beta = \mu_i$ )
 
---
-
 Let $\widehat{Y}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements of the vector).
 
+. . .
+
 \begin{aligned}
-\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} 
+& \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
 &= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
 &= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
-&= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
-&\quad\vdots \\
+&= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)} = \cdots =\\
 &= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
 \end{aligned}
 
---
+
+## Alternative interpretation:
+
+$$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} = \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}$$
 
 Now, if $\widehat{Y} = \H Y$ for some matrix $\H$,
 
 $\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top \H Y} = \sigma^2 \textrm{tr}(\H)$
 
---
 
-This gives __Mallow's $C_p$__ aka __Stein's Unbiased Risk Estimator__:
+This gives _Mallow's $C_p$_ aka _Stein's Unbiased Risk Estimator_:
 
 $MSE + 2\hat{\sigma}^2\textrm{df}/n$
 
----
+
 
 ## AIC and BIC
 
@@ -114,46 +94,49 @@ $\textrm{AIC}/n = -2\textrm{loglikelihood}/n + 2\textrm{df}/n$
 
 $\textrm{BIC}/n = -2\textrm{loglikelihood}/n + 2\log(n)\textrm{df}/n$
 
---
+. . .
 
 In the case of a linear model with Gaussian errors, 
 
-$\textrm{AIC} = -n + 2n\log(2\pi) - 2 + 2\log(n) - 2\log(RSS) + 2(p+2) \propto -2\log(RSS) + 2(p+2)$
+\begin{aligned}
+\textrm{AIC} &= -n + 2n\log(2\pi) - 2 + 2\log(n) - 2\log(RSS) + 2(p+2) \\
+&\propto -2\log(RSS) + 2(p+2)
+\end{aligned}
 
 ( $p+2$ because of the intercept and the unknown variance)
---
 
-.alert[
+. . .
+
+::: callout-important
 Unfortunately, different books/software/notes define these differently. Even different R packages. This is __super annoying__. 
 
 Forms above are in [ESL] eq. (7.29) and (7.35). [ISLR] gives special cases in Section 6.1.3. Remember the generic form here.
-]
+:::
 
----
+
 
 ## Over-fitting vs. Under-fitting
 
-.emphasis[
-Over-fitting means estimating a really complicated function when you don't have enough data.
-]
 
-This is likely a .hand[low-bias / high-variance] situation.
+> Over-fitting means estimating a really complicated function when you don't have enough data.
 
-.emphasis[
-Under-fitting means estimating a really simple function when you have lots of data. 
-]
 
-This is likely a .hand[high-bias / low-variance] situation.
+This is likely a [low-bias / high-variance]{.hand} situation.
+
+
+> Under-fitting means estimating a really simple function when you have lots of data. 
+
+
+This is likely a [high-bias / low-variance]{.hand} situation.
 
 Both of these outcomes are bad (they have high risk $=$ big $R_n$ ).
 
-The best way to avoid them is to use a reasonable estimate of __prediction risk__ to choose how complicated your model should be.
+The best way to avoid them is to use a reasonable estimate of _prediction risk_ to choose how complicated your model should be.
 
----
 
 ## Recommendations
 
-.emphasis[
+::: secondary
 When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV. 
 
 CV is usually easiest to make sense of and doesn't depend on other unknown parameters.
@@ -161,9 +144,9 @@ CV is usually easiest to make sense of and doesn't depend on other unknown param
 But, it requires refitting the model.
 
 Also, it can be strange in cases with discrete predictors, time series, repeated measurements, graph structures, etc.
-]
+:::
 
---
+. . .
 
 High-level intuition of these:
 
@@ -175,17 +158,18 @@ High-level intuition of these:
 
 * In some special cases, AIC = Cp = SURE $\approx$ LOO-CV
 
---
 
-For more information: see [ESL] Chapter 7. And also <https://arxiv.org/abs/1602.01522>.
-
+::: aside
+For more information: see [ESL] Chapter 7.
 This material is more challenging than the level of this course, and is easily and often misunderstood.
+:::
 
---
 
-.hand-blue[My recommendation: Use CV]
 
----
+# My recommendation: 
+
+[Use CV]{.hand-blue}
+
 
 ## A few more caveats
 
@@ -199,7 +183,7 @@ For example,
 
 * Poisson likelihood vs. Gaussian likelihood in `glm()`
 
-.emphasis[
+
 **This is not always justified.** 
 
 1. The "high-level intuition" is for "nested" models.
@@ -207,11 +191,10 @@ For example,
 1. Different likelihoods aren't comparable.
 
 1. Residuals / response variables on different scales aren't directly comparable.
-]
 
 "Validation set" is easy, because you're always comparing to the "right" thing. But it has lots of drawbacks.
----
-class: middle, inverse, center
+
+
 
 # Next time ...
 
