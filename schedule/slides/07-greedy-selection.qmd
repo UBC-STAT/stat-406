@@ -25,7 +25,8 @@ Then we use whichever has smaller $\widehat{R}$.
 The truth:
 ```{r}
 dat <- tibble(
-  x1 = rnorm(100), x2 = rnorm(100),
+  x1 = rnorm(100), 
+  x2 = rnorm(100),
   y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)
 )
 ```
@@ -92,14 +93,18 @@ Sometimes you might just have a bunch of predictors, then what do you do?
 :::
 
 ::: w-50
-__All subsets__: estimate model based on every possible subset of size $|\mathcal{S}| \leq \min\{n, p\}$, use one with 
+All subsets
+: estimate model based on every possible subset of size $|\mathcal{S}| \leq \min\{n, p\}$, use one with 
 lowest risk estimate
 
-__Forward selection__: start with $\mathcal{S}=\varnothing$, add predictors greedily
+Forward selection
+: start with $\mathcal{S}=\varnothing$, add predictors greedily
 
-__Backward selection__: start with $\mathcal{S}=\{1,\ldots,p\}$, remove greedily
+Backward selection
+: start with $\mathcal{S}=\{1,\ldots,p\}$, remove greedily
 
-__Hybrid__: combine forward and backward smartly
+Hybrid
+: combine forward and backward smartly
 :::
 :::
 
@@ -107,30 +112,21 @@ __Hybrid__: combine forward and backward smartly
 ## Costs and benefits
 
 
-__All subsets__: 
-
-👍 estimates each subset
-
+All subsets
+: 👍 estimates each subset  
 💣 takes $2^p$ model fits when $p<n$. If $p=50$, this is about $10^{15}$ models. 
 
-__Forward selection__: 
-
-👍 computationally feasible
-
+Forward selection
+: 👍 computationally feasible  
 💣 ignores some models, correlated predictors means bad performance
 
-__Backward selection__: 
-
-👍 computationally feasible
-
-💣 ignores some models, correlated predictors means bad performance
-
+Backward selection
+: 👍 computationally feasible  
+💣 ignores some models, correlated predictors means bad performance  
 💣 doesn't work if $p>n$
 
-__Hybrid__: 
-
-👍 visits more models than forward/backward
-
+Hybrid
+: 👍 visits more models than forward/backward  
 💣 slower
 
 
@@ -162,9 +158,6 @@ But the rest are correlated with them
 
 ```{r full-model}
 full <- lm(y ~ ., data = df)
-```
-
-```{r full-table, echo=FALSE}
 summary(full)
 ```
 
@@ -173,9 +166,6 @@ summary(full)
 
 ```{r true-model}
 truth <- lm(y ~ x1 + x2, data = df)
-```
-
-```{r true-table, echo=FALSE}
 summary(truth)
 ```
 
@@ -193,6 +183,8 @@ summary(trythemall)
 
 ```{r more-all-subsets1}
 #| output-location: column
+#| fig-height: 6
+#| fig-width: 8
 tibble(
   BIC = summary(trythemall)$bic, 
   Cp = summary(trythemall)$cp,
@@ -223,6 +215,8 @@ summary(stepup)
 
 ```{r more-step-forward}
 #| output-location: column
+#| fig-height: 6
+#| fig-width: 8
 tibble(
   BIC = summary(stepup)$bic,
   Cp = summary(stepup)$cp,
@@ -253,6 +247,8 @@ summary(stepdown)
 
 ```{r more-step-backward}
 #| output-location: column
+#| fig-height: 6
+#| fig-width: 8
 tibble(
   BIC = summary(stepdown)$bic,
   Cp = summary(stepdown)$cp,
@@ -272,8 +268,13 @@ tibble(
 
 
 
-# somehow, for this seed, everything is the same
+##
 
+<br><br><br><br>
+
+::: r-stack
+[somehow, for this seed, everything is the same]{.secondary .large}
+:::
 
 ## Randomness and prediction error
 
@@ -299,6 +300,7 @@ This Cp is using the training set.
 
 ... Annoyingly, no predict method for `regsubsets`, so we make one.
 ```{r predict-regsubsets}
+#| code-line-numbers: |2
 predict.regsubsets <- function(object, newdata, risk_estimate = c("cp", "bic"), ...) {
   risk_estimate <- match.arg(risk_estimate)
   chosen <- coef(object, which.min(summary(object)[[risk_estimate]]))
@@ -312,7 +314,7 @@ predict.regsubsets <- function(object, newdata, risk_estimate = c("cp", "bic"), 
 
 ##
 
-```{r replication-exercise, cache=TRUE}
+```{r replication-exercise}
 simulate_and_estimate_them_all <- function(n = 406) {
   N <- 2 * n # generate 2x the amount of data (half train, half test)
   df <- tibble( # generate data
@@ -365,7 +367,6 @@ our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
 
 
 ```{r synth-results}
-#| cache: true
 #| output-location: column
 #| fig-height: 6
 our_sim2 <- our_sim %>%
