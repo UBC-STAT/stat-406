@@ -4,7 +4,7 @@
     "href": "schedule/slides/07-greedy-selection.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "07 Greedy selection",
-    "text": "07 Greedy selection\nStat 406\nDaniel J. McDonald\nLast modified – 05 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "07 Greedy selection\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#recap",
@@ -18,7 +18,7 @@
     "href": "schedule/slides/07-greedy-selection.html#example",
     "title": "UBC Stat406 2023W",
     "section": "Example",
-    "text": "Example\nThe truth:\n\ndat &lt;- tibble(\n  x1 = rnorm(100), x2 = rnorm(100),\n  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)\n)\n\nModel 1: y ~ x1 + x2\nModel 2: y ~ x1 + x2 + x1*x2\nModel 3: y ~ x2 + sin(x1 * x2)\n\n(What are the families for each of these?)"
+    "text": "Example\nThe truth:\n\ndat &lt;- tibble(\n  x1 = rnorm(100), \n  x2 = rnorm(100),\n  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)\n)\n\nModel 1: y ~ x1 + x2\nModel 2: y ~ x1 + x2 + x1*x2\nModel 3: y ~ x2 + sin(x1 * x2)\n\n(What are the families for each of these?)"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#fit-each-model-and-estimate-r_n",
@@ -39,14 +39,14 @@
     "href": "schedule/slides/07-greedy-selection.html#selecting-variables-predictors-with-linear-methods",
     "title": "UBC Stat406 2023W",
     "section": "Selecting variables / predictors with linear methods",
-    "text": "Selecting variables / predictors with linear methods\n\n\nSuppose we have a pile of predictors.\nWe estimate models with different subsets of predictors and use CV / Cp / AIC / BIC to decide which is preferred.\nSometimes you might have a few plausible subsets. Easy enough to choose with our criterion.\nSometimes you might just have a bunch of predictors, then what do you do?\n\n\nAll subsets: estimate model based on every possible subset of size \\(|\\mathcal{S}| \\leq \\min\\{n, p\\}\\), use one with lowest risk estimate\nForward selection: start with \\(\\mathcal{S}=\\varnothing\\), add predictors greedily\nBackward selection: start with \\(\\mathcal{S}=\\{1,\\ldots,p\\}\\), remove greedily\nHybrid: combine forward and backward smartly"
+    "text": "Selecting variables / predictors with linear methods\n\n\nSuppose we have a pile of predictors.\nWe estimate models with different subsets of predictors and use CV / Cp / AIC / BIC to decide which is preferred.\nSometimes you might have a few plausible subsets. Easy enough to choose with our criterion.\nSometimes you might just have a bunch of predictors, then what do you do?\n\n\n\nAll subsets\n\nestimate model based on every possible subset of size \\(|\\mathcal{S}| \\leq \\min\\{n, p\\}\\), use one with lowest risk estimate\n\nForward selection\n\nstart with \\(\\mathcal{S}=\\varnothing\\), add predictors greedily\n\nBackward selection\n\nstart with \\(\\mathcal{S}=\\{1,\\ldots,p\\}\\), remove greedily\n\nHybrid\n\ncombine forward and backward smartly"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
     "href": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
     "title": "UBC Stat406 2023W",
     "section": "Costs and benefits",
-    "text": "Costs and benefits\nAll subsets:\n👍 estimates each subset\n💣 takes \\(2^p\\) model fits when \\(p&lt;n\\). If \\(p=50\\), this is about \\(10^{15}\\) models.\nForward selection:\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\nBackward selection:\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n💣 doesn’t work if \\(p&gt;n\\)\nHybrid:\n👍 visits more models than forward/backward\n💣 slower"
+    "text": "Costs and benefits\n\nAll subsets\n\n👍 estimates each subset\n💣 takes \\(2^p\\) model fits when \\(p&lt;n\\). If \\(p=50\\), this is about \\(10^{15}\\) models.\n\nForward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n\nBackward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n💣 doesn’t work if \\(p&gt;n\\)\n\nHybrid\n\n👍 visits more models than forward/backward\n💣 slower"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#synthetic-example",
@@ -60,14 +60,14 @@
     "href": "schedule/slides/07-greedy-selection.html#full-model",
     "title": "UBC Stat406 2023W",
     "section": "Full model",
-    "text": "Full model\n\nfull &lt;- lm(y ~ ., data = df)\n\n\n\n\nCall:\nlm(formula = y ~ ., data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.7739 -1.4283 -0.0929  1.4257  7.5869 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)   \n(Intercept)  0.03383    0.27700   0.122  0.90287   \nx1           6.70481    2.06743   3.243  0.00128 **\nx2          -0.43945    1.71650  -0.256  0.79807   \nx3           1.37293    1.11524   1.231  0.21903   \nx4          -1.19911    1.17850  -1.017  0.30954   \nx5          -0.53918    1.07089  -0.503  0.61490   \nx6          -1.88547    1.21652  -1.550  0.12196   \nx7          -1.25245    1.10743  -1.131  0.25876   \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.231 on 398 degrees of freedom\nMultiple R-squared:  0.6411,    Adjusted R-squared:  0.6347 \nF-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16"
+    "text": "Full model\n\nfull &lt;- lm(y ~ ., data = df)\nsummary(full)\n\n\nCall:\nlm(formula = y ~ ., data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.7739 -1.4283 -0.0929  1.4257  7.5869 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)   \n(Intercept)  0.03383    0.27700   0.122  0.90287   \nx1           6.70481    2.06743   3.243  0.00128 **\nx2          -0.43945    1.71650  -0.256  0.79807   \nx3           1.37293    1.11524   1.231  0.21903   \nx4          -1.19911    1.17850  -1.017  0.30954   \nx5          -0.53918    1.07089  -0.503  0.61490   \nx6          -1.88547    1.21652  -1.550  0.12196   \nx7          -1.25245    1.10743  -1.131  0.25876   \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.231 on 398 degrees of freedom\nMultiple R-squared:  0.6411,    Adjusted R-squared:  0.6347 \nF-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#true-model",
     "href": "schedule/slides/07-greedy-selection.html#true-model",
     "title": "UBC Stat406 2023W",
     "section": "True model",
-    "text": "True model\n\ntruth &lt;- lm(y ~ x1 + x2, data = df)\n\n\n\n\nCall:\nlm(formula = y ~ x1 + x2, data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.4519 -1.3873 -0.1941  1.3498  7.5533 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)   0.1676     0.2492   0.673   0.5015    \nx1            3.0316     0.1146  26.447   &lt;2e-16 ***\nx2            0.2447     0.1109   2.207   0.0279 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.233 on 403 degrees of freedom\nMultiple R-squared:  0.6357,    Adjusted R-squared:  0.6339 \nF-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16"
+    "text": "True model\n\ntruth &lt;- lm(y ~ x1 + x2, data = df)\nsummary(truth)\n\n\nCall:\nlm(formula = y ~ x1 + x2, data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.4519 -1.3873 -0.1941  1.3498  7.5533 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)   0.1676     0.2492   0.673   0.5015    \nx1            3.0316     0.1146  26.447   &lt;2e-16 ***\nx2            0.2447     0.1109   2.207   0.0279 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.233 on 403 degrees of freedom\nMultiple R-squared:  0.6357,    Adjusted R-squared:  0.6339 \nF-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16"
   },
   {
     "objectID": "schedule/slides/07-greedy-selection.html#all-subsets",
@@ -112,6 +112,13 @@
     "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(stepdown)$bic,\n  Cp = summary(stepdown)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) +\n  geom_point() +\n  geom_line() +\n  facet_wrap(~name, scales = \"free_y\") +\n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange), \n    guide = \"none\"\n  )"
   },
   {
+    "objectID": "schedule/slides/07-greedy-selection.html#section",
+    "href": "schedule/slides/07-greedy-selection.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "somehow, for this seed, everything is the same"
+  },
+  {
     "objectID": "schedule/slides/07-greedy-selection.html#randomness-and-prediction-error",
     "href": "schedule/slides/07-greedy-selection.html#randomness-and-prediction-error",
     "title": "UBC Stat406 2023W",
@@ -126,8 +133,8 @@
     "text": "Code for simulation\n… Annoyingly, no predict method for regsubsets, so we make one.\n\npredict.regsubsets &lt;- function(object, newdata, risk_estimate = c(\"cp\", \"bic\"), ...) {\n  risk_estimate &lt;- match.arg(risk_estimate)\n  chosen &lt;- coef(object, which.min(summary(object)[[risk_estimate]]))\n  predictors &lt;- names(chosen)\n  if (object$intercept) predictors &lt;- predictors[-1]\n  X &lt;- newdata[, predictors]\n  if (object$intercept) X &lt;- cbind2(1, X)\n  drop(as.matrix(X) %*% chosen)\n}"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#section",
-    "href": "schedule/slides/07-greedy-selection.html#section",
+    "objectID": "schedule/slides/07-greedy-selection.html#section-1",
+    "href": "schedule/slides/07-greedy-selection.html#section-1",
     "title": "UBC Stat406 2023W",
     "section": "",
     "text": "simulate_and_estimate_them_all &lt;- function(n = 406) {\n  N &lt;- 2 * n # generate 2x the amount of data (half train, half test)\n  df &lt;- tibble( # generate data\n    x1 = rnorm(N), \n    x2 = rnorm(N, mean = 2), \n    x3 = rexp(N),\n    x4 = x2 + rnorm(N, sd = .1), \n    x5 = x1 + rnorm(N, sd = .1),\n    x6 = x1 - x2 + rnorm(N, sd = .1), \n    x7 = x1 + x3 + rnorm(N, sd = .1),\n    y = x1 * 3 + x2 / 3 + rnorm(N, sd = 2.2)\n  )\n  train &lt;- df[1:n, ] # half the data for training\n  test &lt;- df[(n + 1):N, ] # half the data for evaluation\n  \n  oracle &lt;- lm(y ~ x1 + x2 - 1, data = train) # knowing the right model, not the coefs\n  full &lt;- lm(y ~ ., data = train)\n  stepup &lt;- regsubsets(y ~ ., data = train, method = \"forward\")\n  stepdown &lt;- regsubsets(y ~ ., data = train, method = \"backward\")\n  \n  tibble(\n    y = test$y,\n    oracle = predict(oracle, newdata = test),\n    full = predict(full, newdata = test),\n    stepup = predict(stepup, newdata = test),\n    stepdown = predict(stepdown, newdata = test),\n    truth = drop(as.matrix(test[, c(\"x1\", \"x2\")]) %*% c(3, 1/3))\n  )\n}\n\nset.seed(12345)\nour_sim &lt;- map(1:50, ~ simulate_and_estimate_them_all(406)) |&gt;\n  list_rbind(names_to = \"sim\")"

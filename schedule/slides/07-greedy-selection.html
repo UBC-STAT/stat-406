@@ -397,7 +397,7 @@
 <h2>07 Greedy selection</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 05 September 2023</p>
+<p>Last modified – 06 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -430,9 +430,10 @@
 <p>The truth:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>),</span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="at">y =</span> <span class="dv">3</span> <span class="sc">+</span> x1 <span class="sc">-</span> <span class="dv">5</span> <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">sin</span>(x1 <span class="sc">*</span> x2 <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> pi)) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), </span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>),</span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">y =</span> <span class="dv">3</span> <span class="sc">+</span> x1 <span class="sc">-</span> <span class="dv">5</span> <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">sin</span>(x1 <span class="sc">*</span> x2 <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> pi)) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
+<span id="cb1-5"><a href="#cb1-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Model 1: <code>y ~ x1 + x2</code></p>
 <p>Model 2: <code>y ~ x1 + x2 + x1*x2</code></p>
@@ -486,28 +487,52 @@
 <p>Sometimes you might just have a bunch of predictors, then what do you do?</p>
 </div>
 <div class="w-50">
-<p><strong>All subsets</strong>: estimate model based on every possible subset of size <span class="math inline">\(|\mathcal{S}| \leq \min\{n, p\}\)</span>, use one with lowest risk estimate</p>
-<p><strong>Forward selection</strong>: start with <span class="math inline">\(\mathcal{S}=\varnothing\)</span>, add predictors greedily</p>
-<p><strong>Backward selection</strong>: start with <span class="math inline">\(\mathcal{S}=\{1,\ldots,p\}\)</span>, remove greedily</p>
-<p><strong>Hybrid</strong>: combine forward and backward smartly</p>
+<dl>
+<dt>All subsets</dt>
+<dd>
+estimate model based on every possible subset of size <span class="math inline">\(|\mathcal{S}| \leq \min\{n, p\}\)</span>, use one with lowest risk estimate
+</dd>
+<dt>Forward selection</dt>
+<dd>
+start with <span class="math inline">\(\mathcal{S}=\varnothing\)</span>, add predictors greedily
+</dd>
+<dt>Backward selection</dt>
+<dd>
+start with <span class="math inline">\(\mathcal{S}=\{1,\ldots,p\}\)</span>, remove greedily
+</dd>
+<dt>Hybrid</dt>
+<dd>
+combine forward and backward smartly
+</dd>
+</dl>
 </div>
 </div>
 </section>
 <section id="costs-and-benefits" class="slide level2">
 <h2>Costs and benefits</h2>
-<p><strong>All subsets</strong>:</p>
-<p>👍 estimates each subset</p>
-<p>💣 takes <span class="math inline">\(2^p\)</span> model fits when <span class="math inline">\(p&lt;n\)</span>. If <span class="math inline">\(p=50\)</span>, this is about <span class="math inline">\(10^{15}\)</span> models.</p>
-<p><strong>Forward selection</strong>:</p>
-<p>👍 computationally feasible</p>
-<p>💣 ignores some models, correlated predictors means bad performance</p>
-<p><strong>Backward selection</strong>:</p>
-<p>👍 computationally feasible</p>
-<p>💣 ignores some models, correlated predictors means bad performance</p>
-<p>💣 doesn’t work if <span class="math inline">\(p&gt;n\)</span></p>
-<p><strong>Hybrid</strong>:</p>
-<p>👍 visits more models than forward/backward</p>
-<p>💣 slower</p>
+<dl>
+<dt>All subsets</dt>
+<dd>
+👍 estimates each subset<br>
+💣 takes <span class="math inline">\(2^p\)</span> model fits when <span class="math inline">\(p&lt;n\)</span>. If <span class="math inline">\(p=50\)</span>, this is about <span class="math inline">\(10^{15}\)</span> models.
+</dd>
+<dt>Forward selection</dt>
+<dd>
+👍 computationally feasible<br>
+💣 ignores some models, correlated predictors means bad performance
+</dd>
+<dt>Backward selection</dt>
+<dd>
+👍 computationally feasible<br>
+💣 ignores some models, correlated predictors means bad performance<br>
+💣 doesn’t work if <span class="math inline">\(p&gt;n\)</span>
+</dd>
+<dt>Hybrid</dt>
+<dd>
+👍 visits more models than forward/backward<br>
+💣 slower
+</dd>
+</dl>
 </section>
 <section id="synthetic-example" class="slide level2">
 <h2>Synthetic example</h2>
@@ -533,9 +558,8 @@
 <section id="full-model" class="slide level2">
 <h2>Full model</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">summary</span>(full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -567,9 +591,8 @@ F-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="true-model" class="slide level2">
 <h2>True model</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>truth <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2, <span class="at">data =</span> df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>truth <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2, <span class="at">data =</span> df)</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="fu">summary</span>(truth)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -774,10 +797,12 @@ Selection Algorithm: backward
 </div>
 </div>
 </section>
-<section>
-<section id="somehow-for-this-seed-everything-is-the-same" class="title-slide slide level1 center">
-<h1>somehow, for this seed, everything is the same</h1>
-
+<section id="section" class="slide level2">
+<h2></h2>
+<p><br><br><br><br></p>
+<div class="r-stack">
+<p><span class="secondary large">somehow, for this seed, everything is the same</span></p>
+</div>
 </section>
 <section id="randomness-and-prediction-error" class="slide level2">
 <h2>Randomness and prediction error</h2>
@@ -810,9 +835,9 @@ Selection Algorithm: backward
 <span id="cb18-9"><a href="#cb18-9"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="section" class="slide level2">
+<section id="section-1" class="slide level2">
 <h2></h2>
-<div class="cell" data-layout-align="center" data-hash="07-greedy-selection_cache/revealjs/replication-exercise_4c7c1335d3dcb7312186d46f8a9d1442">
+<div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>simulate_and_estimate_them_all <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">406</span>) {</span>
 <span id="cb19-2"><a href="#cb19-2"></a>  N <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> n <span class="co"># generate 2x the amount of data (half train, half test)</span></span>
 <span id="cb19-3"><a href="#cb19-3"></a>  df <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># generate data</span></span>
@@ -861,7 +886,7 @@ Selection Algorithm: backward
 </section>
 <section id="results" class="slide level2">
 <h2>Results</h2>
-<div class="cell columns column-output-location" data-layout-align="center" data-hash="07-greedy-selection_cache/revealjs/synth-results_28ce75daf6c1698b7987d02628ea19cf">
+<div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>our_sim2 <span class="ot">&lt;-</span> our_sim <span class="sc">%&gt;%</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a>  <span class="fu">group_by</span>(sim) <span class="sc">%&gt;%</span></span>
@@ -892,7 +917,7 @@ Selection Algorithm: backward
 </div>
 </div>
 </div>
-</section></section>
+</section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p><span class="large">Module 2</span></p>
