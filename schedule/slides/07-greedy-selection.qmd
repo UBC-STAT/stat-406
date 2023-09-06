@@ -1,24 +1,85 @@
 ---
-title: "07 Greedy selection"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "07 Greedy selection"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-library(cowplot)
+{{< include _titleslide.qmd >}}
+
+## Recap
+
+Model Selection means _select a family of distributions for your data_.
+
+Ideally, we'd do this by comparing the $R_n$ for one family with that for
+another.
+
+We'd use whichever has smaller $R_n$.
+
+But $R_n$ depends on the truth, so we estimate it with $\widehat{R}$.
+
+Then we use whichever has smaller $\widehat{R}$.
+
+## Example
+
+The truth:
+```{r}
+dat <- tibble(
+  x1 = rnorm(100), x2 = rnorm(100),
+  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)
+)
 ```
 
-```{r css-extras, file="css-extras.R", echo=FALSE}
+Model 1: `y ~ x1 + x2`
+
+Model 2: `y ~ x1 + x2 + x1*x2`
+
+Model 3: `y ~ x2 + sin(x1 * x2)`
+
+. . .
+
+(What are the families for each of these?)
+
+
+## Fit each model and estimate $R_n$
+
+```{r}
+forms <- list("y ~ x1 + x2", "y ~ x1 * x2", "y ~ x2 + sin(x1*x2)") |> 
+  lapply(as.formula)
+fits <- map(forms, ~ lm(.x, data = dat))
+map(fits, ~ tibble(
+  R2 = summary(.x)$r.sq,
+  training_error = mean(residuals(.x)^2),
+  loocv = mean( (residuals(.x) / (1 - hatvalues(.x)))^2 ),
+  AIC = AIC(.x),
+  BIC = BIC(.x)
+)) |> list_rbind()
 ```
 
+## Model Selection vs. Variable Selection
 
+Model selection is very comprehensive
 
-## Selecting predictors
+You choose a full statistical model (probability distribution) that will be hypothesized to have generated the data.
 
-.pull-left[
+Variable selection is a subset of this. It means 
+> choosing which predictors to include in a predictive model
+
+Eliminating a predictor, means removing it from the model.
+
+Some [procedures]{.hand} automatically search predictors, and eliminate some.
+
+We call this variable selection. But the procedure is implicitly selecting a model
+as well.
+
+. . .
+
+Making this all the more complicated, with lots of effort, we can map procedures/algorithms to larger classes of probability models, and analyze them.
+
+## Selecting variables / predictors with linear methods
+
+::: flex
+::: w-50
 
 Suppose we have a pile of predictors.
 
@@ -28,11 +89,9 @@ We estimate models with different subsets of predictors and use CV / Cp / AIC
 Sometimes you might have a few plausible subsets. Easy enough to choose with our criterion.
 
 Sometimes you might just have a bunch of predictors, then what do you do?
-]
+:::
 
---
-
-.pull-right[
+::: w-50
 __All subsets__: estimate model based on every possible subset of size $|\mathcal{S}| \leq \min\{n, p\}$, use one with 
 lowest risk estimate
 
@@ -41,40 +100,39 @@ __Forward selection__: start with $\mathcal{S}=\varnothing$, add predictors gree
 __Backward selection__: start with $\mathcal{S}=\{1,\ldots,p\}$, remove greedily
 
 __Hybrid__: combine forward and backward smartly
-]
+:::
+:::
 
----
 
 ## Costs and benefits
 
 
 __All subsets__: 
 
-`r pro` estimates each subset
+👍 estimates each subset
 
-`r con` takes $2^p$ model fits when $p<n$. If $p=50$, this is about $10^{15}$ models. 
+💣 takes $2^p$ model fits when $p<n$. If $p=50$, this is about $10^{15}$ models. 
 
 __Forward selection__: 
 
-`r pro` computationally feasible
+👍 computationally feasible
 
-`r con` ignores some models, correlated predictors means bad performance
+💣 ignores some models, correlated predictors means bad performance
 
 __Backward selection__: 
 
-`r pro` computationally feasible
+👍 computationally feasible
 
-`r con` ignores some models, correlated predictors means bad performance
+💣 ignores some models, correlated predictors means bad performance
 
-`r con` doesn't work if $p>n$
+💣 doesn't work if $p>n$
 
 __Hybrid__: 
 
-`r pro` visits more models than forward/backward
+👍 visits more models than forward/backward
 
-`r con` slower
+💣 slower
 
----
 
 ## Synthetic example
 
@@ -93,13 +151,12 @@ df <- tibble( # like data.frame, but columns can be functions of preceding
 )
 ```
 
---
+. . .
 
 $\mathbf{x}_1$ and $\mathbf{x}_2$ are the true predictors
 
 But the rest are correlated with them
 
----
 
 ## Full model
 
@@ -111,7 +168,6 @@ full <- lm(y ~ ., data = df)
 summary(full)
 ```
 
----
 
 ## True model
 
@@ -123,7 +179,6 @@ truth <- lm(y ~ x1 + x2, data = df)
 summary(truth)
 ```
 
----
 
 ## All subsets
 
@@ -133,39 +188,28 @@ trythemall <- regsubsets(y ~ ., data = df)
 summary(trythemall)
 ```
 
----
 
 ## BIC and Cp
 
-.pull-left[
 ```{r more-all-subsets1}
-infocrit <- tibble(
+#| output-location: column
+tibble(
   BIC = summary(trythemall)$bic, 
   Cp = summary(trythemall)$cp,
-  size = 1:7)
-```
-
-```{r more-all-subsets2, echo=TRUE, dev="svg"}
-info_plot <- infocrit %>% 
-  pivot_longer(-size, names_to="crit") %>%
-  ggplot(aes(size, value, color=crit)) + 
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) + 
   geom_point() + 
   geom_line() + 
-  facet_wrap(~crit, 2, scales = "free_y") + 
-  scale_color_brewer(palette = "Set1") +
-  theme(axis.title.y = element_blank(), 
-        legend.position = "none")
+  facet_wrap(~name, scales = "free_y") + 
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange), 
+    guide = "none"
+  )
 ```
 
-]
-
-.pull-right[
-```{r more-all-subsets3, echo=FALSE, dev="svg"}
-info_plot
-```
-]
-
----
 
 ## Forward stepwise
 
@@ -174,26 +218,28 @@ stepup <- regsubsets(y ~ ., data = df, method = "forward")
 summary(stepup)
 ```
 
----
 
 ## BIC and Cp
 
-```{r more-step-forward, echo=FALSE, dev="svg", fig.width=10, fig.height=5, fig.align="center"}
-infocrit2 = tibble(
-  BIC = summary(stepup)$bic, 
+```{r more-step-forward}
+#| output-location: column
+tibble(
+  BIC = summary(stepup)$bic,
   Cp = summary(stepup)$cp,
-  size = 1:7)
-infocrit2 %>% 
-  pivot_longer(-size, names_to="crit") %>%
-  ggplot(aes(size, value, color=crit)) + 
-  geom_point() + 
-  geom_line() + 
-  facet_wrap(~crit, 1, scales = "free_y") +
-  scale_color_brewer(palette = "Set1") +
-  theme(axis.title.y=element_blank(), legend.position = "none")
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~name, scales = "free_y") +
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange),
+    guide = "none"
+  )
 ```
 
----
 
 ## Backward selection
 
@@ -202,48 +248,45 @@ stepdown <- regsubsets(y ~ ., data = df, method = "backward")
 summary(stepdown)
 ```
 
----
 
 ## BIC and Cp
 
-```{r more-step-backward, echo=FALSE, dev="svg", fig.width=10, fig.height=5, fig.align="center"}
-infocrit3 = tibble(
-  BIC = summary(stepdown)$bic, 
+```{r more-step-backward}
+#| output-location: column
+tibble(
+  BIC = summary(stepdown)$bic,
   Cp = summary(stepdown)$cp,
-  size = 1:7)
-infocrit3 %>% 
-  pivot_longer(-size, names_to="crit") %>%
-  ggplot(aes(size, value, color=crit)) + 
-  geom_point() + 
-  geom_line() + 
-  facet_wrap(~crit, 1, scales = "free_y") +
-  scale_color_brewer(palette = "Set1") +
-  theme(axis.title.y=element_blank(), legend.position = "none")
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~name, scales = "free_y") +
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange), 
+    guide = "none"
+  )
 ```
 
----
-class: middle
-
-.emphasis[
-<br>
-## somehow, for this seed, everything is the same
-<br>
-]
 
 
----
+# somehow, for this seed, everything is the same
+
 
 ## Randomness and prediction error
 
 All of that was for one data set
 
 If we want to know how they compare, we should repeat many times
+  
   1. Generate training data
   1. Estimate with different algorithms
   1. Predict held-out set data
   1. Examine prediction MSE (on held-out set)
   
---
+. . .
 
 I'm not going to do all subsets, just the truth, forward selection, backward, and the full model
 
@@ -251,7 +294,6 @@ For forward/backward selection, I'll use Cp to choose the final model
 
 This Cp is using the training set.
 
----
 
 ## Code for simulation
 
@@ -268,7 +310,7 @@ predict.regsubsets <- function(object, newdata, risk_estimate = c("cp", "bic"), 
 }
 ```
 
----
+##
 
 ```{r replication-exercise, cache=TRUE}
 simulate_and_estimate_them_all <- function(n = 406) {
@@ -302,29 +344,30 @@ simulate_and_estimate_them_all <- function(n = 406) {
 }
 
 set.seed(12345)
-our_sim <- purrr::map_dfr(1:50, ~ simulate_and_estimate_them_all(406), .id = "sim")
+our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
+  list_rbind(names_to = "sim")
 ```
-
----
 
 ## What is "Oracle"
 
-.pull-left-wide[
+::: flex
+::: w-70
 <a title="Helen Simonsson, CC BY-SA 3.0 &lt;https://creativecommons.org/licenses/by-sa/3.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Delfi_Apollons_tempel.jpg"><img width="800" alt="Delfi Apollons tempel" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Delfi_Apollons_tempel.jpg/512px-Delfi_Apollons_tempel.jpg"></a>
-]
+:::
 
-.pull-right-narrow[
-![:scale 80%](https://www.worldhistory.org/img/r/p/750x750/186.jpg.webp?v=1628028003)
-]
+::: w-30
+![](https://www.worldhistory.org/img/r/p/750x750/186.jpg.webp?v=1628028003)
+:::
+:::
 
-
----
 
 ## Results
 
-.pull-left[
 
-```{r synth-results, eval=FALSE}
+```{r synth-results}
+#| cache: true
+#| output-location: column
+#| fig-height: 6
 our_sim2 <- our_sim %>%
   group_by(sim) %>%
   summarise(across(oracle:truth, ~ mean((y - .)^2)), 
@@ -337,29 +380,22 @@ our_sim2 %>%
                values_to = "mse") %>%
   ggplot(aes(method, mse, fill = method)) +
   geom_boxplot(notch = TRUE) +
-  scale_fill_brewer(palette = "Set1") +
+  geom_hline(yintercept = 0, linewidth = 2) +
+  scale_fill_viridis_d() +
   theme(legend.position = "none") +
-  scale_y_continuous(labels = scales::label_percent())+
+  scale_y_continuous(
+    labels = scales::label_percent()
+  )+
   ylab("% increase in mse relative\n to the truth")
 ```
-]
 
 
-.pull-right[
-
-```{r synth-results-plot, echo=FALSE, ref.label="synth-results", fig.width=5, fig.height=5, fig.align="center"}
-```
-
-]
 
 
----
-class: middle, center
-background-image: url("https://disher.com/wp-content/uploads/2017/02/Product-Constraints.jpg")
-background-size: cover
 
-.primary[.larger[Next time...]]
 
-.primary[.larger[Module]] .huge-blue-number[2]
+# Next time...
 
-.primary[regularization, constraints, and nonparametrics]
+[Module 2]{.large}
+
+[regularization, constraints, and nonparametrics]{.secondary}
