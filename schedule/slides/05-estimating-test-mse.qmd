@@ -48,7 +48,7 @@ So we should [__never__]{.secondary} use it.
 ::: w-50
 
 ```{r}
-#| echo: false
+#| code-fold: true
 #| fig-height: 8
 #| fig-width: 8
 ans <- anscombe |>
@@ -93,7 +93,7 @@ regress_on_junk <- function(q) {
 ```
 
 ```{r}
-#| echo: false
+#| code-fold: true
 map(q, regress_on_junk) |> 
   list_rbind() |>
   mutate(q = q) |>
@@ -145,15 +145,15 @@ We can try to balance it's bias and variance...
 One option is to have a separate "held out" or "validation set".
 
 
-`r pro` Estimates the test error
+👍 Estimates the test error
 
-`r pro` Fast computationally
+👍 Fast computationally
 
-`r con` Estimate is random 
+🤮 Estimate is random 
 
-`r con` Estimate has high variance (depends on 1 choice of split)
+🤮 Estimate has high variance (depends on 1 choice of split)
 
-`r con` Estimate has some bias because we only used some of the data
+🤮 Estimate has some bias because we only used some of the data
 
 
 ## Aside {background-color="#97D4E9"}
@@ -218,17 +218,17 @@ This is [__leave-one-out cross validation__]{.secondary}
 
 ## Problems with LOO-CV
 
-`r con` Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
+🤮 Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
 
-`r con` The training sets overlap. This is bad. 
+🤮 The training sets overlap. This is bad. 
 
 - Usually, averaging reduces variance: $\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.$
 - But only if the variables are independent. If not, then $\Var{\overline{X}} = \frac{1}{n^2}\Var{ \sum_{i=1}^n X_i} = \frac{1}{n}\Var{X_1} + \frac{1}{n^2}\sum_{i\neq j} \Cov{X_i}{X_j}.$
 - Since the training sets overlap a lot, that covariance can be pretty big.
     
-`r con` We have to estimate this model $n$ times.
+🤮 We have to estimate this model $n$ times.
 
-`r pro` Bias is low because we used almost all the data to fit the model: $E[\mbox{LOO-CV}] = R_{n-1}$ 
+🎉 Bias is low because we used almost all the data to fit the model: $E[\mbox{LOO-CV}] = R_{n-1}$ 
 
   
 ## K-fold CV
@@ -250,15 +250,15 @@ The idea of $K$-fold is
 
 
 ::: w-50
-`r pro` Less overlap, smaller covariance.
+🎉 Less overlap, smaller covariance.
 
-`r pro` Larger hold-out sets, smaller variance.
+🎉 Larger hold-out sets, smaller variance.
 
-`r pro` Less computations (only need to estimate $K$ times)
+🎉 Less computations (only need to estimate $K$ times)
 
-`r con` LOO-CV is (nearly) unbiased for $R_n$
+🤮 LOO-CV is (nearly) unbiased for $R_n$
 
-`r con` K-fold CV is unbiased for $R_{n(1-1/K)}$
+🤮 K-fold CV is unbiased for $R_{n(1-1/K)}$
 
 The risk depends on how much data you use to estimate the model. $R_n$ depends on $n$.
 
@@ -269,8 +269,8 @@ The risk depends on how much data you use to estimate the model. $R_n$ depends o
 
 ## A picture
 
-```{r, fig.align='center',echo=FALSE,fig.height=6, fig.width=10}
-#| echo: false
+```{r}
+#| code-fold: true
 #| fig-height: 6
 #| fig-width: 10
 par(mar = c(0, 0, 0, 0))

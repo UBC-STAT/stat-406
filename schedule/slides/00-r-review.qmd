@@ -1,5 +1,5 @@
 ---
-lecture: "00 R, Rmarkdown, code, and {tidyverse}: <br> A whirlwind tour"
+lecture: "00 R, Rmarkdown, code, and `{tidyverse}`: <br> A whirlwind tour"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -58,8 +58,8 @@ x[c(1,3),  2:3]
 
 ## Simple stuff
 
-:::: {.columns}
-::: {.column width="45%"}
+::: flex
+::: w-50
 
 ### Lists
 ```{r}
@@ -73,10 +73,8 @@ l["b"] # compare to l[["b"]] == l$b
 ```
 :::
 
-::: {.column width="10%"}
-:::
 
-::: {.column width="45%"}
+::: w-50
 
 ### Data frames
 ```{r}
@@ -89,9 +87,8 @@ dat$b
 dat[1,]
 ```
 
-
 :::
-::::
+:::
 
 [Data frames are sort-of lists and sort-of matrices]{.secondary}
 
@@ -122,7 +119,7 @@ Also, you can construct one by referencing previously constructed columns.
 ## Understanding signatures
 
 ```{r}
-#| echo: FALSE
+#| code-fold: true
 sig <- sig::sig
 ```
 
@@ -155,9 +152,9 @@ rnorm(sd = 1, n = 3, mean = 0)
 
 ## Write lots of functions. I can't emphasize this enough.
 
-:::: {.columns}
+::: flex
 
-::: {.column width="45%"}
+::: w-50
 ```{r functions}
 f <- function(arg1, arg2, arg3 = 12, ...) {
   stuff <- arg1 * arg3
@@ -169,10 +166,8 @@ x <- rnorm(100)
 ```
 :::
 
-::: {.column width="10%"}
-:::
 
-::: {.column width="45%"}
+::: w-50
 
 ```{r plot-it}
 y1 <- f(x, 3, 15, col = 4, pch = 19)
@@ -180,13 +175,13 @@ str(y1)
 ```
 
 :::
-::::
+:::
 
 
 ## Outputs vs. Side effects
 
-:::: {.columns}
-::: {.column width="50%"}
+::: flex
+::: w-50
 * Side effects are things a function does, outputs can be assigned to variables
 * A good example is the `hist` function
 * You have probably only seen the side effect which is to plot the histogram
@@ -198,7 +193,7 @@ my_histogram <- hist(rnorm(1000))
 :::
 
 
-::: {.column width="50%"}
+::: w-50
 
 
 ```{r}
@@ -207,14 +202,14 @@ class(my_histogram)
 ```
 
 :::
-::::
+:::
 
 
 
 ## When writing functions, program defensively, ensure behaviour
 
-:::: {.columns}
-::: {.column width="45%"}
+::: flex
+::: w-50
 
 ```{r}
 #| error: TRUE
@@ -238,10 +233,8 @@ incrementer("a")
 
 :::
 
-::: {.column width="10%"}
-:::
 
-::: {.column width="45%"}
+::: w-50
 
 
 ```{r}
@@ -263,13 +256,13 @@ incrementer <- function(x, inc_by = 1) {
 incrementer(2, -3)
 ```
 :::
-::::
+:::
 
 
 ## How to keep track
 
-:::: {.columns}
-::: {.column width="45%"}
+::: flex
+::: w-50
 
 ```{r}
 #| error: true
@@ -291,10 +284,8 @@ expect_identical(incrementer(1:3), 2:4)
 ```
 :::
 
-::: {.column width="10%"}
-:::
 
-::: {.column width="45%"}
+::: w-50
 
 
 ```{r}
@@ -303,11 +294,11 @@ is.integer(incrementer(1:3))
 expect_identical(incrementer(1:3, 1L), 2:4)
 ```
 :::
-::::
+:::
 
 . . .
 
-::: {.callout-important}
+::: callout-important
 If you copy something, write a function.
 
 Validate your arguments.
@@ -323,8 +314,8 @@ To ensure proper functionality, write tests to check if inputs result in predict
 
 ## Classes
 
-:::: {.columns}
-::: {.column width="45%"}
+::: flex
+::: w-50
 
 We saw some of these earlier:
 
@@ -347,11 +338,8 @@ print(mdl)
 
 :::
 
-::: {.column width="10%"}
-:::
 
-::: {.column width="45%"}
-
+::: w-50
 
 
 * `R` "knows what to do" when you `print()` an object of class `"lm"`.
@@ -365,7 +353,7 @@ print(mdl)
 * If available, it calls that function.
 
 :::
-::::
+:::
 
 ## Viewing the dispatch chain
 
@@ -388,9 +376,9 @@ Also, lots of important statistical modelling concepts:
 (In `python`, these work the opposite way: `obj.residuals`. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)  
 
 * The convention is
-that the specialized function is named `method.class`, e.g., `summary.lm`.
+that the specialized function is named `method.class()`, e.g., `summary.lm()`.
 
-* If no specialized function is defined, R will try to use `method.default`.
+* If no specialized function is defined, R will try to use `method.default()`.
 
 For this reason, `R` programmers try to avoid `.` in names of functions or objects.
 
@@ -401,7 +389,7 @@ For this reason, `R` programmers try to avoid `.` in names of functions or objec
 * The advantage is that you don't have to learn a totally
 new syntax to grab residuals or plot things
 
-* You just use `residuals(mdl)` whether `mdl` comes from `lm`
+* You just use `residuals(mdl)` whether `mdl` has class `lm`
 could have been done two centuries ago, or a Batrachian Emphasis Machine
 which won't be invented for another five years.  
 
@@ -472,7 +460,7 @@ x2
 ```
 
 * `lm()` looks "inside" the `tib` to find `y` and `x2`
-* The data variables are added to the `lm` environment
+* The data variables are added to the `lm()` environment
 
 
 ## Other issues with environments
@@ -538,7 +526,7 @@ Adding `browser()`
 * Only useful with your own functions.
 * Open the script with the function, and add `browser()` to the code somewhere
 * Then call your function.
-* The execution will Stop where you added `browser()` and you'll have access to the local objects (and the global objects) to play around
+* The execution will Stop where you added `browser()` and you'll have access to the local environment to play around
 
 
 ## Reproducible examples
@@ -693,6 +681,21 @@ tib |>
 
 This works, but it's really annoying.
 
+## A new one...
+
+Just last week, I learned
+
+```{r}
+library(magrittr)
+tib <- tibble(x = 1:5, z = 6:10)
+tib <- tib |> mutate(b = x + z)
+tib
+# start over
+tib <- tibble(x = 1:5, z = 6:10)
+tib %<>% mutate(b = x + z)
+tib
+```
+
 
 
 ## Data processing in `{dplyr}` {.smaller}
@@ -725,7 +728,7 @@ To be sure, prefix it like `dplyr::select()`.
 ```{r}
 library(epidatr)
 covid <- covidcast(
-  data_source = "jhu-csse",
+  source = "jhu-csse",
   signals = "confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop",
   time_type = "day",
   geo_type = "state",
@@ -798,7 +801,7 @@ defaults are _much_ prettier.
 
 * It also uses "data masking": data goes into `ggplot(data = mydata)`, then the columns are available to the rest.
 
-* It (sort of) pipes, but by adding **layers** with `+`
+* It (sort of) pipes, but by adding [layers]{.secondary} with `+`
 
 * It [strongly prefers]{.secondary} "long" data frames over "wide" data frames.
 
