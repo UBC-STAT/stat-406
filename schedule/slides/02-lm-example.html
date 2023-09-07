@@ -397,7 +397,7 @@
 <h2>02 Linear model example</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 17 August 2023</p>
+<p>Last modified – 06 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -405,6 +405,16 @@
 \DeclareMathOperator*{\maximize}{maximize}
 \DeclareMathOperator*{\find}{find}
 \DeclareMathOperator{\st}{subject\,\,to}
+\newcommand{\E}{E}
+\newcommand{\Expect}[1]{\E\left[ #1 \right]}
+\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
+\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
+\newcommand{\given}{\ \vert\ }
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\P}{\mathcal{P}}
+\newcommand{\R}{\mathbb{R}}
 \]</span></p>
 </section>
 <section id="economic-mobility" class="slide level2">
@@ -700,8 +710,8 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 </section>
 <section id="how-do-we-decide-which-model-is-better" class="slide level2">
 <h2>How do we decide which model is better?</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
+<div class="flex">
+<div class="w-50">
 <ul>
 <li>Goodness of fit versus prediction power</li>
 </ul>
@@ -723,7 +733,8 @@ $reduced
 <li><p>Use both models to predict <code>Mobility</code></p></li>
 <li><p>Compare both sets of predictions</p></li>
 </ul>
-</div><div class="column" style="width:50%;">
+</div>
+<div class="w-50">
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>mses <span class="ot">&lt;-</span> <span class="cf">function</span>(preds, obs) {</span>
 <span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">round</span>(<span class="fu">mean</span>((obs <span class="sc">-</span> preds)<span class="sc">^</span><span class="dv">2</span>), <span class="dv">5</span>)</span>
@@ -742,6 +753,20 @@ $reduced
 </div>
 </div>
 <div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>test<span class="sc">$</span>full <span class="ot">&lt;-</span> <span class="fu">predict</span>(full, <span class="at">newdata =</span> test)</span>
+<span id="cb20-2"><a href="#cb20-2"></a>test<span class="sc">$</span>reduced <span class="ot">&lt;-</span> <span class="fu">predict</span>(reduced, <span class="at">newdata =</span> test)</span>
+<span id="cb20-3"><a href="#cb20-3"></a>test <span class="sc">|&gt;</span> </span>
+<span id="cb20-4"><a href="#cb20-4"></a>  <span class="fu">select</span>(Mobility, full, reduced) <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>Mobility) <span class="sc">|&gt;</span></span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(Mobility, value)) <span class="sc">+</span> </span>
+<span id="cb20-7"><a href="#cb20-7"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span> </span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb20-9"><a href="#cb20-9"></a>  <span class="fu">xlab</span>(<span class="st">'observed mobility'</span>) <span class="sc">+</span> </span>
+<span id="cb20-10"><a href="#cb20-10"></a>  <span class="fu">ylab</span>(<span class="st">'predicted mobility'</span>) <span class="sc">+</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -753,10 +778,10 @@ $reduced
 </div>
 </div>
 </section>
-<section id="next-time" class="title-slide slide level1 center" data-background-image="https://upload.wikimedia.org/wikipedia/commons/6/6d/Activemarker2.PNG">
+<section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p><span class="secondary large">Module 1</span></p>
-<p><span class="secondary large">Selecting models</span></p>
+<p>Selecting models</p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>

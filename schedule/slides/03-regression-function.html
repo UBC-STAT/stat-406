@@ -29,6 +29,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto.css">
   <link rel="stylesheet" href="tachyons-minimal.css">
@@ -332,7 +397,7 @@
 <h2>03 The regression function</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 05 September 2023</p>
+<p>Last modified – 06 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -473,8 +538,8 @@
 <h2>Evaluating “close”</h2>
 <p>We need more functions.</p>
 <p>Choose some <em>loss function</em> <span class="math inline">\(\ell\)</span> that measures how close <span class="math inline">\(\mu\)</span> and <span class="math inline">\(Y\)</span> are.</p>
-<div class="columns">
-<div class="column" style="width:50%;">
+<div class="flex">
+<div class="w-50">
 <ul>
 <li><p><em>Squared-error:</em><br>
 <span class="math inline">\(\ell(y,\ \mu) = (y-\mu)^2\)</span></p></li>
@@ -485,8 +550,22 @@
 <li><p><em>Cauchy:</em><br>
 <span class="math inline">\(\ell(y,\ \mu) = \log(1 + (y - \mu)^2)\)</span></p></li>
 </ul>
-</div><div class="column" style="width:50%;">
+</div>
+<div class="w-50">
 <div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">+</span>.x<span class="sc">^</span><span class="dv">2</span>), <span class="at">colour =</span> <span class="st">'purple'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span>.x<span class="sc">^</span><span class="dv">2</span>, <span class="at">colour =</span> tertiary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">abs</span>(.x), <span class="at">colour =</span> primary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length.out =</span> <span class="dv">100</span>), <span class="at">y =</span> <span class="fu">as.numeric</span>(x <span class="sc">!=</span> <span class="dv">0</span>)), </span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="fu">aes</span>(x, y), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>), <span class="fu">aes</span>(x, y), </span>
+<span id="cb1-10"><a href="#cb1-10"></a>             <span class="at">colour =</span> orange, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">size =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
@@ -527,7 +606,7 @@
 <p>But why should we assume <span class="math inline">\(\mu(x) = x^\top \beta\)</span>?</p>
 </div>
 </section>
-<section id="brief-aside" class="slide level2" data-background-color="#e98a15">
+<section id="brief-aside" class="slide level2" data-background-color="#97D4E9">
 <h2>Brief aside</h2>
 <p>Some notation / terminology</p>
 <ul>
@@ -617,8 +696,8 @@
 </li>
 <li>We can ask about the <em>estimation risk</em> (since we’re estimating <span class="math inline">\(\mu\)</span>):</li>
 </ul>
-<div class="columns">
-<div class="column" style="width:50%;">
+<div class="flex">
+<div class="w-50">
 <span class="math display">\[\begin{aligned}
     E[(\overline{Y}_n-\mu)^2]
     &amp;= E[\overline{Y}_n^2]
@@ -626,8 +705,9 @@
     &amp;= \mu^2 + \frac{1}{n} - 2\mu^2 +
     \mu^2\\ &amp;= \frac{1}{n}
 \end{aligned}\]</span>
-</div><div class="column" style="width:50%;">
-<h4 id="useful-trick">Useful trick</h4>
+</div>
+<div class="w-50">
+<p><span class="primary">Useful trick</span></p>
 <p>For any <span class="math inline">\(Z\)</span>,</p>
 <p><span class="math inline">\(\Var{Z} = \Expect{Z^2} - \Expect{Z}^2\)</span>.</p>
 <p>Therefore:</p>
@@ -642,8 +722,8 @@
 </li>
 <li>What is the <em>prediction risk</em> of <span class="math inline">\(\overline{Y}\)</span>?</li>
 </ul>
-<div class="columns">
-<div class="column" style="width:60%;">
+<div class="flex">
+<div class="w-50">
 <span class="math display">\[\begin{aligned}
   R_n(\overline{Y}_n)
   &amp;= \E[(\overline{Y}_n-Y)^2]\\
@@ -651,8 +731,9 @@
   &amp;= \mu^2 + \frac{1}{n} - 2\mu^2 + \mu^2 + 1 \\
   &amp;= 1 + \frac{1}{n}
 \end{aligned}\]</span>
-</div><div class="column" style="width:40%;">
-<h4 id="tricks">Tricks:</h4>
+</div>
+<div class="w-50">
+<p><span class="primary">Tricks:</span></p>
 <p>Used the variance thing again.</p>
 <p>If <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> are independent, then <span class="math inline">\(\Expect{XZ} = \Expect{X}\Expect{Z}\)</span></p>
 </div>

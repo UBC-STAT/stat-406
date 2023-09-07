@@ -158,7 +158,7 @@
     "href": "schedule/slides/05-estimating-test-mse.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "05 Estimating test MSE",
-    "text": "05 Estimating test MSE\nStat 406\nDaniel J. McDonald\nLast modified – 05 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "05 Estimating test MSE\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-prediction-risk",
@@ -179,14 +179,14 @@
     "href": "schedule/slides/05-estimating-test-mse.html#these-all-have-the-same-r2-and-training-error",
     "title": "UBC Stat406 2023W",
     "section": "These all have the same \\(R^2\\) and Training Error",
-    "text": "These all have the same \\(R^2\\) and Training Error\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
+    "text": "These all have the same \\(R^2\\) and Training Error\n\n\n\n\nCode\nans &lt;- anscombe |&gt;\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), \n               names_pattern = \"(.)(.)\")\nggplot(ans, aes(x, y)) + \n  geom_point(colour = orange, size = 3) + \n  geom_smooth(method = \"lm\", se = FALSE, color = blue, linewidth = 2) +\n  facet_wrap(~set, labeller = label_both)\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#adding-junk-predictors-increases-r2-and-decreases-training-error",
     "href": "schedule/slides/05-estimating-test-mse.html#adding-junk-predictors-increases-r2-and-decreases-training-error",
     "title": "UBC Stat406 2023W",
     "section": "Adding “junk” predictors increases \\(R^2\\) and decreases Training Error",
-    "text": "Adding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}"
+    "text": "Adding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}\n\n\n\nCode\nmap(q, regress_on_junk) |&gt; \n  list_rbind() |&gt;\n  mutate(q = q) |&gt;\n  pivot_longer(-q) |&gt;\n  ggplot(aes(q, value, colour = name)) +\n  geom_line(linewidth = 2) + xlab(\"train_error\") +\n  scale_colour_manual(values = c(blue, orange), guide = \"none\") +\n  facet_wrap(~ name, scales = \"free_y\")"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
@@ -207,7 +207,7 @@
     "href": "schedule/slides/05-estimating-test-mse.html#held-out-sets",
     "title": "UBC Stat406 2023W",
     "section": "Held out sets",
-    "text": "Held out sets\nOne option is to have a separate “held out” or “validation set”.\n Estimates the test error\n Fast computationally\n Estimate is random\n Estimate has high variance (depends on 1 choice of split)\n Estimate has some bias because we only used some of the data"
+    "text": "Held out sets\nOne option is to have a separate “held out” or “validation set”.\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has some bias because we only used some of the data"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#aside",
@@ -235,21 +235,21 @@
     "href": "schedule/slides/05-estimating-test-mse.html#problems-with-loo-cv",
     "title": "UBC Stat406 2023W",
     "section": "Problems with LOO-CV",
-    "text": "Problems with LOO-CV\n Each held out set is small \\((n=1)\\). Therefore, the variance of the Squared Error of each prediction is high.\n The training sets overlap. This is bad.\n\nUsually, averaging reduces variance: \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\sum_{i=1}^n \\Var{X_i} = \\frac{1}{n}\\Var{X_1}.\\)\nBut only if the variables are independent. If not, then \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\Var{ \\sum_{i=1}^n X_i} = \\frac{1}{n}\\Var{X_1} + \\frac{1}{n^2}\\sum_{i\\neq j} \\Cov{X_i}{X_j}.\\)\nSince the training sets overlap a lot, that covariance can be pretty big.\n\n We have to estimate this model \\(n\\) times.\n Bias is low because we used almost all the data to fit the model: \\(E[\\mbox{LOO-CV}] = R_{n-1}\\)"
+    "text": "Problems with LOO-CV\n🤮 Each held out set is small \\((n=1)\\). Therefore, the variance of the Squared Error of each prediction is high.\n🤮 The training sets overlap. This is bad.\n\nUsually, averaging reduces variance: \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\sum_{i=1}^n \\Var{X_i} = \\frac{1}{n}\\Var{X_1}.\\)\nBut only if the variables are independent. If not, then \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\Var{ \\sum_{i=1}^n X_i} = \\frac{1}{n}\\Var{X_1} + \\frac{1}{n^2}\\sum_{i\\neq j} \\Cov{X_i}{X_j}.\\)\nSince the training sets overlap a lot, that covariance can be pretty big.\n\n🤮 We have to estimate this model \\(n\\) times.\n🎉 Bias is low because we used almost all the data to fit the model: \\(E[\\mbox{LOO-CV}] = R_{n-1}\\)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
     "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
     "title": "UBC Stat406 2023W",
     "section": "K-fold CV",
-    "text": "K-fold CV\n\n\nTo alleviate some of these problems, people usually use \\(K\\)-fold cross validation.\nThe idea of \\(K\\)-fold is\n\nDivide the data into \\(K\\) groups.\nLeave a group out and estimate with the rest.\nTest on the held-out group. Calculate an average risk over these \\(\\sim n/K\\) data.\nRepeat for all \\(K\\) groups.\nAverage the average risks.\n\n\n\n Less overlap, smaller covariance.\n Larger hold-out sets, smaller variance.\n Less computations (only need to estimate \\(K\\) times)\n LOO-CV is (nearly) unbiased for \\(R_n\\)\n K-fold CV is unbiased for \\(R_{n(1-1/K)}\\)\nThe risk depends on how much data you use to estimate the model. \\(R_n\\) depends on \\(n\\)."
+    "text": "K-fold CV\n\n\nTo alleviate some of these problems, people usually use \\(K\\)-fold cross validation.\nThe idea of \\(K\\)-fold is\n\nDivide the data into \\(K\\) groups.\nLeave a group out and estimate with the rest.\nTest on the held-out group. Calculate an average risk over these \\(\\sim n/K\\) data.\nRepeat for all \\(K\\) groups.\nAverage the average risks.\n\n\n\n🎉 Less overlap, smaller covariance.\n🎉 Larger hold-out sets, smaller variance.\n🎉 Less computations (only need to estimate \\(K\\) times)\n🤮 LOO-CV is (nearly) unbiased for \\(R_n\\)\n🤮 K-fold CV is unbiased for \\(R_{n(1-1/K)}\\)\nThe risk depends on how much data you use to estimate the model. \\(R_n\\) depends on \\(n\\)."
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#a-picture",
     "href": "schedule/slides/05-estimating-test-mse.html#a-picture",
     "title": "UBC Stat406 2023W",
     "section": "A picture",
-    "text": "A picture"
+    "text": "A picture\n\n\nCode\npar(mar = c(0, 0, 0, 0))\nplot(NA, NA, ylim = c(0, 5), xlim = c(0, 10), bty = \"n\", yaxt = \"n\", xaxt = \"n\")\nrect(0, .1 + c(0, 2, 3, 4), 10, .9 + c(0, 2, 3, 4), col = blue, density = 10)\nrect(c(0, 1, 2, 9), rev(.1 + c(0, 2, 3, 4)), c(1, 2, 3, 10), \n     rev(.9 + c(0, 2, 3, 4)), col = red, density = 10)\npoints(c(5, 5, 5), 1 + 1:3 / 4, pch = 19)\ntext(.5 + c(0, 1, 2, 9), .5 + c(4, 3, 2, 0), c(\"1\", \"2\", \"3\", \"K\"), cex = 3, \n     col = red)\ntext(6, 4.5, \"Training data\", cex = 3, col = blue)\ntext(2, 1.5, \"Validation data\", cex = 3, col = red)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#code",
@@ -270,7 +270,7 @@
     "href": "schedule/slides/03-regression-function.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "03 The regression function",
-    "text": "03 The regression function\nStat 406\nDaniel J. McDonald\nLast modified – 05 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "03 The regression function\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#mean-squared-error-mse",
@@ -333,7 +333,7 @@
     "href": "schedule/slides/03-regression-function.html#evaluating-close",
     "title": "UBC Stat406 2023W",
     "section": "Evaluating “close”",
-    "text": "Evaluating “close”\nWe need more functions.\nChoose some loss function \\(\\ell\\) that measures how close \\(\\mu\\) and \\(Y\\) are.\n\n\n\nSquared-error:\n\\(\\ell(y,\\ \\mu) = (y-\\mu)^2\\)\nAbsolute-error:\n\\(\\ell(y,\\ \\mu) = |y-\\mu|\\)\nZero-One:\n\\(\\ell(y,\\ \\mu) = I(y\\neq\\mu)=\\begin{cases} 0 & y=\\mu\\\\1 & \\mbox{else}\\end{cases}\\)\nCauchy:\n\\(\\ell(y,\\ \\mu) = \\log(1 + (y - \\mu)^2)\\)"
+    "text": "Evaluating “close”\nWe need more functions.\nChoose some loss function \\(\\ell\\) that measures how close \\(\\mu\\) and \\(Y\\) are.\n\n\n\nSquared-error:\n\\(\\ell(y,\\ \\mu) = (y-\\mu)^2\\)\nAbsolute-error:\n\\(\\ell(y,\\ \\mu) = |y-\\mu|\\)\nZero-One:\n\\(\\ell(y,\\ \\mu) = I(y\\neq\\mu)=\\begin{cases} 0 & y=\\mu\\\\1 & \\mbox{else}\\end{cases}\\)\nCauchy:\n\\(\\ell(y,\\ \\mu) = \\log(1 + (y - \\mu)^2)\\)\n\n\n\n\n\nCode\nggplot() +\n  xlim(-2, 2) +\n  geom_function(fun = ~log(1+.x^2), colour = 'purple', linewidth = 2) +\n  geom_function(fun = ~.x^2, colour = tertiary, linewidth = 2) +\n  geom_function(fun = ~abs(.x), colour = primary, linewidth = 2) +\n  geom_line(\n    data = tibble(x = seq(-2, 2, length.out = 100), y = as.numeric(x != 0)), \n    aes(x, y), colour = orange, linewidth = 2) +\n  geom_point(data = tibble(x = 0, y = 0), aes(x, y), \n             colour = orange, pch = 16, size = 3)"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#start-with-expected-squared-error",
@@ -396,14 +396,14 @@
     "href": "schedule/slides/03-regression-function.html#estimating-the-mean",
     "title": "UBC Stat406 2023W",
     "section": "Estimating the mean",
-    "text": "Estimating the mean\n\nLet \\(\\widehat{Y}=\\overline{Y}_n\\) be the sample mean.\n\nWe can ask about the estimation risk (since we’re estimating \\(\\mu\\)):\n\n\n\n\\[\\begin{aligned}\n    E[(\\overline{Y}_n-\\mu)^2]\n    &= E[\\overline{Y}_n^2]\n    -2\\mu E[\\overline{Y}_n] + \\mu^2 \\\\\n    &= \\mu^2 + \\frac{1}{n} - 2\\mu^2 +\n    \\mu^2\\\\ &= \\frac{1}{n}\n\\end{aligned}\\]\n\nUseful trick\nFor any \\(Z\\),\n\\(\\Var{Z} = \\Expect{Z^2} - \\Expect{Z}^2\\).\nTherefore:\n\\(\\Expect{Z^2} = \\Var{Z} + \\Expect{Z}^2\\)."
+    "text": "Estimating the mean\n\nLet \\(\\widehat{Y}=\\overline{Y}_n\\) be the sample mean.\n\nWe can ask about the estimation risk (since we’re estimating \\(\\mu\\)):\n\n\n\n\\[\\begin{aligned}\n    E[(\\overline{Y}_n-\\mu)^2]\n    &= E[\\overline{Y}_n^2]\n    -2\\mu E[\\overline{Y}_n] + \\mu^2 \\\\\n    &= \\mu^2 + \\frac{1}{n} - 2\\mu^2 +\n    \\mu^2\\\\ &= \\frac{1}{n}\n\\end{aligned}\\]\n\n\nUseful trick\nFor any \\(Z\\),\n\\(\\Var{Z} = \\Expect{Z^2} - \\Expect{Z}^2\\).\nTherefore:\n\\(\\Expect{Z^2} = \\Var{Z} + \\Expect{Z}^2\\)."
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#predicting-new-ys",
     "href": "schedule/slides/03-regression-function.html#predicting-new-ys",
     "title": "UBC Stat406 2023W",
     "section": "Predicting new Y’s",
-    "text": "Predicting new Y’s\n\nLet \\(\\widehat{Y}=\\overline{Y}_n\\) be the sample mean.\n\nWhat is the prediction risk of \\(\\overline{Y}\\)?\n\n\n\n\\[\\begin{aligned}\n  R_n(\\overline{Y}_n)\n  &= \\E[(\\overline{Y}_n-Y)^2]\\\\\n  &= \\E[\\overline{Y}_{n}^{2}] -2\\E[\\overline{Y}_n Y] + \\E[Y^2] \\\\\n  &= \\mu^2 + \\frac{1}{n} - 2\\mu^2 + \\mu^2 + 1 \\\\\n  &= 1 + \\frac{1}{n}\n\\end{aligned}\\]\n\nTricks:\nUsed the variance thing again.\nIf \\(X\\) and \\(Z\\) are independent, then \\(\\Expect{XZ} = \\Expect{X}\\Expect{Z}\\)"
+    "text": "Predicting new Y’s\n\nLet \\(\\widehat{Y}=\\overline{Y}_n\\) be the sample mean.\n\nWhat is the prediction risk of \\(\\overline{Y}\\)?\n\n\n\n\\[\\begin{aligned}\n  R_n(\\overline{Y}_n)\n  &= \\E[(\\overline{Y}_n-Y)^2]\\\\\n  &= \\E[\\overline{Y}_{n}^{2}] -2\\E[\\overline{Y}_n Y] + \\E[Y^2] \\\\\n  &= \\mu^2 + \\frac{1}{n} - 2\\mu^2 + \\mu^2 + 1 \\\\\n  &= 1 + \\frac{1}{n}\n\\end{aligned}\\]\n\n\nTricks:\nUsed the variance thing again.\nIf \\(X\\) and \\(Z\\) are independent, then \\(\\Expect{XZ} = \\Expect{X}\\Expect{Z}\\)"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#predicting-new-ys-1",
@@ -515,7 +515,7 @@
     "href": "schedule/slides/00-r-review.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour",
-    "text": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour\nStat 406\nDaniel J. McDonald\nLast modified – 17 August 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\]"
+    "text": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#tour-of-rstudio",
@@ -536,7 +536,7 @@
     "href": "schedule/slides/00-r-review.html#simple-stuff-1",
     "title": "UBC Stat406 2023W",
     "section": "Simple stuff",
-    "text": "Simple stuff\n\n\nLists\n\n(l &lt;- list(\n  a = letters[1:2], \n  b = 1:4, \n  c = list(a = 1)))\n\n$a\n[1] \"a\" \"b\"\n\n$b\n[1] 1 2 3 4\n\n$c\n$c$a\n[1] 1\n\nl$a\n\n[1] \"a\" \"b\"\n\nl$c$a\n\n[1] 1\n\nl[\"b\"] # compare to l[[\"b\"]] == l$b\n\n$b\n[1] 1 2 3 4\n\n\n\n\n\nData frames\n\n(dat &lt;- data.frame(\n  z = 1:5, \n  b = 6:10, \n  c = letters[1:5]))\n\n  z  b c\n1 1  6 a\n2 2  7 b\n3 3  8 c\n4 4  9 d\n5 5 10 e\n\nclass(dat)\n\n[1] \"data.frame\"\n\ndat$b\n\n[1]  6  7  8  9 10\n\ndat[1,]\n\n  z b c\n1 1 6 a\n\n\n\n\nData frames are sort-of lists and sort-of matrices"
+    "text": "Simple stuff\n\n\nLists\n\n(l &lt;- list(\n  a = letters[1:2], \n  b = 1:4, \n  c = list(a = 1)))\n\n$a\n[1] \"a\" \"b\"\n\n$b\n[1] 1 2 3 4\n\n$c\n$c$a\n[1] 1\n\nl$a\n\n[1] \"a\" \"b\"\n\nl$c$a\n\n[1] 1\n\nl[\"b\"] # compare to l[[\"b\"]] == l$b\n\n$b\n[1] 1 2 3 4\n\n\n\n\nData frames\n\n(dat &lt;- data.frame(\n  z = 1:5, \n  b = 6:10, \n  c = letters[1:5]))\n\n  z  b c\n1 1  6 a\n2 2  7 b\n3 3  8 c\n4 4  9 d\n5 5 10 e\n\nclass(dat)\n\n[1] \"data.frame\"\n\ndat$b\n\n[1]  6  7  8  9 10\n\ndat[1,]\n\n  z b c\n1 1 6 a\n\n\n\n\nData frames are sort-of lists and sort-of matrices"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#tibbles",
@@ -550,7 +550,7 @@
     "href": "schedule/slides/00-r-review.html#understanding-signatures",
     "title": "UBC Stat406 2023W",
     "section": "Understanding signatures",
-    "text": "Understanding signatures\n\nsig(lm)\n\nfn &lt;- function(formula, data, subset, weights, na.action, method = \"qr\", model\n  = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts =\n  NULL, offset, ...)\n\nsig(`+`)\n\nfn &lt;- function(e1, e2)\n\nsig(dplyr::filter)\n\nfn &lt;- function(.data, ..., .by = NULL, .preserve = FALSE)\n\nsig(stats::filter)\n\nfn &lt;- function(x, filter, method = c(\"convolution\", \"recursive\"), sides = 2,\n  circular = FALSE, init = NULL)\n\nsig(rnorm)\n\nfn &lt;- function(n, mean = 0, sd = 1)"
+    "text": "Understanding signatures\n\n\nCode\nsig &lt;- sig::sig\n\n\n\nsig(lm)\n\nfn &lt;- function(formula, data, subset, weights, na.action, method = \"qr\", model\n  = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts =\n  NULL, offset, ...)\n\nsig(`+`)\n\nfn &lt;- function(e1, e2)\n\nsig(dplyr::filter)\n\nfn &lt;- function(.data, ..., .by = NULL, .preserve = FALSE)\n\nsig(stats::filter)\n\nfn &lt;- function(x, filter, method = c(\"convolution\", \"recursive\"), sides = 2,\n  circular = FALSE, init = NULL)\n\nsig(rnorm)\n\nfn &lt;- function(n, mean = 0, sd = 1)"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#these-are-all-the-same",
@@ -564,35 +564,35 @@
     "href": "schedule/slides/00-r-review.html#write-lots-of-functions.-i-cant-emphasize-this-enough.",
     "title": "UBC Stat406 2023W",
     "section": "Write lots of functions. I can’t emphasize this enough.",
-    "text": "Write lots of functions. I can’t emphasize this enough.\n\n\n\nf &lt;- function(arg1, arg2, arg3 = 12, ...) {\n  stuff &lt;- arg1 * arg3\n  stuff2 &lt;- stuff + arg2\n  plot(arg1, stuff2, ...)\n  return(stuff2)\n}\nx &lt;- rnorm(100)\n\n\n\n\n\ny1 &lt;- f(x, 3, 15, col = 4, pch = 19)\n\n\n\n\n\n\n\nstr(y1)\n\n num [1:100] -3.8 12.09 -24.27 12.45 -1.14 ..."
+    "text": "Write lots of functions. I can’t emphasize this enough.\n\n\n\nf &lt;- function(arg1, arg2, arg3 = 12, ...) {\n  stuff &lt;- arg1 * arg3\n  stuff2 &lt;- stuff + arg2\n  plot(arg1, stuff2, ...)\n  return(stuff2)\n}\nx &lt;- rnorm(100)\n\n\n\n\ny1 &lt;- f(x, 3, 15, col = 4, pch = 19)\n\n\n\n\n\n\n\nstr(y1)\n\n num [1:100] -3.8 12.09 -24.27 12.45 -1.14 ..."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
     "href": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
     "title": "UBC Stat406 2023W",
     "section": "Outputs vs. Side effects",
-    "text": "Outputs vs. Side effects\n\n\n\nSide effects are things a function does, outputs can be assigned to variables\nA good example is the hist function\nYou have probably only seen the side effect which is to plot the histogram\n\n\nmy_histogram &lt;- hist(rnorm(1000))\n\n\n\n\n\n\n\n\n\n\nstr(my_histogram)\n\nList of 6\n $ breaks  : num [1:14] -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 ...\n $ counts  : int [1:13] 4 21 41 89 142 200 193 170 74 38 ...\n $ density : num [1:13] 0.008 0.042 0.082 0.178 0.284 0.4 0.386 0.34 0.148 0.076 ...\n $ mids    : num [1:13] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25 0.25 0.75 1.25 1.75 ...\n $ xname   : chr \"rnorm(1000)\"\n $ equidist: logi TRUE\n - attr(*, \"class\")= chr \"histogram\"\n\nclass(my_histogram)\n\n[1] \"histogram\""
+    "text": "Outputs vs. Side effects\n\n\n\nSide effects are things a function does, outputs can be assigned to variables\nA good example is the hist function\nYou have probably only seen the side effect which is to plot the histogram\n\n\nmy_histogram &lt;- hist(rnorm(1000))\n\n\n\n\n\n\n\n\n\n\n\nstr(my_histogram)\n\nList of 6\n $ breaks  : num [1:14] -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 ...\n $ counts  : int [1:13] 4 21 41 89 142 200 193 170 74 38 ...\n $ density : num [1:13] 0.008 0.042 0.082 0.178 0.284 0.4 0.386 0.34 0.148 0.076 ...\n $ mids    : num [1:13] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25 0.25 0.75 1.25 1.75 ...\n $ xname   : chr \"rnorm(1000)\"\n $ equidist: logi TRUE\n - attr(*, \"class\")= chr \"histogram\"\n\nclass(my_histogram)\n\n[1] \"histogram\""
   },
   {
     "objectID": "schedule/slides/00-r-review.html#when-writing-functions-program-defensively-ensure-behaviour",
     "href": "schedule/slides/00-r-review.html#when-writing-functions-program-defensively-ensure-behaviour",
     "title": "UBC Stat406 2023W",
     "section": "When writing functions, program defensively, ensure behaviour",
-    "text": "When writing functions, program defensively, ensure behaviour\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  x + 1\n}\n  \nincrementer(2)\n\n[1] 3\n\nincrementer(1:4)\n\n[1] 2 3 4 5\n\nincrementer(\"a\")\n\nError in x + 1: non-numeric argument to binary operator\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  stopifnot(is.numeric(x))\n  return(x + 1)\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): is.numeric(x) is not TRUE\n\n\n\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + 1\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): `x` must be numeric\n\nincrementer(2, -3) ## oops!\n\n[1] 3\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + inc_by\n}\nincrementer(2, -3)\n\n[1] -1"
+    "text": "When writing functions, program defensively, ensure behaviour\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  x + 1\n}\n  \nincrementer(2)\n\n[1] 3\n\nincrementer(1:4)\n\n[1] 2 3 4 5\n\nincrementer(\"a\")\n\nError in x + 1: non-numeric argument to binary operator\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  stopifnot(is.numeric(x))\n  return(x + 1)\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): is.numeric(x) is not TRUE\n\n\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + 1\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): `x` must be numeric\n\nincrementer(2, -3) ## oops!\n\n[1] 3\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + inc_by\n}\nincrementer(2, -3)\n\n[1] -1"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#how-to-keep-track",
     "href": "schedule/slides/00-r-review.html#how-to-keep-track",
     "title": "UBC Stat406 2023W",
     "section": "How to keep track",
-    "text": "How to keep track\n\n\n\nlibrary(testthat)\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  if (!is.numeric(inc_by)) {\n    stop(\"`inc_by` must be numeric\")\n  }\n  x + inc_by\n}\nexpect_error(incrementer(\"a\"))\nexpect_equal(incrementer(1:3), 2:4)\nexpect_equal(incrementer(2, -3), -1)\nexpect_error(incrementer(1, \"b\"))\nexpect_identical(incrementer(1:3), 2:4)\n\nError: incrementer(1:3) not identical to 2:4.\nObjects equal but not identical\n\n\n\n\n\n\nis.integer(2:4)\n\n[1] TRUE\n\nis.integer(incrementer(1:3))\n\n[1] FALSE\n\nexpect_identical(incrementer(1:3, 1L), 2:4)\n\n\n\n\n\n\n\n\n\n\nImportant\n\n\nIf you copy something, write a function.\nValidate your arguments.\nTo ensure proper functionality, write tests to check if inputs result in predicted outputs."
+    "text": "How to keep track\n\n\n\nlibrary(testthat)\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  if (!is.numeric(inc_by)) {\n    stop(\"`inc_by` must be numeric\")\n  }\n  x + inc_by\n}\nexpect_error(incrementer(\"a\"))\nexpect_equal(incrementer(1:3), 2:4)\nexpect_equal(incrementer(2, -3), -1)\nexpect_error(incrementer(1, \"b\"))\nexpect_identical(incrementer(1:3), 2:4)\n\nError: incrementer(1:3) not identical to 2:4.\nObjects equal but not identical\n\n\n\n\n\nis.integer(2:4)\n\n[1] TRUE\n\nis.integer(incrementer(1:3))\n\n[1] FALSE\n\nexpect_identical(incrementer(1:3, 1L), 2:4)\n\n\n\n\n\n\n\n\n\n\nImportant\n\n\nIf you copy something, write a function.\nValidate your arguments.\nTo ensure proper functionality, write tests to check if inputs result in predicted outputs."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#classes",
     "href": "schedule/slides/00-r-review.html#classes",
     "title": "UBC Stat406 2023W",
     "section": "Classes",
-    "text": "Classes\n\n\nWe saw some of these earlier:\n\ntib &lt;- tibble(\n  x1 = rnorm(100), \n  x2 = rnorm(100), \n  y = x1 + 2 * x2 + rnorm(100)\n)\nmdl &lt;- lm(y ~ ., data = tib )\nclass(tib)\n\n[1] \"tbl_df\"     \"tbl\"        \"data.frame\"\n\nclass(mdl)\n\n[1] \"lm\"\n\n\nThe class allows for the use of “methods”\n\nprint(mdl)\n\n\nCall:\nlm(formula = y ~ ., data = tib)\n\nCoefficients:\n(Intercept)           x1           x2  \n    -0.1742       1.0454       2.0470  \n\n\n\n\n\n\nR “knows what to do” when you print() an object of class \"lm\".\nprint() is called a “generic” function.\nYou can create “methods” that get dispatched.\nFor any generic, R looks for a method for the class.\nIf available, it calls that function."
+    "text": "Classes\n\n\nWe saw some of these earlier:\n\ntib &lt;- tibble(\n  x1 = rnorm(100), \n  x2 = rnorm(100), \n  y = x1 + 2 * x2 + rnorm(100)\n)\nmdl &lt;- lm(y ~ ., data = tib )\nclass(tib)\n\n[1] \"tbl_df\"     \"tbl\"        \"data.frame\"\n\nclass(mdl)\n\n[1] \"lm\"\n\n\nThe class allows for the use of “methods”\n\nprint(mdl)\n\n\nCall:\nlm(formula = y ~ ., data = tib)\n\nCoefficients:\n(Intercept)           x1           x2  \n    -0.1742       1.0454       2.0470  \n\n\n\n\n\nR “knows what to do” when you print() an object of class \"lm\".\nprint() is called a “generic” function.\nYou can create “methods” that get dispatched.\nFor any generic, R looks for a method for the class.\nIf available, it calls that function."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#viewing-the-dispatch-chain",
@@ -606,14 +606,14 @@
     "href": "schedule/slides/00-r-review.html#r-geeky-but-important",
     "title": "UBC Stat406 2023W",
     "section": "R-Geeky But Important",
-    "text": "R-Geeky But Important\nThere are lots of generic functions in R\nCommon ones are print(), summary(), and plot().\nAlso, lots of important statistical modelling concepts: residuals() coef()\n(In python, these work the opposite way: obj.residuals. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)\n\nThe convention is that the specialized function is named method.class, e.g., summary.lm.\nIf no specialized function is defined, R will try to use method.default.\n\nFor this reason, R programmers try to avoid . in names of functions or objects."
+    "text": "R-Geeky But Important\nThere are lots of generic functions in R\nCommon ones are print(), summary(), and plot().\nAlso, lots of important statistical modelling concepts: residuals() coef()\n(In python, these work the opposite way: obj.residuals. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)\n\nThe convention is that the specialized function is named method.class(), e.g., summary.lm().\nIf no specialized function is defined, R will try to use method.default().\n\nFor this reason, R programmers try to avoid . in names of functions or objects."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#wherefore-methods",
     "href": "schedule/slides/00-r-review.html#wherefore-methods",
     "title": "UBC Stat406 2023W",
     "section": "Wherefore methods?",
-    "text": "Wherefore methods?\n\nThe advantage is that you don’t have to learn a totally new syntax to grab residuals or plot things\nYou just use residuals(mdl) whether mdl comes from lm could have been done two centuries ago, or a Batrachian Emphasis Machine which won’t be invented for another five years.\nThe one draw-back is the help pages for the generic methods tend to be pretty vague\nCompare ?summary with ?summary.lm."
+    "text": "Wherefore methods?\n\nThe advantage is that you don’t have to learn a totally new syntax to grab residuals or plot things\nYou just use residuals(mdl) whether mdl has class lm could have been done two centuries ago, or a Batrachian Emphasis Machine which won’t be invented for another five years.\nThe one draw-back is the help pages for the generic methods tend to be pretty vague\nCompare ?summary with ?summary.lm."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#different-environments",
@@ -634,7 +634,7 @@
     "href": "schedule/slides/00-r-review.html#other-issues-with-environments",
     "title": "UBC Stat406 2023W",
     "section": "Other issues with environments",
-    "text": "Other issues with environments\nAs one might expect, functions create an environment inside the function.\n\nz &lt;- 1\nfun &lt;- function(x) {\n  z &lt;- x\n  print(z)\n  invisible(z)\n}\nfun(14)\n\n[1] 14\n\n\nNon-trivial cases are data-masking environments.\n\ntib &lt;- tibble(x1 = rnorm(100),  x2 = rnorm(100),  y = x1 + 2 * x2)\nmdl &lt;- lm(y ~ x2, data = tib)\nx2\n\nError in eval(expr, envir, enclos): object 'x2' not found\n\n\n\nlm() looks “inside” the tib to find y and x2\nThe data variables are added to the lm environment"
+    "text": "Other issues with environments\nAs one might expect, functions create an environment inside the function.\n\nz &lt;- 1\nfun &lt;- function(x) {\n  z &lt;- x\n  print(z)\n  invisible(z)\n}\nfun(14)\n\n[1] 14\n\n\nNon-trivial cases are data-masking environments.\n\ntib &lt;- tibble(x1 = rnorm(100),  x2 = rnorm(100),  y = x1 + 2 * x2)\nmdl &lt;- lm(y ~ x2, data = tib)\nx2\n\nError in eval(expr, envir, enclos): object 'x2' not found\n\n\n\nlm() looks “inside” the tib to find y and x2\nThe data variables are added to the lm() environment"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#other-issues-with-environments-1",
@@ -662,7 +662,7 @@
     "href": "schedule/slides/00-r-review.html#section-2",
     "title": "UBC Stat406 2023W",
     "section": "",
-    "text": "Adding browser()\n\nOnly useful with your own functions.\nOpen the script with the function, and add browser() to the code somewhere\nThen call your function.\nThe execution will Stop where you added browser() and you’ll have access to the local objects (and the global objects) to play around"
+    "text": "Adding browser()\n\nOnly useful with your own functions.\nOpen the script with the function, and add browser() to the code somewhere\nThen call your function.\nThe execution will Stop where you added browser() and you’ll have access to the local environment to play around"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#reproducible-examples",
@@ -707,6 +707,13 @@
     "text": "It may seem like we should push this all the way\n\ntib |&gt;\n  mutate(\n    x3 = x1^2, \n    x4 = log(x2 + abs(min(x2)) + 1)\n  ) %&gt;% # base pipe only goes to first arg\n  lm(y ~ ., data = .) |&gt; # note the use of `.`\n  residuals() |&gt;\n  magrittr::raise_to_power(2) |&gt; # same as `^`(2)\n  sum() -&gt;\n  mse3\n\nThis works, but it’s really annoying."
   },
   {
+    "objectID": "schedule/slides/00-r-review.html#a-new-one",
+    "href": "schedule/slides/00-r-review.html#a-new-one",
+    "title": "UBC Stat406 2023W",
+    "section": "A new one…",
+    "text": "A new one…\nJust last week, I learned\n\nlibrary(magrittr)\ntib &lt;- tibble(x = 1:5, z = 6:10)\ntib &lt;- tib |&gt; mutate(b = x + z)\ntib\n\n# A tibble: 5 × 3\n      x     z     b\n  &lt;int&gt; &lt;int&gt; &lt;int&gt;\n1     1     6     7\n2     2     7     9\n3     3     8    11\n4     4     9    13\n5     5    10    15\n\n# start over\ntib &lt;- tibble(x = 1:5, z = 6:10)\ntib %&lt;&gt;% mutate(b = x + z)\ntib\n\n# A tibble: 5 × 3\n      x     z     b\n  &lt;int&gt; &lt;int&gt; &lt;int&gt;\n1     1     6     7\n2     2     7     9\n3     3     8    11\n4     4     9    13\n5     5    10    15"
+  },
+  {
     "objectID": "schedule/slides/00-r-review.html#data-processing-in-dplyr",
     "href": "schedule/slides/00-r-review.html#data-processing-in-dplyr",
     "title": "UBC Stat406 2023W",
@@ -718,7 +725,7 @@
     "href": "schedule/slides/00-r-review.html#a-useful-data-frame",
     "title": "UBC Stat406 2023W",
     "section": "A useful data frame",
-    "text": "A useful data frame\n\nlibrary(epidatr)\ncovid &lt;- covidcast(\n  data_source = \"jhu-csse\",\n  signals = \"confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop\",\n  time_type = \"day\",\n  geo_type = \"state\",\n  time_values = epirange(20220801, 20220821),\n  geo_values = \"ca,wa\") |&gt;\n  fetch() |&gt;\n  select(geo_value, time_value, signal, value)\n\ncovid\n\n# A tibble: 84 × 4\n   geo_value time_value signal                        value\n   &lt;chr&gt;     &lt;date&gt;     &lt;chr&gt;                         &lt;dbl&gt;\n 1 ca        2022-08-01 confirmed_7dav_incidence_prop  45.4\n 2 wa        2022-08-01 confirmed_7dav_incidence_prop  27.7\n 3 ca        2022-08-02 confirmed_7dav_incidence_prop  44.9\n 4 wa        2022-08-02 confirmed_7dav_incidence_prop  27.7\n 5 ca        2022-08-03 confirmed_7dav_incidence_prop  44.5\n 6 wa        2022-08-03 confirmed_7dav_incidence_prop  26.6\n 7 ca        2022-08-04 confirmed_7dav_incidence_prop  42.3\n 8 wa        2022-08-04 confirmed_7dav_incidence_prop  26.6\n 9 ca        2022-08-05 confirmed_7dav_incidence_prop  40.7\n10 wa        2022-08-05 confirmed_7dav_incidence_prop  34.6\n# ℹ 74 more rows"
+    "text": "A useful data frame\n\nlibrary(epidatr)\ncovid &lt;- covidcast(\n  source = \"jhu-csse\",\n  signals = \"confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop\",\n  time_type = \"day\",\n  geo_type = \"state\",\n  time_values = epirange(20220801, 20220821),\n  geo_values = \"ca,wa\") |&gt;\n  fetch() |&gt;\n  select(geo_value, time_value, signal, value)\n\ncovid\n\n# A tibble: 84 × 4\n   geo_value time_value signal                        value\n   &lt;chr&gt;     &lt;date&gt;     &lt;chr&gt;                         &lt;dbl&gt;\n 1 ca        2022-08-01 confirmed_7dav_incidence_prop  45.4\n 2 wa        2022-08-01 confirmed_7dav_incidence_prop  27.7\n 3 ca        2022-08-02 confirmed_7dav_incidence_prop  44.9\n 4 wa        2022-08-02 confirmed_7dav_incidence_prop  27.7\n 5 ca        2022-08-03 confirmed_7dav_incidence_prop  44.5\n 6 wa        2022-08-03 confirmed_7dav_incidence_prop  26.6\n 7 ca        2022-08-04 confirmed_7dav_incidence_prop  42.3\n 8 wa        2022-08-04 confirmed_7dav_incidence_prop  26.6\n 9 ca        2022-08-05 confirmed_7dav_incidence_prop  40.7\n10 wa        2022-08-05 confirmed_7dav_incidence_prop  34.6\n# ℹ 74 more rows"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#examples",
@@ -1306,7 +1313,7 @@
     "href": "schedule/slides/00-version-control.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "00 Git, Github, and Slack",
-    "text": "00 Git, Github, and Slack\nStat 406\nDaniel J. McDonald\nLast modified – 17 August 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\]"
+    "text": "00 Git, Github, and Slack\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/00-version-control.html#course-communication",
@@ -1488,7 +1495,7 @@
     "href": "schedule/slides/02-lm-example.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "02 Linear model example",
-    "text": "02 Linear model example\nStat 406\nDaniel J. McDonald\nLast modified – 17 August 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\]"
+    "text": "02 Linear model example\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/02-lm-example.html#economic-mobility",
@@ -1551,14 +1558,14 @@
     "href": "schedule/slides/02-lm-example.html#how-do-we-decide-which-model-is-better",
     "title": "UBC Stat406 2023W",
     "section": "How do we decide which model is better?",
-    "text": "How do we decide which model is better?\n\n\n\nGoodness of fit versus prediction power\n\n\nmap( # smaller AIC is better\n  list(full = full, reduced = reduced), \n  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq))\n\n$full\n          aic           rsq \n-1482.5981023     0.7807509 \n\n$reduced\n         aic          rsq \n-1466.088492     0.718245 \n\n\n\nUse both models to predict Mobility\nCompare both sets of predictions\n\n\n\nmses &lt;- function(preds, obs) {\n  round(mean((obs - preds)^2), 5)\n}\nc(\n  full = mses(\n    predict(full, newdata = test), \n    test$Mobility),\n  reduced = mses(\n    predict(reduced, newdata = test), \n    test$Mobility)\n)\n\n   full reduced \n0.00072 0.00084"
+    "text": "How do we decide which model is better?\n\n\n\nGoodness of fit versus prediction power\n\n\nmap( # smaller AIC is better\n  list(full = full, reduced = reduced), \n  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq))\n\n$full\n          aic           rsq \n-1482.5981023     0.7807509 \n\n$reduced\n         aic          rsq \n-1466.088492     0.718245 \n\n\n\nUse both models to predict Mobility\nCompare both sets of predictions\n\n\n\n\nmses &lt;- function(preds, obs) {\n  round(mean((obs - preds)^2), 5)\n}\nc(\n  full = mses(\n    predict(full, newdata = test), \n    test$Mobility),\n  reduced = mses(\n    predict(reduced, newdata = test), \n    test$Mobility)\n)\n\n   full reduced \n0.00072 0.00084 \n\n\n\n\nCode\ntest$full &lt;- predict(full, newdata = test)\ntest$reduced &lt;- predict(reduced, newdata = test)\ntest |&gt; \n  select(Mobility, full, reduced) |&gt;\n  pivot_longer(-Mobility) |&gt;\n  ggplot(aes(Mobility, value)) + \n  geom_point(color = \"orange\") + \n  facet_wrap(~name, 2) +\n  xlab('observed mobility') + \n  ylab('predicted mobility') +\n  geom_abline(slope = 1, intercept = 0, col = \"darkblue\")"
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#meta-lecture",
     "href": "schedule/slides/04-bias-variance.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "04 Bias and variance",
-    "text": "04 Bias and variance\nStat 406\nDaniel J. McDonald\nLast modified – 05 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "04 Bias and variance\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#section",
@@ -1621,7 +1628,7 @@
     "href": "schedule/slides/04-bias-variance.html#prediction-risk",
     "title": "UBC Stat406 2023W",
     "section": "Prediction risk",
-    "text": "Prediction risk\n\\[\nR_n(f) = \\Expect{(Y - f(X))^2}\n\\]\nWhy should we care about \\(R_n(f)\\)?\n Measures predictive accuracy on average.\n How much confidence should you have in \\(f\\)’s predictions.\n Compare with other predictors: \\(R_n(f)\\) vs \\(R_n(g)\\)\n This is hard: Don’t know the distribution of the data (if I knew the truth, this would be easy)"
+    "text": "Prediction risk\n\\[\nR_n(f) = \\Expect{(Y - f(X))^2}\n\\]\nWhy should we care about \\(R_n(f)\\)?\n👍 Measures predictive accuracy on average.\n👍 How much confidence should you have in \\(f\\)’s predictions.\n👍 Compare with other predictors: \\(R_n(f)\\) vs \\(R_n(g)\\)\n🤮 This is hard: Don’t know the distribution of the data (if I knew the truth, this would be easy)"
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#bias-variance-decomposition",
@@ -1645,6 +1652,13 @@
     "text": "Bias-variance decomposition\n\\[\\begin{aligned}\nR_n(\\hat{Y})\n&= \\Expect{(Y-\\hat{Y})^2} \\\\\n&= \\text{irr. error} + \\text{estimation risk}\\\\\n&= \\text{irr. error} + \\text{squared bias} + \\text{variance}\n\\end{aligned}\\]\n\n\n\n\n\n\nImportant\n\n\n\nImplication: prediction risk is proportional to estimation risk. However, defining estimation risk requires stronger assumptions.\n\n\n\n\n\n\n\n\n\n\n\nTip\n\n\nIn order to make good predictions, we want our prediction risk to be small. This means that we want to “balance” the bias and variance."
   },
   {
+    "objectID": "schedule/slides/04-bias-variance.html#section-2",
+    "href": "schedule/slides/04-bias-variance.html#section-2",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Code\ncols = c(blue, red, green, orange)\npar(mfrow = c(2, 2), bty = \"n\", ann = FALSE, xaxt = \"n\", yaxt = \"n\", \n    family = \"serif\", mar = c(0, 0, 0, 0), oma = c(0, 2, 2, 0))\nlibrary(mvtnorm)\nmv &lt;- matrix(c(0, 0, 0, 0, -.5, -.5, -.5, -.5), 4, byrow = TRUE)\nva &lt;- matrix(c(.02, .02, .1, .1, .02, .02, .1, .1), 4, byrow = TRUE)\n\nfor (i in 1:4) {\n  plot(0, 0, ylim = c(-2, 2), xlim = c(-2, 2), pch = 19, cex = 42, \n       col = blue, ann = FALSE, pty = \"s\")\n  points(0, 0, pch = 19, cex = 30, col = \"white\")\n  points(0, 0, pch = 19, cex = 18, col = green)\n  points(0, 0, pch = 19, cex = 6, col = orange)\n  points(rmvnorm(20, mean = mv[i, ], sigma = diag(va[i, ])), cex = 1, pch = 19)\n  switch(i,\n    \"1\" = {\n      mtext(\"low variance\", 3, cex = 2)\n      mtext(\"low bias\", 2, cex = 2)\n    },\n    \"2\" = mtext(\"high variance\", 3, cex = 2),\n    \"3\" = mtext(\"high bias\", 2, cex = 2)\n  )\n}"
+  },
+  {
     "objectID": "schedule/slides/04-bias-variance.html#bias-variance-tradeoff-overview",
     "href": "schedule/slides/04-bias-variance.html#bias-variance-tradeoff-overview",
     "title": "UBC Stat406 2023W",
@@ -1656,14 +1670,21 @@
     "href": "schedule/slides/06-information-criteria.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "06 Information criteria",
-    "text": "06 Information criteria\nStat 406\nDaniel J. McDonald\nLast modified – 05 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "06 Information criteria\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#generalized-cv",
     "href": "schedule/slides/06-information-criteria.html#generalized-cv",
     "title": "UBC Stat406 2023W",
     "section": "Generalized CV",
-    "text": "Generalized CV\nLast time we saw a nice trick, that works some of the time (OLS, Ridge regression,…)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\n\\(\\widehat{\\y} = \\widehat{f}(\\mathbf{X}) = \\mathbf{H}\\mathbf{y}\\) for some matrix \\(\\mathbf{H}\\).\nA technical thing.\n\n\\[\\newcommand{\\H}{\\mathbf{H}}\\]\n\nThis is another nice trick.\nIdea: replace \\(h_{ii}\\) with \\(\\frac{1}{n}\\sum_{i=1}^n h_{ii} = \\frac{1}{n}\\textrm{tr}(\\mathbf{H})\\)\nLet’s call \\(\\textrm{tr}(\\mathbf{H})\\) the degrees-of-freedom (or just df)\n\\[\\textrm{GCV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-\\textrm{df}/n)^2} = \\frac{\\textrm{MSE}}{(1-\\textrm{df}/n)^2}\\]\nWhere does this stuff come from?"
+    "text": "Generalized CV\nLast time we saw a nice trick, that works some of the time (OLS, Ridge regression,…)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\n\\(\\widehat{\\y} = \\widehat{f}(\\mathbf{X}) = \\mathbf{H}\\mathbf{y}\\) for some matrix \\(\\mathbf{H}\\).\nA technical thing.\n\n\\[\\newcommand{\\H}{\\mathbf{H}}\\]"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#this-is-another-nice-trick.",
+    "href": "schedule/slides/06-information-criteria.html#this-is-another-nice-trick.",
+    "title": "UBC Stat406 2023W",
+    "section": "This is another nice trick.",
+    "text": "This is another nice trick.\nIdea: replace \\(h_{ii}\\) with \\(\\frac{1}{n}\\sum_{i=1}^n h_{ii} = \\frac{1}{n}\\textrm{tr}(\\mathbf{H})\\)\nLet’s call \\(\\textrm{tr}(\\mathbf{H})\\) the degrees-of-freedom (or just df)\n\\[\\textrm{GCV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-\\textrm{df}/n)^2} = \\frac{\\textrm{MSE}}{(1-\\textrm{df}/n)^2}\\]\nWhere does this stuff come from?"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#what-are-hatvalues",
@@ -1677,7 +1698,7 @@
     "href": "schedule/slides/06-information-criteria.html#alternative-interpretation",
     "title": "UBC Stat406 2023W",
     "section": "Alternative interpretation:",
-    "text": "Alternative interpretation:\nSuppose, \\(Y_i\\) comes (independently) from some distribution and has mean \\(\\mu_i\\) and variance \\(\\sigma^2\\)\n(remember: in the linear model \\(\\Expect{Y_i} = x_i^\\top \\beta = \\mu_i\\) )\nLet \\(\\widehat{Y}\\) be an estimator of \\(\\mu\\) (all \\(i=1,\\ldots,n\\) elements of the vector).\n\n\\[\\begin{aligned}\n& \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
+    "text": "Alternative interpretation:\nSuppose, \\(Y_i\\) is independent from some distribution with mean \\(\\mu_i\\) and variance \\(\\sigma^2\\)\n(remember: in the linear model \\(\\Expect{Y_i} = x_i^\\top \\beta = \\mu_i\\) )\nLet \\(\\widehat{Y}\\) be an estimator of \\(\\mu\\) (all \\(i=1,\\ldots,n\\) elements of the vector).\n\n\\[\\begin{aligned}\n& \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation-1",
