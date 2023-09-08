@@ -1,94 +1,62 @@
 ---
-title: "08 Ridge regression"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
----
-class: middle, center
-background-image: url("https://disher.com/wp-content/uploads/2017/02/Product-Constraints.jpg")
-background-size: cover
-
-
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-```
-
-
-.primary[.larger[Module]] .huge-blue-number[2]
-
-.primary[regularization, constraints, and nonparametrics]
-
+lecture: "08 Ridge regression"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
-
+{{< include _titleslide.qmd >}}
 
 
 ## Recap
 
-So far, we thought of __model selection__ as
+So far, we have emphasized __model selection__ as
 
-.hand[Decide which predictors we would like to use in our linear model]
+[Decide which predictors we would like to use in our linear model]{.hand}
 
 Or similarly:
 
-.hand[Decide which of a few linear models to use]
+[Decide which of a few linear models to use]{.hand}
 
 To do this, we used a risk estimate, and chose the "model" with the lowest estimate
 
---
-
-Let's call what we've done __variable selection__, a specific case of __model selection__.
-
---
+. . .
 
 Moving forward, we need to generalize this to
 
-.hand[Decide which of possibly infinite prediction functions] $f\in\mathcal{F}$ .hand[to use]
+[Decide which of possibly infinite prediction functions]{.hand} $f\in\mathcal{F}$ [to use]{.hand}
 
 Thankfully, this isn't really any different. We still use those same risk estimates.
 
 
-__Remember:__ We were choosing models that balance bias and variance (and hence have low prediction risk).
+[Remember:]{.secondary} We were choosing models that balance bias and variance (and hence have low prediction risk).
 
-
-$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
-\newcommand{\E}{E}
-\renewcommand{\P}{\mathbb{P}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
+$$
 \newcommand{\brt}{\widehat{\beta}^R_{s}}
 \newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\y}{\mathbf{y}}$$
+$$
 
----
+
 
 ## Regularization
 
-* Another way to control bias and variance is through __regularization__ or
-__shrinkage__.  
+
+* Another way to control bias and variance is through [regularization]{.secondary} or
+[shrinkage]{.secondary}.  
 
 
 * Rather than selecting a few predictors that seem reasonable, maybe trying a few combinations, use them all.
 
-* I mean __ALL__.
+* I mean [ALL]{.tertiary}.
 
 * But, make your estimates of $\beta$ "smaller"
 
----
 
-## Brief aside on optimization
+
+## Brief aside on optimization {background-color: "#e98a15"}
 
 * An optimization problem has 2 components:
 
@@ -103,7 +71,6 @@ $$\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)$$
 * $f(\beta)$ is the objective function
 * $C(\beta)$ is the constraint
 
----
 
 ## Ridge regression (constrained version)
 
@@ -118,9 +85,9 @@ for some $s>0$.
 
 * This is called "ridge regression".
 
-* The __minimizer__ of this problem is called $\brt$
+* Call the [minimizer]{.secondary} of this problem $\brt$
 
---
+. . .
 
 Compare this to ordinary least squares:
 
@@ -130,64 +97,73 @@ Compare this to ordinary least squares:
 \end{aligned}
 
 
----
 
 ## Geometry of ridge regression (2 dimensions)
 
-```{r plotting-functions, echo=FALSE}
+```{r plotting-functions}
+#| code-fold: true
 library(mvtnorm)
-normBall <- function(q=1, len=1000){
-  tg = seq(0,2*pi, length=len)
-  out = data.frame(x = cos(tg)) %>%
-    mutate(b=(1-abs(x)^q)^(1/q), bm=-b) %>%
-    gather(key='lab', value='y',-x)
-  out$lab = paste0('"||" * beta * "||"', '[',signif(q,2),']')
+norm_ball <- function(q = 1, len = 1000) {
+  tg <- seq(0, 2 * pi, length = len)
+  out <- tibble(x = cos(tg), b = (1 - abs(x)^q)^(1 / q), bm = -b) |>
+    pivot_longer(-x, values_to = "y")
+  out$lab <- paste0('"||" * beta * "||"', "[", signif(q, 2), "]")
   return(out)
 }
 
-ellipseData <- function(n=100,xlim=c(-2,3),ylim=c(-2,3), 
-                        mean=c(1,1), Sigma=matrix(c(1,0,0,.5),2)){
-  df = expand.grid(x=seq(xlim[1],xlim[2],length.out = n),
-                   y=seq(ylim[1],ylim[2],length.out = n))
-  df$z = dmvnorm(df, mean, Sigma)
+ellipseData <- function(n = 100, xlim = c(-2, 3), ylim = c(-2, 3),
+                        mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {
+  df <- expand.grid(
+    x = seq(xlim[1], xlim[2], length.out = n),
+    y = seq(ylim[1], ylim[2], length.out = n)
+  )
+  df$z <- dmvnorm(df, mean, Sigma)
   df
 }
-lballmax <- function(ed,q=1,tol=1e-6){
-  ed = filter(ed, x>0,y>0)
-  for(i in 1:20){
-    ff = abs((ed$x^q+ed$y^q)^(1/q)-1)<tol
-    if(sum(ff)>0) break
-    tol = 2*tol
+lballmax <- function(ed, q = 1, tol = 1e-6) {
+  ed <- filter(ed, x > 0, y > 0)
+  for (i in 1:20) {
+    ff <- abs((ed$x^q + ed$y^q)^(1 / q) - 1) < tol
+    if (sum(ff) > 0) break
+    tol <- 2 * tol
   }
-  best = ed[ff,]
-  best[which.max(best$z),]
+  best <- ed[ff, ]
+  best[which.max(best$z), ]
 }
 ```
 
-```{r,echo=FALSE, dev="svg", warning=FALSE, fig.align="center",fig.height=5,fig.width=5}
-nb = normBall(2)
-ed = ellipseData()
-bols = data.frame(x=1,y=1)
-bhat = lballmax(ed, 2)
-ggplot(nb,aes(x,y)) + xlim(-2,2) + ylim(-2,2) +
-  geom_path(color=red) + 
-  geom_contour(mapping=aes(z=z), color=blue, data=ed, bins=7) +
-  geom_vline(xintercept = 0) + geom_hline(yintercept = 0) + 
-  geom_point(data=bols) + coord_equal() +
-  geom_label(data=bols,
-             mapping = aes(label=bquote('hat(beta)[ols]')), 
-             parse = TRUE,
-             nudge_x = .3, nudge_y = .3) +
-  geom_point(data=bhat) + xlab(bquote(beta[1])) + 
-  ylab(bquote(beta[2])) + 
+```{r}
+#| code-fold: true
+nb <- norm_ball(2)
+ed <- ellipseData()
+bols <- data.frame(x = 1, y = 1)
+bhat <- lballmax(ed, 2)
+ggplot(nb, aes(x, y)) +
+  xlim(-2, 2) +
+  ylim(-2, 2) +
+  geom_path(color = red) +
+  geom_contour(mapping = aes(z = z), color = blue, data = ed, bins = 7) +
+  geom_vline(xintercept = 0) +
+  geom_hline(yintercept = 0) +
+  geom_point(data = bols) +
+  coord_equal() +
+  geom_label(
+    data = bols,
+    mapping = aes(label = bquote("hat(beta)[ols]")),
+    parse = TRUE,
+    nudge_x = .3, nudge_y = .3
+  ) +
+  geom_point(data = bhat) +
+  xlab(bquote(beta[1])) +
+  ylab(bquote(beta[2])) +
   theme_bw(base_family = "", base_size = 24) +
-  geom_label(data=bhat, 
-             mapping=aes(label=bquote('hat(beta)[s]^R')), 
-             parse = TRUE,
-             nudge_x = -.4, nudge_y = -.4)
+  geom_label(
+    data = bhat,
+    mapping = aes(label = bquote("hat(beta)[s]^R")),
+    parse = TRUE,
+    nudge_x = -.4, nudge_y = -.4
+  )
 ```
-
----
 
 ## Brief aside on norms
 
@@ -202,7 +178,7 @@ So,
 $$\norm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.$$
 
 
---
+. . .
 
 Other norms we should remember:
 
@@ -216,7 +192,6 @@ $\ell_0$-norm
 : $\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert$
 
 
----
 
 ## Ridge regression
 
@@ -225,7 +200,7 @@ An equivalent way to write
 $$\brt = \arg \min_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2$$
 
 
-is in the __Lagrangian__ form
+is in the [Lagrangian]{.secondary} form
 
 
 $$\brl = \arg \min_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.$$
@@ -237,7 +212,7 @@ For every $\lambda$ there is a unique $s$ (and vice versa) that makes
 
 $$\brt = \brl$$
 
---
+. . .
 
 Observe:
 
@@ -245,25 +220,24 @@ Observe:
 * Any $\lambda > 0$ (or $s <\infty$)  penalizes larger values of $\beta$, effectively shrinking them.
 
 
-Note: $\lambda$ and $s$ are known as __tuning parameters__
+Note: $\lambda$ and $s$ are known as [tuning parameters]{.secondary}
 
-
----
 
 ## Example data
 
-__prostate__ data from [ESL]
+`prostate` data from [ESL]
 
 ```{r load-prostate}
 data(prostate, package = "ElemStatLearn")
-head(prostate)
+prostate |> as_tibble()
 ```
 
-???
+::: notes
 
-Use lpsa as response.
+Use `lpsa` as response.
 
----
+:::
+
 
 ## Ridge regression path
 
