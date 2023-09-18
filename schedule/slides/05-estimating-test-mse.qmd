@@ -290,13 +290,13 @@ text(2, 1.5, "Validation data", cex = 3, col = red)
 
 
 ```{r}
+#| code-line-numbers: "11-13|14-16|"
 #' @param data The full data set
 #' @param estimator Function. Has 1 argument (some data) and fits a model. 
 #' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions
 #' @param error_fun Function. Has one arg: the test data, with fits added.
 #' @param kfolds Integer. The number of folds.
-kfold_cv <- function(data, estimator, predictor, 
-                     error_fun, kfolds = 5) {
+kfold_cv <- function(data, estimator, predictor, error_fun, kfolds = 5) {
   n <- nrow(data)
   fold_labels <- sample(rep(1:kfolds, length.out = n))
   errors <- double(kfolds)
@@ -312,7 +312,10 @@ kfold_cv <- function(data, estimator, predictor,
 }
 ```
 
+. . . 
+
 ```{r}
+#| code-line-numbers: "2-4|"
 somedata <- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))
 est <- function(dataset) lm(z ~ ., data = dataset)
 pred <- function(mod, dataset) predict(mod, newdata = dataset)
@@ -338,7 +341,15 @@ $$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{i
 cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
 ```
 
+## Trick
+
+```{r}
+cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
+```
+
+
 "Nice" requires:
+
 1. $\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}$ for some vector $h_i$
 2. $e^{(i)} = \frac{\widehat{e}_i}{(1-h_{ii})}$
 

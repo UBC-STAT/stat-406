@@ -42,9 +42,11 @@ In OLS, $\widehat{\y} = \X\widehat{\beta} = \X(\X^\top \X)^{-1}\X^\top \y$
 
 We often call $\mathbf{H} = \X(\X^\top \X)^{-1}\X^\top$ the Hat matrix, because it [puts the hat]{.hand} on $\y$
 
-GCV uses $\textrm{tr}(\mathbf{H})$. For `lm()`, this is just `p`, the number of predictors (Why?)
+GCV uses $\textrm{tr}(\mathbf{H})$. 
 
-This is one way of understanding the name _effective degrees-of-freedom_
+For `lm()`, this is just `p`, the number of predictors (Why?)
+
+This is one way of understanding the name _degrees-of-freedom_
 
 
 
@@ -55,7 +57,7 @@ Suppose, $Y_i$ is independent from some distribution with mean $\mu_i$ and varia
 
 (remember: in the linear model $\Expect{Y_i} = x_i^\top \beta = \mu_i$ )
 
-Let $\widehat{Y}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements of the vector).
+Let $\widehat{\mathbf{Y}}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements of the vector).
 
 . . .
 
@@ -72,15 +74,20 @@ Let $\widehat{Y}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements of the v
 
 $$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} = \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}$$
 
-Now, if $\widehat{Y} = \H Y$ for some matrix $\H$,
+Now, if $\widehat{\mathbf{Y}} = \H \mathbf{Y}$ for some matrix $\H$,
 
-$\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top \H Y} = \sigma^2 \textrm{tr}(\H)$
+$\sum\Cov{Y_i}{\widehat Y_i} = \Expect{\mathbf{Y}^\top \H \mathbf{Y}} = \sigma^2 \textrm{tr}(\H)$
 
 
 This gives _Mallow's $C_p$_ aka _Stein's Unbiased Risk Estimator_:
 
 $MSE + 2\hat{\sigma}^2\textrm{df}/n$
 
+::: callout-important
+Unfortunately, df may be difficult or impossible to calculate for complicated
+prediction methods. But one can often estimate it well. This idea is beyond
+the level of this course.
+:::
 
 
 ## AIC and BIC
@@ -151,7 +158,7 @@ High-level intuition of these:
 
 * GCV tends to choose "dense" models.
 
-* Theory says AIC chooses the "best predictor" asymptotically.
+* Theory says AIC chooses the "best predicting model" asymptotically.
 
 * Theory says BIC should choose the "true model" asymptotically, tends to select fewer predictors.
 
@@ -167,7 +174,7 @@ This material is more challenging than the level of this course, and is easily a
 
 # My recommendation: 
 
-[Use CV]{.hand-blue}
+[Use CV]{.hand .secondary}
 
 
 ## A few more caveats
