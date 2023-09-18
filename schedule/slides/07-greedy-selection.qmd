@@ -9,7 +9,7 @@ metadata-files:
 
 ## Recap
 
-Model Selection means _select a family of distributions for your data_.
+Model Selection means [select a family of distributions for your data]{.secondary}.
 
 Ideally, we'd do this by comparing the $R_n$ for one family with that for
 another.
@@ -46,7 +46,7 @@ Model 3: `y ~ x2 + sin(x1 * x2)`
 
 ```{r}
 forms <- list("y ~ x1 + x2", "y ~ x1 * x2", "y ~ x2 + sin(x1*x2)") |> 
-  lapply(as.formula)
+  map(as.formula)
 fits <- map(forms, ~ lm(.x, data = dat))
 map(fits, ~ tibble(
   R2 = summary(.x)$r.sq,
@@ -64,6 +64,7 @@ Model selection is very comprehensive
 You choose a full statistical model (probability distribution) that will be hypothesized to have generated the data.
 
 Variable selection is a subset of this. It means 
+
 > choosing which predictors to include in a predictive model
 
 Eliminating a predictor, means removing it from the model.
@@ -107,6 +108,10 @@ Hybrid
 : combine forward and backward smartly
 :::
 :::
+
+# Note:
+
+[Within each procedure, we're comparing _nested_ models.]{.secondary}
 
 
 ## Costs and benefits
@@ -278,9 +283,11 @@ tibble(
 
 ## Randomness and prediction error
 
-All of that was for one data set
+All of that was for one data set.
 
-If we want to know how they compare, we should repeat many times
+Doesn't say which [procedure]{.secondary} is better [generally]{.secondary}.
+
+If we want to know how they compare [generally]{.secondary}, we should repeat many times
   
   1. Generate training data
   1. Estimate with different algorithms
@@ -291,9 +298,16 @@ If we want to know how they compare, we should repeat many times
 
 I'm not going to do all subsets, just the truth, forward selection, backward, and the full model
 
-For forward/backward selection, I'll use Cp to choose the final model
+For forward/backward selection, I'll use Cp to choose the final size
 
-This Cp is using the training set.
+
+#  ☠️☠️ Danger ☠️☠️
+
+You cannot compare the Cp scores between forward selection and backward selection
+to decide which to use.
+
+Why not?
+
 
 
 ## Code for simulation
@@ -370,16 +384,19 @@ our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
 ```{r synth-results}
 #| output-location: column
 #| fig-height: 6
-our_sim2 <- our_sim %>%
+#| fig-width: 6
+our_sim |> 
   group_by(sim) %>%
-  summarise(across(oracle:truth, ~ mean((y - .)^2)), 
-            .groups = "drop") %>%
-  transmute(across(oracle:stepdown, ~ . / truth - 1))
-  
-our_sim2 %>%
-  pivot_longer(everything(), 
-               names_to = "method", 
-               values_to = "mse") %>%
+  summarise(
+    across(oracle:truth, ~ mean((y - .)^2)), 
+    .groups = "drop"
+  ) %>%
+  transmute(across(oracle:stepdown, ~ . / truth - 1)) |> 
+  pivot_longer(
+    everything(), 
+    names_to = "method", 
+    values_to = "mse"
+  ) |> 
   ggplot(aes(method, mse, fill = method)) +
   geom_boxplot(notch = TRUE) +
   geom_hline(yintercept = 0, linewidth = 2) +
@@ -387,7 +404,7 @@ our_sim2 %>%
   theme(legend.position = "none") +
   scale_y_continuous(
     labels = scales::label_percent()
-  )+
+  ) +
   ylab("% increase in mse relative\n to the truth")
 ```
 
