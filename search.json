@@ -186,7 +186,7 @@
     "href": "schedule/slides/05-estimating-test-mse.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "05 Estimating test MSE",
-    "text": "05 Estimating test MSE\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "05 Estimating test MSE\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-prediction-risk",
@@ -284,21 +284,28 @@
     "href": "schedule/slides/05-estimating-test-mse.html#code",
     "title": "UBC Stat406 2023W",
     "section": "Code",
-    "text": "Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, \n                     error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.9532271"
+    "text": "Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.9532271"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#trick",
     "href": "schedule/slides/05-estimating-test-mse.html#trick",
     "title": "UBC Stat406 2023W",
     "section": "Trick",
-    "text": "Trick\nFor a certain “nice” models, one can show\n(after pages of tedious algebra which I wouldn’t wish on my worst enemy, but might, in a fit of rage assign as homework to belligerent students)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\nThis trick means that you only have to fit the model once rather than \\(n\\) times!\nYou still have to calculate this for each model!\n\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )\n\n“Nice” requires: 1. \\(\\widehat{y}_i = h_i(\\mathbf{X})^\\top \\mathbf{y}\\) for some vector \\(h_i\\) 2. \\(e^{(i)} = \\frac{\\widehat{e}_i}{(1-h_{ii})}\\)"
+    "text": "Trick\nFor a certain “nice” models, one can show\n(after pages of tedious algebra which I wouldn’t wish on my worst enemy, but might, in a fit of rage assign as homework to belligerent students)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\nThis trick means that you only have to fit the model once rather than \\(n\\) times!\nYou still have to calculate this for each model!\n\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#trick-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#trick-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Trick",
+    "text": "Trick\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )\n\n“Nice” requires:\n\n\\(\\widehat{y}_i = h_i(\\mathbf{X})^\\top \\mathbf{y}\\) for some vector \\(h_i\\)\n\\(e^{(i)} = \\frac{\\widehat{e}_i}{(1-h_{ii})}\\)"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#meta-lecture",
     "href": "schedule/slides/03-regression-function.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "03 The regression function",
-    "text": "03 The regression function\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "03 The regression function\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#mean-squared-error-mse",
@@ -319,7 +326,7 @@
     "href": "schedule/slides/03-regression-function.html#what-is-a-model",
     "title": "UBC Stat406 2023W",
     "section": "What is a model?",
-    "text": "What is a model?\nIn statistics, “model” has a mathematical meaning.\nDistinct from “algorithm” or “procedure”.\nDefining a model often leads to a procedure/algorithm with good properties.\nSometimes procedure/algorithm \\(\\Rightarrow\\) a specific model.\n\nStatistics (the field) tells me how to understand when different procedures are desirable.\n\nWhen are certain models appropriate?\n\nOne definition of “Statistical Learning” is the “statistics behind the procedure”."
+    "text": "What is a model?\nIn statistics, “model” has a mathematical meaning.\nDistinct from “algorithm” or “procedure”.\nDefining a model often leads to a procedure/algorithm with good properties.\nSometimes procedure/algorithm \\(\\Rightarrow\\) a specific model.\n\nStatistics (the field) tells me how to understand when different procedures are desirable and the mathematical guarantees that they satisfy.\n\nWhen are certain models appropriate?\n\nOne definition of “Statistical Learning” is the “statistics behind the procedure”."
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#statistical-models-101",
@@ -354,14 +361,14 @@
     "href": "schedule/slides/03-regression-function.html#assumption-lean-regression",
     "title": "UBC Stat406 2023W",
     "section": "Assumption Lean Regression",
-    "text": "Assumption Lean Regression\nImagine \\(Z = (Y, X) \\sim P\\) with \\(Y \\in \\R\\) and \\(\\mathbf{X} = (1, X_1, \\ldots, X_p)^\\top\\).\nWe are interested in the conditional distribution \\(P_{Y|\\mathbf{X}}\\)\nSuppose we think that there is some function of interest which relates \\(Y\\) and \\(X\\).\nLet’s call this function \\(\\mu(\\mathbf{X})\\) for the moment. How do we estimate \\(\\mu\\)? What is \\(\\mu\\)?\n\n\nTo make this precise, we\n\nHave a model \\(\\P\\).\nNeed to define a “good” functional \\(\\mu\\).\nLet’s loosely define “good” as\n\n\nGiven a new (random) \\(Z\\), \\(\\mu(\\mathbf{X})\\) is “close” to \\(Y\\).\n\n\n\nSee Berk et al. Assumption Lean Regression."
+    "text": "Assumption Lean Regression\nImagine \\(Z = (Y, \\mathbf{X}) \\sim P\\) with \\(Y \\in \\R\\) and \\(\\mathbf{X} = (1, X_1, \\ldots, X_p)^\\top\\).\nWe are interested in the conditional distribution \\(P_{Y|\\mathbf{X}}\\)\nSuppose we think that there is some function of interest which relates \\(Y\\) and \\(X\\).\nLet’s call this function \\(\\mu(\\mathbf{X})\\) for the moment. How do we estimate \\(\\mu\\)? What is \\(\\mu\\)?\n\n\nTo make this precise, we\n\nHave a model \\(\\P\\).\nNeed to define a “good” functional \\(\\mu\\).\nLet’s loosely define “good” as\n\n\nGiven a new (random) \\(Z\\), \\(\\mu(\\mathbf{X})\\) is “close” to \\(Y\\).\n\n\n\nSee Berk et al. Assumption Lean Regression."
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#evaluating-close",
     "href": "schedule/slides/03-regression-function.html#evaluating-close",
     "title": "UBC Stat406 2023W",
     "section": "Evaluating “close”",
-    "text": "Evaluating “close”\nWe need more functions.\nChoose some loss function \\(\\ell\\) that measures how close \\(\\mu\\) and \\(Y\\) are.\n\n\n\nSquared-error:\n\\(\\ell(y,\\ \\mu) = (y-\\mu)^2\\)\nAbsolute-error:\n\\(\\ell(y,\\ \\mu) = |y-\\mu|\\)\nZero-One:\n\\(\\ell(y,\\ \\mu) = I(y\\neq\\mu)=\\begin{cases} 0 & y=\\mu\\\\1 & \\mbox{else}\\end{cases}\\)\nCauchy:\n\\(\\ell(y,\\ \\mu) = \\log(1 + (y - \\mu)^2)\\)\n\n\n\n\n\nCode\nggplot() +\n  xlim(-2, 2) +\n  geom_function(fun = ~log(1+.x^2), colour = 'purple', linewidth = 2) +\n  geom_function(fun = ~.x^2, colour = tertiary, linewidth = 2) +\n  geom_function(fun = ~abs(.x), colour = primary, linewidth = 2) +\n  geom_line(\n    data = tibble(x = seq(-2, 2, length.out = 100), y = as.numeric(x != 0)), \n    aes(x, y), colour = orange, linewidth = 2) +\n  geom_point(data = tibble(x = 0, y = 0), aes(x, y), \n             colour = orange, pch = 16, size = 3)"
+    "text": "Evaluating “close”\nWe need more functions.\nChoose some loss function \\(\\ell\\) that measures how close \\(\\mu\\) and \\(Y\\) are.\n\n\n\nSquared-error:\n\\(\\ell(y,\\ \\mu) = (y-\\mu)^2\\)\nAbsolute-error:\n\\(\\ell(y,\\ \\mu) = |y-\\mu|\\)\nZero-One:\n\\(\\ell(y,\\ \\mu) = I(y\\neq\\mu)=\\begin{cases} 0 & y=\\mu\\\\1 & \\mbox{else}\\end{cases}\\)\nCauchy:\n\\(\\ell(y,\\ \\mu) = \\log(1 + (y - \\mu)^2)\\)\n\n\n\n\n\nCode\nggplot() +\n  xlim(-2, 2) +\n  geom_function(fun = ~log(1+.x^2), colour = 'purple', linewidth = 2) +\n  geom_function(fun = ~.x^2, colour = tertiary, linewidth = 2) +\n  geom_function(fun = ~abs(.x), colour = primary, linewidth = 2) +\n  geom_line(\n    data = tibble(x = seq(-2, 2, length.out = 100), y = as.numeric(x != 0)), \n    aes(x, y), colour = orange, linewidth = 2) +\n  geom_point(data = tibble(x = 0, y = 0), aes(x, y), \n             colour = orange, pch = 16, size = 3) +\n  ylab(bquote(\"\\u2113\" * (y - mu))) + xlab(bquote(y - mu))"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#start-with-expected-squared-error",
@@ -396,7 +403,7 @@
     "href": "schedule/slides/03-regression-function.html#anything-strange",
     "title": "UBC Stat406 2023W",
     "section": "Anything strange?",
-    "text": "Anything strange?\nFor any two variables \\(Y\\) and \\(X\\), we can always write\n\\[Y \\ \\vert\\  X = E[Y\\given X] + (Y - E[Y\\given X]) = \\mu(X) + \\eta(X)\\]\nsuch that \\(\\Expect{\\eta(X)}=0\\).\n\n\nSuppose, \\(\\mu(X)=\\mu_0\\) (constant in \\(X\\)), are \\(Y\\) and \\(X\\) independent?\n\n\n\n\nSuppose \\(Y\\) and \\(X\\) are independent, is \\(\\mu(X)=\\mu_0\\)?\n\n\n\n\nFor more practice on this see the Fun Worksheet on Theory and solutions\nIn this course, I do not expect you to be able to create this math, but understanding and explaining it is important."
+    "text": "Anything strange?\nFor any two variables \\(Y\\) and \\(X\\), we can always write\n\\[Y = E[Y\\given X] + (Y - E[Y\\given X]) = \\mu(X) + \\eta(X)\\]\nsuch that \\(\\Expect{\\eta(X)}=0\\).\n\n\nSuppose, \\(\\mu(X)=\\mu_0\\) (constant in \\(X\\)), are \\(Y\\) and \\(X\\) independent?\n\n\n\n\nSuppose \\(Y\\) and \\(X\\) are independent, is \\(\\mu(X)=\\mu_0\\)?\n\n\n\n\nFor more practice on this see the Fun Worksheet on Theory and solutions\nIn this course, I do not expect you to be able to create this math, but understanding and explaining it is important."
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#what-do-we-mean-by-good-predictions",
@@ -445,7 +452,7 @@
     "href": "schedule/slides/03-regression-function.html#predicting-new-ys-2",
     "title": "UBC Stat406 2023W",
     "section": "Predicting new Y’s",
-    "text": "Predicting new Y’s\nWhat is the prediction risk of guessing \\(Y=\\mu\\)?\nThis is a great idea, but we don’t know \\(\\mu\\).\nLet’s see what happens anyway.\n\\[\\begin{aligned}\n        R_n(\\mu) &= \\E[(Y-\\mu)^2]= 1\n\\end{aligned}\\]"
+    "text": "Predicting new Y’s\n\nWhat is the prediction risk of guessing \\(Y=\\mu\\)?\nThis is a great idea, but we don’t know \\(\\mu\\).\nLet’s see what happens anyway.\n\n\\[\\begin{aligned}\n        R_n(\\mu) &= \\E[(Y-\\mu)^2]= 1\n\\end{aligned}\\]"
   },
   {
     "objectID": "schedule/slides/03-regression-function.html#risk-relations",
@@ -1740,7 +1747,7 @@
     "href": "schedule/slides/04-bias-variance.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "04 Bias and variance",
-    "text": "04 Bias and variance\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "04 Bias and variance\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#section",
@@ -1768,7 +1775,7 @@
     "href": "schedule/slides/04-bias-variance.html#continuation-predicting-new-ys",
     "title": "UBC Stat406 2023W",
     "section": "(Continuation) Predicting new Y’s",
-    "text": "(Continuation) Predicting new Y’s\nSuppose we want to predict \\(Y\\),\nwe know \\(E[Y]= \\mu \\in \\mathbb{R}\\) and \\(\\textrm{Var}[Y] = 1\\).\nOur data is \\(\\{y_1,\\ldots,y_n\\}\\)\nLast time: we considered estimating \\(\\mu\\) in various ways, and using \\(\\widehat{Y} = \\widehat{\\mu}\\)\n\n\nLet’s try one more: \\(\\widehat Y_a = a\\overline{Y}_n\\) for some \\(a \\in (0,1]\\)."
+    "text": "(Continuation) Predicting new Y’s\nSuppose we want to predict \\(Y\\),\nwe know \\(E[Y]= \\mu \\in \\mathbb{R}\\) and \\(\\textrm{Var}[Y] = 1\\).\nOur data is \\(\\{y_1,\\ldots,y_n\\}\\)\nWe have considered estimating \\(\\mu\\) in various ways, and using \\(\\widehat{Y} = \\widehat{\\mu}\\)\n\n\nLet’s try one more: \\(\\widehat Y_a = a\\overline{Y}_n\\) for some \\(a \\in (0,1]\\)."
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#one-can-show-wait-for-the-proof",
@@ -1803,7 +1810,7 @@
     "href": "schedule/slides/04-bias-variance.html#prediction-risk",
     "title": "UBC Stat406 2023W",
     "section": "Prediction risk",
-    "text": "Prediction risk\n\\[\nR_n(f) = \\Expect{(Y - f(X))^2}\n\\]\nWhy should we care about \\(R_n(f)\\)?\n👍 Measures predictive accuracy on average.\n👍 How much confidence should you have in \\(f\\)’s predictions.\n👍 Compare with other predictors: \\(R_n(f)\\) vs \\(R_n(g)\\)\n🤮 This is hard: Don’t know the distribution of the data (if I knew the truth, this would be easy)"
+    "text": "Prediction risk\n(Now using generic prediction function \\(f\\))\n\\[\nR_n(f) = \\Expect{(Y - f(X))^2}\n\\]\nWhy should we care about \\(R_n(f)\\)?\n👍 Measures predictive accuracy on average.\n👍 How much confidence should you have in \\(f\\)’s predictions.\n👍 Compare with other predictors: \\(R_n(f)\\) vs \\(R_n(g)\\)\n🤮 This is hard: Don’t know the distribution of the data (if I knew the truth, this would be easy)"
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#bias-variance-decomposition",
@@ -1838,14 +1845,14 @@
     "href": "schedule/slides/04-bias-variance.html#bias-variance-tradeoff-overview",
     "title": "UBC Stat406 2023W",
     "section": "Bias-variance tradeoff: Overview",
-    "text": "Bias-variance tradeoff: Overview\nbias: how well does \\(\\widehat{f}(x)\\) approximate the truth \\(\\Expect{Y\\given X=x}\\)\n\nIf we allow more complicated possible \\(\\widehat{f}\\), lower bias. Flexibility \\(\\Rightarrow\\) Expressivity\nBut, more flexibility \\(\\Rightarrow\\) larger variance\nComplicated models are hard to estimate precisely for fixed \\(n\\)\nIrreducible error\n\n\n\n\n\n\n\n\nNote\n\n\nSince we can’t evaluate any expectations with real data…"
+    "text": "Bias-variance tradeoff: Overview\nbias: how well does \\(\\widehat{f}(x)\\) approximate the truth \\(\\Expect{Y\\given X=x}\\)\n\nIf we allow more complicated possible \\(\\widehat{f}\\), lower bias. Flexibility \\(\\Rightarrow\\) Expressivity\nBut, more flexibility \\(\\Rightarrow\\) larger variance\nComplicated models are hard to estimate precisely for fixed \\(n\\)\nIrreducible error\n\n\n\nSadly, that whole exercise depends on knowing the truth to evaluate \\(E\\ldots\\)"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#meta-lecture",
     "href": "schedule/slides/06-information-criteria.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "06 Information criteria",
-    "text": "06 Information criteria\nStat 406\nDaniel J. McDonald\nLast modified – 06 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\]"
+    "text": "06 Information criteria\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#generalized-cv",
@@ -1866,21 +1873,21 @@
     "href": "schedule/slides/06-information-criteria.html#what-are-hatvalues",
     "title": "UBC Stat406 2023W",
     "section": "What are hatvalues?",
-    "text": "What are hatvalues?\n\ncv_nice &lt;- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)\n\nIn OLS, \\(\\widehat{\\y} = \\X\\widehat{\\beta} = \\X(\\X^\\top \\X)^{-1}\\X^\\top \\y\\)\nWe often call \\(\\mathbf{H} = \\X(\\X^\\top \\X)^{-1}\\X^\\top\\) the Hat matrix, because it puts the hat on \\(\\y\\)\nGCV uses \\(\\textrm{tr}(\\mathbf{H})\\). For lm(), this is just p, the number of predictors (Why?)\nThis is one way of understanding the name effective degrees-of-freedom"
+    "text": "What are hatvalues?\n\ncv_nice &lt;- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)\n\nIn OLS, \\(\\widehat{\\y} = \\X\\widehat{\\beta} = \\X(\\X^\\top \\X)^{-1}\\X^\\top \\y\\)\nWe often call \\(\\mathbf{H} = \\X(\\X^\\top \\X)^{-1}\\X^\\top\\) the Hat matrix, because it puts the hat on \\(\\y\\)\nGCV uses \\(\\textrm{tr}(\\mathbf{H})\\).\nFor lm(), this is just p, the number of predictors (Why?)\nThis is one way of understanding the name degrees-of-freedom"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation",
     "href": "schedule/slides/06-information-criteria.html#alternative-interpretation",
     "title": "UBC Stat406 2023W",
     "section": "Alternative interpretation:",
-    "text": "Alternative interpretation:\nSuppose, \\(Y_i\\) is independent from some distribution with mean \\(\\mu_i\\) and variance \\(\\sigma^2\\)\n(remember: in the linear model \\(\\Expect{Y_i} = x_i^\\top \\beta = \\mu_i\\) )\nLet \\(\\widehat{Y}\\) be an estimator of \\(\\mu\\) (all \\(i=1,\\ldots,n\\) elements of the vector).\n\n\\[\\begin{aligned}\n& \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
+    "text": "Alternative interpretation:\nSuppose, \\(Y_i\\) is independent from some distribution with mean \\(\\mu_i\\) and variance \\(\\sigma^2\\)\n(remember: in the linear model \\(\\Expect{Y_i} = x_i^\\top \\beta = \\mu_i\\) )\nLet \\(\\widehat{\\mathbf{Y}}\\) be an estimator of \\(\\mu\\) (all \\(i=1,\\ldots,n\\) elements of the vector).\n\n\\[\\begin{aligned}\n& \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation-1",
     "href": "schedule/slides/06-information-criteria.html#alternative-interpretation-1",
     "title": "UBC Stat406 2023W",
     "section": "Alternative interpretation:",
-    "text": "Alternative interpretation:\n\\[\\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} = \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\\]\nNow, if \\(\\widehat{Y} = \\H Y\\) for some matrix \\(\\H\\),\n\\(\\sum\\Cov{Y_i}{\\widehat Y_i} = \\Expect{Y^\\top \\H Y} = \\sigma^2 \\textrm{tr}(\\H)\\)\nThis gives Mallow’s \\(C_p\\) aka Stein’s Unbiased Risk Estimator:\n\\(MSE + 2\\hat{\\sigma}^2\\textrm{df}/n\\)"
+    "text": "Alternative interpretation:\n\\[\\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} = \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\\]\nNow, if \\(\\widehat{\\mathbf{Y}} = \\H \\mathbf{Y}\\) for some matrix \\(\\H\\),\n\\(\\sum\\Cov{Y_i}{\\widehat Y_i} = \\Expect{\\mathbf{Y}^\\top \\H \\mathbf{Y}} = \\sigma^2 \\textrm{tr}(\\H)\\)\nThis gives Mallow’s \\(C_p\\) aka Stein’s Unbiased Risk Estimator:\n\\(MSE + 2\\hat{\\sigma}^2\\textrm{df}/n\\)\n\n\n\n\n\n\nImportant\n\n\nUnfortunately, df may be difficult or impossible to calculate for complicated prediction methods. But one can often estimate it well. This idea is beyond the level of this course."
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#aic-and-bic",
@@ -1901,7 +1908,7 @@
     "href": "schedule/slides/06-information-criteria.html#recommendations",
     "title": "UBC Stat406 2023W",
     "section": "Recommendations",
-    "text": "Recommendations\n\nWhen comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV.\nCV is usually easiest to make sense of and doesn’t depend on other unknown parameters.\nBut, it requires refitting the model.\nAlso, it can be strange in cases with discrete predictors, time series, repeated measurements, graph structures, etc.\n\n\nHigh-level intuition of these:\n\nGCV tends to choose “dense” models.\nTheory says AIC chooses the “best predictor” asymptotically.\nTheory says BIC should choose the “true model” asymptotically, tends to select fewer predictors.\nIn some special cases, AIC = Cp = SURE \\(\\approx\\) LOO-CV\n\n\n\n\nFor more information: see [ESL] Chapter 7. This material is more challenging than the level of this course, and is easily and often misunderstood."
+    "text": "Recommendations\n\nWhen comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV.\nCV is usually easiest to make sense of and doesn’t depend on other unknown parameters.\nBut, it requires refitting the model.\nAlso, it can be strange in cases with discrete predictors, time series, repeated measurements, graph structures, etc.\n\n\nHigh-level intuition of these:\n\nGCV tends to choose “dense” models.\nTheory says AIC chooses the “best predicting model” asymptotically.\nTheory says BIC should choose the “true model” asymptotically, tends to select fewer predictors.\nIn some special cases, AIC = Cp = SURE \\(\\approx\\) LOO-CV\n\n\n\n\nFor more information: see [ESL] Chapter 7. This material is more challenging than the level of this course, and is easily and often misunderstood."
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#a-few-more-caveats",

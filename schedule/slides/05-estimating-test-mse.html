@@ -397,7 +397,7 @@
 <h2>05 Estimating test MSE</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 06 September 2023</p>
+<p>Last modified – 18 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -415,6 +415,8 @@
 \newcommand{\y}{\mathbf{y}}
 \newcommand{\P}{\mathcal{P}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\snorm}[1]{\lVert #1 \rVert}
 \]</span></p>
 </section>
 <section id="estimating-prediction-risk" class="slide level2">
@@ -684,35 +686,36 @@ E[(R_n - \widehat{R})^2]
 <section id="code" class="slide level2">
 <h2>Code</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#' @param data The full data set</span></span>
+<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="11-13|14-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#' @param data The full data set</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="co">#' @param estimator Function. Has 1 argument (some data) and fits a model. </span></span>
 <span id="cb6-3"><a href="#cb6-3"></a><span class="co">#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions</span></span>
 <span id="cb6-4"><a href="#cb6-4"></a><span class="co">#' @param error_fun Function. Has one arg: the test data, with fits added.</span></span>
 <span id="cb6-5"><a href="#cb6-5"></a><span class="co">#' @param kfolds Integer. The number of folds.</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, </span>
-<span id="cb6-7"><a href="#cb6-7"></a>                     error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
-<span id="cb6-8"><a href="#cb6-8"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb6-9"><a href="#cb6-9"></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>kfolds, <span class="at">length.out =</span> n))</span>
-<span id="cb6-10"><a href="#cb6-10"></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
-<span id="cb6-11"><a href="#cb6-11"></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
-<span id="cb6-12"><a href="#cb6-12"></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
-<span id="cb6-13"><a href="#cb6-13"></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
-<span id="cb6-14"><a href="#cb6-14"></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
-<span id="cb6-15"><a href="#cb6-15"></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
-<span id="cb6-16"><a href="#cb6-16"></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
-<span id="cb6-17"><a href="#cb6-17"></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
-<span id="cb6-18"><a href="#cb6-18"></a>  }</span>
-<span id="cb6-19"><a href="#cb6-19"></a>  <span class="fu">mean</span>(errors)</span>
-<span id="cb6-20"><a href="#cb6-20"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-6"><a href="#cb6-6"></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
+<span id="cb6-7"><a href="#cb6-7"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb6-8"><a href="#cb6-8"></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>kfolds, <span class="at">length.out =</span> n))</span>
+<span id="cb6-9"><a href="#cb6-9"></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
+<span id="cb6-10"><a href="#cb6-10"></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
+<span id="cb6-11"><a href="#cb6-11"></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
+<span id="cb6-13"><a href="#cb6-13"></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
+<span id="cb6-14"><a href="#cb6-14"></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
+<span id="cb6-15"><a href="#cb6-15"></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
+<span id="cb6-16"><a href="#cb6-16"></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
+<span id="cb6-17"><a href="#cb6-17"></a>  }</span>
+<span id="cb6-18"><a href="#cb6-18"></a>  <span class="fu">mean</span>(errors)</span>
+<span id="cb6-19"><a href="#cb6-19"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="fragment">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>somedata <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">z =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>))</span>
+<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="2-4|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>somedata <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">z =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>))</span>
 <span id="cb7-2"><a href="#cb7-2"></a>est <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset) <span class="fu">lm</span>(z <span class="sc">~</span> ., <span class="at">data =</span> dataset)</span>
 <span id="cb7-3"><a href="#cb7-3"></a>pred <span class="ot">&lt;-</span> <span class="cf">function</span>(mod, dataset) <span class="fu">predict</span>(mod, <span class="at">newdata =</span> dataset)</span>
 <span id="cb7-4"><a href="#cb7-4"></a>error_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(testdata) <span class="fu">mutate</span>(testdata, <span class="at">errs =</span> (z <span class="sc">-</span> .preds)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(errs) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
 <span id="cb7-5"><a href="#cb7-5"></a><span class="fu">kfold_cv</span>(somedata, est, pred, error_fun, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.9532271</code></pre>
+</div>
 </div>
 </div>
 </section>
@@ -728,7 +731,17 @@ E[(R_n - \widehat{R})^2]
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>( (<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>“Nice” requires: 1. <span class="math inline">\(\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}\)</span> for some vector <span class="math inline">\(h_i\)</span> 2. <span class="math inline">\(e^{(i)} = \frac{\widehat{e}_i}{(1-h_{ii})}\)</span></p>
+</section>
+<section id="trick-1" class="slide level2">
+<h2>Trick</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>( (<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>“Nice” requires:</p>
+<ol type="1">
+<li><span class="math inline">\(\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}\)</span> for some vector <span class="math inline">\(h_i\)</span></li>
+<li><span class="math inline">\(e^{(i)} = \frac{\widehat{e}_i}{(1-h_{ii})}\)</span></li>
+</ol>
 </section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>

@@ -397,7 +397,7 @@
 <h2>06 Information criteria</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 06 September 2023</p>
+<p>Last modified – 18 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -415,6 +415,8 @@
 \newcommand{\y}{\mathbf{y}}
 \newcommand{\P}{\mathcal{P}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\snorm}[1]{\lVert #1 \rVert}
 \]</span></p>
 </section>
 <section id="generalized-cv" class="slide level2">
@@ -441,14 +443,15 @@
 </div>
 <p>In OLS, <span class="math inline">\(\widehat{\y} = \X\widehat{\beta} = \X(\X^\top \X)^{-1}\X^\top \y\)</span></p>
 <p>We often call <span class="math inline">\(\mathbf{H} = \X(\X^\top \X)^{-1}\X^\top\)</span> the Hat matrix, because it <span class="hand">puts the hat</span> on <span class="math inline">\(\y\)</span></p>
-<p>GCV uses <span class="math inline">\(\textrm{tr}(\mathbf{H})\)</span>. For <code>lm()</code>, this is just <code>p</code>, the number of predictors (Why?)</p>
-<p>This is one way of understanding the name <em>effective degrees-of-freedom</em></p>
+<p>GCV uses <span class="math inline">\(\textrm{tr}(\mathbf{H})\)</span>.</p>
+<p>For <code>lm()</code>, this is just <code>p</code>, the number of predictors (Why?)</p>
+<p>This is one way of understanding the name <em>degrees-of-freedom</em></p>
 </section>
 <section id="alternative-interpretation" class="slide level2">
 <h2>Alternative interpretation:</h2>
 <p>Suppose, <span class="math inline">\(Y_i\)</span> is independent from some distribution with mean <span class="math inline">\(\mu_i\)</span> and variance <span class="math inline">\(\sigma^2\)</span></p>
 <p>(remember: in the linear model <span class="math inline">\(\Expect{Y_i} = x_i^\top \beta = \mu_i\)</span> )</p>
-<p>Let <span class="math inline">\(\widehat{Y}\)</span> be an estimator of <span class="math inline">\(\mu\)</span> (all <span class="math inline">\(i=1,\ldots,n\)</span> elements of the vector).</p>
+<p>Let <span class="math inline">\(\widehat{\mathbf{Y}}\)</span> be an estimator of <span class="math inline">\(\mu\)</span> (all <span class="math inline">\(i=1,\ldots,n\)</span> elements of the vector).</p>
 <div class="fragment">
 <span class="math display">\[\begin{aligned}
 &amp; \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
@@ -462,10 +465,23 @@
 <section id="alternative-interpretation-1" class="slide level2">
 <h2>Alternative interpretation:</h2>
 <p><span class="math display">\[\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} = \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}\]</span></p>
-<p>Now, if <span class="math inline">\(\widehat{Y} = \H Y\)</span> for some matrix <span class="math inline">\(\H\)</span>,</p>
-<p><span class="math inline">\(\sum\Cov{Y_i}{\widehat Y_i} = \Expect{Y^\top \H Y} = \sigma^2 \textrm{tr}(\H)\)</span></p>
+<p>Now, if <span class="math inline">\(\widehat{\mathbf{Y}} = \H \mathbf{Y}\)</span> for some matrix <span class="math inline">\(\H\)</span>,</p>
+<p><span class="math inline">\(\sum\Cov{Y_i}{\widehat Y_i} = \Expect{\mathbf{Y}^\top \H \mathbf{Y}} = \sigma^2 \textrm{tr}(\H)\)</span></p>
 <p>This gives <em>Mallow’s <span class="math inline">\(C_p\)</span></em> aka <em>Stein’s Unbiased Risk Estimator</em>:</p>
 <p><span class="math inline">\(MSE + 2\hat{\sigma}^2\textrm{df}/n\)</span></p>
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Important</strong></p>
+</div>
+<div class="callout-content">
+<p>Unfortunately, df may be difficult or impossible to calculate for complicated prediction methods. But one can often estimate it well. This idea is beyond the level of this course.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="aic-and-bic" class="slide level2">
 <h2>AIC and BIC</h2>
@@ -523,7 +539,7 @@
 <p>High-level intuition of these:</p>
 <ul>
 <li><p>GCV tends to choose “dense” models.</p></li>
-<li><p>Theory says AIC chooses the “best predictor” asymptotically.</p></li>
+<li><p>Theory says AIC chooses the “best predicting model” asymptotically.</p></li>
 <li><p>Theory says BIC should choose the “true model” asymptotically, tends to select fewer predictors.</p></li>
 <li><p>In some special cases, AIC = Cp = SURE <span class="math inline">\(\approx\)</span> LOO-CV</p></li>
 </ul>
@@ -535,7 +551,7 @@
 <section>
 <section id="my-recommendation" class="title-slide slide level1 center">
 <h1>My recommendation:</h1>
-<p><span class="hand-blue">Use CV</span></p>
+<p><span class="hand secondary">Use CV</span></p>
 </section>
 <section id="a-few-more-caveats" class="slide level2">
 <h2>A few more caveats</h2>
