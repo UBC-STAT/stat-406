@@ -50,7 +50,7 @@ Defining a model often leads to a procedure/algorithm with good properties.
 Sometimes procedure/algorithm $\Rightarrow$ a specific model.
 
 > Statistics (the field) tells me how to understand when different procedures
-> are desirable. 
+> are desirable and the mathematical guarantees that they satisfy.
 
 When are certain models appropriate?
 
@@ -141,7 +141,7 @@ $$
 
 ## Assumption Lean Regression
 
-Imagine $Z = (Y, X) \sim P$ with $Y \in \R$ and $\mathbf{X} = (1, X_1, \ldots, X_p)^\top$.
+Imagine $Z = (Y, \mathbf{X}) \sim P$ with $Y \in \R$ and $\mathbf{X} = (1, X_1, \ldots, X_p)^\top$.
 
 We are interested in the _conditional_ distribution $P_{Y|\mathbf{X}}$
 
@@ -204,7 +204,8 @@ ggplot() +
     data = tibble(x = seq(-2, 2, length.out = 100), y = as.numeric(x != 0)), 
     aes(x, y), colour = orange, linewidth = 2) +
   geom_point(data = tibble(x = 0, y = 0), aes(x, y), 
-             colour = orange, pch = 16, size = 3)
+             colour = orange, pch = 16, size = 3) +
+  ylab(bquote("\u2113" * (y - mu))) + xlab(bquote(y - mu))
 ```
 
 :::
@@ -249,7 +250,7 @@ $$\mu(X) = \Expect{Y \ \vert\  X}$$
 
 the regression function. (But don't forget that it depended on $\ell$.)
 
-If we __assume__ that $\mu(x) = \Expect{Y \ \vert\  X=x} = x^\top \beta$, then we get back exactly OLS.
+If we [assume]{.secondary} that $\mu(x) = \Expect{Y \ \vert\  X=x} = x^\top \beta$, then we get back exactly OLS.
 
 . . .
 
@@ -288,19 +289,19 @@ In words:
 
 [Regression with squared-error loss is really about estimating the (conditional) mean.]{.secondary}
 
-1. If $Y\sim \textrm{N}(\mu,\ 1)$, our best guess for a __new__ $Y$ is $\mu$.  
+1. If $Y\sim \textrm{N}(\mu,\ 1)$, our best guess for a [new]{.secondary} $Y$ is $\mu$.  
 
-2. For regression, we let the mean $(\mu)$ __depend__ on $X$.  
-3. Think of $Y\sim \textrm{N}(\mu(X),\ 1)$, then conditional on $X=x$, our best guess for a __new__ $Y$ is $\mu(x)$ 
+2. For regression, we let the mean $(\mu)$ [depend]{.secondary} on $X$.  
+3. Think of $Y\sim \textrm{N}(\mu(X),\ 1)$, then conditional on $X=x$, our best guess for a [new]{.secondary} $Y$ is $\mu(x)$ 
 
 [whatever this function $\mu$ is]
 
 
 ## Anything strange?
 
-For any two variables $Y$ and $X$, we can __always__ write
+For any two variables $Y$ and $X$, we can [always]{.secondary} write
 
-$$Y \ \vert\  X = E[Y\given X] + (Y - E[Y\given X]) = \mu(X) + \eta(X)$$
+$$Y = E[Y\given X] + (Y - E[Y\given X]) = \mu(X) + \eta(X)$$
 
 such that $\Expect{\eta(X)}=0$.
 
@@ -453,12 +454,12 @@ If $X$ and $Z$ are independent, then $\Expect{XZ} = \Expect{X}\Expect{Z}$
 ## Predicting new Y's
 
 
-What is the prediction risk of guessing $Y=\mu$?
+* What is the prediction risk of guessing $Y=\mu$?
 
 
-This is a great idea, but we don't know $\mu$.
+* This is a great idea, but we don't know $\mu$.
 
-Let's see what happens anyway.
+* Let's see what happens anyway.
 
 \begin{aligned}
         R_n(\mu) &= \E[(Y-\mu)^2]= 1
