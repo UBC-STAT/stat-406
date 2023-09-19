@@ -93,91 +93,6 @@ $$
 \quad \st \beta \in \R^p
 $$
 
-## Visualizing ridge regression (2 coefficients)
-
-```{r}
-#| code-fold: true
-#| fig-width: 16
-#| fig-height: 9
-#| dev: png
-b <- c(1, 1)
-n <- 1000
-lams <- c(1, 5, 10)
-ols_loss <- function(b1, b2) colMeans((y - X %*% rbind(b1, b2))^2) / 2
-pen <- function(b1, b2, lambda = 1) sqrt(n) * lambda * (b1^2 + b2^2) / 2
-gr <- expand_grid(
-  b1 = seq(b[1] - 0.5, b[1] + 0.5, length.out = 100),
-  b2 = seq(b[2] - 0.5, b[2] + 0.5, length.out = 100)
-)
-
-X <- mvtnorm::rmvnorm(n, c(0, 0), sigma = matrix(c(1, .3, .3, .5), nrow = 2))
-y <- drop(X %*% b + rnorm(n))
-
-bols <- coef(lm(y ~ X - 1))
-bridge <- coef(MASS::lm.ridge(y ~ X - 1, lambda = lams * sqrt(n)))
-
-penalties <- lams |>
-  set_names(~ paste("lam =", .)) |>
-  map(~ pen(gr$b1, gr$b2, .x)) |>
-  as_tibble()
-gr <- gr |>
-  mutate(loss = ols_loss(b1, b2)) |>
-  bind_cols(penalties)
-
-g1 <- ggplot(gr, aes(b1, b2)) +
-  geom_raster(aes(fill = loss)) +
-  scale_fill_viridis_c(direction = -1) +
-  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
-  theme(legend.position = "bottom") +
-  guides(fill = guide_colourbar(barwidth = 20, barheight = 0.5))
-
-g2 <- gr |>
-    pivot_longer(starts_with("lam")) |>
-    mutate(name = factor(name, levels = paste("lam =", lams))) |>
-  ggplot(aes(b1, b2)) +
-  geom_raster(aes(fill = value)) +
-  scale_fill_viridis_c(direction = -1, name = "penalty") +
-  facet_wrap(~name, ncol = 1) +
-  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
-  theme(legend.position = "bottom") +
-  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
-
-g3 <- gr |> 
-  mutate(across(starts_with("lam"), ~ loss + .x)) |>
-  pivot_longer(starts_with("lam")) |>
-  mutate(name = factor(name, levels = paste("lam =", lams))) |>
-  ggplot(aes(b1, b2)) +
-  geom_raster(aes(fill = value)) +
-  scale_fill_viridis_c(direction = -1, name = "loss + pen") +
-  facet_wrap(~name, ncol = 1) +
-  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
-  theme(legend.position = "bottom") +
-  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
-
-cowplot::plot_grid(g1, g2, g3, rel_widths = c(2, 1, 1), nrow = 1)
-```
-
-## The effect on the estimates
-
-```{r}
-#| code-fold: true
-#| fig-width: 8
-#| fig-height: 5
-#| dev: png
-gr |> 
-  mutate(z = ols_loss(b1, b2) + max(lams) * pen(b1, b2)) |>
-  ggplot(aes(b1, b2)) +
-  geom_raster(aes(fill = z)) +
-  scale_fill_viridis_c(direction = -1) +
-  geom_point(data = tibble(
-    b1 = c(bols[1], bridge[,1]),
-    b2 = c(bols[2], bridge[,2]),
-    estimate = factor(c("ols", paste0("ridge = ", lams)), 
-                      levels = c("ols", paste0("ridge = ", lams)))
-  ),
-  aes(shape = estimate), size = 3) +
-  geom_point(data = data.frame(b1 = b[1], b2 = b[2]), colour = orange, size = 4)
-```
 
 
 ## Geometry of ridge regression (contours)
@@ -268,6 +183,12 @@ $\ell_1$-norm (special case)
 $\ell_0$-norm
 : $\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert$
 
+$\ell_\infty$-norm
+: $\max_{1\leq j \leq p} |z_j|$
+
+::: aside
+Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
+:::
 
 
 ## Ridge regression
@@ -304,6 +225,93 @@ Observe:
 $\lambda$ and $s$ are known as [tuning parameters]{.secondary}
 
 
+## Visualizing ridge regression (2 coefficients)
+
+```{r}
+#| code-fold: true
+#| fig-width: 16
+#| fig-height: 9
+#| dev: png
+b <- c(1, 1)
+n <- 1000
+lams <- c(1, 5, 10)
+ols_loss <- function(b1, b2) colMeans((y - X %*% rbind(b1, b2))^2) / 2
+pen <- function(b1, b2, lambda = 1) lambda * (b1^2 + b2^2) / 2
+gr <- expand_grid(
+  b1 = seq(b[1] - 0.5, b[1] + 0.5, length.out = 100),
+  b2 = seq(b[2] - 0.5, b[2] + 0.5, length.out = 100)
+)
+
+X <- mvtnorm::rmvnorm(n, c(0, 0), sigma = matrix(c(1, .3, .3, .5), nrow = 2))
+y <- drop(X %*% b + rnorm(n))
+
+bols <- coef(lm(y ~ X - 1))
+bridge <- coef(MASS::lm.ridge(y ~ X - 1, lambda = lams * sqrt(n)))
+
+penalties <- lams |>
+  set_names(~ paste("lam =", .)) |>
+  map(~ pen(gr$b1, gr$b2, .x)) |>
+  as_tibble()
+gr <- gr |>
+  mutate(loss = ols_loss(b1, b2)) |>
+  bind_cols(penalties)
+
+g1 <- ggplot(gr, aes(b1, b2)) +
+  geom_raster(aes(fill = loss)) +
+  scale_fill_viridis_c(direction = -1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 20, barheight = 0.5))
+
+g2 <- gr |>
+    pivot_longer(starts_with("lam")) |>
+    mutate(name = factor(name, levels = paste("lam =", lams))) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = value)) +
+  scale_fill_viridis_c(direction = -1, name = "penalty") +
+  facet_wrap(~name, ncol = 1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
+
+g3 <- gr |> 
+  mutate(across(starts_with("lam"), ~ loss + .x)) |>
+  pivot_longer(starts_with("lam")) |>
+  mutate(name = factor(name, levels = paste("lam =", lams))) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = value)) +
+  scale_fill_viridis_c(direction = -1, name = "loss + pen") +
+  facet_wrap(~name, ncol = 1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
+
+cowplot::plot_grid(g1, g2, g3, rel_widths = c(2, 1, 1), nrow = 1)
+```
+
+## The effect on the estimates
+
+```{r}
+#| code-fold: true
+#| fig-width: 8
+#| fig-height: 5
+#| dev: png
+gr |> 
+  mutate(z = ols_loss(b1, b2) + max(lams) * pen(b1, b2)) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = z)) +
+  scale_fill_viridis_c(direction = -1) +
+  geom_point(data = tibble(
+    b1 = c(bols[1], bridge[,1]),
+    b2 = c(bols[2], bridge[,2]),
+    estimate = factor(c("ols", paste0("ridge = ", lams)), 
+                      levels = c("ols", paste0("ridge = ", lams)))
+  ),
+  aes(shape = estimate), size = 3) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2]), colour = orange, size = 4)
+```
+
+
 ## Example data
 
 `prostate` data from [ESL]
@@ -330,12 +338,14 @@ library(glmnet)
 ridge <- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
 ```
 
+<br>
+
 ::: flex
 ::: w-60
 ```{r}
 #| fig-width: 8
 #| fig-height: 6
-plot(ridge, xvar = "lambda")
+plot(ridge, xvar = "lambda", lwd = 3)
 ```
 
 :::
@@ -363,7 +373,8 @@ $$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$
 
 * This is easy to calculate in `R` for any $\lambda$.
 
-* However, computations and interpretation are simplified if we examine the Singular Value Decomposition of $\X = \mathbf{UDV}^\top$.
+* However, computations and interpretation are simplified if we examine the 
+[Singular Value Decomposition]{.secondary} of $\X = \mathbf{UDV}^\top$.
 
 * Recall: any matrix has an SVD.
 
@@ -431,6 +442,20 @@ Conclusion
 Aside
 : Engineering approach to solving linear systems is to always do this with small $\lambda$. The thinking is about the numerics rather than the statistics.
 
+### Which $\lambda$ to use?
+
+Computational
+: Use CV and pick the $\lambda$ that makes this smallest.
+
+Intuition (bias)
+: As $\lambda\rightarrow\infty$, bias ⬆
+
+Intuition (variance)
+: As $\lambda\rightarrow\infty$, variance ⬇
+
+You should think about why.
+
+
 
 ## Can we get the best of both worlds?
 
@@ -446,7 +471,9 @@ To recap:
 
 * Ridge regression does not perform variable selection.
 
-* But [picking]{.hand} $\lambda=3.7$ and thereby .hand[deciding] to predict with $\widehat{\beta}^R_{3.7}$ is [model selection]{.secondary}.
+* But [picking]{.hand} $\lambda=3.7$ and thereby [deciding]{.hand} to predict with $\widehat{\beta}^R_{3.7}$ is [model selection]{.secondary}.
+
+
 
 ## Can we get the best of both worlds?
 
