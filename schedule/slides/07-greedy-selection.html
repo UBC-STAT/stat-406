@@ -397,7 +397,7 @@
 <h2>07 Greedy selection</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 06 September 2023</p>
+<p>Last modified – 18 September 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -415,11 +415,13 @@
 \newcommand{\y}{\mathbf{y}}
 \newcommand{\P}{\mathcal{P}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\snorm}[1]{\lVert #1 \rVert}
 \]</span></p>
 </section>
 <section id="recap" class="slide level2">
 <h2>Recap</h2>
-<p>Model Selection means <em>select a family of distributions for your data</em>.</p>
+<p>Model Selection means <span class="secondary">select a family of distributions for your data</span>.</p>
 <p>Ideally, we’d do this by comparing the <span class="math inline">\(R_n\)</span> for one family with that for another.</p>
 <p>We’d use whichever has smaller <span class="math inline">\(R_n\)</span>.</p>
 <p>But <span class="math inline">\(R_n\)</span> depends on the truth, so we estimate it with <span class="math inline">\(\widehat{R}\)</span>.</p>
@@ -446,7 +448,7 @@
 <h2>Fit each model and estimate <span class="math inline">\(R_n\)</span></h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>forms <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"y ~ x1 + x2"</span>, <span class="st">"y ~ x1 * x2"</span>, <span class="st">"y ~ x2 + sin(x1*x2)"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">lapply</span>(as.formula)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">map</span>(as.formula)</span>
 <span id="cb2-3"><a href="#cb2-3"></a>fits <span class="ot">&lt;-</span> <span class="fu">map</span>(forms, <span class="sc">~</span> <span class="fu">lm</span>(.x, <span class="at">data =</span> dat))</span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="fu">map</span>(fits, <span class="sc">~</span> <span class="fu">tibble</span>(</span>
 <span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">R2 =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq,</span>
@@ -469,7 +471,10 @@
 <h2>Model Selection vs.&nbsp;Variable Selection</h2>
 <p>Model selection is very comprehensive</p>
 <p>You choose a full statistical model (probability distribution) that will be hypothesized to have generated the data.</p>
-<p>Variable selection is a subset of this. It means &gt; choosing which predictors to include in a predictive model</p>
+<p>Variable selection is a subset of this. It means</p>
+<blockquote>
+<p>choosing which predictors to include in a predictive model</p>
+</blockquote>
 <p>Eliminating a predictor, means removing it from the model.</p>
 <p>Some <span class="hand">procedures</span> automatically search predictors, and eliminate some.</p>
 <p>We call this variable selection. But the procedure is implicitly selecting a model as well.</p>
@@ -507,6 +512,11 @@ combine forward and backward smartly
 </dl>
 </div>
 </div>
+</section>
+<section>
+<section id="note" class="title-slide slide level1 center">
+<h1>Note:</h1>
+<p><span class="secondary">Within each procedure, we’re comparing <em>nested</em> models.</span></p>
 </section>
 <section id="costs-and-benefits" class="slide level2">
 <h2>Costs and benefits</h2>
@@ -806,8 +816,9 @@ Selection Algorithm: backward
 </section>
 <section id="randomness-and-prediction-error" class="slide level2">
 <h2>Randomness and prediction error</h2>
-<p>All of that was for one data set</p>
-<p>If we want to know how they compare, we should repeat many times</p>
+<p>All of that was for one data set.</p>
+<p>Doesn’t say which <span class="secondary">procedure</span> is better <span class="secondary">generally</span>.</p>
+<p>If we want to know how they compare <span class="secondary">generally</span>, we should repeat many times</p>
 <ol type="1">
 <li>Generate training data</li>
 <li>Estimate with different algorithms</li>
@@ -816,9 +827,14 @@ Selection Algorithm: backward
 </ol>
 <div class="fragment">
 <p>I’m not going to do all subsets, just the truth, forward selection, backward, and the full model</p>
-<p>For forward/backward selection, I’ll use Cp to choose the final model</p>
-<p>This Cp is using the training set.</p>
+<p>For forward/backward selection, I’ll use Cp to choose the final size</p>
 </div>
+</section></section>
+<section>
+<section id="danger" class="title-slide slide level1 center">
+<h1>☠️☠️ Danger ☠️☠️</h1>
+<p>You cannot compare the Cp scores between forward selection and backward selection to decide which to use.</p>
+<p>Why not?</p>
 </section>
 <section id="code-for-simulation" class="slide level2">
 <h2>Code for simulation</h2>
@@ -888,25 +904,27 @@ Selection Algorithm: backward
 <h2>Results</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>our_sim2 <span class="ot">&lt;-</span> our_sim <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>our_sim <span class="sc">|&gt;</span> </span>
 <span id="cb20-2"><a href="#cb20-2"></a>  <span class="fu">group_by</span>(sim) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(oracle<span class="sc">:</span>truth, <span class="sc">~</span> <span class="fu">mean</span>((y <span class="sc">-</span> .)<span class="sc">^</span><span class="dv">2</span>)), </span>
-<span id="cb20-4"><a href="#cb20-4"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb20-5"><a href="#cb20-5"></a>  <span class="fu">transmute</span>(<span class="fu">across</span>(oracle<span class="sc">:</span>stepdown, <span class="sc">~</span> . <span class="sc">/</span> truth <span class="sc">-</span> <span class="dv">1</span>))</span>
-<span id="cb20-6"><a href="#cb20-6"></a>  </span>
-<span id="cb20-7"><a href="#cb20-7"></a>our_sim2 <span class="sc">%&gt;%</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), </span>
-<span id="cb20-9"><a href="#cb20-9"></a>               <span class="at">names_to =</span> <span class="st">"method"</span>, </span>
-<span id="cb20-10"><a href="#cb20-10"></a>               <span class="at">values_to =</span> <span class="st">"mse"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(method, mse, <span class="at">fill =</span> method)) <span class="sc">+</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a>  <span class="fu">geom_boxplot</span>(<span class="at">notch =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb20-13"><a href="#cb20-13"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a>  <span class="fu">scale_fill_viridis_d</span>() <span class="sc">+</span></span>
-<span id="cb20-15"><a href="#cb20-15"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb20-16"><a href="#cb20-16"></a>  <span class="fu">scale_y_continuous</span>(</span>
-<span id="cb20-17"><a href="#cb20-17"></a>    <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()</span>
-<span id="cb20-18"><a href="#cb20-18"></a>  )<span class="sc">+</span></span>
-<span id="cb20-19"><a href="#cb20-19"></a>  <span class="fu">ylab</span>(<span class="st">"% increase in mse relative</span><span class="sc">\n</span><span class="st"> to the truth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-3"><a href="#cb20-3"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb20-4"><a href="#cb20-4"></a>    <span class="fu">across</span>(oracle<span class="sc">:</span>truth, <span class="sc">~</span> <span class="fu">mean</span>((y <span class="sc">-</span> .)<span class="sc">^</span><span class="dv">2</span>)), </span>
+<span id="cb20-5"><a href="#cb20-5"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb20-6"><a href="#cb20-6"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a href="#cb20-7"></a>  <span class="fu">transmute</span>(<span class="fu">across</span>(oracle<span class="sc">:</span>stepdown, <span class="sc">~</span> . <span class="sc">/</span> truth <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb20-9"><a href="#cb20-9"></a>    <span class="fu">everything</span>(), </span>
+<span id="cb20-10"><a href="#cb20-10"></a>    <span class="at">names_to =</span> <span class="st">"method"</span>, </span>
+<span id="cb20-11"><a href="#cb20-11"></a>    <span class="at">values_to =</span> <span class="st">"mse"</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb20-13"><a href="#cb20-13"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(method, mse, <span class="at">fill =</span> method)) <span class="sc">+</span></span>
+<span id="cb20-14"><a href="#cb20-14"></a>  <span class="fu">geom_boxplot</span>(<span class="at">notch =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb20-15"><a href="#cb20-15"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb20-16"><a href="#cb20-16"></a>  <span class="fu">scale_fill_viridis_d</span>() <span class="sc">+</span></span>
+<span id="cb20-17"><a href="#cb20-17"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb20-18"><a href="#cb20-18"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb20-19"><a href="#cb20-19"></a>    <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()</span>
+<span id="cb20-20"><a href="#cb20-20"></a>  ) <span class="sc">+</span></span>
+<span id="cb20-21"><a href="#cb20-21"></a>  <span class="fu">ylab</span>(<span class="st">"% increase in mse relative</span><span class="sc">\n</span><span class="st"> to the truth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -917,7 +935,7 @@ Selection Algorithm: backward
 </div>
 </div>
 </div>
-</section>
+</section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p><span class="large">Module 2</span></p>
