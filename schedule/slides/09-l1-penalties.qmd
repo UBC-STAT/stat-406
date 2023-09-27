@@ -155,12 +155,14 @@ the lasso solution
 
 $$\bll = \argmin_{\beta} \frac 1n\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1 = \; ??$$
 
-doesn't have a closed form solution.
+doesn't have a closed-form solution.
 
 
 However, because the optimization problem is convex, there exist efficient algorithms for computing it
 
-(The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn't work very well in practice.)
+::: aside
+The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn't work very well in practice.
+:::
 
 
 ## Coefficient path: ridge vs lasso
@@ -170,12 +172,15 @@ However, because the optimization problem is convex, there exist efficient algor
 #| code-fold: true
 library(glmnet)
 data(prostate, package = "ElemStatLearn")
-X <- prostate %>% dplyr::select(-train,-lpsa) %>% as.matrix()
+X <- prostate |> dplyr::select(-train, -lpsa) |>  as.matrix()
 Y <- prostate$lpsa
 lasso <- glmnet(x = X, y = Y) # alpha = 1 by default
 ridge <- glmnet(x = X, y = Y, alpha = 0)
 op <- par()
-par(mfrow = c(1, 2), mar = c(5, 3, 3, .1))
+```
+
+```{r}
+par(mfrow = c(1, 2), mar = c(5, 3, 5, .1))
 plot(lasso, main = "Lasso")
 plot(ridge, main = "Ridge")
 ```
@@ -211,7 +216,7 @@ bind_rows(df, df1) %>%
 ## Same but against Lambda
 
 ```{r ridge-v-lasso-again}
-par(mfrow = c(1, 2), mar = c(5, 3, 3, .1))
+par(mfrow = c(1, 2), mar = c(5, 3, 5, .1))
 plot(lasso, main = "Lasso", xvar = "lambda")
 plot(ridge, main = "Ridge", xvar = "lambda")
 ```
@@ -221,11 +226,11 @@ plot(ridge, main = "Ridge", xvar = "lambda")
 par(op)
 ```
 
-## Why does Lasso select variables?
+## Additional intuition for why Lasso selects variables
 
-Suppose I have solutions for $\widehat{\beta}_j$, $j = 1,\ldots,j-1, j+1,\ldots,p$.
+Suppose, for a particular $\lambda$, I have solutions for $\widehat{\beta}_k$, $k = 1,\ldots,j-1, j+1,\ldots,p$.
 
-Let $\widehat{\y}_{-j} = \X_{-j}\widehat{\beta}_{-j}$.
+Let $\widehat{\y}_{-j} = \X_{-j}\widehat{\beta}_{-j}$, and assume WLOG $\overline{\X}_k = 0$, $\X_k^\top\X_k = 1\ \forall k$
 
 One can show that:
 
@@ -238,7 +243,7 @@ S(z, \gamma) = \textrm{sign}(z)(|z| - \gamma)_+ = \begin{cases} z - \gamma & z >
 z + \gamma & z < -\gamma \\ 0 & |z| \leq \gamma \end{cases}
 $$
 
-Iterating over this is called [coordinate descent]{.secondary} and gives the solution.
+* Iterating over this is called [coordinate descent]{.secondary} and gives the solution
 
 ::: aside
 See for example, <https://doi.org/10.18637/jss.v033.i01>
@@ -256,41 +261,25 @@ gets too small.
 There are two main `R` implementations for finding lasso
 
 
-`{glmnet}`: `lasso.out = glmnet(X, Y, alpha=1)`.  
+`{glmnet}`: `lasso = glmnet(X, Y, alpha=1)`.  
 
 * Setting `alpha = 0` gives ridge regression (as does `lm.ridge` in the `MASS` package)
 * Setting `alpha` $\in (0,1)$ gives a method called the "elastic net" which combines ridge regression and lasso, more on that next lecture.
 * If you don't specify `alpha`, it does lasso
 
-`{lars}`: `lars.out = lars(X, Y)`
-* `lars` also does other things called "Least angle" and "forward stagewise" in addition to "forward stepwise" regression
+`{lars}`: `lars = lars(X, Y)`
 
+* `lars()` also does other things called "Least angle" and "forward stagewise" in addition to "forward stepwise" regression
 
-## (lots of others, but these are the biggies)
-
-1. `lars` (this one came first)
-
-2. `glmnet` (this one is faster)
-
-Use different algorithms, but both compute the solution for a range of $\lambda$.
-
-`lars` starts with an empty model and adds coefficients until saturated. The sequence of $\lambda$'s comes from the nature of the optimization problem.
-
-`glmnet` starts with an empty model and examines each value of $\lambda$ using previous values as "warm starts". It is generally much faster than `lars` and uses lots of other tricks (as well as compiled code) for extra speed.
-
-The path returned by `lars` is more useful than that returned by `glmnet`.
+* The path returned by `lars()` is more useful than that returned by `glmnet()`.
 
 . . .
 
-But you should use `glmnet`.
+[But you should use `{glmnet}`]{.secondary}.
 
 
 
-
-
-
-
-## Choosing the lambda
+## Choosing the $\lambda$
 
 You have to choose $\lambda$ in lasso or in ridge regression
 
@@ -306,32 +295,28 @@ However, the way to do it differs from package to package
 
 
 
-## `glmnet` version (lasso or ridge)
+## `{glmnet}` version (same procedure for lasso or ridge)
 
 ```{r}
-# 1. Estimate cv and model at once, no formula version
-lasso.glmnet <- cv.glmnet(X, Y) 
-#   no good reason to call glmnet() itself
-# 2. Look at the CV curve
-# 3. If the dashed lines are at the boundaries, redo with better lambda
-best.lam <- lasso.glmnet$lambda.min 
-#   the value, not the location (or use lasso$lambda.1se)
-# 4. Return the coefs/predictions for the best model
-coefs.glmnet <- coefficients(lasso.glmnet, s = "lambda.min")
-preds.glmnet <- predict(lasso.glmnet, newx = X, s = "lambda.1se") 
-# must supply `newx`
+#| code-line-numbers: 1|2|3|4|5|
+lasso <- cv.glmnet(X, Y) # estimate full model and CV no good reason to call glmnet() itself
+# 2. Look at the CV curve. If the dashed lines are at the boundaries, redo and adjust lambda
+lambda_min <- lasso$lambda.min # the value, not the location (or use lasso$lambda.1se)
+coeffs <- coefficients(lasso, s = "lambda.min") # s can be string or a number
+preds <- predict(lasso, newx = X, s = "lambda.1se") # must supply `newx`
 ```
 
 * $\widehat{R}_{CV}$ is an estimator of $R_n$, it has bias and variance
 * Because we did CV, we actually have 10 $\widehat{R}$ values, 1 per split.
 * Calculate the mean (that's what we've been using), but what about SE?
 
-## `glmnet` version (lasso or ridge)
+##
 
 ```{r}
 par(mfrow = c(1, 2), mar = c(5, 3, 3, 0))
-plot(lasso.glmnet) # a plot method for the cv fit
-plot(lasso.glmnet$glmnet.fit) # the glmnet.fit == glmnet(X,Y)
+plot(lasso) # a plot method for the cv fit
+plot(lasso$glmnet.fit) # the glmnet.fit == glmnet(X,Y)
+abline(v = colSums(abs(coef(lasso$glmnet.fit)[-1, drop(lasso$index)])), lty = 2)
 ```
 
 ```{r, include=FALSE}
@@ -341,25 +326,24 @@ par(op)
 ## Paths with chosen lambda
 
 ```{r, fig.width=11,fig.align="center",dev="svg",fig.height=4}
-ridge.glmnet <- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum
+ridge <- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum
 par(mfrow = c(1, 4))
-plot(ridge.glmnet, main = "Ridge")
-plot(lasso.glmnet, main = "Lasso")
-plot(ridge.glmnet$glmnet.fit, main = "Ridge")
-abline(v = sum(abs(coef(ridge.glmnet)))) # defaults to `lambda.1se`
-plot(lasso.glmnet$glmnet.fit, main = "Lasso")
-abline(v = sum(abs(coef(lasso.glmnet)))) # again, `lambda.1se` unless told otherwise
+plot(ridge, main = "Ridge")
+plot(lasso, main = "Lasso")
+plot(ridge$glmnet.fit, main = "Ridge")
+abline(v = sum(abs(coef(ridge)))) # defaults to `lambda.1se`
+plot(lasso$glmnet.fit, main = "Lasso")
+abline(v = sum(abs(coef(lasso)))) # again, `lambda.1se` unless told otherwise
 ```
 
----
 
 ## Degrees of freedom
 
-Remember: Lasso is **not** a linear smoother. There is no matrix $S$ such that $\widehat{y} = Sy$ for the predicted values from lasso.
+[Lasso is **not** a linear smoother]{.secondary}. There is no matrix $S$ such that $\widehat{y} = Sy$ for the predicted values from lasso.
 
 * We can't use `cv_nice()`.
 
-* We don't have $\tr{S} = \textrm{df}$ because there is no $S$.
+* We don't have $\tr{S} = \textrm{df}$ because [there is no $S$]{.secondary}.
 
 However,
 
@@ -367,19 +351,19 @@ However,
 
 * The proof is PhD-level material
 
-Note that the $\widehat{\textrm{df}}_\lambda$ is plotted on the CV plot and that `lasso.glmnet$glmnet.fit$df` contains this value for all $\lambda$.
+Note that the $\widehat{\textrm{df}}_\lambda$ is shown on the CV plot and that `lasso.glmnet$glmnet.fit$df` contains this value for all $\lambda$.
 
 ## Other flavours
 
 The elastic net
 : generally used for correlated variables that
-combines a ridge/lasso penalty.  Included in `{glmnet}` (0 < `alpha` < 1). 
+combines a ridge/lasso penalty.  Use `glmnet(..., alpha = a)` (0 < `a` < 1). 
 
 Grouped lasso
 : where variables are included or excluded in groups. Required for factors (1-hot encoding)
 
 Relaxed lasso
-: Takes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Included in `glmnet` with `relax = TRUE`
+: Takes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Use `glmnet(..., relax = TRUE)`.
 
 Dantzig selector
 : a slightly modified version of the lasso
@@ -393,11 +377,11 @@ SCAD
 : a non-convex version of lasso that adds a more severe variable selection penalty
 
 $\sqrt{\textrm{lasso}}$
-: claims to be tuning parameter free (but isn't).  Uses $||\cdot||_2$
-instead of $||\cdot||_2^2$ for the loss.
+: claims to be tuning parameter free (but isn't).  Uses $\Vert\cdot\Vert_2$
+instead of $\Vert\cdot\Vert_1$ for the loss.
 
 Generalized lasso
-: Adds various additional matrices to the penalty term (ie: $||D\beta||_1$.  
+: Adds various additional matrices to the penalty term (e.g. $\Vert D\beta\Vert_1$).  
 
 :::
 
