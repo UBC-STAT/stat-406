@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.3.450">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – l1-penalties</title>
+  <title>UBC Stat406 2023W – kernel-smoothers</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,7 +394,7 @@
 
 
 <section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>09 L1 penalties</h2>
+<h2>11 Local methods</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
 <p>Last modified – 27 September 2023</p>
@@ -426,343 +426,307 @@
 \]</span></p>
 </section>
 <section id="last-time" class="slide level2">
-<h2>Last time</h2>
-<dl>
-<dt>Ridge regression</dt>
-<dd>
-<span class="math inline">\(\min \frac{1}{n}\snorm{\y-\X\beta}_2^2 \st \snorm{\beta}_2^2 \leq s\)</span>
-</dd>
-<dt>Best (in sample) linear regression model of size <span class="math inline">\(s\)</span></dt>
-<dd>
-<span class="math inline">\(\min \frac 1n \snorm{\y-\X\beta}_2^2 \st \snorm{\beta}_0 \leq s\)</span>
-</dd>
-</dl>
-<p><span class="math inline">\(\snorm{\beta}_0\)</span> is the number of nonzero elements in <span class="math inline">\(\beta\)</span></p>
-<p>Finding the “best” linear model (of size <span class="math inline">\(s\)</span>, among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)</p>
-<p>Ridge regression is convex (easy to solve), but doesn’t do variable selection</p>
-<p>Can we somehow “interpolate” to get both?</p>
+<h2>Last time…</h2>
+<p>We looked at <span class="secondary">feature maps</span> as a way to do nonlinear regression.</p>
+<p>We used new “features” <span class="math inline">\(\Phi(x) = \bigg(\phi_1(x),\ \phi_2(x),\ldots,\phi_k(x)\bigg)\)</span></p>
+<p>Now we examine an alternative</p>
+<p>Suppose I just look at the “neighbours” of some point (based on the <span class="math inline">\(x\)</span>-values)</p>
+<p>I just average the <span class="math inline">\(y\)</span>’s at those locations together</p>
 </section>
-<section id="geometry-of-convexity" class="slide level2">
-<h2>Geometry of convexity</h2>
+<section id="lets-use-3-neighbors" class="slide level2">
+<h2>Let’s use 3 neighbors</h2>
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(mvtnorm)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>normBall <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">q =</span> <span class="dv">1</span>, <span class="at">len =</span> <span class="dv">1000</span>) {</span>
-<span id="cb1-3"><a href="#cb1-3"></a>  tg <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length =</span> len)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  out <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">cos</span>(tg)) <span class="sc">%&gt;%</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>    <span class="fu">mutate</span>(<span class="at">b =</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">abs</span>(x)<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q), <span class="at">bm =</span> <span class="sc">-</span>b) <span class="sc">%&gt;%</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>    <span class="fu">gather</span>(<span class="at">key =</span> <span class="st">"lab"</span>, <span class="at">value =</span> <span class="st">"y"</span>, <span class="sc">-</span>x)</span>
-<span id="cb1-7"><a href="#cb1-7"></a>  out<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"["</span>, <span class="fu">signif</span>(q, <span class="dv">2</span>), <span class="st">"]"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>  <span class="fu">return</span>(out)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>}</span>
-<span id="cb1-10"><a href="#cb1-10"></a></span>
-<span id="cb1-11"><a href="#cb1-11"></a>ellipseData <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>),</span>
-<span id="cb1-12"><a href="#cb1-12"></a>                        <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">Sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">5</span>), <span class="dv">2</span>)) {</span>
-<span id="cb1-13"><a href="#cb1-13"></a>  df <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
-<span id="cb1-14"><a href="#cb1-14"></a>    <span class="at">x =</span> <span class="fu">seq</span>(xlim[<span class="dv">1</span>], xlim[<span class="dv">2</span>], <span class="at">length.out =</span> n),</span>
-<span id="cb1-15"><a href="#cb1-15"></a>    <span class="at">y =</span> <span class="fu">seq</span>(ylim[<span class="dv">1</span>], ylim[<span class="dv">2</span>], <span class="at">length.out =</span> n)</span>
-<span id="cb1-16"><a href="#cb1-16"></a>  )</span>
-<span id="cb1-17"><a href="#cb1-17"></a>  df<span class="sc">$</span>z <span class="ot">&lt;-</span> <span class="fu">dmvnorm</span>(df, mean, Sigma)</span>
-<span id="cb1-18"><a href="#cb1-18"></a>  df</span>
-<span id="cb1-19"><a href="#cb1-19"></a>}</span>
-<span id="cb1-20"><a href="#cb1-20"></a></span>
-<span id="cb1-21"><a href="#cb1-21"></a>lballmax <span class="ot">&lt;-</span> <span class="cf">function</span>(ed, <span class="at">q =</span> <span class="dv">1</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
-<span id="cb1-22"><a href="#cb1-22"></a>  ed <span class="ot">&lt;-</span> <span class="fu">filter</span>(ed, x <span class="sc">&gt;</span> <span class="dv">0</span>, y <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb1-23"><a href="#cb1-23"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>) {</span>
-<span id="cb1-24"><a href="#cb1-24"></a>    ff <span class="ot">&lt;-</span> <span class="fu">abs</span>((ed<span class="sc">$</span>x<span class="sc">^</span>q <span class="sc">+</span> ed<span class="sc">$</span>y<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;</span> tol</span>
-<span id="cb1-25"><a href="#cb1-25"></a>    <span class="cf">if</span> (<span class="fu">sum</span>(ff) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="cf">break</span></span>
-<span id="cb1-26"><a href="#cb1-26"></a>    tol <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> tol</span>
-<span id="cb1-27"><a href="#cb1-27"></a>  }</span>
-<span id="cb1-28"><a href="#cb1-28"></a>  best <span class="ot">&lt;-</span> ed[ff, ]</span>
-<span id="cb1-29"><a href="#cb1-29"></a>  best[<span class="fu">which.max</span>(best<span class="sc">$</span>z), ]</span>
-<span id="cb1-30"><a href="#cb1-30"></a>}</span>
-<span id="cb1-31"><a href="#cb1-31"></a></span>
-<span id="cb1-32"><a href="#cb1-32"></a>nbs <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb1-33"><a href="#cb1-33"></a>nbs[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb1-34"><a href="#cb1-34"></a>qs <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">75</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)</span>
-<span id="cb1-35"><a href="#cb1-35"></a><span class="cf">for</span> (ii <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>) nbs[[ii]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(qs[ii <span class="sc">-</span> <span class="dv">1</span>])</span>
-<span id="cb1-36"><a href="#cb1-36"></a>nbs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(nbs)</span>
-<span id="cb1-37"><a href="#cb1-37"></a>nbs<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">factor</span>(nbs<span class="sc">$</span>lab, <span class="at">levels =</span> <span class="fu">unique</span>(nbs<span class="sc">$</span>lab))</span>
-<span id="cb1-38"><a href="#cb1-38"></a>seg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb1-39"><a href="#cb1-39"></a>  <span class="at">lab =</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)[<span class="dv">1</span>],</span>
-<span id="cb1-40"><a href="#cb1-40"></a>  <span class="at">x0 =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="at">x1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">y0 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">y1 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb1-41"><a href="#cb1-41"></a>)</span>
-<span id="cb1-42"><a href="#cb1-42"></a><span class="fu">levels</span>(seg<span class="sc">$</span>lab) <span class="ot">&lt;-</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)</span>
-<span id="cb1-43"><a href="#cb1-43"></a><span class="fu">ggplot</span>(nbs, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
-<span id="cb1-44"><a href="#cb1-44"></a>  <span class="fu">geom_path</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-45"><a href="#cb1-45"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>lab, <span class="at">labeller =</span> label_parsed) <span class="sc">+</span></span>
-<span id="cb1-46"><a href="#cb1-46"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> seg, <span class="fu">aes</span>(<span class="at">x =</span> x0, <span class="at">xend =</span> x1, <span class="at">y =</span> y0, <span class="at">yend =</span> y1), <span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-47"><a href="#cb1-47"></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb1-48"><a href="#cb1-48"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb1-49"><a href="#cb1-49"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-50"><a href="#cb1-50"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-51"><a href="#cb1-51"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-52"><a href="#cb1-52"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-53"><a href="#cb1-53"></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
-<span id="cb1-54"><a href="#cb1-54"></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb1-4"><a href="#cb1-4"></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(position)</span>
+<span id="cb1-5"><a href="#cb1-5"></a>pt <span class="ot">&lt;-</span> <span class="dv">15</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>nn <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>seq_range <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">n =</span> <span class="dv">101</span>) <span class="fu">seq</span>(<span class="fu">min</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">max</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">length.out =</span> n)</span>
+<span id="cb1-8"><a href="#cb1-8"></a>neibs <span class="ot">&lt;-</span> <span class="fu">sort.int</span>(<span class="fu">abs</span>(arcuate_unif<span class="sc">$</span>position <span class="sc">-</span> arcuate_unif<span class="sc">$</span>position[pt]), <span class="at">index.return =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>ix[<span class="dv">1</span><span class="sc">:</span>nn]</span>
+<span id="cb1-9"><a href="#cb1-9"></a>arcuate_unif<span class="sc">$</span>neighbours <span class="ot">=</span> <span class="fu">seq_len</span>(<span class="dv">40</span>) <span class="sc">%in%</span> neibs</span>
+<span id="cb1-10"><a href="#cb1-10"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa, <span class="at">colour =</span> neighbours)) <span class="sc">+</span> </span>
+<span id="cb1-11"><a href="#cb1-11"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, red)) <span class="sc">+</span> </span>
+<span id="cb1-13"><a href="#cb1-13"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> arcuate_unif<span class="sc">$</span>position[pt], <span class="at">colour =</span> red) <span class="sc">+</span> </span>
+<span id="cb1-14"><a href="#cb1-14"></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">fill =</span> red, <span class="at">alpha =</span> .<span class="dv">25</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb1-15"><a href="#cb1-15"></a>           <span class="at">xmin =</span> <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position[neibs]), </span>
+<span id="cb1-16"><a href="#cb1-16"></a>           <span class="at">xmax =</span> <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position[neibs])</span>
+<span id="cb1-17"><a href="#cb1-17"></a>  ) <span class="sc">+</span></span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19"></a>g2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb1-22"><a href="#cb1-22"></a>    <span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-23"><a href="#cb1-23"></a>      <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb1-24"><a href="#cb1-24"></a>      <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
+<span id="cb1-25"><a href="#cb1-25"></a>        arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
+<span id="cb1-26"><a href="#cb1-26"></a>        <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa</span>
+<span id="cb1-27"><a href="#cb1-27"></a>      )<span class="sc">$</span>pred</span>
+<span id="cb1-28"><a href="#cb1-28"></a>    ),</span>
+<span id="cb1-29"><a href="#cb1-29"></a>    <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb1-30"><a href="#cb1-30"></a>  )</span>
+<span id="cb1-31"><a href="#cb1-31"></a><span class="fu">plot_grid</span>(g1, g2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="09-l1-penalties_files/figure-revealjs/plotting-functions-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="the-best-of-both-worlds" class="slide level2">
-<h2>The best of both worlds</h2>
-<div class="cell" data-layout-align="center">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>nb <span class="ot">&lt;-</span> <span class="fu">normBall</span>(<span class="dv">1</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>ed <span class="ot">&lt;-</span> <span class="fu">ellipseData</span>()</span>
-<span id="cb2-3"><a href="#cb2-3"></a>bols <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">1</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>bhat <span class="ot">&lt;-</span> <span class="fu">lballmax</span>(ed, <span class="dv">1</span>)</span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="fu">ggplot</span>(nb, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">geom_path</span>(<span class="at">colour =</span> red) <span class="sc">+</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="fu">geom_contour</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">z =</span> z), <span class="at">colour =</span> blue, <span class="at">data =</span> ed, <span class="at">bins =</span> <span class="dv">7</span>) <span class="sc">+</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> bols) <span class="sc">+</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="fu">coord_equal</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">+</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>  <span class="fu">geom_label</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="at">data =</span> bols, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">bquote</span>(<span class="st">"hat(beta)[ols]"</span>)), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="at">nudge_x =</span> .<span class="dv">3</span>, <span class="at">nudge_y =</span> .<span class="dv">3</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>  ) <span class="sc">+</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> bhat) <span class="sc">+</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>])) <span class="sc">+</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>  <span class="fu">geom_label</span>(</span>
-<span id="cb2-21"><a href="#cb2-21"></a>    <span class="at">data =</span> bhat, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">bquote</span>(<span class="st">"hat(beta)[s]^L"</span>)), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb2-22"><a href="#cb2-22"></a>    <span class="at">nudge_x =</span> <span class="sc">-</span>.<span class="dv">4</span>, <span class="at">nudge_y =</span> <span class="sc">-</span>.<span class="dv">4</span></span>
-<span id="cb2-23"><a href="#cb2-23"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-1-1.svg" class="r-stretch quarto-figure-center"><p>This regularization set…</p>
-<ul>
-<li>… is convex (computationally efficient)</li>
-<li>… has corners (performs variable selection)</li>
-</ul>
-</section>
-<section id="ell_1-regularized-regression" class="slide level2">
-<h2><span class="math inline">\(\ell_1\)</span>-regularized regression</h2>
-<p>Known as</p>
-<ul>
-<li>“lasso”</li>
-<li>“basis pursuit”</li>
-</ul>
-<p>The estimator satisfies</p>
-<p><span class="math display">\[\blt = \argmin_{ \snorm{\beta}_1 \leq s}  \frac{1}{n}\snorm{\y-\X\beta}_2^2\]</span></p>
-<p>In its corresponding Lagrangian dual form:</p>
-<p><span class="math display">\[\bll = \argmin_{\beta} \frac{1}{n}\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1\]</span></p>
-</section>
-<section id="lasso" class="slide level2">
-<h2>Lasso</h2>
-<p>While the ridge solution can be easily computed</p>
-<p><span class="math display">\[\brl = \argmin_{\beta} \frac 1n \snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_2^2 = (\X^{\top}\X + \lambda \mathbf{I})^{-1} \X^{\top}\y\]</span></p>
-<p>the lasso solution</p>
-<p><span class="math display">\[\bll = \argmin_{\beta} \frac 1n\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1 = \; ??\]</span></p>
-<p>doesn’t have a closed-form solution.</p>
-<p>However, because the optimization problem is convex, there exist efficient algorithms for computing it</p>
-
-<aside><div>
-<p>The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice.</p>
-</div></aside></section>
-<section id="coefficient-path-ridge-vs-lasso" class="slide level2">
-<h2>Coefficient path: ridge vs lasso</h2>
-<div class="cell" data-layout-align="center">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a>X <span class="ot">&lt;-</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa) <span class="sc">|&gt;</span>  <span class="fu">as.matrix</span>()</span>
-<span id="cb3-4"><a href="#cb3-4"></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
-<span id="cb3-5"><a href="#cb3-5"></a>lasso <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y) <span class="co"># alpha = 1 by default</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>ridge <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>)</span>
-<span id="cb3-7"><a href="#cb3-7"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">5</span>, .<span class="dv">1</span>))</span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>)</span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="same-but-against-lambda" class="slide level2">
-<h2>Same but against Lambda</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">5</span>, .<span class="dv">1</span>))</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/ridge-v-lasso-again-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="additional-intuition-for-why-lasso-selects-variables" class="slide level2">
-<h2>Additional intuition for why Lasso selects variables</h2>
-<p>Suppose, for a particular <span class="math inline">\(\lambda\)</span>, I have solutions for <span class="math inline">\(\widehat{\beta}_k\)</span>, <span class="math inline">\(k = 1,\ldots,j-1, j+1,\ldots,p\)</span>.</p>
-<p>Let <span class="math inline">\(\widehat{\y}_{-j} = \X_{-j}\widehat{\beta}_{-j}\)</span>, and assume WLOG <span class="math inline">\(\overline{\X}_k = 0\)</span>, <span class="math inline">\(\X_k^\top\X_k = 1\ \forall k\)</span></p>
-<p>One can show that:</p>
-<p><span class="math display">\[
-\widehat{\beta}_j = S\left(\mathbf{X}^\top_j(\y - \widehat{\y}_{-j}),\ \lambda\right).
-\]</span></p>
-<p><span class="math display">\[
-S(z, \gamma) = \textrm{sign}(z)(|z| - \gamma)_+ = \begin{cases} z - \gamma &amp; z &gt; \gamma\\
-z + \gamma &amp; z &lt; -\gamma \\ 0 &amp; |z| \leq \gamma \end{cases}
-\]</span></p>
-<ul>
-<li>Iterating over this is called <span class="secondary">coordinate descent</span> and gives the solution</li>
-</ul>
-
-<aside class="notes">
-<ul>
-<li>If I were told all the other coefficient estimates.</li>
-<li>Then to find this one, I’d shrink when the gradient is big, or set to 0 if it gets too small.</li>
-</ul>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-<aside><div>
-<p>See for example, <a href="https://doi.org/10.18637/jss.v033.i01" class="uri">https://doi.org/10.18637/jss.v033.i01</a></p>
-</div></aside></section>
-<section id="packages" class="slide level2">
-<h2>Packages</h2>
-<p>There are two main <code>R</code> implementations for finding lasso</p>
-<p><code>{glmnet}</code>: <code>lasso = glmnet(X, Y, alpha=1)</code>.</p>
-<ul>
-<li>Setting <code>alpha = 0</code> gives ridge regression (as does <code>lm.ridge</code> in the <code>MASS</code> package)</li>
-<li>Setting <code>alpha</code> <span class="math inline">\(\in (0,1)\)</span> gives a method called the “elastic net” which combines ridge regression and lasso, more on that next lecture.</li>
-<li>If you don’t specify <code>alpha</code>, it does lasso</li>
-</ul>
-<p><code>{lars}</code>: <code>lars = lars(X, Y)</code></p>
-<ul>
-<li><p><code>lars()</code> also does other things called “Least angle” and “forward stagewise” in addition to “forward stepwise” regression</p></li>
-<li><p>The path returned by <code>lars()</code> is more useful than that returned by <code>glmnet()</code>.</p></li>
-</ul>
-<div class="fragment">
-<p><span class="secondary">But you should use <code>{glmnet}</code></span>.</p>
-</div>
-</section>
-<section id="choosing-the-lambda" class="slide level2">
-<h2>Choosing the <span class="math inline">\(\lambda\)</span></h2>
-<p>You have to choose <span class="math inline">\(\lambda\)</span> in lasso or in ridge regression</p>
-<p>lasso selects variables (by setting coefficients to zero), but the value of <span class="math inline">\(\lambda\)</span> determines how many/which.</p>
-<p>All of these packages come with CV built in.</p>
-<p>However, the way to do it differs from package to package</p>
-<div class="fragment">
-<p align="center">
-<iframe src="https://giphy.com/embed/fYfeQAOD8pSjN7M0jY" width="480" height="270" frameborder="0" class="giphy-embed">
-</iframe>
-</p>
-</div>
-</section>
-<section id="glmnet-version-same-procedure-for-lasso-or-ridge" class="slide level2">
-<h2><code>{glmnet}</code> version (same procedure for lasso or ridge)</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="1|2|3|4|5|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X, Y) <span class="co"># estimate full model and CV no good reason to call glmnet() itself</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="co"># 2. Look at the CV curve. If the dashed lines are at the boundaries, redo and adjust lambda</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>lambda_min <span class="ot">&lt;-</span> lasso<span class="sc">$</span>lambda.min <span class="co"># the value, not the location (or use lasso$lambda.1se)</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a>coeffs <span class="ot">&lt;-</span> <span class="fu">coefficients</span>(lasso, <span class="at">s =</span> <span class="st">"lambda.min"</span>) <span class="co"># s can be string or a number</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>preds <span class="ot">&lt;-</span> <span class="fu">predict</span>(lasso, <span class="at">newx =</span> X, <span class="at">s =</span> <span class="st">"lambda.1se"</span>) <span class="co"># must supply `newx`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<ul>
-<li><span class="math inline">\(\widehat{R}_{CV}\)</span> is an estimator of <span class="math inline">\(R_n\)</span>, it has bias and variance</li>
-<li>Because we did CV, we actually have 10 <span class="math inline">\(\widehat{R}\)</span> values, 1 per split.</li>
-<li>Calculate the mean (that’s what we’ve been using), but what about SE?</li>
-</ul>
-</section>
-<section id="section" class="slide level2">
-<h2></h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">0</span>))</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="fu">plot</span>(lasso) <span class="co"># a plot method for the cv fit</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="fu">plot</span>(lasso<span class="sc">$</span>glmnet.fit) <span class="co"># the glmnet.fit == glmnet(X,Y)</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">colSums</span>(<span class="fu">abs</span>(<span class="fu">coef</span>(lasso<span class="sc">$</span>glmnet.fit)[<span class="sc">-</span><span class="dv">1</span>, <span class="fu">drop</span>(lasso<span class="sc">$</span>index)])), <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="paths-with-chosen-lambda" class="slide level2">
-<h2>Paths with chosen lambda</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X, Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> <span class="fl">1e-10</span>) <span class="co"># added to get a minimum</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>))</span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>)</span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="fu">plot</span>(ridge<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(<span class="fu">coef</span>(ridge)))) <span class="co"># defaults to `lambda.1se`</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a><span class="fu">plot</span>(lasso<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"Lasso"</span>)</span>
-<span id="cb8-8"><a href="#cb8-8"></a><span class="fu">abline</span>(<span class="at">v =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(<span class="fu">coef</span>(lasso)))) <span class="co"># again, `lambda.1se` unless told otherwise</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-8-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="degrees-of-freedom" class="slide level2">
-<h2>Degrees of freedom</h2>
-<p><span class="secondary">Lasso is <strong>not</strong> a linear smoother</span>. There is no matrix <span class="math inline">\(S\)</span> such that <span class="math inline">\(\widehat{y} = Sy\)</span> for the predicted values from lasso.</p>
-<ul>
-<li><p>We can’t use <code>cv_nice()</code>.</p></li>
-<li><p>We don’t have <span class="math inline">\(\tr{S} = \textrm{df}\)</span> because <span class="secondary">there is no <span class="math inline">\(S\)</span></span>.</p></li>
-</ul>
-<p>However,</p>
-<ul>
-<li><p>One can show that <span class="math inline">\(\textrm{df}_\lambda = \E[\#(\widehat{\beta}_\lambda \neq 0)] = \E[||\widehat{\beta}_\lambda||_0]\)</span></p></li>
-<li><p>The proof is PhD-level material</p></li>
-</ul>
-<p>Note that the <span class="math inline">\(\widehat{\textrm{df}}_\lambda\)</span> is shown on the CV plot and that <code>lasso.glmnet$glmnet.fit$df</code> contains this value for all <span class="math inline">\(\lambda\)</span>.</p>
-</section>
-<section id="other-flavours" class="slide level2">
-<h2>Other flavours</h2>
-<dl>
-<dt>The elastic net</dt>
-<dd>
-generally used for correlated variables that combines a ridge/lasso penalty. Use <code>glmnet(..., alpha = a)</code> (0 &lt; <code>a</code> &lt; 1).
-</dd>
-<dt>Grouped lasso</dt>
-<dd>
-where variables are included or excluded in groups. Required for factors (1-hot encoding)
-</dd>
-<dt>Relaxed lasso</dt>
-<dd>
-Takes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Use <code>glmnet(..., relax = TRUE)</code>.
-</dd>
-<dt>Dantzig selector</dt>
-<dd>
-a slightly modified version of the lasso
-</dd>
-</dl>
-</section>
-<section id="lasso-cinematic-universe" class="slide level2">
-<h2>Lasso cinematic universe</h2>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/load-lidar-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="knn" class="slide level2">
+<h2>KNN</h2>
 <div class="flex">
-<div class="w-60">
+<div class="w-50">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="11-kernel-smoothers_files/figure-revealjs/small-lidar-again-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="w-50">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(FNN)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> </span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="fu">arrange</span>(position) </span>
+<span id="cb2-6"><a href="#cb2-6"></a></span>
+<span id="cb2-7"><a href="#cb2-7"></a>new_position <span class="ot">&lt;-</span> <span class="fu">seq</span>(</span>
+<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position), </span>
+<span id="cb2-9"><a href="#cb2-9"></a>  <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">length.out =</span> <span class="dv">101</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>)</span>
+<span id="cb2-12"><a href="#cb2-12"></a></span>
+<span id="cb2-13"><a href="#cb2-13"></a>knn3 <span class="ot">&lt;-</span> <span class="fu">knn.reg</span>(</span>
+<span id="cb2-14"><a href="#cb2-14"></a>  <span class="at">train =</span> arcuate_unif<span class="sc">$</span>position, </span>
+<span id="cb2-15"><a href="#cb2-15"></a>  <span class="at">test =</span> <span class="fu">matrix</span>(arcuate_unif<span class="sc">$</span>position, <span class="at">ncol =</span> <span class="dv">1</span>), </span>
+<span id="cb2-16"><a href="#cb2-16"></a>  <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa, </span>
+<span id="cb2-17"><a href="#cb2-17"></a>  <span class="at">k =</span> <span class="dv">3</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="this-method-is-k-nearest-neighbors." class="slide level2">
+<h2>This method is <span class="math inline">\(K\)</span>-nearest neighbors.</h2>
+<p>It’s a <span class="secondary">linear smoother</span> just like in previous lectures: <span class="math inline">\(\widehat{\mathbf{y}} = \mathbf{S} \mathbf{y}\)</span> for some matrix <span class="math inline">\(S\)</span>.</p>
+<p>You should imagine what <span class="math inline">\(\mathbf{S}\)</span> looks like.</p>
+<p>What is the effective degrees of freedom of KNN?</p>
+<p>KNN averages the neighbors with equal weight.</p>
+<p>But some neighbors are “closer” than other neighbors.</p>
+</section>
+<section id="local-averages" class="slide level2">
+<h2>Local averages</h2>
+<p>Instead of choosing the number of neighbors to average, we can average any observations within a certain distance.</p>
+
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"><div class="fragment">
+<p>The boxes have width 30.</p>
+</div>
+</section>
+<section id="what-is-a-kernel-smoother" class="slide level2">
+<h2>What is a “kernel” smoother?</h2>
+<ul>
+<li>The mathematics:</li>
+</ul>
+<blockquote>
+<p>A kernel is any function <span class="math inline">\(K\)</span> such that for any <span class="math inline">\(u\)</span>, <span class="math inline">\(K(u) \geq 0\)</span>, <span class="math inline">\(\int du K(u)=1\)</span> and <span class="math inline">\(\int uK(u)du=0\)</span>.</p>
+</blockquote>
+<ul>
+<li><p>The idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.</p></li>
+<li><p>The previous example is called the <span class="secondary">boxcar</span> kernel.</p></li>
+</ul>
+</section>
+<section id="smoothing-with-the-boxcar" class="slide level2">
+<h2>Smoothing with the boxcar</h2>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>testpts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="at">length.out =</span> <span class="dv">101</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>dmat <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">outer</span>(testpts, arcuate_unif<span class="sc">$</span>position, <span class="st">"-"</span>))</span>
+<span id="cb3-3"><a href="#cb3-3"></a>S <span class="ot">&lt;-</span> (dmat <span class="sc">&lt;</span> <span class="dv">15</span>)</span>
+<span id="cb3-4"><a href="#cb3-4"></a>S <span class="ot">&lt;-</span> S <span class="sc">/</span> <span class="fu">rowSums</span>(S)</span>
+<span id="cb3-5"><a href="#cb3-5"></a>boxcar <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">position =</span> testpts, <span class="at">fa =</span> S <span class="sc">%*%</span> arcuate_unif<span class="sc">$</span>fa)</span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> boxcar, <span class="at">colour =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/boxcar-1.svg" class="r-stretch quarto-figure-center"><p>This one gives the same non-zero weight to all points within <span class="math inline">\(\pm 15\)</span> range.</p>
+</section>
+<section id="other-kernels" class="slide level2">
+<h2>Other kernels</h2>
+<p>Most of the time, we don’t use the boxcar because the weights are weird. (constant)</p>
+<p>A more common one is the Gaussian kernel:</p>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="fl">7.5</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"><p>For the plot, I made <span class="math inline">\(\sigma=7.5\)</span>.</p>
+<p>Now the weights “die away” for points farther from where we’re predicting. (but all nonzero!!)</p>
+</section>
+<section id="other-kernels-1" class="slide level2">
+<h2>Other kernels</h2>
+<p>What if I made <span class="math inline">\(\sigma=15\)</span>?</p>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"><p>Before, points far from <span class="math inline">\(x_{15}\)</span> got very small weights, now they have more influence.</p>
+<p>For the Gaussian kernel, <span class="math inline">\(\sigma\)</span> determines something like the “range” of the smoother.</p>
+</section>
+<section id="many-gaussians" class="slide level2">
+<h2>Many Gaussians</h2>
+<p>The following code creates <span class="math inline">\(\mathbf{S}\)</span> for Gaussian kernel smoothers with different <span class="math inline">\(\sigma\)</span></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(x))</span>
+<span id="cb6-2"><a href="#cb6-2"></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb6-3"><a href="#cb6-3"></a>  gg <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg), <span class="st">"/"</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb7-2"><a href="#cb7-2"></a>  gg <span class="ot">&lt;-</span>  <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg),<span class="st">'/'</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>}</span>
+<span id="cb7-5"><a href="#cb7-5"></a>boxcar<span class="sc">$</span>S15 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">15</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-6"><a href="#cb7-6"></a>boxcar<span class="sc">$</span>S08 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">8</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-7"><a href="#cb7-7"></a>boxcar<span class="sc">$</span>S30 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">30</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-8"><a href="#cb7-8"></a>bc <span class="ot">=</span> boxcar <span class="sc">%&gt;%</span> <span class="fu">select</span>(position, S15, S08, S30) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>position, <span class="at">names_to =</span> <span class="st">"Sigma"</span>)</span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span> </span>
+<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span> </span>
+<span id="cb7-12"><a href="#cb7-12"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> bc, <span class="fu">aes</span>(position, value, <span class="at">colour =</span> Sigma), <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb7-13"><a href="#cb7-13"></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="the-bandwidth" class="slide level2">
+<h2>The bandwidth</h2>
+<ul>
+<li><p>Choosing <span class="math inline">\(\sigma\)</span> is <span class="secondary">very</span> important.</p></li>
+<li><p>This “range” parameter is called the <span class="secondary">bandwidth</span>.</p></li>
+<li><p>It is way more important than which kernel you use.</p></li>
+<li><p>The default kernel in <code>ksmooth()</code> is something called ‘Epanechnikov’:</p></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>epan <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> (<span class="fu">abs</span>(x) <span class="sc">&lt;</span> <span class="dv">1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> epan, <span class="at">colour =</span> green, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-7-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="choosing-the-bandwidth" class="slide level2">
+<h2>Choosing the bandwidth</h2>
+<p>As we have discussed, kernel smoothing (and KNN) are linear smoothers</p>
+<p><span class="math display">\[\widehat{\mathbf{y}} = \mathbf{S}\mathbf{y}\]</span></p>
+<p>The <span class="secondary">degrees of freedom</span> is <span class="math inline">\(\textrm{tr}(\mathbf{S})\)</span></p>
+<p>Therefore we can use our model selection criteria from before</p>
+<div class="fragment">
+<p>Unfortunately, these don’t satisfy the “technical condition”, so <code>cv_nice()</code> doesn’t give LOO-CV</p>
+</div>
+</section>
+<section id="smoothing-the-full-lidar-data" class="slide level2">
+<h2>Smoothing the full Lidar data</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>ar <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">200</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a>gcv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">mean</span>(<span class="fu">diag</span>(S)))<span class="sc">^</span><span class="dv">2</span> )</span>
+<span id="cb9-6"><a href="#cb9-6"></a>}</span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(ar<span class="sc">$</span>position))</span>
+<span id="cb9-9"><a href="#cb9-9"></a>sigmas <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span>(<span class="fu">seq</span>(<span class="fu">log10</span>(<span class="dv">300</span>), <span class="fu">log10</span>(.<span class="dv">3</span>), <span class="at">length =</span> <span class="dv">100</span>))</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a>gcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">gcv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
+<span id="cb9-12"><a href="#cb9-12"></a>best_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(gcvs)]</span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a>ar<span class="sc">$</span>smoothed <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(best_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="smoothing-the-full-lidar-data-1" class="slide level2">
+<h2>Smoothing the full Lidar data</h2>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">sigma =</span> sigmas, <span class="at">gcv =</span> gcvs), <span class="fu">aes</span>(sigma, gcv)) <span class="sc">+</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> best_s, <span class="at">colour =</span> red) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>  <span class="fu">xlab</span>(<span class="fu">sprintf</span>(<span class="st">"Sigma, best is sig = %.2f"</span>, best_s))</span>
+<span id="cb10-6"><a href="#cb10-6"></a>g4 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ar, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> smoothed), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>)</span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="fu">plot_grid</span>(g3, g4, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/smoothed-lidar-1.svg" class="r-stretch quarto-figure-center"><p>I considered <span class="math inline">\(\sigma \in [0.3,\ 300]\)</span> and used <span class="math inline">\(3.97\)</span>.</p>
+<p>It’s too wiggly, to my eye. Typical for GCV.</p>
+</section>
+<section id="smoothing-manually" class="slide level2">
+<h2>Smoothing manually</h2>
+<p>I did Kernel Smoothing “manually”</p>
+<ol type="1">
+<li><p>For a fixed bandwidth</p></li>
+<li><p>Compute the smoothing matrix</p></li>
+<li><p>Make the predictions</p></li>
+<li><p>Repeat and compute GCV</p></li>
+</ol>
+<p>The point is to “show how it works”. It’s also really easy.</p>
+</section>
+<section id="r-functions-packages" class="slide level2">
+<h2><code>R</code> functions / packages</h2>
+<p>There are a number of other ways to do this in R</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">loess</span>()</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="fu">ksmooth</span>()</span>
+<span id="cb11-3"><a href="#cb11-3"></a>KernSmooth<span class="sc">::</span><span class="fu">locpoly</span>()</span>
+<span id="cb11-4"><a href="#cb11-4"></a>mgcv<span class="sc">::</span><span class="fu">gam</span>()</span>
+<span id="cb11-5"><a href="#cb11-5"></a>np<span class="sc">::</span><span class="fu">npreg</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These have tricks and ways of doing CV and other things automatically.</p>
 <dl>
-<dt>SCAD</dt>
+<dt>Note</dt>
 <dd>
-a non-convex version of lasso that adds a more severe variable selection penalty
+All I needed was the distance matrix <code>dist(x)</code>.
 </dd>
-<dt><span class="math inline">\(\sqrt{\textrm{lasso}}\)</span></dt>
 <dd>
-claims to be tuning parameter free (but isn’t). Uses <span class="math inline">\(\Vert\cdot\Vert_2\)</span> instead of <span class="math inline">\(\Vert\cdot\Vert_1\)</span> for the loss.
+Given ANY distance function
 </dd>
-<dt>Generalized lasso</dt>
 <dd>
-Adds various additional matrices to the penalty term (e.g.&nbsp;<span class="math inline">\(\Vert D\beta\Vert_1\)</span>).
+say, <span class="math inline">\(d(\mathbf{x}_i, \mathbf{x}_j) = \Vert\mathbf{x}_i - \mathbf{x}_j\Vert_2 + I(x_{i,3} = x_{j,3})\)</span>
+</dd>
+<dd>
+I can use these methods.
 </dd>
 </dl>
-</div>
-<div class="w-40">
-<p><img data-src="https://sportshub.cbsistatic.com/i/2022/08/10/d348f903-585f-4aa6-aebc-d05173761065/brett-goldstein-hercules.jpg"></p>
-</div>
-</div>
 </section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
-<p>What happens when we’re tired of all this linearity.</p>
+<p>Why don’t we just smooth everything all the time?</p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>

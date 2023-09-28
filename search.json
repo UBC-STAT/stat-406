@@ -28,11 +28,102 @@
     "text": "Let’s just recap THE RIGHT WAY.\n\nFor HW or Labs, always start on main.\nPull in the remote ⬇️ just to be sure everything is up-to-date.\nCreate a branch for your HW/Lab and switch to it. The name doesn’t matter, but it’s good practice to name in something meaningful (rather than something like stat406-lab-1 when you’re doing lab 4).\nOpen the HW/Lab .Rmd and click Knit. Make sure it works.\nDo the work, saving regularly. When you complete a section, Commit the file with a useful message (Push or Not).\nOnce you’re done, make sure that you have done the minimum number of Commits, push ⬆️ your .Rmd and the knitted .pdf.\nOpen a PR on GitHub and respond to the questions.\nMake sure that only the .Rmd and the .pdf for this HW/Lab are there. And Create Pull Request.\nOn your machine, switch the branch to main to prepare for the next HW/Lab.\n\nIf the TA asks for changes, just switch to the branch for this assignment, and make the requested changes. It’s all on your machine (even if the pdf disappears when you switch)."
   },
   {
+    "objectID": "schedule/slides/10-basis-expansions.html#meta-lecture",
+    "href": "schedule/slides/10-basis-expansions.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "10 Basis expansions",
+    "text": "10 Basis expansions\nStat 406\nDaniel J. McDonald\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#what-about-nonlinear-things",
+    "href": "schedule/slides/10-basis-expansions.html#what-about-nonlinear-things",
+    "title": "UBC Stat406 2023W",
+    "section": "What about nonlinear things",
+    "text": "What about nonlinear things\n\\[\\Expect{Y \\given X=x} = \\sum_{j=1}^p x_j\\beta_j\\]\nNow we relax this assumption of linearity:\n\\[\\Expect{Y \\given X=x} = f(x)\\]\nHow do we estimate \\(f\\)?\n\nFor this lecture, we use \\(x \\in \\R\\) (1 dimensional)\nHigher dimensions are possible, but complexity grows exponentially.\nWe’ll see some special techniques for \\(x\\in\\R^p\\) later this Module."
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#start-simple",
+    "href": "schedule/slides/10-basis-expansions.html#start-simple",
+    "title": "UBC Stat406 2023W",
+    "section": "Start simple",
+    "text": "Start simple\nFor any \\(f : \\R \\rightarrow [0,1]\\)\n\\[f(x) = f(x_0) + f'(x_0)(x-x_0) + \\frac{1}{2}f''(x_0)(x-x_0)^2 + \\frac{1}{3!}f'''(x_0)(x-x_0)^3 + R_3(x-x_0)\\]\nSo we can linearly regress \\(y_i = f(x_i)\\) on the polynomials.\nThe more terms we use, the smaller \\(R\\).\n\n\nCode\nset.seed(406406)\ndata(arcuate, package = \"Stat406\") \narcuate &lt;- arcuate |&gt; slice_sample(n = 220)\narcuate %&gt;% \n  ggplot(aes(position, fa)) + \n  geom_point(color = blue) +\n  geom_smooth(color = orange, formula = y ~ poly(x, 3), method = \"lm\", se = FALSE)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#same-thing-different-orders",
+    "href": "schedule/slides/10-basis-expansions.html#same-thing-different-orders",
+    "title": "UBC Stat406 2023W",
+    "section": "Same thing, different orders",
+    "text": "Same thing, different orders\n\n\nCode\narcuate %&gt;% \n  ggplot(aes(position, fa)) + \n  geom_point(color = blue) + \n  geom_smooth(aes(color = \"a\"), formula = y ~ poly(x, 4), method = \"lm\", se = FALSE) +\n  geom_smooth(aes(color = \"b\"), formula = y ~ poly(x, 7), method = \"lm\", se = FALSE) +\n  geom_smooth(aes(color = \"c\"), formula = y ~ poly(x, 25), method = \"lm\", se = FALSE) +\n  scale_color_manual(name = \"Taylor order\",\n    values = c(green, red, orange), labels = c(\"4 terms\", \"7 terms\", \"25 terms\"))"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#still-a-linear-smoother",
+    "href": "schedule/slides/10-basis-expansions.html#still-a-linear-smoother",
+    "title": "UBC Stat406 2023W",
+    "section": "Still a “linear smoother”",
+    "text": "Still a “linear smoother”\nReally, this is still linear regression, just in a transformed space.\nIt’s not linear in \\(x\\), but it is linear in \\((x,x^2,x^3)\\) (for the 3rd-order case)\nSo, we’re still doing OLS with\n\\[\\X=\\begin{bmatrix}1& x_1 & x_1^2 & x_1^3 \\\\ \\vdots&&&\\vdots\\\\1& x_n & x_n^2 & x_n^3\\end{bmatrix}\\]\nSo we can still use our nice formulas for LOO-CV, GCV, Cp, AIC, etc.\n\nmax_deg &lt;- 20\ncv_nice &lt;- function(mdl) mean( residuals(mdl)^2 / (1 - hatvalues(mdl))^2 ) \ncvscores &lt;- map_dbl(seq_len(max_deg), ~ cv_nice(lm(fa ~ poly(position, .), data = arcuate)))"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#section",
+    "href": "schedule/slides/10-basis-expansions.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Code\nlibrary(cowplot)\ng1 &lt;- ggplot(tibble(cvscores, degrees = seq(max_deg)), aes(degrees, cvscores)) +\n  geom_point(colour = blue) +\n  geom_line(colour = blue) + \n  labs(ylab = 'LOO-CV', xlab = 'polynomial degree') +\n  geom_vline(xintercept = which.min(cvscores), linetype = \"dotted\") \ng2 &lt;- ggplot(arcuate, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_smooth(\n    colour = orange, \n    formula = y ~ poly(x, which.min(cvscores)), \n    method = \"lm\", \n    se = FALSE\n  )\nplot_grid(g1, g2, ncol = 2)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#other-bases",
+    "href": "schedule/slides/10-basis-expansions.html#other-bases",
+    "title": "UBC Stat406 2023W",
+    "section": "Other bases",
+    "text": "Other bases\n\nPolynomials\n\n\\(x \\mapsto \\left(1,\\ x,\\ x^2, \\ldots, x^p\\right)\\) (technically, not quite this, they are orthogonalized)\n\nLinear splines\n\n\\(x \\mapsto \\bigg(1,\\ x,\\ (x-k_1)_+,\\ (x-k_2)_+,\\ldots, (x-k_p)_+\\bigg)\\) for some choices \\(\\{k_1,\\ldots,k_p\\}\\)\n\nCubic splines\n\n\\(x \\mapsto \\bigg(1,\\ x,\\ x^2,\\ x^3,\\ (x-k_1)^3_+,\\ (x-k_2)^3_+,\\ldots, (x-k_p)^3_+\\bigg)\\) for some choices \\(\\{k_1,\\ldots,k_p\\}\\)\n\nFourier series\n\n\\(x \\mapsto \\bigg(1,\\ \\cos(2\\pi x),\\ \\sin(2\\pi x),\\ \\cos(2\\pi 2 x),\\ \\sin(2\\pi 2 x), \\ldots, \\cos(2\\pi p x),\\ \\sin(2\\pi p x)\\bigg)\\)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#how-do-you-choose",
+    "href": "schedule/slides/10-basis-expansions.html#how-do-you-choose",
+    "title": "UBC Stat406 2023W",
+    "section": "How do you choose?",
+    "text": "How do you choose?\nProcedure 1:\n\nPick your favorite basis. This is not as easy as it sounds. For instance, if \\(f\\) is a step function, linear splines will do well with good knots, but polynomials will be terrible unless you have lots of terms.\nPerform OLS on different orders.\nUse model selection criterion to choose the order.\n\nProcedure 2:\n\nUse a bunch of high-order bases, say Linear splines and Fourier series and whatever else you like.\nUse Lasso or Ridge regression or elastic net. (combining bases can lead to multicollinearity, but we may not care)\nUse model selection criteria to choose the tuning parameter."
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#try-both-procedures",
+    "href": "schedule/slides/10-basis-expansions.html#try-both-procedures",
+    "title": "UBC Stat406 2023W",
+    "section": "Try both procedures",
+    "text": "Try both procedures\n\nSplit arcuate into 75% training data and 25% testing data.\nEstimate polynomials up to 20 as before and choose best order.\nDo ridge, lasso and elastic net \\(\\alpha=.5\\) on 20th order polynomials, B splines with 20 knots, and Fourier series with \\(p=20\\). Choose tuning parameter (using lambda.1se).\nRepeat 1-3 10 times (different splits)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#section-1",
+    "href": "schedule/slides/10-basis-expansions.html#section-1",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "library(glmnet)\nmapto01 &lt;- function(x, pad = .005) (x - min(x) + pad) / (max(x) - min(x) + 2 * pad)\nx &lt;- mapto01(arcuate$position)\nXmat &lt;- cbind(\n  poly(x, 20), \n  splines::bs(x, df = 20), \n  cos(2 * pi * outer(x, 1:20)), sin(2 * pi * outer(x, 1:20))\n)\ny &lt;- arcuate$fa\nrmse &lt;- function(z, s) sqrt(mean( (z - s)^2 ))\nnzero &lt;- function(x) with(x, nzero[match(lambda.1se, lambda)])\nsim &lt;- function(maxdeg = 20, train_frac = 0.75) {\n  n &lt;- nrow(arcuate)\n  train &lt;- as.logical(rbinom(n, 1, train_frac))\n  test &lt;- !train # not precisely 25%, but on average\n  polycv &lt;- map_dbl(seq(maxdeg), ~ cv_nice(lm(y ~ Xmat[,seq(.)], subset = train))) # figure out which order to use\n  bpoly &lt;- lm(y[train] ~ Xmat[train, seq(which.min(polycv))]) # now use it\n  lasso &lt;- cv.glmnet(Xmat[train, ], y[train])\n  ridge &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = 0)\n  elnet &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = .5)\n  tibble(\n    methods = c(\"poly\", \"lasso\", \"ridge\", \"elnet\"),\n    rmses = c(\n      rmse(y[test], cbind(1, Xmat[test, 1:which.min(polycv)]) %*% coef(bpoly)),\n      rmse(y[test], predict(lasso, Xmat[test,])),\n      rmse(y[test], predict(ridge, Xmat[test,])),\n      rmse(y[test], predict(elnet, Xmat[test,]))\n    ),\n    nvars = c(which.min(polycv), nzero(lasso), nzero(ridge), nzero(elnet))\n  )\n}\nset.seed(12345)\nsim_results &lt;- map(seq(20), sim) |&gt; list_rbind() # repeat it 20 times"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#section-2",
+    "href": "schedule/slides/10-basis-expansions.html#section-2",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Code\nsim_results |&gt;  \n  pivot_longer(-methods) |&gt; \n  ggplot(aes(methods, value, fill = methods)) + \n  geom_boxplot() +\n  facet_wrap(~ name, scales = \"free_y\") + \n  ylab(\"\") +\n  theme(legend.position = \"none\") + \n  xlab(\"\") +\n  scale_fill_viridis_d(begin = .2, end = 1)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#common-elements",
+    "href": "schedule/slides/10-basis-expansions.html#common-elements",
+    "title": "UBC Stat406 2023W",
+    "section": "Common elements",
+    "text": "Common elements\nIn all these cases, we transformed \\(x\\) to a higher-dimensional space\nUsed \\(p+1\\) dimensions with polynomials\nUsed \\(p+4\\) dimensions with cubic splines\nUsed \\(2p+1\\) dimensions with Fourier basis"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#featurization",
+    "href": "schedule/slides/10-basis-expansions.html#featurization",
+    "title": "UBC Stat406 2023W",
+    "section": "Featurization",
+    "text": "Featurization\nEach case applied a feature map to \\(x\\), call it \\(\\Phi\\)\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNeural networks (coming in module 4) use this idea\nYou’ve also probably seen it in earlier courses when you added interaction terms or other transformations.\n\nSome methods (notably Support Vector Machines and Ridge regression) allow \\(k=\\infty\\)\nSee [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)"
+  },
+  {
     "objectID": "schedule/slides/08-ridge-regression.html#meta-lecture",
     "href": "schedule/slides/08-ridge-regression.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "08 Ridge regression",
-    "text": "08 Ridge regression\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
+    "text": "08 Ridge regression\nStat 406\nDaniel J. McDonald\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
     "objectID": "schedule/slides/08-ridge-regression.html#recap",
@@ -67,7 +158,7 @@
     "href": "schedule/slides/08-ridge-regression.html#geometry-of-ridge-regression-contours",
     "title": "UBC Stat406 2023W",
     "section": "Geometry of ridge regression (contours)",
-    "text": "Geometry of ridge regression (contours)\n\n\nCode\nlibrary(mvtnorm)\nnorm_ball &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- tibble(x = cos(tg), b = (1 - abs(x)^q)^(1 / q), bm = -b) |&gt;\n    pivot_longer(-x, values_to = \"y\")\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipse_data &lt;- function(\n  n = 75, xlim = c(-2, 3), ylim = c(-2, 3),\n  mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  expand_grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)) |&gt;\n    rowwise() |&gt;\n    mutate(z = dmvnorm(c(x, y), mean, Sigma))\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6, niter = 20) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  feasible &lt;- (ed$x^q + ed$y^q)^(1 / q) &lt;= 1\n  best &lt;- ed[feasible, ]\n  best[which.max(best$z), ]\n}\n\n\nnb &lt;- norm_ball(2)\ned &lt;- ellipse_data()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 2)\nggplot(nb, aes(x, y)) +\n  xlim(-2, 2) +\n  ylim(-2, 2) +\n  geom_path(color = red) +\n  geom_contour(mapping = aes(z = z), color = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal() +\n  geom_label(\n    data = bols,\n    mapping = aes(label = bquote(\"hat(beta)[ols]\")),\n    parse = TRUE, \n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  theme_bw(base_size = 24) +\n  geom_label(\n    data = bhat,\n    mapping = aes(label = bquote(\"hat(beta)[s]^R\")),\n    parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )"
+    "text": "Geometry of ridge regression (contours)\n\n\nCode\nlibrary(mvtnorm)\nnorm_ball &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- tibble(x = cos(tg), b = (1 - abs(x)^q)^(1 / q), bm = -b) |&gt;\n    pivot_longer(-x, values_to = \"y\")\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipse_data &lt;- function(\n  n = 75, xlim = c(-2, 3), ylim = c(-2, 3),\n  mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  expand_grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)) |&gt;\n    rowwise() |&gt;\n    mutate(z = dmvnorm(c(x, y), mean, Sigma))\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6, niter = 20) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  feasible &lt;- (ed$x^q + ed$y^q)^(1 / q) &lt;= 1\n  best &lt;- ed[feasible, ]\n  best[which.max(best$z), ]\n}\n\n\nnb &lt;- norm_ball(2)\ned &lt;- ellipse_data()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 2)\nggplot(nb, aes(x, y)) +\n  xlim(-2, 2) +\n  ylim(-2, 2) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal() +\n  geom_label(\n    data = bols,\n    mapping = aes(label = bquote(\"hat(beta)[ols]\")),\n    parse = TRUE, \n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  theme_bw(base_size = 24) +\n  geom_label(\n    data = bhat,\n    mapping = aes(label = bquote(\"hat(beta)[s]^R\")),\n    parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )"
   },
   {
     "objectID": "schedule/slides/08-ridge-regression.html#brief-aside-on-norms",
@@ -2111,7 +2202,7 @@
     "href": "schedule/slides/09-l1-penalties.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "09 L1 penalties",
-    "text": "09 L1 penalties\nStat 406\nDaniel J. McDonald\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "09 L1 penalties\nStat 406\nDaniel J. McDonald\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#last-time",
@@ -2132,7 +2223,7 @@
     "href": "schedule/slides/09-l1-penalties.html#the-best-of-both-worlds",
     "title": "UBC Stat406 2023W",
     "section": "The best of both worlds",
-    "text": "The best of both worlds\n\n\nCode\nnb &lt;- normBall(1)\ned &lt;- ellipseData()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 1)\nggplot(nb, aes(x, y)) +\n  geom_path(color = red) +\n  geom_contour(mapping = aes(z = z), color = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal(xlim = c(-2, 2), ylim = c(-2, 2)) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  geom_label(\n    data = bols, mapping = aes(label = bquote(\"hat(beta)[ols]\")), parse = TRUE,\n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  geom_label(\n    data = bhat, mapping = aes(label = bquote(\"hat(beta)[s]^L\")), parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )\n\n\n\nThis regularization set…\n\n… is convex (computationally efficient)\n… has corners (performs variable selection)"
+    "text": "The best of both worlds\n\n\nCode\nnb &lt;- normBall(1)\ned &lt;- ellipseData()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 1)\nggplot(nb, aes(x, y)) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal(xlim = c(-2, 2), ylim = c(-2, 2)) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  geom_label(\n    data = bols, mapping = aes(label = bquote(\"hat(beta)[ols]\")), parse = TRUE,\n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  geom_label(\n    data = bhat, mapping = aes(label = bquote(\"hat(beta)[s]^L\")), parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )\n\n\n\nThis regularization set…\n\n… is convex (computationally efficient)\n… has corners (performs variable selection)"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#ell_1-regularized-regression",
@@ -2146,90 +2237,202 @@
     "href": "schedule/slides/09-l1-penalties.html#lasso",
     "title": "UBC Stat406 2023W",
     "section": "Lasso",
-    "text": "Lasso\nWhile the ridge solution can be easily computed\n\\[\\brl = \\argmin_{\\beta} \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_2^2 = (\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1} \\X^{\\top}\\y\\]\nthe lasso solution\n\\[\\bll = \\argmin_{\\beta} \\frac 1n\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1 = \\; ??\\]\ndoesn’t have a closed form solution.\nHowever, because the optimization problem is convex, there exist efficient algorithms for computing it\n(The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice.)"
+    "text": "Lasso\nWhile the ridge solution can be easily computed\n\\[\\brl = \\argmin_{\\beta} \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_2^2 = (\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1} \\X^{\\top}\\y\\]\nthe lasso solution\n\\[\\bll = \\argmin_{\\beta} \\frac 1n\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1 = \\; ??\\]\ndoesn’t have a closed-form solution.\nHowever, because the optimization problem is convex, there exist efficient algorithms for computing it\n\n\nThe best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice."
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
     "href": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
     "title": "UBC Stat406 2023W",
     "section": "Coefficient path: ridge vs lasso",
-    "text": "Coefficient path: ridge vs lasso\n\n\nCode\nlibrary(glmnet)\ndata(prostate, package = \"ElemStatLearn\")\nX &lt;- prostate %&gt;% dplyr::select(-train,-lpsa) %&gt;% as.matrix()\nY &lt;- prostate$lpsa\nlasso &lt;- glmnet(x = X, y = Y) # alpha = 1 by default\nridge &lt;- glmnet(x = X, y = Y, alpha = 0)\nop &lt;- par()\npar(mfrow = c(1, 2), mar = c(5, 3, 3, .1))\nplot(lasso, main = \"Lasso\")\nplot(ridge, main = \"Ridge\")"
+    "text": "Coefficient path: ridge vs lasso\n\n\nCode\nlibrary(glmnet)\ndata(prostate, package = \"ElemStatLearn\")\nX &lt;- prostate |&gt; dplyr::select(-train, -lpsa) |&gt;  as.matrix()\nY &lt;- prostate$lpsa\nlasso &lt;- glmnet(x = X, y = Y) # alpha = 1 by default\nridge &lt;- glmnet(x = X, y = Y, alpha = 0)\nop &lt;- par()\n\n\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\")\nplot(ridge, main = \"Ridge\")"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#same-but-against-lambda",
     "href": "schedule/slides/09-l1-penalties.html#same-but-against-lambda",
     "title": "UBC Stat406 2023W",
     "section": "Same but against Lambda",
-    "text": "Same but against Lambda\n\npar(mfrow = c(1, 2), mar = c(5, 3, 3, .1))\nplot(lasso, main = \"Lasso\", xvar = \"lambda\")\nplot(ridge, main = \"Ridge\", xvar = \"lambda\")"
+    "text": "Same but against Lambda\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\", xvar = \"lambda\")\nplot(ridge, main = \"Ridge\", xvar = \"lambda\")"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#why-does-lasso-select-variables",
-    "href": "schedule/slides/09-l1-penalties.html#why-does-lasso-select-variables",
+    "objectID": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
+    "href": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
     "title": "UBC Stat406 2023W",
-    "section": "Why does Lasso select variables?",
-    "text": "Why does Lasso select variables?\nSuppose I have solutions for \\(\\widehat{\\beta}_j\\), \\(j = 1,\\ldots,j-1, j+1,\\ldots,p\\).\nLet \\(\\widehat{\\y}_{-j} = \\X_{-j}\\widehat{\\beta}_{-j}\\).\nOne can show that:\n\\[\n\\widehat{\\beta}_j = S\\left(\\mathbf{X}^\\top_j(\\y - \\widehat{\\y}_{-j}),\\ \\lambda\\right).\n\\]\n\\[\nS(z, \\gamma) = \\textrm{sign}(z)(|z| - \\gamma)_+ = \\begin{cases} z - \\gamma & z &gt; \\gamma\\\\\nz + \\gamma & z &lt; -\\gamma \\\\ 0 & |z| \\leq \\gamma \\end{cases}\n\\]\nIterating over this is called coordinate descent and gives the solution.\n\n\n\nIf I were told all the other coefficient estimates.\nThen to find this one, I’d shrink when the gradient is big, or set to 0 if it gets too small.\n\n\n\nSee for example, https://doi.org/10.18637/jss.v033.i01"
+    "section": "Additional intuition for why Lasso selects variables",
+    "text": "Additional intuition for why Lasso selects variables\nSuppose, for a particular \\(\\lambda\\), I have solutions for \\(\\widehat{\\beta}_k\\), \\(k = 1,\\ldots,j-1, j+1,\\ldots,p\\).\nLet \\(\\widehat{\\y}_{-j} = \\X_{-j}\\widehat{\\beta}_{-j}\\), and assume WLOG \\(\\overline{\\X}_k = 0\\), \\(\\X_k^\\top\\X_k = 1\\ \\forall k\\)\nOne can show that:\n\\[\n\\widehat{\\beta}_j = S\\left(\\mathbf{X}^\\top_j(\\y - \\widehat{\\y}_{-j}),\\ \\lambda\\right).\n\\]\n\\[\nS(z, \\gamma) = \\textrm{sign}(z)(|z| - \\gamma)_+ = \\begin{cases} z - \\gamma & z &gt; \\gamma\\\\\nz + \\gamma & z &lt; -\\gamma \\\\ 0 & |z| \\leq \\gamma \\end{cases}\n\\]\n\nIterating over this is called coordinate descent and gives the solution\n\n\n\n\nIf I were told all the other coefficient estimates.\nThen to find this one, I’d shrink when the gradient is big, or set to 0 if it gets too small.\n\n\n\nSee for example, https://doi.org/10.18637/jss.v033.i01"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#packages",
     "href": "schedule/slides/09-l1-penalties.html#packages",
     "title": "UBC Stat406 2023W",
     "section": "Packages",
-    "text": "Packages\nThere are two main R implementations for finding lasso\n{glmnet}: lasso.out = glmnet(X, Y, alpha=1).\n\nSetting alpha = 0 gives ridge regression (as does lm.ridge in the MASS package)\nSetting alpha \\(\\in (0,1)\\) gives a method called the “elastic net” which combines ridge regression and lasso, more on that next lecture.\nIf you don’t specify alpha, it does lasso\n\n{lars}: lars.out = lars(X, Y) * lars also does other things called “Least angle” and “forward stagewise” in addition to “forward stepwise” regression"
-  },
-  {
-    "objectID": "schedule/slides/09-l1-penalties.html#lots-of-others-but-these-are-the-biggies",
-    "href": "schedule/slides/09-l1-penalties.html#lots-of-others-but-these-are-the-biggies",
-    "title": "UBC Stat406 2023W",
-    "section": "(lots of others, but these are the biggies)",
-    "text": "(lots of others, but these are the biggies)\n\nlars (this one came first)\nglmnet (this one is faster)\n\nUse different algorithms, but both compute the solution for a range of \\(\\lambda\\).\nlars starts with an empty model and adds coefficients until saturated. The sequence of \\(\\lambda\\)’s comes from the nature of the optimization problem.\nglmnet starts with an empty model and examines each value of \\(\\lambda\\) using previous values as “warm starts”. It is generally much faster than lars and uses lots of other tricks (as well as compiled code) for extra speed.\nThe path returned by lars is more useful than that returned by glmnet.\n\nBut you should use glmnet."
+    "text": "Packages\nThere are two main R implementations for finding lasso\n{glmnet}: lasso = glmnet(X, Y, alpha=1).\n\nSetting alpha = 0 gives ridge regression (as does lm.ridge in the MASS package)\nSetting alpha \\(\\in (0,1)\\) gives a method called the “elastic net” which combines ridge regression and lasso, more on that next lecture.\nIf you don’t specify alpha, it does lasso\n\n{lars}: lars = lars(X, Y)\n\nlars() also does other things called “Least angle” and “forward stagewise” in addition to “forward stepwise” regression\nThe path returned by lars() is more useful than that returned by glmnet().\n\n\nBut you should use {glmnet}."
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
     "href": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
     "title": "UBC Stat406 2023W",
-    "section": "Choosing the lambda",
-    "text": "Choosing the lambda\nYou have to choose \\(\\lambda\\) in lasso or in ridge regression\nlasso selects variables (by setting coefficients to zero), but the value of \\(\\lambda\\) determines how many/which.\nAll of these packages come with CV built in.\nHowever, the way to do it differs from package to package"
+    "section": "Choosing the \\(\\lambda\\)",
+    "text": "Choosing the \\(\\lambda\\)\nYou have to choose \\(\\lambda\\) in lasso or in ridge regression\nlasso selects variables (by setting coefficients to zero), but the value of \\(\\lambda\\) determines how many/which.\nAll of these packages come with CV built in.\nHowever, the way to do it differs from package to package"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#glmnet-version-lasso-or-ridge",
-    "href": "schedule/slides/09-l1-penalties.html#glmnet-version-lasso-or-ridge",
+    "objectID": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
+    "href": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
     "title": "UBC Stat406 2023W",
-    "section": "glmnet version (lasso or ridge)",
-    "text": "glmnet version (lasso or ridge)\n\n# 1. Estimate cv and model at once, no formula version\nlasso.glmnet &lt;- cv.glmnet(X, Y) \n#   no good reason to call glmnet() itself\n# 2. Look at the CV curve\n# 3. If the dashed lines are at the boundaries, redo with better lambda\nbest.lam &lt;- lasso.glmnet$lambda.min \n#   the value, not the location (or use lasso$lambda.1se)\n# 4. Return the coefs/predictions for the best model\ncoefs.glmnet &lt;- coefficients(lasso.glmnet, s = \"lambda.min\")\npreds.glmnet &lt;- predict(lasso.glmnet, newx = X, s = \"lambda.1se\") \n# must supply `newx`\n\n\n\\(\\widehat{R}_{CV}\\) is an estimator of \\(R_n\\), it has bias and variance\nBecause we did CV, we actually have 10 \\(\\widehat{R}\\) values, 1 per split.\nCalculate the mean (that’s what we’ve been using), but what about SE?"
+    "section": "{glmnet} version (same procedure for lasso or ridge)",
+    "text": "{glmnet} version (same procedure for lasso or ridge)\n\nlasso &lt;- cv.glmnet(X, Y) # estimate full model and CV no good reason to call glmnet() itself\n# 2. Look at the CV curve. If the dashed lines are at the boundaries, redo and adjust lambda\nlambda_min &lt;- lasso$lambda.min # the value, not the location (or use lasso$lambda.1se)\ncoeffs &lt;- coefficients(lasso, s = \"lambda.min\") # s can be string or a number\npreds &lt;- predict(lasso, newx = X, s = \"lambda.1se\") # must supply `newx`\n\n\n\\(\\widehat{R}_{CV}\\) is an estimator of \\(R_n\\), it has bias and variance\nBecause we did CV, we actually have 10 \\(\\widehat{R}\\) values, 1 per split.\nCalculate the mean (that’s what we’ve been using), but what about SE?"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#glmnet-version-lasso-or-ridge-1",
-    "href": "schedule/slides/09-l1-penalties.html#glmnet-version-lasso-or-ridge-1",
+    "objectID": "schedule/slides/09-l1-penalties.html#section",
+    "href": "schedule/slides/09-l1-penalties.html#section",
     "title": "UBC Stat406 2023W",
-    "section": "glmnet version (lasso or ridge)",
-    "text": "glmnet version (lasso or ridge)\n\npar(mfrow = c(1, 2), mar = c(5, 3, 3, 0))\nplot(lasso.glmnet) # a plot method for the cv fit\nplot(lasso.glmnet$glmnet.fit) # the glmnet.fit == glmnet(X,Y)"
+    "section": "",
+    "text": "par(mfrow = c(1, 2), mar = c(5, 3, 3, 0))\nplot(lasso) # a plot method for the cv fit\nplot(lasso$glmnet.fit) # the glmnet.fit == glmnet(X,Y)\nabline(v = colSums(abs(coef(lasso$glmnet.fit)[-1, drop(lasso$index)])), lty = 2)"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
     "href": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
     "title": "UBC Stat406 2023W",
     "section": "Paths with chosen lambda",
-    "text": "Paths with chosen lambda\n\nridge.glmnet &lt;- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum\npar(mfrow = c(1, 4))\nplot(ridge.glmnet, main = \"Ridge\")\nplot(lasso.glmnet, main = \"Lasso\")\nplot(ridge.glmnet$glmnet.fit, main = \"Ridge\")\nabline(v = sum(abs(coef(ridge.glmnet)))) # defaults to `lambda.1se`\nplot(lasso.glmnet$glmnet.fit, main = \"Lasso\")\nabline(v = sum(abs(coef(lasso.glmnet)))) # again, `lambda.1se` unless told otherwise"
+    "text": "Paths with chosen lambda\n\nridge &lt;- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum\npar(mfrow = c(1, 4))\nplot(ridge, main = \"Ridge\")\nplot(lasso, main = \"Lasso\")\nplot(ridge$glmnet.fit, main = \"Ridge\")\nabline(v = sum(abs(coef(ridge)))) # defaults to `lambda.1se`\nplot(lasso$glmnet.fit, main = \"Lasso\")\nabline(v = sum(abs(coef(lasso)))) # again, `lambda.1se` unless told otherwise"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
     "href": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
     "title": "UBC Stat406 2023W",
     "section": "Degrees of freedom",
-    "text": "Degrees of freedom\nRemember: Lasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{y} = Sy\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{S} = \\textrm{df}\\) because there is no \\(S\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is plotted on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
+    "text": "Degrees of freedom\nLasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{y} = Sy\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{S} = \\textrm{df}\\) because there is no \\(S\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is shown on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#other-flavours",
     "href": "schedule/slides/09-l1-penalties.html#other-flavours",
     "title": "UBC Stat406 2023W",
     "section": "Other flavours",
-    "text": "Other flavours\n\nThe elastic net\n\ngenerally used for correlated variables that combines a ridge/lasso penalty. Included in {glmnet} (0 &lt; alpha &lt; 1).\n\nGrouped lasso\n\nwhere variables are included or excluded in groups. Required for factors (1-hot encoding)\n\nRelaxed lasso\n\nTakes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Included in glmnet with relax = TRUE\n\nDantzig selector\n\na slightly modified version of the lasso"
+    "text": "Other flavours\n\nThe elastic net\n\ngenerally used for correlated variables that combines a ridge/lasso penalty. Use glmnet(..., alpha = a) (0 &lt; a &lt; 1).\n\nGrouped lasso\n\nwhere variables are included or excluded in groups. Required for factors (1-hot encoding)\n\nRelaxed lasso\n\nTakes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Use glmnet(..., relax = TRUE).\n\nDantzig selector\n\na slightly modified version of the lasso"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
     "href": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
     "title": "UBC Stat406 2023W",
     "section": "Lasso cinematic universe",
-    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(||\\cdot||_2\\) instead of \\(||\\cdot||_2^2\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (ie: \\(||D\\beta||_1\\)."
+    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(\\Vert\\cdot\\Vert_2\\) instead of \\(\\Vert\\cdot\\Vert_1\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (e.g. \\(\\Vert D\\beta\\Vert_1\\))."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#meta-lecture",
+    "href": "schedule/slides/11-kernel-smoothers.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "11 Local methods",
+    "text": "11 Local methods\nStat 406\nDaniel J. McDonald\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
+    "href": "schedule/slides/11-kernel-smoothers.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time…",
+    "text": "Last time…\nWe looked at feature maps as a way to do nonlinear regression.\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNow we examine an alternative\nSuppose I just look at the “neighbours” of some point (based on the \\(x\\)-values)\nI just average the \\(y\\)’s at those locations together"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbors",
+    "href": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbors",
+    "title": "UBC Stat406 2023W",
+    "section": "Let’s use 3 neighbors",
+    "text": "Let’s use 3 neighbors\n\n\nCode\nlibrary(cowplot)\ndata(arcuate, package = \"Stat406\")\nset.seed(406406)\narcuate_unif &lt;- arcuate |&gt; slice_sample(n = 40) |&gt; arrange(position)\npt &lt;- 15\nnn &lt;-  3\nseq_range &lt;- function(x, n = 101) seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = n)\nneibs &lt;- sort.int(abs(arcuate_unif$position - arcuate_unif$position[pt]), index.return = TRUE)$ix[1:nn]\narcuate_unif$neighbours = seq_len(40) %in% neibs\ng1 &lt;- ggplot(arcuate_unif, aes(position, fa, colour = neighbours)) + \n  geom_point() +\n  scale_colour_manual(values = c(blue, red)) + \n  geom_vline(xintercept = arcuate_unif$position[pt], colour = red) + \n  annotate(\"rect\", fill = red, alpha = .25, ymin = -Inf, ymax = Inf,\n           xmin = min(arcuate_unif$position[neibs]), \n           xmax = max(arcuate_unif$position[neibs])\n  ) +\n  theme(legend.position = \"none\")\ng2 &lt;- ggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(\n    data = tibble(\n      position = seq_range(arcuate_unif$position),\n      fa = FNN::knn.reg(\n        arcuate_unif$position, matrix(position, ncol = 1),\n        y = arcuate_unif$fa\n      )$pred\n    ),\n    colour = orange, linewidth = 2\n  )\nplot_grid(g1, g2, ncol = 2)"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#knn",
+    "title": "UBC Stat406 2023W",
+    "section": "KNN",
+    "text": "KNN\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata(arcuate, package = \"Stat406\")\nlibrary(FNN)\narcuate_unif &lt;- arcuate |&gt; \n  slice_sample(n = 40) |&gt; \n  arrange(position) \n\nnew_position &lt;- seq(\n  min(arcuate_unif$position), \n  max(arcuate_unif$position),\n  length.out = 101\n)\n\nknn3 &lt;- knn.reg(\n  train = arcuate_unif$position, \n  test = matrix(arcuate_unif$position, ncol = 1), \n  y = arcuate_unif$fa, \n  k = 3\n)"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbors.",
+    "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbors.",
+    "title": "UBC Stat406 2023W",
+    "section": "This method is \\(K\\)-nearest neighbors.",
+    "text": "This method is \\(K\\)-nearest neighbors.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\nWhat is the effective degrees of freedom of KNN?\nKNN averages the neighbors with equal weight.\nBut some neighbors are “closer” than other neighbors."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages",
+    "href": "schedule/slides/11-kernel-smoothers.html#local-averages",
+    "title": "UBC Stat406 2023W",
+    "section": "Local averages",
+    "text": "Local averages\nInstead of choosing the number of neighbors to average, we can average any observations within a certain distance.\n\n\nThe boxes have width 30."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
+    "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
+    "title": "UBC Stat406 2023W",
+    "section": "What is a “kernel” smoother?",
+    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\), \\(K(u) \\geq 0\\), \\(\\int du K(u)=1\\) and \\(\\int uK(u)du=0\\).\n\n\nThe idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
+    "title": "UBC Stat406 2023W",
+    "section": "Smoothing with the boxcar",
+    "text": "Smoothing with the boxcar\n\n\nCode\ntestpts &lt;- seq(0, 200, length.out = 101)\ndmat &lt;- abs(outer(testpts, arcuate_unif$position, \"-\"))\nS &lt;- (dmat &lt; 15)\nS &lt;- S / rowSums(S)\nboxcar &lt;- tibble(position = testpts, fa = S %*% arcuate_unif$fa)\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(data = boxcar, colour = orange)\n\n\n\nThis one gives the same non-zero weight to all points within \\(\\pm 15\\) range."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
+    "title": "UBC Stat406 2023W",
+    "section": "Other kernels",
+    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird. (constant)\nA more common one is the Gaussian kernel:\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting. (but all nonzero!!)"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Other kernels",
+    "text": "Other kernels\nWhat if I made \\(\\sigma=15\\)?\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 15) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nBefore, points far from \\(x_{15}\\) got very small weights, now they have more influence.\nFor the Gaussian kernel, \\(\\sigma\\) determines something like the “range” of the smoother."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
+    "href": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
+    "title": "UBC Stat406 2023W",
+    "section": "Many Gaussians",
+    "text": "Many Gaussians\nThe following code creates \\(\\mathbf{S}\\) for Gaussian kernel smoothers with different \\(\\sigma\\)\n\ndmat &lt;- as.matrix(dist(x))\nSgauss &lt;- function(sigma) {\n  gg &lt;- dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg), \"/\") # make the rows sum to 1.\n}\n\n\n\nCode\nSgauss &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.\n}\nboxcar$S15 = with(arcuate_unif, Sgauss(15) %*% fa)\nboxcar$S08 = with(arcuate_unif, Sgauss(8) %*% fa)\nboxcar$S30 = with(arcuate_unif, Sgauss(30) %*% fa)\nbc = boxcar %&gt;% select(position, S15, S08, S30) %&gt;% \n  pivot_longer(-position, names_to = \"Sigma\")\nggplot(arcuate_unif, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_line(data = bc, aes(position, value, colour = Sigma), linewidth = 1.5) +\n  scale_colour_brewer(palette = \"Set1\")"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
+    "title": "UBC Stat406 2023W",
+    "section": "The bandwidth",
+    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use.\nThe default kernel in ksmooth() is something called ‘Epanechnikov’:\n\n\nepan &lt;- function(x) 3/4 * (1 - x^2) * (abs(x) &lt; 1)\nggplot(data.frame(x = c(-2, 2)), aes(x)) + stat_function(fun = epan, colour = green, linewidth = 2)"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
+    "title": "UBC Stat406 2023W",
+    "section": "Choosing the bandwidth",
+    "text": "Choosing the bandwidth\nAs we have discussed, kernel smoothing (and KNN) are linear smoothers\n\\[\\widehat{\\mathbf{y}} = \\mathbf{S}\\mathbf{y}\\]\nThe degrees of freedom is \\(\\textrm{tr}(\\mathbf{S})\\)\nTherefore we can use our model selection criteria from before\n\nUnfortunately, these don’t satisfy the “technical condition”, so cv_nice() doesn’t give LOO-CV"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
+    "title": "UBC Stat406 2023W",
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\nar &lt;- arcuate |&gt; slice_sample(n = 200)\n\ngcv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )\n}\n\ndmat &lt;- as.matrix(dist(ar$position))\nsigmas &lt;- 10^(seq(log10(300), log10(.3), length = 100))\n\ngcvs &lt;- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))\nbest_s &lt;- sigmas[which.min(gcvs)]\n\nar$smoothed &lt;- Sgauss(best_s) %*% ar$fa"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\n\nCode\ng3 &lt;- ggplot(data.frame(sigma = sigmas, gcv = gcvs), aes(sigma, gcv)) +\n  geom_point(colour = blue) +\n  geom_vline(xintercept = best_s, colour = red) +\n  scale_x_log10() +\n  xlab(sprintf(\"Sigma, best is sig = %.2f\", best_s))\ng4 &lt;- ggplot(ar, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(aes(y = smoothed), colour = orange, linewidth = 2)\nplot_grid(g3, g4, nrow = 1)\n\n\n\nI considered \\(\\sigma \\in [0.3,\\ 300]\\) and used \\(3.97\\).\nIt’s too wiggly, to my eye. Typical for GCV."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
+    "title": "UBC Stat406 2023W",
+    "section": "Smoothing manually",
+    "text": "Smoothing manually\nI did Kernel Smoothing “manually”\n\nFor a fixed bandwidth\nCompute the smoothing matrix\nMake the predictions\nRepeat and compute GCV\n\nThe point is to “show how it works”. It’s also really easy."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
+    "href": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
+    "title": "UBC Stat406 2023W",
+    "section": "R functions / packages",
+    "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
   }
 ]
