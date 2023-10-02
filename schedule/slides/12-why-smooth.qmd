@@ -1,30 +1,15 @@
 ---
-title: "12 To(o) smooth or not to(o) smooth?"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "12 To(o) smooth or not to(o) smooth?"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-```
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
-
+{{< include _titleslide.qmd >}}
 
 
 ## Last time...
 
-$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\y}{\mathbf{y}}$$
 
 We've been discussing smoothing methods in 1-dimension:
 
@@ -32,55 +17,59 @@ $$\Expect{Y\given X=x} = f(x),\quad x\in\R$$
 
 We looked at basis expansions, e.g.:
 
-$$f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_p x^k$$ 
+$$f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_k x^k$$ 
 
 We looked at local methods, e.g.:
 
 $$f(x_i) \approx  s_i^\top \y$$
 
---
+. . .
 
 What if $x \in \R^p$ and $p>1$?
 
-.alert[
+::: aside
 Note that $p$ means the dimension of $x$, not the dimension of the space of the polynomial basis or something else. That's why I put $k$ above.
-]
+:::
 
----
 
 
 ## Kernels and interactions
 
-In multivariate nonparametric regression, you estimate a __surface__ over the input variables.
+In multivariate nonparametric regression, you estimate a [surface]{.secondary} over the input variables.
 
 This is trying essentially to find $\widehat{f}(x_1,\ldots,x_p)$.
 
-Therefore, this function __by construction__ includes interactions, handles categorical data, etc. etc.
+Therefore, this function [by construction]{.secondary} includes interactions, handles categorical data, etc. etc.
 
-This is in contrast with explicit __linear models__ which need you to specify these things.
+This is in contrast with explicit [linear models]{.secondary} which need you to specify these things.
 
 This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.
 
----
-layout: true
+. . . 
+
+More complicated functions (smooth Kernel regressions vs. linear models) tend to have [lower bias]{.secondary} but [higher variance]{.secondary}.
+
+
 
 ## Issue 1
-
-More complicated functions (smooth Kernel regressions vs. linear models) tend to have __lower bias__ but __higher variance__.
 
 For $p=1$, one can show that for kernels (with the correct bandwidth)
 
 $$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
 
----
 
-.alert[
+::: callout-danger
 
 _you don't need to memorize these formulas_ but you should know the intuition
 
-]
+:::
 
----
+## Issue 1
+
+For $p=1$, one can show that for kernels (with the correct bandwidth)
+
+$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+
 
 Recall, this decomposition is **squared bias** + **variance** + **irreducible error**
 
@@ -90,31 +79,45 @@ $$\textrm{MSE}(\hat{f}) = C_1 h^4 + \frac{C_2}{nh} + \sigma^2$$
 
 * Using $h = cn^{-1/5}$ **balances** squared bias and variance, leads to the above rate. (That balance minimizes the MSE)
 
----
+## Issue 1
 
 
+For $p=1$, one can show that for kernels (with the correct bandwidth)
 
-.emphasis[
+$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+
+
 ### Intuition: 
 
 as you collect data, use a smaller bandwidth and the MSE (on future data) decreases
-]
 
----
 
-### How does this compare to just using a linear model?
+## Issue 1
 
-__Bias__  
+For $p=1$, one can show that for kernels (with the correct bandwidth)
+
+$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+
+
+[How does this compare to just using a linear model?]{.primary}
+
+[Bias]{.secondary}
     
 1. The bias of using a linear model **if the truth nonlinear** is a number $b > 0$ which doesn't depend on $n$.
 2. The bias of using kernel regression is $C_1/n^{4/5}$. This goes to 0 as $n\rightarrow\infty$.
   
-__Variance__
+[Variance]{.secondary}
 
 1. The variance of using a linear model is $C/n$ **no matter what**
 2. The variance of using kernel regression is $C_2/n^{4/5}$.
 
----
+## Issue 1
+
+
+For $p=1$, one can show that for kernels (with the correct bandwidth)
+
+$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+
 
 ### To conclude: 
 
@@ -130,17 +133,12 @@ How do you know if you have enough data?
 
 Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.
 
----
-layout: false
-class: middle
 
-.alert[
-`r fa("skull-crossbones", fill=red, height="2em")` 
-You can't just compare the CVM for the kernel version to the CVM for the LM. This is because you used CVM to select the tuning parameter, so we're back to the usual problem of using the data twice. You have to do .hand[another] CV to estimate the risk of the kernel version at CV selected tuning parameter.
-]
+# ☠️☠️ Danger ☠️☠️
 
----
-layout: false
+You can't just compare the CVM for the kernel version to the CVM for the LM. This is because you used CVM to select the tuning parameter, so we're back to the usual problem of using the data twice. You have to do [another]{.hand} CV to estimate the risk of the kernel version at CV selected tuning parameter.
+️
+
 
 ## Issue 2
 
@@ -155,7 +153,10 @@ If $p>1$ similar calculations show,
 
 $$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .$$
 
---
+## Issue 2
+
+$$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .$$
+
 
 What if $p$ is big (and $n$ is really big)?
 
@@ -165,10 +166,8 @@ What if $p$ is big (and $n$ is really big)?
   
 How do you tell? Do model selection to decide.
 
-A __very, very__ questionable rule of thumb: if $p>\log(n)$, don't do smoothing.
+A [very, very]{.secondary} questionable rule of thumb: if $p>\log(n)$, don't do smoothing.
 
----
-class: inverse, middle, center
 
 # Next time...
 

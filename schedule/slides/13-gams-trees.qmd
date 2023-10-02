@@ -1,0 +1,225 @@
+---
+lecture: "13 GAMs and Trees"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
+---
+
+{{< include _titleslide.qmd >}}
+
+
+## GAMs
+
+Last time we discussed smoothing in multiple dimensions.
+
+
+Here we introduce the concept of GAMs ([G]{.secondary}eneralized [A]{.secondary}dditive [M]{.secondary}odels)
+
+The basic idea is to imagine that the response is the sum of some functions of the predictors:
+
+$$\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}).$$
+
+
+Note that OLS __is__ a GAM (take $f_j(x_{j})=\beta_j x_{j}$):
+
+$$\Expect{Y \given X=x} = \beta_0 + \beta_1 x_{1}+\cdots+\beta_p x_{p}.$$
+
+## Gams
+
+These work by estimating each $f_i$ using basis expansions in predictor $i$
+
+The algorithm for fitting these things is called "backfitting":
+
+
+1. Center $\y$ and $\X$.
+2. Hold $f_k$ for all $k\neq j$ fixed, and regress $f_j$ on the partial residuals using your favorite smoother.
+3. Repeat for $1\leq j\leq p$.
+4. Repeat steps 2 and 3 until the estimated functions "stop moving" (iterate)
+5. Return the results.
+
+
+
+## Very small example
+
+
+```{r}
+#| message: false
+library(mgcv)
+set.seed(12345)
+n <- 500
+simple <- tibble(
+  x1 = runif(n, 0, 2*pi),
+  x2 = runif(n),
+  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)
+)
+
+pivot_longer(simple, -y, names_to = "predictor", values_to = "x") |>
+  ggplot(aes(x, y)) +
+  geom_point(col = blue) +
+  facet_wrap(~predictor, scales = "free_x")
+```
+
+## Very small example
+
+Smooth each coordinate independently
+
+```{r gam-mod}
+#| fig-width: 8
+ex_smooth <- gam(y ~ s(x1) + s(x2), data = simple)
+# s(z) means "smooth" z, uses spline basis for each with ridge penalty, GCV
+plot(ex_smooth, pages = 1, scale = 0, shade = TRUE, 
+     resid = TRUE, se = 2, las = 1)
+head(coef(ex_smooth))
+ex_smooth$gcv.ubre
+```
+
+
+## Wherefore GAMs?
+
+
+If 
+
+$\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}),$
+
+then
+
+$\textrm{MSE}(\hat f) = \frac{Cp}{n^{4/5}} + \sigma^2.$
+
+* Exponent no longer depends on $p$. Converges faster. (If the truth is additive.)
+
+* You could also use the same methods to include "some" interactions like
+
+$$\begin{aligned}&\Expect{Y \given X=x}\\ &= \beta_0 + f_{12}(x_{1},\ x_{2})+f_3(x_3)+\cdots+f_p(x_{p}),\end{aligned}$$
+
+## Very small example
+
+Smooth two coordinates together
+
+```{r}
+#| fig-width: 8
+ex_smooth2 <- gam(y ~ s(x1, x2), data = simple)
+plot(ex_smooth2,
+  scheme = 2, scale = 0, shade = TRUE,
+  resid = TRUE, se = 2, las = 1
+)
+```
+
+
+
+## Regression trees
+
+Trees involve stratifying or segmenting the predictor space into a number of simple regions.
+
+Trees are simple and useful for interpretation.  
+
+Basic trees are not great at prediction. 
+
+Modern methods that use trees are much better (Module 4)
+
+## Regression trees
+
+Regression trees estimate piece-wise constant functions
+
+The slabs are axis-parallel rectangles $R_1,\ldots,R_K$ based on $\X$
+
+In each region, we average the $y_i$'s: $\hat\mu_1,\ldots,\hat\mu_k$
+
+Minimize $\sum_{k=1}^K \sum_{i=1}^n (y_i-\mu_k)^2$ over $R_k,\mu_k$ for $k\in \{1,\ldots,K\}$
+
+. . .
+
+This sounds more complicated than it is.
+
+The minimization is performed __greedily__ (like forward stepwise regression).
+
+
+
+##
+
+
+![](https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png)
+
+
+
+## Mobility data
+
+```{r small-tree-prelim, echo=FALSE}
+data("mobility", package = "Stat406")
+library(tree)
+library(maptree)
+mob <- mobility[complete.cases(mobility), ] %>% dplyr::select(-ID, -Name)
+set.seed(12345)
+par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))
+```
+
+```{r}
+#| fig-width: 8
+bigtree <- tree(Mobility ~ ., data = mob)
+smalltree <- prune.tree(bigtree, k = .09)
+draw.tree(smalltree, digits = 2)
+```
+
+This is called the [dendrogram]{.secondary}
+
+
+## Partition view
+
+```{r partition-view}
+#| fig-width: 8
+mob$preds <- predict(smalltree)
+par(mfrow = c(1, 2), mar = c(5, 3, 0, 0))
+draw.tree(smalltree, digits = 2)
+cols <- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]
+plot(mob$Black, mob$Commute,
+  pch = 19, cex = .4, bty = "n", las = 1, col = cols,
+  ylab = "Commute time", xlab = "% Black"
+)
+partition.tree(smalltree, add = TRUE, ordvars = c("Black", "Commute"))
+```
+
+
+We predict all observations in a region with the same value.  
+$\bullet$ The three regions correspond to the leaves of the tree.
+
+
+##
+
+```{r big-tree}
+#| fig-width: 8
+#| fig-height: 5
+draw.tree(bigtree, digits = 2)
+```
+
+
+[Terminology]{.secondary}
+
+We call each split or end point a node.  Each terminal node is referred to as a leaf.  
+
+The interior nodes lead to branches.  
+
+
+## Advantages and disadvantages of trees
+
+🎉 Trees are very easy to explain (much easier than even linear regression).  
+
+🎉 Some people believe that decision trees mirror human decision.  
+
+🎉 Trees can easily be displayed graphically no matter the dimension of the data.
+
+🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.
+
+💩 Trees aren't very good at prediction.
+
+💩 Full trees badly overfit, so we "prune" them using CV 
+
+. . .
+
+[We'll talk more about trees next module for Classification.]{.hand}
+
+# Next time ... {background-image="gfx/proforhobo.png" background-opacity=.3}
+
+
+Module 3
+
+Classification
+
