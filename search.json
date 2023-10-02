@@ -28,6 +28,76 @@
     "text": "Let’s just recap THE RIGHT WAY.\n\nFor HW or Labs, always start on main.\nPull in the remote ⬇️ just to be sure everything is up-to-date.\nCreate a branch for your HW/Lab and switch to it. The name doesn’t matter, but it’s good practice to name in something meaningful (rather than something like stat406-lab-1 when you’re doing lab 4).\nOpen the HW/Lab .Rmd and click Knit. Make sure it works.\nDo the work, saving regularly. When you complete a section, Commit the file with a useful message (Push or Not).\nOnce you’re done, make sure that you have done the minimum number of Commits, push ⬆️ your .Rmd and the knitted .pdf.\nOpen a PR on GitHub and respond to the questions.\nMake sure that only the .Rmd and the .pdf for this HW/Lab are there. And Create Pull Request.\nOn your machine, switch the branch to main to prepare for the next HW/Lab.\n\nIf the TA asks for changes, just switch to the branch for this assignment, and make the requested changes. It’s all on your machine (even if the pdf disappears when you switch)."
   },
   {
+    "objectID": "schedule/slides/12-why-smooth.html#meta-lecture",
+    "href": "schedule/slides/12-why-smooth.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "12 To(o) smooth or not to(o) smooth?",
+    "text": "12 To(o) smooth or not to(o) smooth?\nStat 406\nDaniel J. McDonald\nLast modified – 02 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#last-time",
+    "href": "schedule/slides/12-why-smooth.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time…",
+    "text": "Last time…\nWe’ve been discussing smoothing methods in 1-dimension:\n\\[\\Expect{Y\\given X=x} = f(x),\\quad x\\in\\R\\]\nWe looked at basis expansions, e.g.:\n\\[f(x) \\approx \\beta_0 + \\beta_1 x + \\beta_2 x^2 + \\cdots + \\beta_k x^k\\]\nWe looked at local methods, e.g.:\n\\[f(x_i) \\approx  s_i^\\top \\y\\]\n\nWhat if \\(x \\in \\R^p\\) and \\(p&gt;1\\)?\n\n\n\nNote that \\(p\\) means the dimension of \\(x\\), not the dimension of the space of the polynomial basis or something else. That’s why I put \\(k\\) above."
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#kernels-and-interactions",
+    "href": "schedule/slides/12-why-smooth.html#kernels-and-interactions",
+    "title": "UBC Stat406 2023W",
+    "section": "Kernels and interactions",
+    "text": "Kernels and interactions\nIn multivariate nonparametric regression, you estimate a surface over the input variables.\nThis is trying essentially to find \\(\\widehat{f}(x_1,\\ldots,x_p)\\).\nTherefore, this function by construction includes interactions, handles categorical data, etc. etc.\nThis is in contrast with explicit linear models which need you to specify these things.\nThis extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.\n\nMore complicated functions (smooth Kernel regressions vs. linear models) tend to have lower bias but higher variance."
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-1",
+    "href": "schedule/slides/12-why-smooth.html#issue-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 1",
+    "text": "Issue 1\nFor \\(p=1\\), one can show that for kernels (with the correct bandwidth)\n\\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\n\nyou don’t need to memorize these formulas but you should know the intuition"
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-1-1",
+    "href": "schedule/slides/12-why-smooth.html#issue-1-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 1",
+    "text": "Issue 1\nFor \\(p=1\\), one can show that for kernels (with the correct bandwidth)\n\\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\nRecall, this decomposition is squared bias + variance + irreducible error\n\nIt depends on the choice of \\(h\\)\n\n\\[\\textrm{MSE}(\\hat{f}) = C_1 h^4 + \\frac{C_2}{nh} + \\sigma^2\\]\n\nUsing \\(h = cn^{-1/5}\\) balances squared bias and variance, leads to the above rate. (That balance minimizes the MSE)"
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-1-2",
+    "href": "schedule/slides/12-why-smooth.html#issue-1-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 1",
+    "text": "Issue 1\nFor \\(p=1\\), one can show that for kernels (with the correct bandwidth)\n\\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\nIntuition:\nas you collect data, use a smaller bandwidth and the MSE (on future data) decreases"
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-1-3",
+    "href": "schedule/slides/12-why-smooth.html#issue-1-3",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 1",
+    "text": "Issue 1\nFor \\(p=1\\), one can show that for kernels (with the correct bandwidth)\n\\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\nHow does this compare to just using a linear model?\nBias\n\nThe bias of using a linear model if the truth nonlinear is a number \\(b &gt; 0\\) which doesn’t depend on \\(n\\).\nThe bias of using kernel regression is \\(C_1/n^{4/5}\\). This goes to 0 as \\(n\\rightarrow\\infty\\).\n\nVariance\n\nThe variance of using a linear model is \\(C/n\\) no matter what\nThe variance of using kernel regression is \\(C_2/n^{4/5}\\)."
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-1-4",
+    "href": "schedule/slides/12-why-smooth.html#issue-1-4",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 1",
+    "text": "Issue 1\nFor \\(p=1\\), one can show that for kernels (with the correct bandwidth)\n\\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\nTo conclude:\n\nbias of kernels goes to zero, bias of lines doesn’t (unless the truth is linear).\nbut variance of lines goes to zero faster than for kernels.\n\nIf the linear model is right, you win.\nBut if it’s wrong, you (eventually) lose as \\(n\\) grows.\nHow do you know if you have enough data?\nCompare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model."
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-2",
+    "href": "schedule/slides/12-why-smooth.html#issue-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 2",
+    "text": "Issue 2\nFor \\(p&gt;1\\), there is more trouble.\nFirst, lets look again at \\[\\textrm{MSE}(\\hat{f}) = \\frac{C_1}{n^{4/5}} + \\frac{C_2}{n^{4/5}} + \\sigma^2\\]\nThat is for \\(p=1\\). It’s not that much slower than \\(C/n\\), the variance for linear models.\nIf \\(p&gt;1\\) similar calculations show,\n\\[\\textrm{MSE}(\\hat f) = \\frac{C_1+C_2}{n^{4/(4+p)}} + \\sigma^2 \\hspace{2em} \\textrm{MSE}(\\hat \\beta)  = b + \\frac{Cp}{n} + \\sigma^2 .\\]"
+  },
+  {
+    "objectID": "schedule/slides/12-why-smooth.html#issue-2-1",
+    "href": "schedule/slides/12-why-smooth.html#issue-2-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Issue 2",
+    "text": "Issue 2\n\\[\\textrm{MSE}(\\hat f) = \\frac{C_1+C_2}{n^{4/(4+p)}} + \\sigma^2 \\hspace{2em} \\textrm{MSE}(\\hat \\beta)  = b + \\frac{Cp}{n} + \\sigma^2 .\\]\nWhat if \\(p\\) is big (and \\(n\\) is really big)?\n\nThen \\((C_1 + C_2) / n^{4/(4+p)}\\) is still big.\nBut \\(Cp / n\\) is small.\nSo unless \\(b\\) is big, we should use the linear model.\n\nHow do you tell? Do model selection to decide.\nA very, very questionable rule of thumb: if \\(p&gt;\\log(n)\\), don’t do smoothing."
+  },
+  {
     "objectID": "schedule/slides/10-basis-expansions.html#meta-lecture",
     "href": "schedule/slides/10-basis-expansions.html#meta-lecture",
     "title": "UBC Stat406 2023W",
@@ -2202,7 +2272,7 @@
     "href": "schedule/slides/09-l1-penalties.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "09 L1 penalties",
-    "text": "09 L1 penalties\nStat 406\nDaniel J. McDonald\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "09 L1 penalties\nStat 406\nDaniel J. McDonald\nLast modified – 02 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#last-time",
@@ -2300,7 +2370,7 @@
     "href": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
     "title": "UBC Stat406 2023W",
     "section": "Degrees of freedom",
-    "text": "Degrees of freedom\nLasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{y} = Sy\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{S} = \\textrm{df}\\) because there is no \\(S\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is shown on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
+    "text": "Degrees of freedom\nLasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{\\y} = \\mathbf{S}\\y\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{\\mathbf{S}} = \\textrm{df}\\) because there is no \\(\\mathbf{S}\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is shown on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#other-flavours",
@@ -2314,7 +2384,14 @@
     "href": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
     "title": "UBC Stat406 2023W",
     "section": "Lasso cinematic universe",
-    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(\\Vert\\cdot\\Vert_2\\) instead of \\(\\Vert\\cdot\\Vert_1\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (e.g. \\(\\Vert D\\beta\\Vert_1\\))."
+    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(\\Vert\\cdot\\Vert_2\\) instead of \\(\\Vert\\cdot\\Vert_1\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (e.g. \\(\\Vert D\\beta\\Vert_1\\)).\n\nArbitrary combinations\n\ncombine the above penalties in your favourite combinations"
+  },
+  {
+    "objectID": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
+    "href": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Warnings on regularized regression",
+    "text": "Warnings on regularized regression\n\nThis isn’t a method unless you say how to choose \\(\\lambda\\).\nThe intercept is never penalized. Adds an extra degree-of-freedom.\nPredictor scaling is very important.\nDiscrete predictors need groupings.\nCentering the predictors is important\n(These all work with other likelihoods.)\n\n\nSoftware handles most of these automatically, but not always. (No Lasso with factor predictors.)"
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#meta-lecture",
@@ -2434,5 +2511,96 @@
     "title": "UBC Stat406 2023W",
     "section": "R functions / packages",
     "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#meta-lecture",
+    "href": "schedule/slides/13-gams-trees.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "13 GAMs and Trees",
+    "text": "13 GAMs and Trees\nStat 406\nDaniel J. McDonald\nLast modified – 02 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#gams",
+    "href": "schedule/slides/13-gams-trees.html#gams",
+    "title": "UBC Stat406 2023W",
+    "section": "GAMs",
+    "text": "GAMs\nLast time we discussed smoothing in multiple dimensions.\nHere we introduce the concept of GAMs (Generalized Additive Models)\nThe basic idea is to imagine that the response is the sum of some functions of the predictors:\n\\[\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}).\\]\nNote that OLS is a GAM (take \\(f_j(x_{j})=\\beta_j x_{j}\\)):\n\\[\\Expect{Y \\given X=x} = \\beta_0 + \\beta_1 x_{1}+\\cdots+\\beta_p x_{p}.\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#gams-1",
+    "href": "schedule/slides/13-gams-trees.html#gams-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Gams",
+    "text": "Gams\nThese work by estimating each \\(f_i\\) using basis expansions in predictor \\(i\\)\nThe algorithm for fitting these things is called “backfitting”:\n\nCenter \\(\\y\\) and \\(\\X\\).\nHold \\(f_k\\) for all \\(k\\neq j\\) fixed, and regress \\(f_j\\) on the partial residuals using your favorite smoother.\nRepeat for \\(1\\leq j\\leq p\\).\nRepeat steps 2 and 3 until the estimated functions “stop moving” (iterate)\nReturn the results."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Very small example",
+    "text": "Very small example\n\nlibrary(mgcv)\nset.seed(12345)\nn &lt;- 500\nsimple &lt;- tibble(\n  x1 = runif(n, 0, 2*pi),\n  x2 = runif(n),\n  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)\n)\n\npivot_longer(simple, -y, names_to = \"predictor\", values_to = \"x\") |&gt;\n  ggplot(aes(x, y)) +\n  geom_point(col = blue) +\n  facet_wrap(~predictor, scales = \"free_x\")"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Very small example",
+    "text": "Very small example\nSmooth each coordinate independently\n\nex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)\n# s(z) means \"smooth\" z, uses spline basis for each with ridge penalty, GCV\nplot(ex_smooth, pages = 1, scale = 0, shade = TRUE, \n     resid = TRUE, se = 2, las = 1)\n\nhead(coef(ex_smooth))\n\n(Intercept)     s(x1).1     s(x1).2     s(x1).3     s(x1).4     s(x1).5 \n 10.2070490  -4.5764100   0.7117161   0.4548928   0.5535001  -0.2092996 \n\nex_smooth$gcv.ubre\n\n    GCV.Cp \n0.06619721"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "href": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "title": "UBC Stat406 2023W",
+    "section": "Wherefore GAMs?",
+    "text": "Wherefore GAMs?\nIf\n\\(\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}),\\)\nthen\n\\(\\textrm{MSE}(\\hat f) = \\frac{Cp}{n^{4/5}} + \\sigma^2.\\)\n\nExponent no longer depends on \\(p\\). Converges faster. (If the truth is additive.)\nYou could also use the same methods to include “some” interactions like\n\n\\[\\begin{aligned}&\\Expect{Y \\given X=x}\\\\ &= \\beta_0 + f_{12}(x_{1},\\ x_{2})+f_3(x_3)+\\cdots+f_p(x_{p}),\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Very small example",
+    "text": "Very small example\nSmooth two coordinates together\n\nex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)\nplot(ex_smooth2,\n  scheme = 2, scale = 0, shade = TRUE,\n  resid = TRUE, se = 2, las = 1\n)"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#regression-trees",
+    "href": "schedule/slides/13-gams-trees.html#regression-trees",
+    "title": "UBC Stat406 2023W",
+    "section": "Regression trees",
+    "text": "Regression trees\nTrees involve stratifying or segmenting the predictor space into a number of simple regions.\nTrees are simple and useful for interpretation.\nBasic trees are not great at prediction.\nModern methods that use trees are much better (Module 4)"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#regression-trees-1",
+    "href": "schedule/slides/13-gams-trees.html#regression-trees-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Regression trees",
+    "text": "Regression trees\nRegression trees estimate piece-wise constant functions\nThe slabs are axis-parallel rectangles \\(R_1,\\ldots,R_K\\) based on \\(\\X\\)\nIn each region, we average the \\(y_i\\)’s: \\(\\hat\\mu_1,\\ldots,\\hat\\mu_k\\)\nMinimize \\(\\sum_{k=1}^K \\sum_{i=1}^n (y_i-\\mu_k)^2\\) over \\(R_k,\\mu_k\\) for \\(k\\in \\{1,\\ldots,K\\}\\)\n\nThis sounds more complicated than it is.\nThe minimization is performed greedily (like forward stepwise regression)."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#mobility-data",
+    "href": "schedule/slides/13-gams-trees.html#mobility-data",
+    "title": "UBC Stat406 2023W",
+    "section": "Mobility data",
+    "text": "Mobility data\n\nbigtree &lt;- tree(Mobility ~ ., data = mob)\nsmalltree &lt;- prune.tree(bigtree, k = .09)\ndraw.tree(smalltree, digits = 2)\n\n\nThis is called the dendrogram"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#partition-view",
+    "href": "schedule/slides/13-gams-trees.html#partition-view",
+    "title": "UBC Stat406 2023W",
+    "section": "Partition view",
+    "text": "Partition view\n\nmob$preds &lt;- predict(smalltree)\npar(mfrow = c(1, 2), mar = c(5, 3, 0, 0))\ndraw.tree(smalltree, digits = 2)\ncols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]\nplot(mob$Black, mob$Commute,\n  pch = 19, cex = .4, bty = \"n\", las = 1, col = cols,\n  ylab = \"Commute time\", xlab = \"% Black\"\n)\npartition.tree(smalltree, add = TRUE, ordvars = c(\"Black\", \"Commute\"))\n\n\nWe predict all observations in a region with the same value.\n\\(\\bullet\\) The three regions correspond to the leaves of the tree."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#section-1",
+    "href": "schedule/slides/13-gams-trees.html#section-1",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "draw.tree(bigtree, digits = 2)\n\n\nTerminology\nWe call each split or end point a node. Each terminal node is referred to as a leaf.\nThe interior nodes lead to branches."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
+    "href": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
+    "title": "UBC Stat406 2023W",
+    "section": "Advantages and disadvantages of trees",
+    "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Full trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
   }
 ]
