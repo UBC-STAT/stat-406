@@ -397,7 +397,7 @@
 <h2>11 Local methods</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 27 September 2023</p>
+<p>Last modified – 09 October 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -433,8 +433,8 @@
 <p>Suppose I just look at the “neighbours” of some point (based on the <span class="math inline">\(x\)</span>-values)</p>
 <p>I just average the <span class="math inline">\(y\)</span>’s at those locations together</p>
 </section>
-<section id="lets-use-3-neighbors" class="slide level2">
-<h2>Let’s use 3 neighbors</h2>
+<section id="lets-use-3-neighbours" class="slide level2">
+<h2>Let’s use 3 neighbours</h2>
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
@@ -511,17 +511,17 @@
 </div>
 </div>
 </section>
-<section id="this-method-is-k-nearest-neighbors." class="slide level2">
-<h2>This method is <span class="math inline">\(K\)</span>-nearest neighbors.</h2>
+<section id="this-method-is-k-nearest-neighbours." class="slide level2">
+<h2>This method is <span class="math inline">\(K\)</span>-nearest neighbours.</h2>
 <p>It’s a <span class="secondary">linear smoother</span> just like in previous lectures: <span class="math inline">\(\widehat{\mathbf{y}} = \mathbf{S} \mathbf{y}\)</span> for some matrix <span class="math inline">\(S\)</span>.</p>
 <p>You should imagine what <span class="math inline">\(\mathbf{S}\)</span> looks like.</p>
-<p>What is the effective degrees of freedom of KNN?</p>
-<p>KNN averages the neighbors with equal weight.</p>
-<p>But some neighbors are “closer” than other neighbors.</p>
+<p>What is the degrees of freedom of KNN?</p>
+<p>KNN averages the neighbours with equal weight.</p>
+<p>But some neighbours are “closer” than other neighbours.</p>
 </section>
 <section id="local-averages" class="slide level2">
 <h2>Local averages</h2>
-<p>Instead of choosing the number of neighbors to average, we can average any observations within a certain distance.</p>
+<p>Instead of choosing the number of neighbours to average, we can average any observations within a certain distance.</p>
 
 <img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"><div class="fragment">
 <p>The boxes have width 30.</p>
@@ -657,13 +657,21 @@
 <span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">mean</span>(<span class="fu">diag</span>(S)))<span class="sc">^</span><span class="dv">2</span> )</span>
 <span id="cb9-6"><a href="#cb9-6"></a>}</span>
 <span id="cb9-7"><a href="#cb9-7"></a></span>
-<span id="cb9-8"><a href="#cb9-8"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(ar<span class="sc">$</span>position))</span>
-<span id="cb9-9"><a href="#cb9-9"></a>sigmas <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span>(<span class="fu">seq</span>(<span class="fu">log10</span>(<span class="dv">300</span>), <span class="fu">log10</span>(.<span class="dv">3</span>), <span class="at">length =</span> <span class="dv">100</span>))</span>
-<span id="cb9-10"><a href="#cb9-10"></a></span>
-<span id="cb9-11"><a href="#cb9-11"></a>gcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">gcv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
-<span id="cb9-12"><a href="#cb9-12"></a>best_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(gcvs)]</span>
-<span id="cb9-13"><a href="#cb9-13"></a></span>
-<span id="cb9-14"><a href="#cb9-14"></a>ar<span class="sc">$</span>smoothed <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(best_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-8"><a href="#cb9-8"></a>fake_loocv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
+<span id="cb9-9"><a href="#cb9-9"></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
+<span id="cb9-10"><a href="#cb9-10"></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">diag</span>(S))<span class="sc">^</span><span class="dv">2</span> )</span>
+<span id="cb9-11"><a href="#cb9-11"></a>}</span>
+<span id="cb9-12"><a href="#cb9-12"></a></span>
+<span id="cb9-13"><a href="#cb9-13"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(ar<span class="sc">$</span>position))</span>
+<span id="cb9-14"><a href="#cb9-14"></a>sigmas <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span>(<span class="fu">seq</span>(<span class="fu">log10</span>(<span class="dv">300</span>), <span class="fu">log10</span>(.<span class="dv">3</span>), <span class="at">length =</span> <span class="dv">100</span>))</span>
+<span id="cb9-15"><a href="#cb9-15"></a></span>
+<span id="cb9-16"><a href="#cb9-16"></a>gcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">gcv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
+<span id="cb9-17"><a href="#cb9-17"></a>flcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">fake_loocv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
+<span id="cb9-18"><a href="#cb9-18"></a>best_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(gcvs)]</span>
+<span id="cb9-19"><a href="#cb9-19"></a>other_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(flcvs)]</span>
+<span id="cb9-20"><a href="#cb9-20"></a></span>
+<span id="cb9-21"><a href="#cb9-21"></a>ar<span class="sc">$</span>smoothed <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(best_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span>
+<span id="cb9-22"><a href="#cb9-22"></a>ar<span class="sc">$</span>other <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(other_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="smoothing-the-full-lidar-data-1" class="slide level2">

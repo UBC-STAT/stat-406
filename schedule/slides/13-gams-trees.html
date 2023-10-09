@@ -397,7 +397,7 @@
 <h2>13 GAMs and Trees</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 02 October 2023</p>
+<p>Last modified – 09 October 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -431,16 +431,16 @@
 <p>Here we introduce the concept of GAMs (<span class="secondary">G</span>eneralized <span class="secondary">A</span>dditive <span class="secondary">M</span>odels)</p>
 <p>The basic idea is to imagine that the response is the sum of some functions of the predictors:</p>
 <p><span class="math display">\[\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}).\]</span></p>
-<p>Note that OLS <strong>is</strong> a GAM (take <span class="math inline">\(f_j(x_{j})=\beta_j x_{j}\)</span>):</p>
+<p>Note that OLS <span class="secondary">is</span> a GAM (take <span class="math inline">\(f_j(x_{j})=\beta_j x_{j}\)</span>):</p>
 <p><span class="math display">\[\Expect{Y \given X=x} = \beta_0 + \beta_1 x_{1}+\cdots+\beta_p x_{p}.\]</span></p>
 </section>
 <section id="gams-1" class="slide level2">
 <h2>Gams</h2>
 <p>These work by estimating each <span class="math inline">\(f_i\)</span> using basis expansions in predictor <span class="math inline">\(i\)</span></p>
-<p>The algorithm for fitting these things is called “backfitting”:</p>
+<p>The algorithm for fitting these things is called “backfitting” (very similar to the CD intuition for lasso):</p>
 <ol type="1">
 <li>Center <span class="math inline">\(\y\)</span> and <span class="math inline">\(\X\)</span>.</li>
-<li>Hold <span class="math inline">\(f_k\)</span> for all <span class="math inline">\(k\neq j\)</span> fixed, and regress <span class="math inline">\(f_j\)</span> on the partial residuals using your favorite smoother.</li>
+<li>Hold <span class="math inline">\(f_k\)</span> for all <span class="math inline">\(k\neq j\)</span> fixed, and regress <span class="math inline">\(\X_j\)</span> on <span class="math inline">\((\y - \widehat{\y}_{-j})\)</span> using your favorite smoother.</li>
 <li>Repeat for <span class="math inline">\(1\leq j\leq p\)</span>.</li>
 <li>Repeat steps 2 and 3 until the estimated functions “stop moving” (iterate)</li>
 <li>Return the results.</li>
