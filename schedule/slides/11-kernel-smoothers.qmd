@@ -19,7 +19,7 @@ Suppose I just look at the "neighbours" of some point (based on the $x$-values)
 
 I just average the $y$'s at those locations together
 
-## Let's use 3 neighbors
+## Let's use 3 neighbours
 
 ```{r load-lidar}
 #| code-fold: true
@@ -99,24 +99,24 @@ knn3 <- knn.reg(
 
 
 
-## This method is $K$-nearest neighbors.
+## This method is $K$-nearest neighbours.
 
 It's a [linear smoother]{.secondary} just like in previous lectures: 
 $\widehat{\mathbf{y}} = \mathbf{S} \mathbf{y}$ for some matrix $S$.
 
 You should imagine what $\mathbf{S}$ looks like.
 
-What is the effective degrees of freedom of KNN?
+What is the degrees of freedom of KNN?
 
-KNN averages the neighbors with equal weight.
+KNN averages the neighbours with equal weight.
 
-But some neighbors are "closer" than other neighbors.
+But some neighbours are "closer" than other neighbours.
 
 
 
 ## Local averages
 
-Instead of choosing the number of neighbors to average, we can average 
+Instead of choosing the number of neighbours to average, we can average 
 any observations within a certain distance.
 
 ```{r, fig.height = 4, fig.align='center', fig.width=8, echo=FALSE,fig.height=4}
@@ -274,13 +274,21 @@ gcv <- function(y, S) {
   mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )
 }
 
+fake_loocv <- function(y, S) {
+  yhat <- S %*% y
+  mean( (y - yhat)^2 / (1 - diag(S))^2 )
+}
+
 dmat <- as.matrix(dist(ar$position))
 sigmas <- 10^(seq(log10(300), log10(.3), length = 100))
 
 gcvs <- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))
+flcvs <- map_dbl(sigmas, ~ fake_loocv(ar$fa, Sgauss(.x)))
 best_s <- sigmas[which.min(gcvs)]
+other_s <- sigmas[which.min(flcvs)]
 
 ar$smoothed <- Sgauss(best_s) %*% ar$fa
+ar$other <- Sgauss(other_s) %*% ar$fa
 ```
 
 ## Smoothing the full Lidar data
