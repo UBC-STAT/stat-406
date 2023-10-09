@@ -28,6 +28,279 @@
     "text": "Let’s just recap THE RIGHT WAY.\n\nFor HW or Labs, always start on main.\nPull in the remote ⬇️ just to be sure everything is up-to-date.\nCreate a branch for your HW/Lab and switch to it. The name doesn’t matter, but it’s good practice to name in something meaningful (rather than something like stat406-lab-1 when you’re doing lab 4).\nOpen the HW/Lab .Rmd and click Knit. Make sure it works.\nDo the work, saving regularly. When you complete a section, Commit the file with a useful message (Push or Not).\nOnce you’re done, make sure that you have done the minimum number of Commits, push ⬆️ your .Rmd and the knitted .pdf.\nOpen a PR on GitHub and respond to the questions.\nMake sure that only the .Rmd and the .pdf for this HW/Lab are there. And Create Pull Request.\nOn your machine, switch the branch to main to prepare for the next HW/Lab.\n\nIf the TA asks for changes, just switch to the branch for this assignment, and make the requested changes. It’s all on your machine (even if the pdf disappears when you switch)."
   },
   {
+    "objectID": "schedule/slides/16-logistic-regression.html#meta-lecture",
+    "href": "schedule/slides/16-logistic-regression.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "16 Logistic regression",
+    "text": "16 Logistic regression\nStat 406\nDaniel J. McDonald\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#last-time",
+    "href": "schedule/slides/16-logistic-regression.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time",
+    "text": "Last time\n\nWe showed that with two classes, the Bayes’ classifier is\n\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere \\(p_1(X) = Pr(X \\given Y=1)\\) and \\(p_0(X) = Pr(X \\given Y=0)\\)\n\nWe then looked at what happens if we assume \\(Pr(X \\given Y=y)\\) is Normally distributed.\n\nWe then used this distribution and the class prior \\(\\pi\\) to find the posterior \\(Pr(Y=1 \\given X=x)\\)."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#direct-model",
+    "href": "schedule/slides/16-logistic-regression.html#direct-model",
+    "title": "UBC Stat406 2023W",
+    "section": "Direct model",
+    "text": "Direct model\nInstead, let’s directly model the posterior\n\\[\n\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\n\\P(Y = 0 | X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\n\\end{aligned}\n\\]\nThis is logistic regression."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#why-this",
+    "href": "schedule/slides/16-logistic-regression.html#why-this",
+    "title": "UBC Stat406 2023W",
+    "section": "Why this?",
+    "text": "Why this?\n\\[Pr(Y = 1 \\given X=x) = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\]\n\nThere are lots of ways to map \\(\\R \\mapsto [0,1]\\).\nThe “logistic” function \\(z\\mapsto (1 + \\exp(-z))^{-1} = \\exp(z) / (1+\\exp(z)) =:h(z)\\) is nice.\nIt’s symmetric: \\(1 - h(z) = h(-z)\\)\nHas a nice derivative: \\(h'(z) = \\frac{\\exp(z)}{(1 + \\exp(z))^2} = h(z)(1-h(z))\\).\nIt’s the inverse of the “log-odds” (logit): \\(\\log(p / (1-p))\\)."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#another-linear-classifier",
+    "href": "schedule/slides/16-logistic-regression.html#another-linear-classifier",
+    "title": "UBC Stat406 2023W",
+    "section": "Another linear classifier",
+    "text": "Another linear classifier\nLike LDA, logistic regression is a linear classifier\nThe logit (i.e.: log odds) transformation gives a linear decision boundary \\[\\log\\left( \\frac{\\P(Y = 1 \\given X=x)}{\\P(Y = 0 \\given X=x) } \\right) = \\beta_0 + \\beta^{\\top} x\\] The decision boundary is the hyperplane \\(\\{x : \\beta_0 + \\beta^{\\top} x = 0\\}\\)\nIf the log-odds are below 0, classify as 0, above 0 classify as a 1."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#logistic-regression-is-also-easy-in-r",
+    "href": "schedule/slides/16-logistic-regression.html#logistic-regression-is-also-easy-in-r",
+    "title": "UBC Stat406 2023W",
+    "section": "Logistic regression is also easy in R",
+    "text": "Logistic regression is also easy in R\n\nlogistic &lt;- glm(y ~ ., dat, family = \"binomial\")\n\nOr we can use lasso or ridge regression or a GAM as before\n\nlasso_logit &lt;- cv.glmnet(x, y, family = \"binomial\")\nridge_logit &lt;- cv.glmnet(x, y, alpha = 0, family = \"binomial\")\ngam_logit &lt;- gam(y ~ s(x), data = dat, family = \"binomial\")\n\n\n\nglm means generalized linear model"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#baby-example-continued-from-last-time",
+    "href": "schedule/slides/16-logistic-regression.html#baby-example-continued-from-last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Baby example (continued from last time)",
+    "text": "Baby example (continued from last time)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlogit &lt;- glm(y ~ ., dat1 |&gt; mutate(y = y - 1), family = \"binomial\")\nsummary(logit)\n\n\nCall:\nglm(formula = y ~ ., family = \"binomial\", data = mutate(dat1, \n    y = y - 1))\n\nCoefficients:\n            Estimate Std. Error z value Pr(&gt;|z|)    \n(Intercept)  -2.6649     0.6281  -4.243 2.21e-05 ***\nx1            2.5305     0.5995   4.221 2.43e-05 ***\nx2            1.6610     0.4365   3.805 0.000142 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n(Dispersion parameter for binomial family taken to be 1)\n\n    Null deviance: 138.469  on 99  degrees of freedom\nResidual deviance:  68.681  on 97  degrees of freedom\nAIC: 74.681\n\nNumber of Fisher Scoring iterations: 6"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
+    "href": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
+    "title": "UBC Stat406 2023W",
+    "section": "Visualizing the classification boundary",
+    "text": "Visualizing the classification boundary\n\n\nCode\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), \n                  x2 = seq(-2.5, 3, length.out = 100))\npts &lt;- predict(logit, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_steps2(n.breaks = 6, name = \"log odds\") \ng0"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#calculation",
+    "href": "schedule/slides/16-logistic-regression.html#calculation",
+    "title": "UBC Stat406 2023W",
+    "section": "Calculation",
+    "text": "Calculation\nWhile the R formula for logistic regression is straightforward, it’s not as easy to compute as OLS or LDA or QDA.\nLogistic regression for two classes simplifies to a likelihood:\nWrite \\(p_i(\\beta) = \\P(Y_i = 1 | X = x_i,\\beta)\\)\n\n\\(P(Y_i = y_i \\given X = x_i, \\beta) = p_i^{y_i}(1-p_i)^{1-y_i}\\) (…Bernoulli distribution)\n\\(P(\\mathbf{Y} \\given \\mathbf{X}, \\beta) = \\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}\\)."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#calculation-1",
+    "href": "schedule/slides/16-logistic-regression.html#calculation-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Calculation",
+    "text": "Calculation\nWrite \\(p_i(\\beta) = \\P(Y_i = 1 | X = x_i,\\beta)\\)\n\\[\n\\begin{aligned}\n\\ell(\\beta)\n& = \\log \\left( \\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} \\right)\\\\\n&=\\sum_{i=1}^n \\left( y_i\\log(p_i(\\beta)) + (1-y_i)\\log(1-p_i(\\beta))\\right) \\\\\n& =\n\\sum_{i=1}^n \\left( y_i\\log(e^{\\beta^{\\top}x_i}/(1+e^{\\beta^{\\top}x_i})) - (1-y_i)\\log(1+e^{\\beta^{\\top}x_i})\\right) \\\\\n& =\n\\sum_{i=1}^n \\left( y_i\\beta^{\\top}x_i -\\log(1 + e^{\\beta^{\\top} x_i})\\right)\n\\end{aligned}\n\\]\nThis gets optimized via Newton-Raphson updates and iteratively reweighed least squares."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#irwls-for-logistic-regression-skip-for-now",
+    "href": "schedule/slides/16-logistic-regression.html#irwls-for-logistic-regression-skip-for-now",
+    "title": "UBC Stat406 2023W",
+    "section": "IRWLS for logistic regression (skip for now)",
+    "text": "IRWLS for logistic regression (skip for now)\n(This is preparation for Neural Networks.)\n\nlogit_irwls &lt;- function(y, x, maxit = 100, tol = 1e-6) {\n  p &lt;- ncol(x)\n  beta &lt;- double(p) # initialize coefficients\n  beta0 &lt;- 0\n  conv &lt;- FALSE # hasn't converged\n  iter &lt;- 1 # first iteration\n  while (!conv && (iter &lt; maxit)) { # check loops\n    iter &lt;- iter + 1 # update first thing (so as not to forget)\n    eta &lt;- beta0 + x %*% beta\n    mu &lt;- 1 / (1 + exp(-eta))\n    gp &lt;- 1 / (mu * (1 - mu)) # inverse of derivative of logistic\n    z &lt;- eta + (y - mu) * gp # effective transformed response\n    beta_new &lt;- coef(lm(z ~ x, weights = 1 / gp)) # do Weighted Least Squares\n    conv &lt;- mean(abs(c(beta0, beta) - betaNew)) &lt; tol # check if the betas are \"moving\"\n    beta0 &lt;- betaNew[1] # update betas\n    beta &lt;- betaNew[-1]\n  }\n  return(c(beta0, beta))\n}"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression",
+    "href": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Comparing LDA and Logistic regression",
+    "text": "Comparing LDA and Logistic regression\nBoth decision boundaries are linear in \\(x\\):\n\nLDA \\(\\longrightarrow \\alpha_0 + \\alpha_1^\\top x\\)\nLogit \\(\\longrightarrow \\beta_0 + \\beta_1^\\top x\\).\n\nBut the parameters are estimated differently."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression-1",
+    "href": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Comparing LDA and Logistic regression",
+    "text": "Comparing LDA and Logistic regression\nExamine the joint distribution of \\((X,\\ Y)\\) (not the posterior):\n\nLDA: \\(f(X_i,\\ Y_i) = \\underbrace{ f(X_i \\given Y_i)}_{\\textrm{Gaussian}}\\underbrace{ f(Y_i)}_{\\textrm{Bernoulli}}\\)\nLogistic Regression: \\(f(X_i,Y_i) = \\underbrace{ f(Y_i\\given X_i)}_{\\textrm{Logistic}}\\underbrace{ f(X_i)}_{\\textrm{Ignored}}\\)\nLDA estimates the joint, but Logistic estimates only the conditional (posterior) distribution. But this is really all we need.\nSo logistic requires fewer assumptions.\nBut if the two classes are perfectly separable, logistic crashes (and the MLE is undefined, too many solutions)\nLDA “works” even if the conditional isn’t normal, but works very poorly if any X is qualitative"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#comparing-with-qda-2-classes",
+    "href": "schedule/slides/16-logistic-regression.html#comparing-with-qda-2-classes",
+    "title": "UBC Stat406 2023W",
+    "section": "Comparing with QDA (2 classes)",
+    "text": "Comparing with QDA (2 classes)\n\nRecall: this gives a “quadratic” decision boundary (it’s a curve).\nIf we have \\(p\\) columns in \\(X\\)\n\nLogistic estimates \\(p+1\\) parameters\nLDA estimates \\(2p + p(p+1)/2 + 1\\)\nQDA estimates \\(2p + p(p+1) + 1\\)\n\nIf \\(p=50\\),\n\nLogistic: 51\nLDA: 1376\nQDA: 2651\n\nQDA doesn’t get used much: there are better nonlinear versions with way fewer parameters"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#bad-parameter-counting",
+    "href": "schedule/slides/16-logistic-regression.html#bad-parameter-counting",
+    "title": "UBC Stat406 2023W",
+    "section": "Bad parameter counting",
+    "text": "Bad parameter counting\nI’ve motivated LDA as needing \\(\\Sigma\\), \\(\\pi\\) and \\(\\mu_0\\), \\(\\mu_1\\)\nIn fact, we don’t need all of this to get the decision boundary.\nSo the “degrees of freedom” is much lower if we only want the classes and not the probabilities.\nThe decision boundary only really depends on\n\n\\(\\Sigma^{-1}(\\mu_1-\\mu_0)\\)\n\\((\\mu_1+\\mu_0)\\),\nso appropriate algorithms estimate \\(&lt;2p\\) parameters."
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#note-again",
+    "href": "schedule/slides/16-logistic-regression.html#note-again",
+    "title": "UBC Stat406 2023W",
+    "section": "Note again:",
+    "text": "Note again:\nwhile logistic regression and LDA produce linear decision boundaries, they are not linear smoothers\nAIC/BIC/Cp work if you use the likelihood correctly and count degrees-of-freedom correctly\nMust people use either test set or CV"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#meta-lecture",
+    "href": "schedule/slides/14-classification-intro.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "14 Classification",
+    "text": "14 Classification\nStat 406\nDaniel J. McDonald\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#an-overview-of-classification",
+    "href": "schedule/slides/14-classification-intro.html#an-overview-of-classification",
+    "title": "UBC Stat406 2023W",
+    "section": "An Overview of Classification",
+    "text": "An Overview of Classification\n\nA person arrives at an emergency room with a set of symptoms that could be 1 of 3 possible conditions. Which one is it?\nAn online banking service must be able to determine whether each transaction is fraudulent or not, using a customer’s location, past transaction history, etc.\nGiven a set of individuals sequenced DNA, can we determine whether various mutations are associated with different phenotypes?\n\n\nThese problems are not regression problems. They are classification problems."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#the-set-up",
+    "href": "schedule/slides/14-classification-intro.html#the-set-up",
+    "title": "UBC Stat406 2023W",
+    "section": "The Set-up",
+    "text": "The Set-up\nIt begins just like regression: suppose we have observations \\[\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\]\nAgain, we want to estimate a function that maps \\(X\\) to \\(Y\\) to predict as yet observed data.\n(This function is known as a classifier)\nThe same constraints apply:\n\nWe want a classifier that predicts test data, not just the training data.\nOften, this comes with the introduction of some bias to get lower variance and better predictions."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\nBefore in regression, we have \\(y_i \\in \\mathbb{R}\\) and use squared error loss to measure accuracy: \\((y - \\hat{y})^2\\).\nInstead, let \\(y \\in \\mathcal{K} = \\{1,\\ldots, K\\}\\)\n(This is arbitrary, sometimes other numbers, such as \\(\\{-1,1\\}\\) will be used)\nWe can always take “factors”: \\(\\{\\textrm{cat},\\textrm{dog}\\}\\) and convert to integers, which is what we assume.\nWe again make predictions \\(\\hat{y}=k\\) based on the data\n\nWe get zero loss if we predict the right class\nWe lose \\(\\ell(k,k')\\) on \\((k\\neq k')\\) for incorrect predictions"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-1",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-1",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\nSuppose you have a fever of 39º C. You get a rapid test on campus.\n\n\n\nLoss\nTest +\nTest -\n\n\n\n\nAre +\n0\nInfect others\n\n\nAre -\nIsolation\n0"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-2",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-2",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\nSuppose you have a fever of 39º C. You get a rapid test on campus.\n\n\n\nLoss\nTest +\nTest -\n\n\n\n\nAre +\n0\n1\n\n\nAre -\n1\n0"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-3",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-3",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\n\nWe’re going to use \\(g(x)\\) to be our classifier. It takes values in \\(\\mathcal{K}\\)."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-4",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-4",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\nAgain, we appeal to risk \\[R_n(g) = E [\\ell(Y,g(X))]\\] If we use the law of total probability, this can be written \\[R_n(g) = E_X \\sum_{y=1}^K \\ell(y,\\; g(X)) Pr(Y = y \\given X)\\] We minimize this over a class of options \\(\\mathcal{G}\\), to produce \\[g_*(X) = \\argmin_{g\\in\\mathcal{G}} E_X \\sum_{y=1}^K \\ell(y,g(X)) Pr(Y = y \\given X)\\]"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-5",
+    "href": "schedule/slides/14-classification-intro.html#how-do-we-measure-quality-5",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality?",
+    "text": "How do we measure quality?\n\\(g_*\\) is named the Bayes’ classifier for loss \\(\\ell\\) in class \\(\\mathcal{G}\\).\n\\(R_n(g_*)\\) is the called the Bayes’ limit or Bayes’ Risk.\nIt’s the best we could hope to do in terms of \\(\\ell\\) if we knew the distribution of the data.\n\nBut we don’t, so we’ll try to do our best to estimate \\(g_*\\)."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#best-classifier-overall",
+    "href": "schedule/slides/14-classification-intro.html#best-classifier-overall",
+    "title": "UBC Stat406 2023W",
+    "section": "Best classifier overall",
+    "text": "Best classifier overall\n(for now, we limit to 2 classes)\nOnce we make a specific choice for \\(\\ell\\), we can find \\(g_*\\) exactly (pretending we know the distribution)\nBecause \\(Y\\) takes only a few values, zero-one loss is natural (but not the only option) \\[\\ell(y,\\ g(x)) = \\begin{cases}0 & y=g(x)\\\\1 & y\\neq g(x) \\end{cases} \\Longrightarrow R_n(g) = \\Expect{\\ell(Y,\\ g(X))} = Pr(g(X) \\neq Y),\\]"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#best-classifier-overall-1",
+    "href": "schedule/slides/14-classification-intro.html#best-classifier-overall-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Best classifier overall",
+    "text": "Best classifier overall\n\n\n\nLoss\nTest +\nTest -\n\n\n\n\nAre +\n0\n1\n\n\nAre -\n1\n0"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#best-classifier-overall-2",
+    "href": "schedule/slides/14-classification-intro.html#best-classifier-overall-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Best classifier overall",
+    "text": "Best classifier overall\nThis means we want to classify a new observation \\((x_0,y_0)\\) such that \\(g(x_0) = y_0\\) as often as possible\nUnder this loss, we have \\[\n\\begin{aligned}\ng_*(X) &= \\argmin_{g} Pr(g(X) \\neq Y) \\\\\n&= \\argmin_{g} \\left[ 1 - Pr(Y = g(x) | X=x)\\right]  \\\\\n&= \\argmax_{g} Pr(Y = g(x) | X=x )\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#estimating-g_",
+    "href": "schedule/slides/14-classification-intro.html#estimating-g_",
+    "title": "UBC Stat406 2023W",
+    "section": "Estimating \\(g_*\\)",
+    "text": "Estimating \\(g_*\\)\nClassifier approach 1 (empirical risk minimization):\n\nChoose some class of classifiers \\(\\mathcal{G}\\).\nFind \\(\\argmin_{g\\in\\mathcal{G}} \\sum_{i = 1}^n I(g(x_i) \\neq y_i)\\)"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#bayes-classifier-and-class-densities-2-classes",
+    "href": "schedule/slides/14-classification-intro.html#bayes-classifier-and-class-densities-2-classes",
+    "title": "UBC Stat406 2023W",
+    "section": "Bayes’ Classifier and class densities (2 classes)",
+    "text": "Bayes’ Classifier and class densities (2 classes)\nUsing Bayes’ theorem, and recalling that \\(f_*(X) = E[Y \\given X]\\)\n\\[\\begin{aligned}\nf_*(X) & = E[Y \\given X] = Pr(Y = 1 \\given X) \\\\\n&= \\frac{Pr(X\\given Y=1) Pr(Y=1)}{Pr(X)}\\\\\n& =\\frac{Pr(X\\given Y = 1) Pr(Y = 1)}{\\sum_{k \\in \\{0,1\\}} Pr(X\\given Y = k) Pr(Y = k)} \\\\ & = \\frac{p_1(X) \\pi}{ p_1(X)\\pi + p_0(X)(1-\\pi)}\\end{aligned}\\]\n\nWe call \\(p_k(X)\\) the class (conditional) densities\n\\(\\pi\\) is the marginal probability \\(P(Y=1)\\)"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#bayes-classifier-and-class-densities-2-classes-1",
+    "href": "schedule/slides/14-classification-intro.html#bayes-classifier-and-class-densities-2-classes-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Bayes’ Classifier and class densities (2 classes)",
+    "text": "Bayes’ Classifier and class densities (2 classes)\nThe Bayes’ Classifier (best classifier for 0-1 loss) can be rewritten\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nApproach 2: estimate everything in the expression above.\n\nWe need to estimate \\(p_1\\), \\(p_2\\), \\(\\pi\\), \\(1-\\pi\\)\nEasily extended to more than two classes"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#an-alternative-easy-classifier",
+    "href": "schedule/slides/14-classification-intro.html#an-alternative-easy-classifier",
+    "title": "UBC Stat406 2023W",
+    "section": "An alternative easy classifier",
+    "text": "An alternative easy classifier\nZero-One loss was natural, but try something else\nLet’s try using squared error loss instead: \\(\\ell(y,\\ f(x)) = (y - f(x))^2\\)\nThen, the Bayes’ Classifier (the function that minimizes the Bayes Risk) is \\[g_*(x) = f_*(x) = E[ Y \\given X = x] = Pr(Y = 1 \\given X)\\] (recall that \\(f_* \\in [0,1]\\) is still the regression function)\nIn this case, our “class” will actually just be a probability. But this isn’t a class, so it’s a bit unsatisfying.\nHow do we get a class prediction?\n\nDiscretize the probability:\n\\[g(x) = \\begin{cases}0 & f_*(x) &lt; 1/2\\\\1 & \\textrm{else}\\end{cases}\\]"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#estimating-g_-1",
+    "href": "schedule/slides/14-classification-intro.html#estimating-g_-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Estimating \\(g_*\\)",
+    "text": "Estimating \\(g_*\\)\nApproach 3:\n\nEstimate \\(f_*\\) using any method we’ve learned so far.\nPredict 0 if \\(\\hat{f}(x)\\) is less than 1/2, else predict 1."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression",
+    "href": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Claim: Classification is easier than regression",
+    "text": "Claim: Classification is easier than regression\n\nLet \\(\\hat{f}\\) be any estimate of \\(f_*\\)\nLet \\(\\widehat{g} (x) = \\begin{cases}0 & \\hat f(x) &lt; 1/2\\\\1 & else\\end{cases}\\)\n\nProof by picture."
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-1",
+    "href": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Claim: Classification is easier than regression",
+    "text": "Claim: Classification is easier than regression\n\n\nCode\nset.seed(12345)\nx &lt;- 1:99 / 100\ny &lt;- rbinom(99, 1, \n            .25 + .5 * (x &gt; .3 & x &lt; .5) + \n              .6 * (x &gt; .7))\ndmat &lt;- as.matrix(dist(x))\nksm &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) \n  sweep(gg, 1, rowSums(gg), '/') %*% y\n}\nfstar &lt;- ksm(.04)\ngg &lt;- tibble(x = x, fstar = fstar, y = y) %&gt;%\n  ggplot(aes(x)) +\n  geom_point(aes(y = y), color = blue) +\n  geom_line(aes(y = fstar), color = orange, size = 2) +\n  coord_cartesian(ylim = c(0,1), xlim = c(0,1)) +\n  annotate(\"label\", x = .75, y = .65, label = \"f_star\", size = 5)\ngg"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-2",
+    "href": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Claim: Classification is easier than regression",
+    "text": "Claim: Classification is easier than regression\n\n\nCode\ngg + geom_hline(yintercept = .5, color = green)"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-3",
+    "href": "schedule/slides/14-classification-intro.html#claim-classification-is-easier-than-regression-3",
+    "title": "UBC Stat406 2023W",
+    "section": "Claim: Classification is easier than regression",
+    "text": "Claim: Classification is easier than regression\n\n\nCode\ntib &lt;- tibble(x = x, fstar = fstar, y = y)\nggplot(tib) +\n  geom_vline(data = filter(tib, fstar &gt; 0.5), aes(xintercept = x), alpha = .5, color = green) +\n  annotate(\"label\", x = .75, y = .65, label = \"f_star\", size = 5) + \n  geom_point(aes(x = x, y = y), color = blue) +\n  geom_line(aes(x = x, y = fstar), color = orange, size = 2) +\n  coord_cartesian(ylim = c(0,1), xlim = c(0,1))"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#how-to-find-a-classifier",
+    "href": "schedule/slides/14-classification-intro.html#how-to-find-a-classifier",
+    "title": "UBC Stat406 2023W",
+    "section": "How to find a classifier",
+    "text": "How to find a classifier\nWhy did we go through that math?\nEach of these approaches suggests a way to find a classifier\n\nEmpirical risk minimization: Choose a set of classifiers \\(\\mathcal{G}\\) and find \\(g \\in \\mathcal{G}\\) that minimizes some estimate of \\(R_n(g)\\)\n\n\n(This can be quite challenging as, unlike in regression, the training error is nonconvex)\n\n\nDensity estimation: Estimate \\(\\pi\\) and \\(p_k\\)\nRegression: Find an estimate \\(\\hat{f}\\) of \\(f^*\\) and compare the predicted value to 1/2"
+  },
+  {
+    "objectID": "schedule/slides/14-classification-intro.html#section",
+    "href": "schedule/slides/14-classification-intro.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Easiest classifier when \\(y\\in \\{0,\\ 1\\}\\):\n(stupidest version of the third case…)\n\nghat &lt;- round(predict(lm(y ~ ., data = trainingdata)))\n\nThink about why this may not be very good. (At least 2 reasons I can think of.)"
+  },
+  {
     "objectID": "schedule/slides/12-why-smooth.html#meta-lecture",
     "href": "schedule/slides/12-why-smooth.html#meta-lecture",
     "title": "UBC Stat406 2023W",
@@ -2602,5 +2875,215 @@
     "title": "UBC Stat406 2023W",
     "section": "Advantages and disadvantages of trees",
     "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Full trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#meta-lecture",
+    "href": "schedule/slides/15-LDA-and-QDA.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "15 LDA and QDA",
+    "text": "15 LDA and QDA\nStat 406\nDaniel J. McDonald\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#last-time",
+    "href": "schedule/slides/15-LDA-and-QDA.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time",
+    "text": "Last time\nWe showed that with two classes, the Bayes’ classifier is\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere \\(p_1(X) = Pr(X \\given Y=1)\\), \\(p_0(X) = Pr(X \\given Y=0)\\) and \\(\\pi = Pr(Y=1)\\)\n\nFor more than two classes.\n\\[g_*(X) =\n\\argmax_k \\frac{\\pi_k p_k(X)}{\\sum_k \\pi_k p_k(X)}\\]\nwhere \\(p_k(X) = Pr(X \\given Y=k)\\) and \\(\\pi_k = P(Y=k)\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
+    "href": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
+    "title": "UBC Stat406 2023W",
+    "section": "Estimating these",
+    "text": "Estimating these\nLet’s make some assumptions:\n\n\\(Pr(X\\given Y=k) = \\mbox{N}(\\mu_k,\\Sigma_k)\\)\n\\(\\Sigma_k = \\Sigma_{k'} = \\Sigma\\)\n\n\nThis leads to Linear Discriminant Analysis (LDA), one of the oldest classifiers"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda",
+    "title": "UBC Stat406 2023W",
+    "section": "LDA",
+    "text": "LDA\n\nSplit your training data into \\(K\\) subsets based on \\(y_i=k\\).\nIn each subset, estimate the mean of \\(X\\): \\(\\widehat\\mu_k = \\overline{X}_k\\)\nEstimate the pooled variance: \\[\\widehat\\Sigma = \\frac{1}{n-K} \\sum_{k \\in \\mathcal{K}} \\sum_{i \\in k} (x_i - \\overline{X}_k) (x_i - \\overline{X}_k)^{\\top}\\]\nEstimate the class proportion: \\(\\widehat\\pi_k = n_k/n\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-1",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda-1",
+    "title": "UBC Stat406 2023W",
+    "section": "LDA",
+    "text": "LDA\nAssume just \\(K = 2\\) so \\(k \\in \\{0,\\ 1\\}\\)\nWe predict \\(\\widehat{y} = 1\\) if\n\\[\\widehat{p_1}(x) / \\widehat{p_0}(x) &gt; \\widehat{\\pi_0} / \\widehat{\\pi_1}\\]\nPlug in the density estimates:\n\\[\\widehat{p_k}(x) = N(x - \\widehat{\\mu}_k,\\ \\widehat\\Sigma)\\]"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-2",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda-2",
+    "title": "UBC Stat406 2023W",
+    "section": "LDA",
+    "text": "LDA\nNow we take \\(\\log\\) and simplify \\((K=2)\\):\n\\[\n\\begin{aligned}\n&\\Rightarrow \\log(\\widehat{p_1}(x)\\times\\widehat{\\pi_1}) - \\log(\\widehat{p_0}(x)\\times\\widehat{\\pi_0})\n= \\cdots = \\cdots\\\\\n&= \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\right)}_{\\delta_1(x)} -  \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_0-\\frac{1}{2}\\overline X_0^\\top \\widehat\\Sigma^{-1}\\overline X_0 + \\log \\widehat\\pi_0\\right)}_{\\delta_0(x)}\\\\\n&= \\delta_1(x) - \\delta_0(x)\n\\end{aligned}\n\\]\nIf \\(\\delta_1(x) &gt; \\delta_0(x)\\), we set \\(\\widehat g(x)=1\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
+    "href": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
+    "title": "UBC Stat406 2023W",
+    "section": "One dimensional intuition",
+    "text": "One dimensional intuition\n\nset.seed(406406406)\nn &lt;- 100\npi &lt;- .6\nmu0 &lt;- -1\nmu1 &lt;- 2\nsigma &lt;- 2\ntib &lt;- tibble(\n  y = rbinom(n, 1, pi),\n  x = rnorm(n, mu0, sigma) * (y == 0) + rnorm(n, mu1, sigma) * (y == 1)\n)\n\n\n\nCode\ngg &lt;- ggplot(tib, aes(x, y)) +\n  geom_point(colour = blue) +\n  stat_function(fun = ~ 6 * (1 - pi) * dnorm(.x, mu0, sigma), colour = orange) +\n  stat_function(fun = ~ 6 * pi * dnorm(.x, mu1, sigma), colour = orange) +\n  annotate(\"label\",\n    x = c(-3, 4.5), y = c(.5, 2 / 3),\n    label = c(\"(1-pi)*p[0](x)\", \"pi*p[1](x)\"), parse = TRUE\n  )\ngg"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
+    "href": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
+    "title": "UBC Stat406 2023W",
+    "section": "What is linear?",
+    "text": "What is linear?\nLook closely at the equation for \\(\\delta_1(x)\\):\n\\[\\delta_1(x)=x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\]\nWe can write this as \\(\\delta_1(x) = x^\\top a_1 + b_1\\) with \\(a_1 = \\widehat\\Sigma^{-1}\\overline X_1\\) and \\(b_1=-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\).\nWe can do the same for \\(\\delta_0(x)\\) (in terms of \\(a_0\\) and \\(b_0\\))\nTherefore,\n\\[\\delta_1(x)-\\delta_0(x) = x^\\top(a_1-a_0) + (b_1-b_0)\\]\nThis is how we discriminate between the classes.\nWe just calculate \\((a_1 - a_0)\\) (a vector in \\(\\R^p\\)), and \\(b_1 - b_0\\) (a scalar)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#baby-example",
+    "href": "schedule/slides/15-LDA-and-QDA.html#baby-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Baby example",
+    "text": "Baby example\n\n\n\nlibrary(mvtnorm)\nlibrary(MASS)\ngenerate_lda_2d &lt;- function(\n    n, p = c(.5, .5), \n    mu = matrix(c(0, 0, 1, 1), 2),\n    Sigma = diag(2)) {\n  X &lt;- rmvnorm(n, sigma = Sigma)\n  tibble(\n    y = which(rmultinom(n, 1, p) == 1, TRUE)[,1],\n    x1 = X[, 1] + mu[1, y],\n    x2 = X[, 2] + mu[2, y]\n  )\n}\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlda_fit &lt;- lda(y ~ ., dat1)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
+    "title": "UBC Stat406 2023W",
+    "section": "Multiple classes",
+    "text": "Multiple classes\n\nmoreclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(0, 0, 1, 1, 1, 0), 2), .5 * diag(2))\nseparateclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(-1, -1, 2, 2, 2, -1), 2), .1 * diag(2))"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#qda",
+    "href": "schedule/slides/15-LDA-and-QDA.html#qda",
+    "title": "UBC Stat406 2023W",
+    "section": "QDA",
+    "text": "QDA\nJust like LDA, but \\(\\Sigma_k\\) is separate for each class.\nProduces Quadratic decision boundary.\nEverything else is the same.\n\nqda_fit &lt;- qda(y ~ ., dat1)\nqda_3fit &lt;- qda(y ~ ., moreclasses)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
+    "href": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
+    "title": "UBC Stat406 2023W",
+    "section": "3 class comparison",
+    "text": "3 class comparison"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#notes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#notes",
+    "title": "UBC Stat406 2023W",
+    "section": "Notes",
+    "text": "Notes\n\nLDA is a linear classifier. It is not a linear smoother.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors, but the same (common) covariance matrix.\nIt estimates densities and probabilities and “plugs in”\n\nQDA is not a linear classifier. It depends on quadratic functions of the data.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors and different covariance matrices.\nIt estimates densities and probabilities and “plugs in”"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#section",
+    "href": "schedule/slides/15-LDA-and-QDA.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "It is hard (maybe impossible) to come up with reasonable classifiers that are linear smoothers. Many “look” like a linear smoother, but then apply a nonlinear transformation."
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
+    "title": "UBC Stat406 2023W",
+    "section": "Naïve Bayes",
+    "text": "Naïve Bayes\nAssume that \\(Pr(X | Y = k) = Pr(X_1 | Y = k)\\cdots Pr(X_p | Y = k)\\).\nThat is, conditional on the class, the feature distribution is independent.\n\nIf we further assume that \\(Pr(X_j | Y = k)\\) is Gaussian,\nThis is the same as QDA but with \\(\\Sigma_k\\) Diagonal.\n\n\nDon’t have to assume Gaussian. Could do lots of stuff."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#meta-lecture",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "17 Nonlinear classifiers",
+    "text": "17 Nonlinear classifiers\nStat 406\nDaniel J. McDonald\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#last-time",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time",
+    "text": "Last time\nWe reviewed logistic regression\n\\[\\begin{aligned}\n\\P(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\n\\P(Y = 0 \\given X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "title": "UBC Stat406 2023W",
+    "section": "Make it nonlinear",
+    "text": "Make it nonlinear\nWe can make LDA or logistic regression have non-linear decision boundaries by mapping the features to a higher dimension (just like with regular regression)\nSay:\nPolynomials\n\\((x_1, x_2) \\mapsto \\left(1,\\ x_1,\\ x_1^2,\\ x_2,\\ x_2^2,\\ x_1 x_2\\right)\\)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2)) |&gt; mutate(y = as.factor(y))\nlogit_poly &lt;- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = \"binomial\")\nlda_poly &lt;- lda(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1)"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "title": "UBC Stat406 2023W",
+    "section": "Visualizing the classification boundary",
+    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(cowplot)\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), x2 = seq(-2.5, 3, length.out = 100))\npts_logit &lt;- predict(logit_poly, gr)\npts_lda &lt;- predict(lda_poly, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_logit), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = \"log odds\") +\n  ggtitle(\"Polynomial logit\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\ng1 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_lda$x), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = bquote(delta[1] - delta[0])) +\n  ggtitle(\"Polynomial lda\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\nplot_grid(g0, g1)\n\n\n\nA linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#trees-reforestation",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#trees-reforestation",
+    "title": "UBC Stat406 2023W",
+    "section": "Trees (reforestation)",
+    "text": "Trees (reforestation)\n\n\nWe saw regression trees last module\nClassification trees are\n\nMore natural\nSlightly different computationally\n\nEverything else is pretty much the same"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "title": "UBC Stat406 2023W",
+    "section": "Axis-parallel splits",
+    "text": "Axis-parallel splits\nLike with regression trees, classification trees operate by greedily splitting the predictor space\n\n\n\nnames(bakeoff)\n\n [1] \"winners\"                  \n [2] \"series\"                   \n [3] \"age\"                      \n [4] \"occupation\"               \n [5] \"hometown\"                 \n [6] \"percent_star\"             \n [7] \"percent_technical_wins\"   \n [8] \"percent_technical_bottom3\"\n [9] \"percent_technical_top3\"   \n[10] \"technical_highest\"        \n[11] \"technical_lowest\"         \n[12] \"technical_median\"         \n[13] \"judge1\"                   \n[14] \"judge2\"                   \n[15] \"viewers_7day\"             \n[16] \"viewers_28day\"            \n\n\n\nsmalltree &lt;- tree(\n  winners ~ technical_median + percent_star,\n  data = bakeoff\n)\n\n\n\n\n\nCode\npar(mar = c(5, 5, 0, 0) + .1)\nplot(bakeoff$technical_median, bakeoff$percent_star,\n  pch = c(\"-\", \"+\")[bakeoff$winners + 1], cex = 2, bty = \"n\", las = 1,\n  ylab = \"% star baker\", xlab = \"times above median in technical\",\n  col = orange, cex.axis = 2, cex.lab = 2\n)\npartition.tree(smalltree,\n  add = TRUE, col = blue,\n  ordvars = c(\"technical_median\", \"percent_star\")\n)"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "title": "UBC Stat406 2023W",
+    "section": "When do trees do well?",
+    "text": "When do trees do well?\n\n\n\n\n\n2D example\nTop Row:\ntrue decision boundary is linear\n🍎 linear classifier\n👎 tree with axis-parallel splits\nBottom Row:\ntrue decision boundary is non-linear\n🤮 A linear classifier can’t capture the true decision boundary\n🍎 decision tree is successful."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we build a tree?",
+    "text": "How do we build a tree?\n\nDivide the predictor space into \\(J\\) non-overlapping regions \\(R_1, \\ldots, R_J\\)\n\n\nthis is done via greedy, recursive binary splitting\n\n\nEvery observation that falls into a given region \\(R_j\\) is given the same prediction\n\n\ndetermined by majority (or plurality) vote in that region.\n\nImportant:\n\nTrees can only make rectangular regions that are aligned with the coordinate axis.\nThe fit is greedy, which means that after a split is made, all further decisions are conditional on that split."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure quality of fit?",
+    "text": "How do we measure quality of fit?\nLet \\(p_{mk}\\) be the proportion of training observations in the \\(m^{th}\\) region that are from the \\(k^{th}\\) class.\n\n\n\n\n\n\n\nclassification error rate:\n\\(E = 1 - \\max_k (\\widehat{p}_{mk})\\)\n\n\nGini index:\n\\(G = \\sum_k \\widehat{p}_{mk}(1-\\widehat{p}_{mk})\\)\n\n\ncross-entropy:\n\\(D = -\\sum_k \\widehat{p}_{mk}\\log(\\widehat{p}_{mk})\\)\n\n\n\nBoth Gini and cross-entropy measure the purity of the classifier (small if all \\(p_{mk}\\) are near zero or 1).\nThese are preferred over the classification error rate.\nClassification error is hard to optimize.\nWe build a classifier by growing a tree that minimizes \\(G\\) or \\(D\\)."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#pruning-the-tree",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#pruning-the-tree",
+    "title": "UBC Stat406 2023W",
+    "section": "Pruning the tree",
+    "text": "Pruning the tree\n\nCross-validation can be used to directly prune the tree,\nBut it is computationally expensive (combinatorial complexity).\nInstead, we use weakest link pruning, (Gini version)\n\n\\[\\sum_{m=1}^{|T|} \\sum_{k \\in R_m} \\widehat{p}_{mk}(1-\\widehat{p}_{mk}) + \\alpha |T|\\]\n\n\\(|T|\\) is the number of terminal nodes.\nEssentially, we are trading training fit (first term) with model complexity (second) term (compare to lasso).\nNow, cross-validation can be used to pick \\(\\alpha\\)."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "title": "UBC Stat406 2023W",
+    "section": "Advantages and disadvantages of trees (again)",
+    "text": "Advantages and disadvantages of trees (again)\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Trees are highly variable. Small changes in training data \\(\\Longrightarrow\\) big changes in the tree.\nTo fix these last two, we can try to grow many trees and average their performance.\n\nWe do this next module"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "title": "UBC Stat406 2023W",
+    "section": "KNN classifiers",
+    "text": "KNN classifiers\n\nWe saw \\(k\\)-nearest neighbors in the last module.\n\n\nlibrary(class)\nknn3 &lt;- knn(dat1[, -1], gr, dat1$y, k = 3)\n\n\n\nCode\ngr$nn03 &lt;- knn3\nggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = knn3), aes(x1, x2, fill = disc), alpha = .5) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, blue), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "title": "UBC Stat406 2023W",
+    "section": "Choosing \\(k\\) is very important",
+    "text": "Choosing \\(k\\) is very important\n\n\nCode\nset.seed(406406406)\nks &lt;- c(1, 2, 5, 10, 20)\nnn &lt;- map(ks, ~ as_tibble(knn(dat1[, -1], gr[, 1:2], dat1$y, .x)) |&gt; \n  set_names(sprintf(\"k = %02s\", .x))) |&gt;\n  list_cbind() |&gt;\n  bind_cols(gr)\npg &lt;- pivot_longer(nn, starts_with(\"k =\"), names_to = \"k\", values_to = \"knn\")\n\nggplot(pg, aes(x1, x2)) +\n  geom_raster(aes(fill = knn), alpha = .6) +\n  facet_wrap(~ k) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  geom_point(data = dat1, mapping = aes(x1, x2, shape = as.factor(y)), size = 4) +\n  theme_bw(base_size = 18) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  theme(\n    legend.title = element_blank(),\n    legend.key.height = unit(3, \"cm\")\n  )\n\n\n\n\nHow should we choose \\(k\\)?\nScaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.\nIf there are ties, break randomly. So even \\(k\\) is strange."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "title": "UBC Stat406 2023W",
+    "section": "knn.cv() (leave one out)",
+    "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "title": "UBC Stat406 2023W",
+    "section": "Final version",
+    "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42"
   }
 ]
