@@ -1,55 +1,14 @@
 ---
-title: "14 Classification"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "14 Classification"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
-
-
-
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-```
-
-class: middle, center
-background-image: url("gfx/proforhobo.png")
-background-size: cover
-
-
-
-.hand[.secondary[.larger[Module]]] .huge-orange-number[3]
-
-
-
-.fourth-color[.hand[.larger[
-Professor or Hobo? 
-]]]
-
-
----
-
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
-
+{{< include _titleslide.qmd >}}
 
 
 ## An Overview of Classification
-
-$$\newcommand{\Expect}[1]{E\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\argmin}{\arg\min}
-\newcommand{\argmax}{\arg\max}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{\mathbb{P}}
-\renewcommand{\hat}{\widehat}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\y}{\mathbf{y}}$$
 
 
 
@@ -63,12 +22,11 @@ transaction history, etc.
 * Given a set of individuals sequenced DNA, can we determine whether
 various mutations are associated with different phenotypes?
 
---
+. . .
 
-These problems are __not__ regression
-problems. They are __classification__ problems.
+These problems are [not]{.secondary} regression
+problems. They are [classification]{.secondary} problems.
 
----
 
 ## The Set-up
 
@@ -78,7 +36,7 @@ $$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$
 Again, we want to estimate a function that maps $X$ to $Y$ to
 predict as yet observed data.
 
-(This function is known as a __classifier__)
+(This function is known as a [classifier]{.secondary})
 
 
 The same constraints apply:
@@ -89,8 +47,6 @@ data.
 * Often, this comes with the introduction of some bias to get lower
 variance and better predictions.
 
----
-layout: true
 
 ## How do we measure quality?
 
@@ -111,7 +67,7 @@ We again make predictions $\hat{y}=k$ based on the data
 * We lose $\ell(k,k')$ on $(k\neq k')$ for incorrect predictions
 
 
----
+## How do we measure quality?
 
 Suppose you have a fever of 39º C. You get a rapid test on campus.
 
@@ -120,7 +76,7 @@ Suppose you have a fever of 39º C. You get a rapid test on campus.
 | Are + | 0 | Infect others |
 | Are - | Isolation | 0 |
 
----
+## How do we measure quality?
 
 Suppose you have a fever of 39º C. You get a rapid test on campus.
 
@@ -130,12 +86,10 @@ Suppose you have a fever of 39º C. You get a rapid test on campus.
 | Are - | 1 | 0 |
 
 
----
+## How do we measure quality?
 
-**We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.**
+> We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.
 
----
-layout: false
 
 ## How do we measure quality?
 
@@ -144,62 +98,66 @@ $$R_n(g) = E [\ell(Y,g(X))]$$ If we use the law of
 total probability, this can be written
 $$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$
 We minimize this over a class of options $\mathcal{G}$, to produce
-$$g_*(X) = \arg\min_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
+$$g_*(X) = \argmin_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
 
+## How do we measure quality?
 
-$g_*$ is named the __Bayes' classifier__ for loss $\ell$ in class $\mathcal{G}$. 
+$g_*$ is named the [Bayes' classifier]{.secondary} for loss $\ell$ in class $\mathcal{G}$. 
 
-$R_n(g_*)$ is the called the __Bayes' limit__ or __Bayes' Risk__. 
+$R_n(g_*)$ is the called the [Bayes' limit]{.secondary} or [Bayes' Risk]{.secondary}. 
 
-.hand[It's the best we could hope to do in terms of] $\ell$ .hand[if we knew the distribution of the data.]
+[It's the best we could hope to do in terms of]{.hand} $\ell$ [if we knew the distribution of the data.]{.hand}
 
---
+. . .
 
 But we don't, so we'll try to do our best to estimate $g_*$.
 
----
-layout: true
 
 ## Best classifier overall
 
-(now we limit to 2 classes)
+(for now, we limit to 2 classes)
 
 Once we make a specific choice for $\ell$, we can find $g_*$ exactly (pretending we know the distribution)
 
 
-As $Y$ takes only a few values, __zero-one__
-prediction risk is natural (but not the only option)
+Because $Y$ takes only a few values, [zero-one]{.secondary}
+loss is natural (but not the only option)
 $$\ell(y,\ g(x)) = \begin{cases}0 & y=g(x)\\1 & y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),$$
 
----
+## Best classifier overall
 
 | Loss | Test + | Test - |
 |:---: | :---: | :---: |
 | Are + | 0 | 1 |
 | Are - | 1 | 0 |
 
----
+## Best classifier overall
 
-This means we want to __label__ or
-__classify__ a new observation $(x_0,y_0)$ such that
+This means we want to 
+classify a new observation $(x_0,y_0)$ such that
 $g(x_0) = y_0$ as often as possible
 
 
 Under this loss, we have
-$$g_*(X) = \argmin_{g} Pr(g(X) \neq Y) = \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  = \argmax_{g} Pr(Y = g(x) | X=x )$$
+$$
+\begin{aligned}
+g_*(X) &= \argmin_{g} Pr(g(X) \neq Y) \\
+&= \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  \\
+&= \argmax_{g} Pr(Y = g(x) | X=x )
+\end{aligned}
+$$
 
- ---
 
---
+## Estimating $g_*$
 
-**Classifier approach 1** (empirical risk minimization):
 
-Choose some class of classifiers $\mathcal{G}$. 
 
-Find $\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)$
+### Classifier approach 1 (empirical risk minimization):
 
----
-layout: false
+1. Choose some class of classifiers $\mathcal{G}$. 
+
+2. Find $\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)$
+
 
 ## Bayes' Classifier and class densities (2 classes)
 
@@ -210,9 +168,11 @@ f_*(X) & = E[Y \given X] = Pr(Y = 1 \given X) \\
 &= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
 & =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ & = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$
 
-* We call $p_k(X)$ the __class (conditional) densities__
+* We call $p_k(X)$ the [class (conditional) densities]{.secondary}
 
-* $\pi$ is the __marginal probability__ $P(Y=1)$
+* $\pi$ is the [marginal probability]{.secondary} $P(Y=1)$
+
+## Bayes' Classifier and class densities (2 classes)
 
 The Bayes' Classifier (best classifier for 0-1 loss) can be rewritten 
 
@@ -221,21 +181,20 @@ $$g_*(X) = \begin{cases}
 0  &  \textrm{ otherwise}
 \end{cases}$$
 
---
 
-**Approach 2:** estimate everything in the expression above.
+### Approach 2: estimate everything in the expression above.
 
----
-layout: false
+* We need to estimate $p_1$, $p_2$, $\pi$, $1-\pi$
+* Easily extended to more than two classes
+
 
 ## An alternative easy classifier
 
 
 Zero-One loss was natural, but try something else
 
---
 
-**Just for fun,** let's try using __squared error loss__ instead:
+Let's try using [squared error loss]{.secondary} instead:
 $\ell(y,\ f(x)) = (y - f(x))^2$
 
 
@@ -247,39 +206,35 @@ In this case, our "class" will actually just be a probability. But this isn't a 
 
 How do we get a class prediction?
 
---
+. . .
 
 Discretize the probability:
 
 $$g(x) = \begin{cases}0 & f_*(x) < 1/2\\1 & \textrm{else}\end{cases}$$
 
---
+## Estimating $g_*$
 
-**Approach 3**:
+### Approach 3:
+
 1. Estimate $f_*$ using any method we've learned so far. 
 2. Predict 0 if $\hat{f}(x)$ is less than 1/2, else predict 1.
 
----
-layout: true
+
 
 
 ## Claim: Classification is easier than regression
 
 
-.emphasis[
 1. Let $\hat{f}$ be any estimate of $f_*$
 
 2. Let $\widehat{g} (x) = \begin{cases}0 & \hat f(x) < 1/2\\1 & else\end{cases}$
 
-.hand[Proof by picture.]
-]
+[Proof by picture.]{.hand}
 
----
+## Claim: Classification is easier than regression
 
----
-
-
-```{r, echo=FALSE}
+```{r}
+#| code-fold: true
 set.seed(12345)
 x <- 1:99 / 100
 y <- rbinom(99, 1, 
@@ -291,9 +246,6 @@ ksm <- function(sigma) {
   sweep(gg, 1, rowSums(gg), '/') %*% y
 }
 fstar <- ksm(.04)
-```
-
-```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
 gg <- tibble(x = x, fstar = fstar, y = y) %>%
   ggplot(aes(x)) +
   geom_point(aes(y = y), color = blue) +
@@ -303,15 +255,17 @@ gg <- tibble(x = x, fstar = fstar, y = y) %>%
 gg
 ```
 
----
+## Claim: Classification is easier than regression
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+```{r}
+#| code-fold: true
 gg + geom_hline(yintercept = .5, color = green)
 ```
 
----
+## Claim: Classification is easier than regression
 
-```{r, echo=FALSE, fig.width=8, fig.height=4, fig.align='center'}
+```{r}
+#| code-fold: true
 tib <- tibble(x = x, fstar = fstar, y = y)
 ggplot(tib) +
   geom_vline(data = filter(tib, fstar > 0.5), aes(xintercept = x), alpha = .5, color = green) +
@@ -322,31 +276,29 @@ ggplot(tib) +
 ```
 
 
----
-layout: false
 
 ## How to find a classifier
 
-.hand[Why did we go through that math?]
+[Why did we go through that math?]{.hand}
 
 Each of these approaches suggests a way to find a classifier
 
-* __Empirical risk minimization:__ Choose a set
+* [Empirical risk minimization:]{.secondary} Choose a set
 of classifiers $\mathcal{G}$ and find $g \in \mathcal{G}$ that minimizes
 some estimate of $R_n(g)$
     
 > (This can be quite challenging as, unlike in regression, the
 training error is nonconvex)
 
-* __Density estimation:__ Estimate $\pi$ and $p_k$
+* [Density estimation:]{.secondary} Estimate $\pi$ and $p_k$
 
-* __Regression:__ Find an
+* [Regression:]{.secondary} Find an
 estimate $\hat{f}$ of $f^*$ and compare the predicted value to 1/2
 
 
 
 
---
+##
 
 Easiest classifier when $y\in \{0,\ 1\}$:
 
@@ -358,8 +310,6 @@ ghat <- round(predict(lm(y ~ ., data = trainingdata)))
 
 Think about why this may not be very good. (At least 2 reasons I can think of.)
 
----
-class: middle, inverse, center
 
 # Next time:
 
