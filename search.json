@@ -28,6 +28,314 @@
     "text": "Let’s just recap THE RIGHT WAY.\n\nFor HW or Labs, always start on main.\nPull in the remote ⬇️ just to be sure everything is up-to-date.\nCreate a branch for your HW/Lab and switch to it. The name doesn’t matter, but it’s good practice to name in something meaningful (rather than something like stat406-lab-1 when you’re doing lab 4).\nOpen the HW/Lab .Rmd and click Knit. Make sure it works.\nDo the work, saving regularly. When you complete a section, Commit the file with a useful message (Push or Not).\nOnce you’re done, make sure that you have done the minimum number of Commits, push ⬆️ your .Rmd and the knitted .pdf.\nOpen a PR on GitHub and respond to the questions.\nMake sure that only the .Rmd and the .pdf for this HW/Lab are there. And Create Pull Request.\nOn your machine, switch the branch to main to prepare for the next HW/Lab.\n\nIf the TA asks for changes, just switch to the branch for this assignment, and make the requested changes. It’s all on your machine (even if the pdf disappears when you switch)."
   },
   {
+    "objectID": "schedule/slides/22-nnets-estimation.html#meta-lecture",
+    "href": "schedule/slides/22-nnets-estimation.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "22 Neural nets - estimation",
+    "text": "22 Neural nets - estimation\nStat 406\nDaniel J. McDonald\nLast modified – 12 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
+    "href": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Neural Network terms again (T hidden layers, regression)",
+    "text": "Neural Network terms again (T hidden layers, regression)\n\n\n\\[\n\\begin{aligned}\nA_{k}^{(1)} &= g\\left(\\sum_{j=1}^p w^{(1)}_{k,j} x_j\\right)\\\\\nA_{\\ell}^{(t)} &= g\\left(\\sum_{k=1}^{K_{t-1}} w^{(t)}_{\\ell,k} A_{k}^{(t-1)} \\right)\\\\\n\\hat{Y} &= z_m = \\sum_{\\ell=1}^{K_T} \\beta_{m,\\ell} A_{\\ell}^{(T)}\\ \\ (M = 1)\n\\end{aligned}\n\\]\n\n\\(B \\in \\R^{M\\times K_T}\\).\n\\(M=1\\) for regression\n\n\\(\\mathbf{W}_t \\in \\R^{K_2\\times K_1}\\) \\(t=1,\\ldots,T\\)"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
+    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
+    "title": "UBC Stat406 2023W",
+    "section": "Training neural networks. First, choices",
+    "text": "Training neural networks. First, choices\n\nChoose the architecture: how many layers, units per layer, what connections?\nChoose the loss: common choices (for each data point \\(i\\))\n\n\nRegression\n\n\\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\) (the 1/2 just makes the derivative nice)\n\nClassification\n\n\\(\\hat{R}_i = I(y_i = m)\\log( 1 + \\exp(-z_{im}))\\)\n\n\n\nChoose the activation function \\(g\\)"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
+    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
+    "title": "UBC Stat406 2023W",
+    "section": "Training neural networks (intuition)",
+    "text": "Training neural networks (intuition)\n\nWe need to estimate \\(B\\), \\(\\mathbf{W}_t\\), \\(t=1,\\ldots,T\\)\nWe want to minimize \\(\\hat{R} = \\sum_{i=1}^n \\hat{R}_i\\) as a function of all this.\nWe use gradient descent, but in this dialect, we call it back propagation\n\n\n\nDerivatives via the chain rule: computed by a forward and backward sweep\nAll the \\(g(u)\\)’s that get used have \\(g'(u)\\) “nice”.\nIf \\(g\\) is ReLu:\n\n\\(g(u) = xI(x&gt;0)\\)\n\\(g'(u) = I(x&gt;0)\\)\n\n\n\nOnce we have derivatives from backprop,\n\\[\n\\begin{align}\n\\widetilde{B} &\\leftarrow B - \\gamma \\frac{\\partial \\widehat{R}}{\\partial B}\\\\\n\\widetilde{\\mathbf{W}_t} &\\leftarrow \\mathbf{W}_t - \\gamma \\frac{\\partial \\widehat{R}}{\\partial \\mathbf{W}_t}\n\\end{align}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#chain-rule",
+    "href": "schedule/slides/22-nnets-estimation.html#chain-rule",
+    "title": "UBC Stat406 2023W",
+    "section": "Chain rule",
+    "text": "Chain rule\nWe want \\(\\frac{\\partial}{\\partial B} \\hat{R}_i\\) and \\(\\frac{\\partial}{\\partial W_{t}}\\hat{R}_i\\) for all \\(t\\).\nRegression: \\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\)\n\\[\\begin{aligned}\n\\frac{\\partial\\hat{R}_i}{\\partial B} &= -(y_i - \\hat{y}_i)\\frac{\\partial \\hat{y_i}}{\\partial B} =\\underbrace{-(y_i - \\hat{y}_i)}_{-r_i}  \\mathbf{A}^{(T)}\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_T} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_T} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_T}\\\\\n&= -\\left(r_i  B \\odot g'(\\mathbf{W}_T \\mathbf{A}^{(T)}) \\right) \\left(\\mathbf{A}^{(T-1)}\\right)^\\top\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_{T-1}} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_{T-1}} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n&= -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T}}\\frac{\\partial \\mathbf{W}_{T}}{\\partial \\mathbf{A}^{(T-1)}}\\frac{\\partial \\mathbf{A}^{(T-1)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n\\cdots &= \\cdots\n\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
+    "href": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
+    "title": "UBC Stat406 2023W",
+    "section": "Mapping it out",
+    "text": "Mapping it out\nGiven current \\(\\mathbf{W}_t, B\\), we want to get new, \\(\\widetilde{\\mathbf{W}}_t,\\ \\widetilde B\\) for \\(t=1,\\ldots,T\\)\n\nSquared error for regression, cross-entropy for classification\n\n\n\nFeed forward \n\\[\\mathbf{A}^{(0)} = \\mathbf{X}  \\in \\R^{n\\times p}\\]\nRepeat, \\(t= 1,\\ldots, T\\)\n\n\\(\\mathbf{Z}_{t} = \\mathbf{A}^{(t-1)}\\mathbf{W}_t \\in \\R^{n\\times K_t}\\)\n\\(\\mathbf{A}^{(t)} = g(\\mathbf{Z}_{t})\\) (component wise)\n\\(\\dot{\\mathbf{A}}^{(t)} = g'(\\mathbf{Z}_t)\\)\n\n\\[\\begin{cases}\n\\hat{\\mathbf{y}} =\\mathbf{A}^{(T)} B \\in \\R^n \\\\\n\\hat{\\Pi} = \\left(1 + \\exp\\left(-\\mathbf{A}^{(T)}\\mathbf{B}\\right)\\right)^{-1} \\in \\R^{n \\times M}\\end{cases}\\]\n\n\nBack propogate \n\\[r = \\begin{cases}\n-\\left(\\mathbf{y} - \\widehat{\\mathbf{y}}\\right) \\\\\n-\\left(1 - \\widehat{\\Pi}\\right)[y]\\end{cases}\\]\n\\[\n\\begin{aligned}\n\\frac{\\partial}{\\partial \\mathbf{B}} \\widehat{R} &= \\left(\\mathbf{A}^{(T)}\\right)^\\top \\mathbf{r}\\\\\n\\boldsymbol{\\Gamma} &\\leftarrow \\mathbf{r}\\\\\n\\mathbf{W}_{T+1} &\\leftarrow \\mathbf{B}\n\\end{aligned}\n\\]\nRepeat, \\(t = T,...,1\\),\n\n\\(\\boldsymbol{\\Gamma} \\leftarrow \\left(\\boldsymbol{\\Gamma} \\mathbf{W}_{t+1}\\right) \\odot\\dot{\\mathbf{A}}^{(t)}\\)\n\\(\\frac{\\partial R}{\\partial \\mathbf{W}_t} =\\left(\\mathbf{A}^{(t)}\\right)^\\top \\Gamma\\)"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#deep-nets",
+    "href": "schedule/slides/22-nnets-estimation.html#deep-nets",
+    "title": "UBC Stat406 2023W",
+    "section": "Deep nets",
+    "text": "Deep nets\nSome comments on adding layers:\n\nIt has been shown that one hidden layer is sufficient to approximate any bounded piecewise continuous function\nHowever, this may take a huge number of hidden units (i.e. \\(K_1 \\gg 1\\)).\nThis is what people mean when they say that NNets are “universal approximators”\nBy including multiple layers, we can have fewer hidden units per layer.\nAlso, we can encode (in)dependencies that can speed computations\nWe don’t have to connect everything the way we have been"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#simple-example",
+    "href": "schedule/slides/22-nnets-estimation.html#simple-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Simple example",
+    "text": "Simple example\n\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestdata &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nnn_out &lt;- neuralnet(y ~ x, data = df, hidden = c(10, 5, 15), threshold = 0.01, rep = 3)\nnn_preds &lt;- map(1:3, ~ compute(nn_out, testdata, .x)$net.result)\nyhat &lt;- nn_preds |&gt; bind_cols() |&gt; rowMeans() # average over the runs\n\n\n\nCode\n# This code will reproduce the analysis, takes some time\nset.seed(406406406)\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestx &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nlibrary(splines)\nfstar &lt;- sin(1 / testx)\nspline_test_err &lt;- function(k) {\n  fit &lt;- lm(y ~ bs(x, df = k), data = df)\n  yhat &lt;- predict(fit, newdata = tibble(x = testx))\n  mean((yhat - fstar)^2)\n}\nKs &lt;- 1:15 * 10\nSplineErr &lt;- map_dbl(Ks, ~ spline_test_err(.x))\n\nJgrid &lt;- c(5, 10, 15)\nNNerr &lt;- double(length(Jgrid)^3)\nNNplot &lt;- character(length(Jgrid)^3)\nsweep &lt;- 0\nfor (J1 in Jgrid) {\n  for (J2 in Jgrid) {\n    for (J3 in Jgrid) {\n      sweep &lt;- sweep + 1\n      NNplot[sweep] &lt;- paste(J1, J2, J3, sep = \" \")\n      nn_out &lt;- neuralnet(y ~ x, df,\n        hidden = c(J1, J2, J3),\n        threshold = 0.01, rep = 3\n      )\n      nn_results &lt;- sapply(1:3, function(x) {\n        compute(nn_out, testx, x)$net.result\n      })\n      # Run them through the neural network\n      Yhat &lt;- rowMeans(nn_results)\n      NNerr[sweep] &lt;- mean((Yhat - fstar)^2)\n    }\n  }\n}\n\nbestK &lt;- Ks[which.min(SplineErr)]\nbestspline &lt;- predict(lm(y ~ bs(x, bestK), data = df), newdata = tibble(x = testx))\nbesthidden &lt;- as.numeric(unlist(strsplit(NNplot[which.min(NNerr)], \" \")))\nnn_out &lt;- neuralnet(y ~ x, df, hidden = besthidden, threshold = 0.01, rep = 3)\nnn_results &lt;- sapply(1:3, function(x) compute(nn_out, testdata, x)$net.result)\n# Run them through the neural network\nbestnn &lt;- rowMeans(nn_results)\nplotd &lt;- data.frame(\n  x = testdata, spline = bestspline, nnet = bestnn, truth = fstar\n)\nsave.image(file = \"data/nnet-example.Rdata\")"
+  },
+  {
+    "objectID": "schedule/slides/22-nnets-estimation.html#different-architectures",
+    "href": "schedule/slides/22-nnets-estimation.html#different-architectures",
+    "title": "UBC Stat406 2023W",
+    "section": "Different architectures",
+    "text": "Different architectures"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#meta-lecture",
+    "href": "schedule/slides/20-boosting.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "20 Boosting",
+    "text": "20 Boosting\nStat 406\nDaniel J. McDonald\nLast modified – 12 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#last-time",
+    "href": "schedule/slides/20-boosting.html#last-time",
+    "title": "UBC Stat406 2023W",
+    "section": "Last time",
+    "text": "Last time\nWe learned about bagging, for averaging low-bias / high-variance estimators.\nToday, we examine it’s opposite: Boosting.\nBoosting also combines estimators, but it combines high-bias / low-variance estimators.\nBoosting has a number of flavours. And if you Google descriptions, most are wrong.\nFor a deep (and accurate) treatment, see [ESL] Chapter 10\n\nWe’ll discuss 2 flavours: AdaBoost and Gradient Boosting\nNeither requires a tree, but that’s the typical usage.\nBoosting needs a “weak learner”, so small trees (stumps) are natural."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
+    "href": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
+    "title": "UBC Stat406 2023W",
+    "section": "AdaBoost intuition (for classification)",
+    "text": "AdaBoost intuition (for classification)\nAt each iteration, we weight the observations.\nObservations that are currently misclassified, get higher weights.\nSo on the next iteration, we’ll try harder to correctly classify our mistakes.\nThe number of iterations must be chosen."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
+    "href": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
+    "title": "UBC Stat406 2023W",
+    "section": "AdaBoost (Freund and Schapire, generic)",
+    "text": "AdaBoost (Freund and Schapire, generic)\nLet \\(G(x, \\theta)\\) be any weak learner\n⛭ imagine a tree with one split: then \\(\\theta=\\) (feature, split point)\nAlgorithm (AdaBoost) 🛠️\n\nSet observation weights \\(w_i=1/n\\).\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nEstimate the classifier \\(G(x,\\theta_m)\\) using weights \\(w_i\\)\nCalculate it’s weighted error \\(\\textrm{err}_m = \\sum_{i=1}^n w_i I(y_i \\neq G(x_i, \\theta_m)) / \\sum w_i\\)\nSet \\(\\alpha_m = \\log((1-\\textrm{err}_m)/\\text{err}_m)\\)\nUpdate \\(w_i \\leftarrow w_i \\exp(\\alpha_m I(y_i \\neq G(x_i,\\theta_m)))\\)\n\nFinal classifier is \\(G(x) = \\textrm{sign}\\left( \\sum_{m=1}^M \\alpha_m G(x, \\theta_m)\\right)\\)"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#using-mobility-data-again",
+    "href": "schedule/slides/20-boosting.html#using-mobility-data-again",
+    "title": "UBC Stat406 2023W",
+    "section": "Using mobility data again",
+    "text": "Using mobility data again\n\n\nCode\nlibrary(kableExtra)\nlibrary(randomForest)\nmob &lt;- Stat406::mobility |&gt;\n  mutate(mobile = as.factor(Mobility &gt; .1)) |&gt;\n  select(-ID, -Name, -Mobility, -State) |&gt;\n  drop_na()\nn &lt;- nrow(mob)\ntrainidx &lt;- sample.int(n, floor(n * .75))\ntestidx &lt;- setdiff(1:n, trainidx)\ntrain &lt;- mob[trainidx, ]\ntest &lt;- mob[testidx, ]\nrf &lt;- randomForest(mobile ~ ., data = train)\nbag &lt;- randomForest(mobile ~ ., data = train, mtry = ncol(mob) - 1)\npreds &lt;- tibble(truth = test$mobile, rf = predict(rf, test), bag = predict(bag, test))\n\n\n\n\nlibrary(gbm)\ntrain_boost &lt;- train |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\n# needs {0, 1} responses\ntest_boost &lt;- test |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\nadab &lt;- gbm(\n  mobile ~ .,\n  data = train_boost,\n  n.trees = 500,\n  distribution = \"adaboost\"\n)\npreds$adab &lt;- as.numeric(\n  predict(adab, test_boost) &gt; 0\n)\npar(mar = c(5, 11, 0, 1))\ns &lt;- summary(adab, las = 1)"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
+    "href": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
+    "title": "UBC Stat406 2023W",
+    "section": "Forward stagewise additive modeling (FSAM, completely generic)",
+    "text": "Forward stagewise additive modeling (FSAM, completely generic)\nAlgorithm 🛠️\n\nSet initial predictor \\(f_0(x)=0\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute \\((\\beta_m, \\theta_m) = \\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i,\\ \\theta)\\right)\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\beta_m G(x,\\ \\theta_m)\\)\n\nFinal classifier is \\(G(x, \\theta_M) = \\textrm{sign}\\left( f_M(x) \\right)\\)\n\nHere, \\(L\\) is a loss function that measures prediction accuracy\n\n\nIf (1) \\(L(y,\\ f(x))= \\exp(-y f(x))\\), (2) \\(G\\) is a classifier, and WLOG \\(y \\in \\{-1, 1\\}\\)\n\nFSAM is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000)."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#so-what",
+    "href": "schedule/slides/20-boosting.html#so-what",
+    "title": "UBC Stat406 2023W",
+    "section": "So what?",
+    "text": "So what?\nIt turns out that “exponential loss” \\(L(y,\\ f(x))= \\exp(-y f(x))\\) is not very robust.\nHere are some other loss functions for 2-class classification\n\n\nWant losses which penalize negative margin, but not positive margins.\nRobust means don’t over-penalize large negatives"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting",
+    "title": "UBC Stat406 2023W",
+    "section": "Gradient boosting",
+    "text": "Gradient boosting\nIn the forward stagewise algorithm, we solved a minimization and then made an update:\n\\[f_m(x) = f_{m-1}(x) + \\beta_m G(x, \\theta_m)\\]\nFor most loss functions \\(L\\) / procedures \\(G\\) this optimization is difficult: \\[\\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i, \\theta)\\right)\\]\n💡 Just take one gradient step toward the minimum 💡\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nThis is called Gradient boosting\nNotice how similar the update steps look."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-1",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Gradient boosting",
+    "text": "Gradient boosting\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nGradient boosting goes only part of the way toward the minimum at each \\(m\\).\nThis has two advantages:\n\nSince we’re not fitting \\(\\beta, \\theta\\) to the data as “hard”, the learner is weaker.\nThis procedure is computationally much simpler.\n\nSimpler because we only require the gradient at one value, don’t have to fully optimize."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
+    "title": "UBC Stat406 2023W",
+    "section": "Gradient boosting – Algorithm 🛠️",
+    "text": "Gradient boosting – Algorithm 🛠️\n\nSet initial predictor \\(f_0(x)=\\overline{\\y}\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute pseudo-residuals (what is the gradient of \\(L(y,f)=(y-f(x))^2\\)?) \\[r_i = -\\frac{\\partial L(y_i,f(x_i))}{\\partial f(x_i)}\\bigg|_{f(x_i)=f_{m-1}(x_i)}\\]\nEstimate weak learner, \\(G(x, \\theta_m)\\), with the training set \\(\\{r_i, x_i\\}\\).\nFind the step size \\(\\gamma_m = \\argmin_\\gamma \\sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \\gamma G(x_i, \\theta_m))\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\gamma_m G(x, \\theta_m)\\)\n\nFinal predictor is \\(f_M(x)\\)."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
+    "title": "UBC Stat406 2023W",
+    "section": "Gradient boosting modifications",
+    "text": "Gradient boosting modifications\n\ngrad_boost &lt;- gbm(mobile ~ ., data = train_boost, n.trees = 500, distribution = \"bernoulli\")\n\n\nTypically done with “small” trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)\nUsually modify the gradient step to \\(f_m(x) = f_{m-1}(x) + \\gamma_m \\alpha G(x,\\theta_m)\\) with \\(0&lt;\\alpha&lt;1\\). Helps to keep from fitting too hard.\nOften combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.\nThere are many other extensions, notably XGBoost."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#results-for-mobility",
+    "href": "schedule/slides/20-boosting.html#results-for-mobility",
+    "title": "UBC Stat406 2023W",
+    "section": "Results for mobility",
+    "text": "Results for mobility\n\n\nCode\nlibrary(cowplot)\nboost_preds &lt;- tibble(\n  adaboost = predict(adab, test_boost),\n  gbm = predict(grad_boost, test_boost),\n  truth = test$mobile\n)\ng1 &lt;- ggplot(boost_preds, aes(adaboost, gbm, color = as.factor(truth))) +\n  geom_text(aes(label = as.integer(truth) - 1)) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  xlab(\"adaboost margin\") +\n  ylab(\"gbm margin\") +\n  theme(legend.position = \"none\") +\n  scale_color_manual(values = c(\"orange\", \"blue\")) +\n  annotate(\"text\",\n    x = -4, y = 5, color = red,\n    label = paste(\n      \"gbm error\\n\",\n      round(with(boost_preds, mean((gbm &gt; 0) != truth)), 2)\n    )\n  ) +\n  annotate(\"text\",\n    x = 4, y = -5, color = red,\n    label = paste(\"adaboost error\\n\", round(with(boost_preds, mean((adaboost &gt; 0) != truth)), 2))\n  )\nboost_oob &lt;- tibble(\n  adaboost = adab$oobag.improve, gbm = grad_boost$oobag.improve,\n  ntrees = 1:500\n)\ng2 &lt;- boost_oob %&gt;%\n  pivot_longer(-ntrees, values_to = \"OOB_Error\") %&gt;%\n  ggplot(aes(x = ntrees, y = OOB_Error, color = name)) +\n  geom_line() +\n  scale_color_manual(values = c(orange, blue)) +\n  theme(legend.title = element_blank())\nplot_grid(g1, g2, rel_widths = c(.4, .6))"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#major-takeaways",
+    "href": "schedule/slides/20-boosting.html#major-takeaways",
+    "title": "UBC Stat406 2023W",
+    "section": "Major takeaways",
+    "text": "Major takeaways\n\nTwo flavours of Boosting\n\nAdaBoost (the original) and\ngradient boosting (easier and more computationally friendly)\n\nThe connection is “Forward stagewise additive modelling” (AdaBoost is a special case)\nThe connection reveals that AdaBoost “isn’t robust because it uses exponential loss” (squared error is even worse)\nGradient boosting is a computationally easier version of FSAM\nAll use weak learners (compare to Bagging)\nThink about the Bias-Variance implications\nYou can use these for regression or classification\nYou can do this with other weak learners besides trees."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#meta-lecture",
+    "href": "schedule/slides/18-the-bootstrap.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "18 The bootstrap",
+    "text": "18 The bootstrap\nStat 406\nDaniel J. McDonald\nLast modified – 11 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#a-small-detour",
+    "href": "schedule/slides/18-the-bootstrap.html#a-small-detour",
+    "title": "UBC Stat406 2023W",
+    "section": "A small detour…",
+    "text": "A small detour…"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics",
+    "href": "schedule/slides/18-the-bootstrap.html#in-statistics",
+    "title": "UBC Stat406 2023W",
+    "section": "In statistics…",
+    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nYou usually get these “second-level” properties from “the sampling distribution of an estimator”"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics-1",
+    "href": "schedule/slides/18-the-bootstrap.html#in-statistics-1",
+    "title": "UBC Stat406 2023W",
+    "section": "In statistics…",
+    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nBut what if you don’t know the sampling distribution? Or you’re skeptical of the CLT argument?"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics-2",
+    "href": "schedule/slides/18-the-bootstrap.html#in-statistics-2",
+    "title": "UBC Stat406 2023W",
+    "section": "In statistics…",
+    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nSampling distributions\n\nIf \\(X_i\\) are iid Normal \\((0,\\sigma^2)\\), then \\(\\Var{\\overline{X}} = \\sigma^2 / n\\).\nIf \\(X_i\\) are iid and \\(n\\) is big, then \\(\\Var{\\overline{X}} \\approx \\Var{X_1} / n\\).\nIf \\(X_i\\) are iid Binomial \\((m, p)\\), then \\(\\Var{\\overline{X}} = mp(1-p) / n\\)"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#example-of-unknown-sampling-distribution",
+    "href": "schedule/slides/18-the-bootstrap.html#example-of-unknown-sampling-distribution",
+    "title": "UBC Stat406 2023W",
+    "section": "Example of unknown sampling distribution",
+    "text": "Example of unknown sampling distribution\nI estimate a LDA on some data.\nI get a new \\(x_0\\) and produce \\(\\widehat{Pr}(y_0 =1 \\given x_0)\\).\nCan I get a 95% confidence interval for \\(Pr(y_0=1 \\given x_0)\\)?\n\nThe bootstrap gives this to you."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#bootstrap-procedure",
+    "href": "schedule/slides/18-the-bootstrap.html#bootstrap-procedure",
+    "title": "UBC Stat406 2023W",
+    "section": "Bootstrap procedure",
+    "text": "Bootstrap procedure\n\nResample your training data w/ replacement.\nCalculate LDA on this sample.\nProduce a new prediction, call it \\(\\widehat{Pr}_b(y_0 =1 \\given x_0)\\).\nRepeat 1-3 \\(b = 1,\\ldots,B\\) times.\nCI: \\(\\left[2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(1-\\alpha/2),\\ 2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(\\alpha/2)\\right]\\)\n\n\n\\(\\hat{F}\\) is the “empirical” distribution of the bootstraps."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#very-basic-example",
+    "href": "schedule/slides/18-the-bootstrap.html#very-basic-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Very basic example",
+    "text": "Very basic example\n\nLet \\(X_i\\sim Exponential(1/5)\\). The pdf is \\(f(x) = \\frac{1}{5}e^{-x/5}\\)\nI know if I estimate the mean with \\(\\bar{X}\\), then by the CLT (if \\(n\\) is big),\n\n\\[\\frac{\\sqrt{n}(\\bar{X}-E[X])}{s} \\approx N(0, 1).\\]\n\nThis gives me a 95% confidence interval like \\[\\bar{X} \\pm 2s/\\sqrt{n}\\]\nBut I don’t want to estimate the mean, I want to estimate the median."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#section-1",
+    "href": "schedule/slides/18-the-bootstrap.html#section-1",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Code\nggplot(data.frame(x = c(0, 12)), aes(x)) +\n  stat_function(fun = function(x) dexp(x, 1 / 5), color = orange) +\n  geom_vline(xintercept = 5, color = blue) + # mean\n  geom_vline(xintercept = qexp(.5, 1 / 5), color = red) + # median\n  annotate(\"label\",\n    x = c(2.5, 5.5, 10), y = c(.15, .15, .05),\n    label = c(\"median\", \"bar(x)\", \"pdf\"), parse = TRUE,\n    color = c(red, blue, orange), size = 6\n  )"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#now-what",
+    "href": "schedule/slides/18-the-bootstrap.html#now-what",
+    "title": "UBC Stat406 2023W",
+    "section": "Now what…",
+    "text": "Now what…\n\nI give you a sample of size 500, you give me the sample median.\nHow do you get a CI?\nYou can use the bootstrap!\n\n\nset.seed(406406406)\nx &lt;- rexp(n, 1 / 5)\n(med &lt;- median(x)) # sample median\n\n[1] 3.611615\n\nB &lt;- 100\nalpha &lt;- 0.05\nFhat &lt;- map_dbl(1:B, ~ median(sample(x, replace = TRUE))) # repeat B times, \"empirical distribution\"\nCI &lt;- 2 * med - quantile(Fhat, probs = c(1 - alpha / 2, alpha / 2))"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#section-2",
+    "href": "schedule/slides/18-the-bootstrap.html#section-2",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "Code\nggplot(data.frame(Fhat), aes(Fhat)) +\n  geom_density(color = orange) +\n  geom_vline(xintercept = CI, color = orange, linetype = 2) +\n  geom_vline(xintercept = med, col = blue) +\n  geom_vline(xintercept = qexp(.5, 1 / 5), col = red) +\n  annotate(\"label\",\n    x = c(3.15, 3.5, 3.75), y = c(.5, .5, 1),\n    color = c(orange, red, blue),\n    label = c(\"widehat(F)\", \"true~median\", \"widehat(median)\"),\n    parse = TRUE\n  ) +\n  xlab(\"x\") +\n  geom_rug(aes(2 * med - Fhat))"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
+    "href": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
+    "title": "UBC Stat406 2023W",
+    "section": "How does this work?",
+    "text": "How does this work?"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#approximations",
+    "href": "schedule/slides/18-the-bootstrap.html#approximations",
+    "title": "UBC Stat406 2023W",
+    "section": "Approximations",
+    "text": "Approximations"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
+    "href": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Slightly harder example",
+    "text": "Slightly harder example\n\n\n\nggplot(fatcats, aes(Bwt, Hwt)) +\n  geom_point(color = blue) +\n  xlab(\"Cat body weight (Kg)\") +\n  ylab(\"Cat heart weight (g)\")\n\n\n\n\n\n\n\n\n\n\n\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nsummary(cats.lm)\n\n\nCall:\nlm(formula = Hwt ~ 0 + Bwt, data = fatcats)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-11.2353  -0.7932  -0.1407   0.5968  11.1026 \n\nCoefficients:\n    Estimate Std. Error t value Pr(&gt;|t|)    \nBwt  3.95424    0.06294   62.83   &lt;2e-16 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.089 on 143 degrees of freedom\nMultiple R-squared:  0.965, Adjusted R-squared:  0.9648 \nF-statistic:  3947 on 1 and 143 DF,  p-value: &lt; 2.2e-16\n\nconfint(cats.lm)\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
+    "href": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
+    "title": "UBC Stat406 2023W",
+    "section": "When we fit models, we examine diagnostics",
+    "text": "When we fit models, we examine diagnostics\n\n\n\nqqnorm(residuals(cats.lm), pch = 16, col = blue)\nqqline(residuals(cats.lm), col = orange, lwd = 2)\n\n\n\n\n\n\n\n\nThe tails are too fat. So I don’t believe that CI…\n\n\nWe bootstrap\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.826735 4.084322 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#an-alternative",
+    "href": "schedule/slides/18-the-bootstrap.html#an-alternative",
+    "title": "UBC Stat406 2023W",
+    "section": "An alternative",
+    "text": "An alternative\n\nSo far, I didn’t use any information about the data-generating process.\nWe’ve done the non-parametric bootstrap\nThis is easiest, and most common for the methods in this module\n\n\nBut there’s another version\n\nYou could try a “parametric bootstrap”\nThis assumes knowledge about the DGP"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#same-data",
+    "href": "schedule/slides/18-the-bootstrap.html#same-data",
+    "title": "UBC Stat406 2023W",
+    "section": "Same data",
+    "text": "Same data\n\n\nNon-parametric bootstrap\nSame as before\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # NP Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.832907 4.070232 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652\n\n\n\n\nParametric bootstrap\n\nAssume that the linear model is TRUE.\nThen, \\(\\texttt{Hwt}_i = \\widehat{\\beta}\\times \\texttt{Bwt}_i + \\widehat{e}_i\\), \\(\\widehat{e}_i \\approx \\epsilon_i\\)\nThe \\(\\epsilon_i\\) is random \\(\\longrightarrow\\) just resample \\(\\widehat{e}_i\\).\n\n\nB &lt;- 500\nbhats &lt;- double(B)\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nr &lt;- residuals(cats.lm)\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt; mutate(\n    Hwt = predict(cats.lm) +\n      sample(r, n(), replace = TRUE)\n  )\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Parametric Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.815162 4.065045"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
+    "href": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
+    "title": "UBC Stat406 2023W",
+    "section": "Bootstrap error sources",
+    "text": "Bootstrap error sources\n\n\nSimulation error\n\nusing only \\(B\\) samples to estimate \\(F\\) with \\(\\hat{F}\\).\n\nStatistical error\n\nour data depended on a sample from the population. We don’t have the whole population so we make an error by using a sample (Note: this part is what always happens with data, and what the science of statistics analyzes.)\n\nSpecification error\n\nIf we use the parametric bootstrap, and our model is wrong, then we are overconfident."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
+    "title": "UBC Stat406 2023W",
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\nOur interval is\n\\[\n[2\\hat{\\theta} - \\theta^*_{1-\\alpha/2},\\ 2\\hat{\\theta} - \\theta^*_{\\alpha/2}]\n\\]\nwhere \\(\\theta^*_q\\) is the \\(q\\) quantile of \\(\\hat{\\Theta}\\).\n\n\nCalled the “Pivotal Interval”\nHas the correct \\(1-\\alpha\\)% coverage under very mild conditions on \\(\\hat{\\theta}\\)"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\hat{\\theta} - t_{\\alpha/2}\\hat{s},\\ \\hat{\\theta} - t_{\\alpha/2}\\hat{s}]\n\\]\nwhere \\(\\hat{s} = \\sqrt{\\Var{\\hat{\\Theta}}}\\)\n\n\nCalled the “Normal Interval”\nOnly works if the distribution of \\(\\hat{\\Theta}\\) is approximately Normal.\nUnlikely to work well\nDon’t do this"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\theta^*_{\\alpha/2},\\ \\theta^*_{1-\\alpha/2}]\n\\]\nwhere \\(\\theta^*_q\\) is the \\(q\\) quantile of \\(\\hat{\\Theta}\\).\n\n\nCalled the “Percentile Interval”\nWorks if \\(\\exists\\) monotone \\(m\\) so that \\(m(\\hat\\Theta) \\sim N(m(\\theta), c^2)\\)\nBetter than the Normal Interval\nMore assumptions than the Pivotal Interval"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#more-details",
+    "href": "schedule/slides/18-the-bootstrap.html#more-details",
+    "title": "UBC Stat406 2023W",
+    "section": "More details",
+    "text": "More details\n\nSee “All of Statistics” by Larry Wasserman, Chapter 8.3\n\nThere’s a handout with the proofs on Canvas (under Modules)"
+  },
+  {
     "objectID": "schedule/slides/16-logistic-regression.html#meta-lecture",
     "href": "schedule/slides/16-logistic-regression.html#meta-lecture",
     "title": "UBC Stat406 2023W",
@@ -3085,5 +3393,355 @@
     "title": "UBC Stat406 2023W",
     "section": "Final version",
     "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#meta-lecture",
+    "href": "schedule/slides/19-bagging-and-rf.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "19 Bagging and random forests",
+    "text": "19 Bagging and random forests\nStat 406\nDaniel J. McDonald\nLast modified – 11 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging",
+    "text": "Bagging\nMany methods (trees, nonparametric smoothers) tend to have low bias but high variance.\nEspecially fully grown trees (that’s why we prune them)\n\nHigh-variance\n\nif we split the training data into two parts at random and fit a decision tree to each part, the results will be quite different.\n\nIn contrast, a low variance estimator\n\nwould yield similar results if applied to the two parts (consider \\(\\widehat{f} = 0\\)).\n\n\nBagging, short for bootstrap aggregation, is a general purpose procedure for reducing variance.\nWe’ll use it specifically in the context of trees, but it can be applied much more broadly."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging-the-heuristic-motivation",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging-the-heuristic-motivation",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging: The heuristic motivation",
+    "text": "Bagging: The heuristic motivation\nSuppose we have \\(n\\) uncorrelated observations \\(Z_1, \\ldots, Z_n\\), each with variance \\(\\sigma^2\\).\nWhat is the variance of\n\\[\\overline{Z} = \\frac{1}{n} \\sum_{i=1}^n Z_i\\ \\ \\ ?\\]\n\nSuppose we had \\(B\\) separate (uncorrelated) training sets, \\(1, \\ldots, B\\),\nWe can form \\(B\\) separate model fits, \\(\\widehat{f}^1(x), \\ldots, \\widehat{f}^B(x)\\), and then average them:\n\\[\\widehat{f}_{B}(x) = \\frac{1}{B} \\sum_{b=1}^B \\widehat{f}^b(x)\\]"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging-the-bootstrap-part",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging-the-bootstrap-part",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging: The bootstrap part",
+    "text": "Bagging: The bootstrap part\n\nThis isn’t practical\n\nwe don’t have many training sets.\n\n\nWe therefore turn to the bootstrap to simulate having many training sets.\nSuppose we have data \\(Z_1, \\ldots, Z_n\\)\n\nChoose some large number of samples, \\(B\\).\nFor each \\(b = 1,\\ldots,B\\), resample from \\(Z_1, \\ldots, Z_n\\), call it \\(\\widetilde{Z}_1, \\ldots, \\widetilde{Z}_n\\).\nCompute \\(\\widehat{f}^b = \\widehat{f}(\\widetilde{Z}_1, \\ldots, \\widetilde{Z}_n)\\).\n\n\\[\\widehat{f}_{\\textrm{bag}}(x) = \\frac{1}{B} \\sum_{b=1}^B \\widehat{f}^b(x)\\]\nThis process is known as Bagging"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging-trees",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging-trees",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging trees",
+    "text": "Bagging trees\n\n\n\n\n\nThe procedure for trees is the following\n\nChoose a large number \\(B\\).\nFor each \\(b = 1,\\ldots, B\\), grow an unpruned tree on the \\(b^{th}\\) bootstrap draw from the data.\nAverage all these trees together."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging-trees-1",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging-trees-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging trees",
+    "text": "Bagging trees\n\n\n\n\n\nEach tree, since it is unpruned, will have\n\nlow / high variance\nlow / high bias\n\nTherefore averaging many trees results in an estimator that has\n\nlower / higher variance and\nlow / high bias."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#bagging-trees-variable-importance-measures",
+    "href": "schedule/slides/19-bagging-and-rf.html#bagging-trees-variable-importance-measures",
+    "title": "UBC Stat406 2023W",
+    "section": "Bagging trees: Variable importance measures",
+    "text": "Bagging trees: Variable importance measures\nBagging can dramatically improve predictive performance of trees\nBut we sacrificed some interpretability.\nWe no longer have that nice diagram that shows the segmentation of the predictor space\n(more accurately, we have \\(B\\) of them).\nTo recover some information, we can do the following:\n\nFor each of the \\(b\\) trees and each of the \\(p\\) variables, we record the amount that the Gini index is reduced by the addition of that variable\nReport the average reduction over all \\(B\\) trees."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#random-forest",
+    "href": "schedule/slides/19-bagging-and-rf.html#random-forest",
+    "title": "UBC Stat406 2023W",
+    "section": "Random Forest",
+    "text": "Random Forest\nRandom Forest is an extension of Bagging, in which the bootstrap trees are decorrelated.\nRemember: \\(\\Var{\\overline{Z}} = \\frac{1}{n}\\Var{Z_1}\\) unless the \\(Z_i\\)’s are correlated\nSo Bagging may not reduce the variance that much because the training sets are correlated across trees.\n\nHow do we decorrelate?\nDraw a bootstrap sample and start to build a tree.\n\nBut\n\nBefore we split, we randomly pick\n\n\n\\(m\\) of the possible \\(p\\) predictors as candidates for the split."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#decorrelating",
+    "href": "schedule/slides/19-bagging-and-rf.html#decorrelating",
+    "title": "UBC Stat406 2023W",
+    "section": "Decorrelating",
+    "text": "Decorrelating\nA new sample of size \\(m\\) of the predictors is taken at each split.\nUsually, we use about \\(m = \\sqrt{p}\\)\nIn other words, at each split, we aren’t even allowed to consider the majority of possible predictors!"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#what-is-going-on-here",
+    "href": "schedule/slides/19-bagging-and-rf.html#what-is-going-on-here",
+    "title": "UBC Stat406 2023W",
+    "section": "What is going on here?",
+    "text": "What is going on here?\nSuppose there is 1 really strong predictor and many mediocre ones.\n\nThen each tree will have this one predictor in it,\nTherefore, each tree will look very similar (i.e. highly correlated).\nAveraging highly correlated things leads to much less variance reduction than if they were uncorrelated.\n\nIf we don’t allow some trees/splits to use this important variable, each of the trees will be much less similar and hence much less correlated.\nBagging Trees is Random Forest when \\(m = p\\), that is, when we can consider all the variables at each split."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#example-with-mobility-data",
+    "href": "schedule/slides/19-bagging-and-rf.html#example-with-mobility-data",
+    "title": "UBC Stat406 2023W",
+    "section": "Example with Mobility data",
+    "text": "Example with Mobility data\n\nlibrary(randomForest)\nlibrary(kableExtra)\nset.seed(406406)\nmob &lt;- Stat406::mobility |&gt;\n  mutate(mobile = as.factor(Mobility &gt; .1)) |&gt;\n  select(-ID, -Name, -Mobility, -State) |&gt;\n  drop_na()\nn &lt;- nrow(mob)\ntrainidx &lt;- sample.int(n, floor(n * .75))\ntestidx &lt;- setdiff(1:n, trainidx)\ntrain &lt;- mob[trainidx, ]\ntest &lt;- mob[testidx, ]\nrf &lt;- randomForest(mobile ~ ., data = train)\nbag &lt;- randomForest(mobile ~ ., data = train, mtry = ncol(mob) - 1)\npreds &lt;-  tibble(truth = test$mobile, rf = predict(rf, test), bag = predict(bag, test))\n\nkbl(cbind(table(preds$truth, preds$rf), table(preds$truth, preds$bag))) |&gt;\n  add_header_above(c(\"Truth\" = 1, \"RF\" = 2, \"Bagging\" = 2))\n\n\n\n\n\n\n\n\n\n\n\n\nTruth\n\n\nRF\n\n\nBagging\n\n\n\n\nFALSE\nTRUE\nFALSE\nTRUE\n\n\n\n\nFALSE\n61\n10\n60\n11\n\n\nTRUE\n12\n22\n10\n24"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#example-with-mobility-data-1",
+    "href": "schedule/slides/19-bagging-and-rf.html#example-with-mobility-data-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Example with Mobility data",
+    "text": "Example with Mobility data\n\nvarImpPlot(rf, pch = 16, col = orange)"
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#one-last-thing",
+    "href": "schedule/slides/19-bagging-and-rf.html#one-last-thing",
+    "title": "UBC Stat406 2023W",
+    "section": "One last thing…",
+    "text": "One last thing…\n\nOn average\n\ndrawing \\(n\\) samples from \\(n\\) observations with replacement (bootstrapping) results in ~ 2/3 of the observations being selected. (Can you show this?)\n\n\nThe remaining ~ 1/3 of the observations are not used on that tree.\nThese are referred to as out-of-bag (OOB).\nWe can think of it as a for-free cross-validation.\nEach time a tree is grown, we get its prediction error on the unused observations.\nWe average this over all bootstrap samples."
+  },
+  {
+    "objectID": "schedule/slides/19-bagging-and-rf.html#out-of-bag-error-estimation-for-bagging-rf",
+    "href": "schedule/slides/19-bagging-and-rf.html#out-of-bag-error-estimation-for-bagging-rf",
+    "title": "UBC Stat406 2023W",
+    "section": "Out-of-bag error estimation for bagging / RF",
+    "text": "Out-of-bag error estimation for bagging / RF\nFor randomForest(), predict() without passing newdata = gives the OOB prediction\nnot like lm() where it gives the fitted values\n\ntab &lt;- table(predict(bag), train$mobile) \nkbl(tab) |&gt; add_header_above(c(\"Truth\" = 1, \"Bagging\" = 2))\n\n\n\n\n\n\n\n\n\n\nTruth\n\n\nBagging\n\n\n\n\nFALSE\nTRUE\n\n\n\n\nFALSE\n182\n28\n\n\nTRUE\n21\n82\n\n\n\n\n\n\n1 - sum(diag(tab)) / sum(tab) ## OOB misclassification error, no need for CV\n\n[1] 0.1565495"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#meta-lecture",
+    "href": "schedule/slides/21-nnets-intro.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "21 Neural nets",
+    "text": "21 Neural nets\nStat 406\nDaniel J. McDonald\nLast modified – 12 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#overview",
+    "href": "schedule/slides/21-nnets-intro.html#overview",
+    "title": "UBC Stat406 2023W",
+    "section": "Overview",
+    "text": "Overview\nNeural networks are models for supervised learning\nLinear combinations of features are passed through a non-linear transformation in successive layers\nAt the top layer, the resulting latent factors are fed into an algorithm for predictions\n(Most commonly via least squares or logistic loss)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#background",
+    "href": "schedule/slides/21-nnets-intro.html#background",
+    "title": "UBC Stat406 2023W",
+    "section": "Background",
+    "text": "Background\n\n\nNeural networks have come about in 3 “waves”\nThe first was an attempt in the 1950s to model the mechanics of the human brain\nIt appeared the brain worked by\n\ntaking atomic units known as neurons, which can be “on” or “off”\nputting them in networks\n\nA neuron itself interprets the status of other neurons\nThere weren’t really computers, so we couldn’t estimate these things"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#background-1",
+    "href": "schedule/slides/21-nnets-intro.html#background-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Background",
+    "text": "Background\nAfter the development of parallel, distributed computation in the 1980s, this “artificial intelligence” view was diminished\nAnd neural networks gained popularity\nBut, the growing popularity of SVMs and boosting/bagging in the late 1990s, neural networks again fell out of favor\nThis was due to many of the problems we’ll discuss (non-convexity being the main one)\n\nIn the mid 2000’s, new approaches for initializing neural networks became available\nThese approaches are collectively known as deep learning\nState-of-the-art performance on various classification tasks has been accomplished via neural networks\nToday, Neural Networks/Deep Learning are the hottest…"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#high-level-overview",
+    "href": "schedule/slides/21-nnets-intro.html#high-level-overview",
+    "title": "UBC Stat406 2023W",
+    "section": "High level overview",
+    "text": "High level overview"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#recall-nonparametric-regression",
+    "href": "schedule/slides/21-nnets-intro.html#recall-nonparametric-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Recall nonparametric regression",
+    "text": "Recall nonparametric regression\nSuppose \\(Y \\in \\mathbb{R}\\) and we are trying estimate the regression function \\[\\Expect{Y\\given X} = f_*(X)\\]\nIn Module 2, we discussed basis expansion,\n\nWe know \\(f_*(x) =\\sum_{k=1}^\\infty \\beta_k h_k(x)\\) some basis \\(h_1,h_2,\\ldots\\) (using \\(h\\) instead of \\(\\phi\\) to match ISLR)\nTruncate this expansion at \\(K\\): \\(f_*^K(x) \\approx \\sum_{k=1}^K \\beta_k h_k(x)\\)\nEstimate \\(\\beta_k\\) with least squares"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#recall-nonparametric-regression-1",
+    "href": "schedule/slides/21-nnets-intro.html#recall-nonparametric-regression-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Recall nonparametric regression",
+    "text": "Recall nonparametric regression\nThe weaknesses of this approach are:\n\nThe basis is fixed and independent of the data\nIf \\(p\\) is large, then nonparametrics doesn’t work well at all (recall the Curse of Dimensionality)\nIf the basis doesn’t “agree” with \\(f_*\\), then \\(K\\) will have to be large to capture the structure\nWhat if parts of \\(f_*\\) have substantially different structure? Say \\(f_*(x)\\) really wiggly for \\(x \\in [-1,3]\\) but smooth elsewhere\n\nAn alternative would be to have the data tell us what kind of basis to use (Module 5)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#layer-for-regression",
+    "href": "schedule/slides/21-nnets-intro.html#layer-for-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "1-layer for Regression",
+    "text": "1-layer for Regression\n\n\nA single layer neural network model is \\[\n\\begin{aligned}\n&f(x) = \\beta_0 + \\sum_{k=1}^K \\beta_k h_k(x) \\\\\n&= \\beta_0 + \\sum_{k=1}^K \\beta_k \\ g(w_{k0} + w_k^{\\top}x)\\\\\n&= \\beta_0 + \\sum_{k=1}^K \\beta_k \\ A_k\\\\\n\\end{aligned}\n\\]\nCompare: A nonparametric regression \\[f(x) = \\beta_0 + \\sum_{k=1}^K \\beta_k {\\phi_k(x)}\\]"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#terminology",
+    "href": "schedule/slides/21-nnets-intro.html#terminology",
+    "title": "UBC Stat406 2023W",
+    "section": "Terminology",
+    "text": "Terminology\n\\[f(x) = {\\beta_0} + \\sum_{k=1}^{{K}} {\\beta_k} {g(w_{k0} + w_k^{\\top}x)}\\] The main components are\n\nThe derived features \\({A_k = g(w_{k0} + w_k^{\\top}x)}\\) and are called the hidden units or activations\nThe function \\(g\\) is called the activation function (more on this later)\nThe parameters \\({\\beta_0},{\\beta_k},{w_{k0}},{w_k}\\) are estimated from the data for all \\(k = 1,\\ldots, K\\).\nThe number of hidden units \\({K}\\) is a tuning parameter\n\\(\\beta_0\\) and \\(w_{k0}\\) are usually called biases (I’m going to set them to 0 and ignore them in future formulas. Just for space. It’s just an intercept)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#terminology-1",
+    "href": "schedule/slides/21-nnets-intro.html#terminology-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Terminology",
+    "text": "Terminology\n\\[f(x) = {\\beta_0} + \\sum_{k=1}^{{K}} {\\beta_k} {g(w_{k0} + w_k^{\\top}x)}\\]\nNotes (no biases):\n\\(\\beta \\in \\R^k\\).\n\\(w_k \\in \\R^p,\\ k = 1,\\ldots,K\\)\n\\(\\mathbf{W} \\in \\R^{K\\times p}\\)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#what-about-classification-10-classes-2-layers",
+    "href": "schedule/slides/21-nnets-intro.html#what-about-classification-10-classes-2-layers",
+    "title": "UBC Stat406 2023W",
+    "section": "What about classification (10 classes, 2 layers)",
+    "text": "What about classification (10 classes, 2 layers)\n\n\n\\[\n\\begin{aligned}\nA_k^{(1)} &= g\\left(\\sum_{j=1}^p w^{(1)}_{k,j} x_j\\right)\\\\\nA_\\ell^{(2)} &= g\\left(\\sum_{k=1}^{K_1} w^{(2)}_{\\ell,k} A_k^{(1)} \\right)\\\\\nz_m &= \\sum_{\\ell=1}^{K_2} \\beta_{m,\\ell} A_\\ell^{(2)}\\\\\nf_m(x) &= \\frac{1}{1 + \\exp(-z_m)}\\\\\n\\end{aligned}\n\\]\n\n\n\n\n\n\n\n\n\nPredict class with largest probability: \\(\\hat{Y} = \\argmax_{m} f_m(x)\\)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#what-about-classification-10-classes-2-layers-1",
+    "href": "schedule/slides/21-nnets-intro.html#what-about-classification-10-classes-2-layers-1",
+    "title": "UBC Stat406 2023W",
+    "section": "What about classification (10 classes, 2 layers)",
+    "text": "What about classification (10 classes, 2 layers)\n\n\nNotes:\n\\(B \\in \\R^{M\\times K_2}\\) (here \\(M=10\\)).\n\\(\\mathbf{W}_2 \\in \\R^{K_2\\times K_1}\\)\n\\(\\mathbf{W}_1 \\in \\R^{K_1\\times p}\\)"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#two-observations",
+    "href": "schedule/slides/21-nnets-intro.html#two-observations",
+    "title": "UBC Stat406 2023W",
+    "section": "Two observations",
+    "text": "Two observations\n\nThe \\(g\\) function generates a feature map\n\nWe start with \\(p\\) covariates and we generate \\(K\\) features (1-layer)\n\n\nLogistic / Least-squares with a polynomial transformation\n\\[\n\\begin{aligned}\n&\\Phi(x) \\\\\n& =\n(1, x_1, \\ldots, x_p, x_1^2,\\ldots,x_p^2,\\ldots\\\\\n& \\quad \\ldots x_1x_2, \\ldots, x_{p-1}x_p) \\\\\n& =\n(\\phi_1(x),\\ldots,\\phi_{K_2}(x))\\\\\nf(x) &=  \\sum_{k=1}^{K_2} \\beta_k \\phi_k(x) = \\beta^\\top \\Phi(x)\n\\end{aligned}\n\\]\n\n\nNeural network\n\\[\\begin{aligned}\nA_k &= g\\left( \\sum_{j=1}^p w_{kj}x_j\\right) = g\\left( w_{k}^{\\top}x\\right)\\\\\n\\Phi(x) &= (A_1,\\ldots, A_K)^\\top \\in \\mathbb{R}^{K}\\\\\nf(x) &=\\beta^{\\top} \\Phi(x)=\\beta^\\top A\\\\\n&=  \\sum_{k=1}^K \\beta_k g\\left( \\sum_{j=1}^p w_{kj}x_j\\right)\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/21-nnets-intro.html#two-observations-1",
+    "href": "schedule/slides/21-nnets-intro.html#two-observations-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Two observations",
+    "text": "Two observations\n\nIf \\(g(u) = u\\), (or \\(=3u\\)) then neural networks reduce to (massively underdetermined) ordinary least squares (try to show this)\n\n\nReLU is the current fashion (used to be tanh or logistic)"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#meta-lecture",
+    "href": "schedule/slides/23-nnets-other.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "23 Neural nets - other considerations",
+    "text": "23 Neural nets - other considerations\nStat 406\nDaniel J. McDonald\nLast modified – 12 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#estimation-procedures-training",
+    "href": "schedule/slides/23-nnets-other.html#estimation-procedures-training",
+    "title": "UBC Stat406 2023W",
+    "section": "Estimation procedures (training)",
+    "text": "Estimation procedures (training)\nBack-propagation\nAdvantages:\n\nIt’s updates only depend on local information in the sense that if objects in the hierarchical model are unrelated to each other, the updates aren’t affected\n(This helps in many ways, most notably in parallel architectures)\nIt doesn’t require second-derivative information\nAs the updates are only in terms of \\(\\hat{R}_i\\), the algorithm can be run in either batch or online mode\n\nDown sides:\n\nIt can be very slow\nNeed to choose the learning rate \\(\\gamma_t\\)"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#other-algorithms",
+    "href": "schedule/slides/23-nnets-other.html#other-algorithms",
+    "title": "UBC Stat406 2023W",
+    "section": "Other algorithms",
+    "text": "Other algorithms\nThere are many variations on the fitting algorithm\nStochastic gradient descent: (SGD) discussed in the optimization lecture\nThe rest are variations that use lots of tricks\n\nRMSprop\nAdam\nAdadelta\nAdagrad\nAdamax\nNadam\nFtrl"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#regularizing-neural-networks",
+    "href": "schedule/slides/23-nnets-other.html#regularizing-neural-networks",
+    "title": "UBC Stat406 2023W",
+    "section": "Regularizing neural networks",
+    "text": "Regularizing neural networks\nNNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters.\nFlavours:\n\na complexity penalization term \\(\\longrightarrow\\) solve \\(\\min \\hat{R} + \\rho(\\alpha,\\beta)\\)\nearly stopping on the back propagation algorithm used for fitting\n\n\nWeight decay\n\nThis is like ridge regression in that we penalize the squared Euclidean norm of the weights \\(\\rho(\\mathbf{W},\\mathbf{B}) = \\sum w_i^2 + \\sum b_i^2\\)\n\nWeight elimination\n\nThis encourages more shrinking of small weights \\(\\rho(\\mathbf{W},\\mathbf{B}) = \\sum \\frac{w_i^2}{1+w_i^2} + \\sum \\frac{b_i^2}{1 + b_i^2}\\) or Lasso-type\n\nDropout\n\nIn each epoch, randomly choose \\(z\\%\\) of the nodes and set those weights to zero."
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#other-common-pitfalls",
+    "href": "schedule/slides/23-nnets-other.html#other-common-pitfalls",
+    "title": "UBC Stat406 2023W",
+    "section": "Other common pitfalls",
+    "text": "Other common pitfalls\nThere are a few areas to watch out for\nNonconvexity:\nThe neural network optimization problem is non-convex.\nThis makes any numerical solution highly dependent on the initial values. These should be\n\nchosen carefully, typically random near 0. DON’T use all 0.\nregenerated several times to check sensitivity\n\nScaling:\nBe sure to standardize the covariates before training"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#other-common-pitfalls-1",
+    "href": "schedule/slides/23-nnets-other.html#other-common-pitfalls-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Other common pitfalls",
+    "text": "Other common pitfalls\nNumber of hidden units:\nIt is generally better to have too many hidden units than too few (regularization can eliminate some).\nSifting the output:\n\nChoose the solution that minimizes training error\nChoose the solution that minimizes the penalized training error\nAverage the solutions across runs"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#tuning-parameters",
+    "href": "schedule/slides/23-nnets-other.html#tuning-parameters",
+    "title": "UBC Stat406 2023W",
+    "section": "Tuning parameters",
+    "text": "Tuning parameters\nThere are many.\n\nRegularization\nStopping criterion\nlearning rate\nArchitecture\nDropout %\nothers…\n\nThese are hard to tune.\nIn practice, people might choose “some” with a validation set, and fix the rest largely arbitrarily\n\nMore often, people set them all arbitrarily"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#thoughts-on-nnets",
+    "href": "schedule/slides/23-nnets-other.html#thoughts-on-nnets",
+    "title": "UBC Stat406 2023W",
+    "section": "Thoughts on NNets",
+    "text": "Thoughts on NNets\nOff the top of my head, without lots of justification\n\n\n🤬😡 Why don’t statisticians like them? 🤬😡\n\nThere is little theory (though this is increasing)\nStat theory applies to global minima, here, only local determined by the optimizer\nLittle understanding of when they work\nIn large part, NNets look like logistic regression + feature creation. We understand that well, and in many applications, it performs as well\nExplosion of tuning parameters without a way to decide\nRequire massive datasets to work\nLots of examples where they perform exceedingly poorly\n\n\n\n🔥🔥Why are they hot?🔥🔥\n\nPerform exceptionally well on typical CS tasks (images, translation)\nTake advantage of SOTA computing (parallel, GPUs)\nVery good for multinomial logistic regression\nAn excellent example of “transfer learning”\nThey generate pretty pictures (the nets, pseudo-responses at hidden units)"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#keras",
+    "href": "schedule/slides/23-nnets-other.html#keras",
+    "title": "UBC Stat406 2023W",
+    "section": "Keras",
+    "text": "Keras\nMost people who do deep learning use Python \\(+\\) Keras \\(+\\) Tensorflow\nIt takes some work to get all this software up and running.\nIt is possible to do in with R using an interface to Keras.\n\nI used to try to do a walk-through, but the interface is quite brittle\nIf you want to explore, see the handout:\n\nKnitted: https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.html\nRmd: https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.Rmd"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#section",
+    "href": "schedule/slides/23-nnets-other.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "The Bias-Variance Trade-Off & \"DOUBLE DESCENT\" 🧵Remember the bias-variance trade-off? It says that models  perform well for an \"intermediate level of flexibility\".  You've seen the picture of the U-shape test error curve.We try to hit the \"sweet spot\" of flexibility.1/🧵 pic.twitter.com/HPk05izkZh— Daniela Witten (@daniela_witten) August 9, 2020"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#where-does-this-u-shape-come-from",
+    "href": "schedule/slides/23-nnets-other.html#where-does-this-u-shape-come-from",
+    "title": "UBC Stat406 2023W",
+    "section": "Where does this U shape come from?",
+    "text": "Where does this U shape come from?\nMSE = Squared Bias + Variance + Irreducible Noise\nAs we increase flexibility:\n\nSquared bias goes down\nVariance goes up\nEventually, | \\(\\partial\\) Variance | \\(&gt;\\) | \\(\\partial\\) Squared Bias |.\n\nGoal: Choose amount of flexibility to balance these and minimize MSE.\n\nUse CV or something to estimate MSE and decide how much flexibility."
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#section-1",
+    "href": "schedule/slides/23-nnets-other.html#section-1",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "In the past few yrs, (and particularly in the context of deep learning) ppl have noticed \"double descent\" -- when you continue to fit increasingly flexible models that interpolate the training data, then the test error can start to DECREASE again!! Check it out: 3/ pic.twitter.com/Vo54tRVRNG— Daniela Witten (@daniela_witten) August 9, 2020"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#zero-training-error-and-model-saturation",
+    "href": "schedule/slides/23-nnets-other.html#zero-training-error-and-model-saturation",
+    "title": "UBC Stat406 2023W",
+    "section": "Zero training error and model saturation",
+    "text": "Zero training error and model saturation\n\nIn Deep Learning, the recommendation is to “fit until you get zero training error”\nThis somehow magically, leads to a continued decrease in test error.\nSo, who cares about the Bias-Variance Trade off!!\n\n\nLesson:\nBV Trade off is not wrong. 😢\nThis is a misunderstanding of black box algorithms and flexibility.\nWe don’t even need deep learning to illustrate."
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#section-2",
+    "href": "schedule/slides/23-nnets-other.html#section-2",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "library(splines)\nset.seed(20221102)\nn &lt;- 20\ndf &lt;- tibble(\n  x = seq(-1.5 * pi, 1.5 * pi, length.out = n),\n  y = sin(x) + runif(n, -0.5, 0.5)\n)\ng &lt;- ggplot(df, aes(x, y)) + geom_point() + stat_function(fun = sin) + ylim(c(-2, 2))\ng + stat_smooth(method = lm, formula = y ~ bs(x, df = 4), se = FALSE, color = green) + # too smooth\n  stat_smooth(method = lm, formula = y ~ bs(x, df = 8), se = FALSE, color = orange) # looks good"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#section-3",
+    "href": "schedule/slides/23-nnets-other.html#section-3",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "xn &lt;- seq(-1.5 * pi, 1.5 * pi, length.out = 1000)\n# Spline by hand\nX &lt;- bs(df$x, df = 20, intercept = TRUE)\nXn &lt;- bs(xn, df = 20, intercept = TRUE)\nS &lt;- svd(X)\nyhat &lt;- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)\ng + geom_line(data = tibble(x=xn, y=yhat), colour = orange) +\n  ggtitle(\"20 degrees of freedom\")"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#section-4",
+    "href": "schedule/slides/23-nnets-other.html#section-4",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "xn &lt;- seq(-1.5 * pi, 1.5 * pi, length.out = 1000)\n# Spline by hand\nX &lt;- bs(df$x, df = 40, intercept = TRUE)\nXn &lt;- bs(xn, df = 40, intercept = TRUE)\nS &lt;- svd(X)\nyhat &lt;- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)\ng + geom_line(data = tibble(x = xn, y = yhat), colour = orange) +\n  ggtitle(\"40 degrees of freedom\")"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#what-happened",
+    "href": "schedule/slides/23-nnets-other.html#what-happened",
+    "title": "UBC Stat406 2023W",
+    "section": "What happened?!",
+    "text": "What happened?!\n\ndoffs &lt;- 4:50\nmse &lt;- function(x, y) mean((x - y)^2)\nget_errs &lt;- function(doff) {\n  X &lt;- bs(df$x, df = doff, intercept = TRUE)\n  Xn &lt;- bs(xn, df = doff, intercept = TRUE)\n  S &lt;- svd(X)\n  yh &lt;- S$u %*% crossprod(S$u, df$y)\n  bhat &lt;- S$v %*% diag(1 / S$d) %*% crossprod(S$u, df$y)\n  yhat &lt;- Xn %*% S$v %*% diag(1 / S$d) %*% crossprod(S$u, df$y)\n  nb &lt;- sqrt(sum(bhat^2))\n  tibble(train = mse(df$y, yh), test = mse(yhat, sin(xn)), norm = nb)\n}\nerrs &lt;- map(doffs, get_errs) |&gt;\n  list_rbind() |&gt; \n  mutate(`degrees of freedom` = doffs) |&gt; \n  pivot_longer(train:test, values_to = \"error\")"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#what-happened-1",
+    "href": "schedule/slides/23-nnets-other.html#what-happened-1",
+    "title": "UBC Stat406 2023W",
+    "section": "What happened?!",
+    "text": "What happened?!\n\n\nCode\nggplot(errs, aes(`degrees of freedom`, error, color = name)) +\n  geom_line(linewidth = 2) + \n  coord_cartesian(ylim = c(0, .12)) +\n  scale_x_log10() + \n  scale_colour_manual(values = c(blue, orange), name = \"\") +\n  geom_vline(xintercept = 20)"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#what-happened-2",
+    "href": "schedule/slides/23-nnets-other.html#what-happened-2",
+    "title": "UBC Stat406 2023W",
+    "section": "What happened?!",
+    "text": "What happened?!\n\n\nCode\nbest_test &lt;- errs |&gt; filter(name == \"test\")\nmin_norm &lt;- best_test$norm[which.min(best_test$error)]\nggplot(best_test, aes(norm, error)) +\n  geom_line(colour = blue, size = 2) + ylab(\"test error\") +\n  geom_vline(xintercept = min_norm, colour = orange) +\n  scale_y_log10() + scale_x_log10() + geom_vline(xintercept = 20)"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#degrees-of-freedom-and-complexity",
+    "href": "schedule/slides/23-nnets-other.html#degrees-of-freedom-and-complexity",
+    "title": "UBC Stat406 2023W",
+    "section": "Degrees of freedom and complexity",
+    "text": "Degrees of freedom and complexity\n\nIn low dimensions (where \\(n \\gg p\\)), with linear smoothers, df and model complexity are roughly the same.\nBut this relationship breaks down in more complicated settings\nWe’ve already seen this:\n\n\nlibrary(glmnet)\nout &lt;- cv.glmnet(X, df$y, nfolds = n) # leave one out\n\n\n\nCode\nwith(\n  out, \n  tibble(lambda = lambda, df = nzero, cv = cvm, cvup = cvup, cvlo = cvlo )\n) |&gt; \n  filter(df &gt; 0) |&gt;\n  pivot_longer(lambda:df) |&gt; \n  ggplot(aes(x = value)) +\n  geom_errorbar(aes(ymax = cvup, ymin = cvlo)) +\n  geom_point(aes(y = cv), colour = orange) +\n  facet_wrap(~ name, strip.position = \"bottom\", scales = \"free_x\") +\n  scale_y_log10() +\n  scale_x_log10() + theme(axis.title.x = element_blank())"
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#infinite-solutions",
+    "href": "schedule/slides/23-nnets-other.html#infinite-solutions",
+    "title": "UBC Stat406 2023W",
+    "section": "Infinite solutions",
+    "text": "Infinite solutions\n\nIn Lasso, df is not really the right measure of complexity\nBetter is \\(\\lambda\\) or the norm of the coefficients (these are basically the same)\nSo what happened with the Splines?\n\n\n\nWhen df \\(= 20\\), there’s a unique solution that interpolates the data\nWhen df \\(&gt; 20\\), there are infinitely many solutions that interpolate the data.\n\nBecause we used the SVD to solve the system, we happened to pick one: the one that has the smallest \\(\\Vert\\hat\\beta\\Vert_2\\)\nRecent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm.\nIf we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don’t see double descent anymore."
+  },
+  {
+    "objectID": "schedule/slides/23-nnets-other.html#the-lesson",
+    "href": "schedule/slides/23-nnets-other.html#the-lesson",
+    "title": "UBC Stat406 2023W",
+    "section": "The lesson",
+    "text": "The lesson\n\nDeep learning isn’t magic.\nZero training error with lots of parameters doesn’t mean good test error.\nWe still need the bias variance tradeoff\nIt’s intuition still applies: more flexibility eventually leads to increased MSE\nBut we need to be careful how we measure complexity.\n\n\n\nThere is very interesting recent theory that says when we can expect lower test error to the right of the interpolation threshold than to the left."
   }
 ]
