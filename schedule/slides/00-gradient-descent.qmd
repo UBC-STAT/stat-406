@@ -1,0 +1,484 @@
+---
+lecture: "00 Gradient descent"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
+---
+
+{{< include _titleslide.qmd >}}
+
+## Simple optimization techniques
+
+
+We'll see "gradient descent" a few times: 
+
+1. solves logistic regression (simple version of IRWLS)
+1. gradient boosting
+1. Neural networks
+
+This seems like a good time to explain it.
+
+So what is it and how does it work?
+
+
+## Very basic example
+
+::: flex
+::: w-65
+
+Suppose I want to minimize $f(x)=(x-6)^2$ numerically.
+
+I start at a point (say $x_1=23$)
+
+I want to "go" in the negative direction of the gradient.
+
+The gradient (at $x_1=23$) is  $f'(23)=2(23-6)=34$.
+
+Move current value toward current value - 34.
+
+$x_2 = x_1 - \gamma 34$, for $\gamma$ small.
+
+In general, $x_{n+1} = x_n -\gamma f'(x_n)$.
+
+```{r}
+niter <- 10
+gam <- 0.1
+x <- double(niter)
+x[1] <- 23
+grad <- function(x) 2 * (x - 6)
+for (i in 2:niter) x[i] <- x[i - 1] - gam * grad(x[i - 1])
+```
+
+:::
+
+::: w-35
+
+
+```{r echo=FALSE}
+#| fig-width: 5
+#| fig-height: 8
+ggplot(data.frame(x = x, y = (x - 6)^2)) +
+  geom_path(aes(x, y)) +
+  geom_point(aes(x, y)) +
+  coord_cartesian(xlim = c(6 - 24, 24), ylim = c(0, 300)) +
+  geom_vline(xintercept = 6, colour = red, linetype = "dotted") +
+  geom_hline(yintercept = 0, colour = red, linetype = "dotted") +
+  stat_function(data = data.frame(x = c(6 - 24, 24)), aes(x), 
+                fun = function(x) (x - 6)^2, colour = blue, alpha = .4) +
+  ylab(bquote(f(x)))
+```
+
+:::
+:::
+
+
+## Why does this work?
+
+
+[Heuristic interpretation:]{.secendary}
+
+* Gradient tells me the slope.
+
+* negative gradient points toward the minimum
+
+* go that way, but not too far (or we'll miss it)
+
+## Why does this work?
+
+[More rigorous interpretation:]{.secondary}
+
+- Taylor expansion
+$$
+f(x) \approx f(x_0) + \nabla f(x_0)^{\top}(x-x_0) + \frac{1}{2}(x-x_0)^\top H(x_0) (x-x_0)
+$$
+- replace $H$ with $\gamma^{-1} I$
+
+- minimize this quadratic approximation in $x$:
+$$
+0\overset{\textrm{set}}{=}\nabla f(x_0) + \frac{1}{\gamma}(x-x_0) \Longrightarrow x = x_0 - \gamma \nabla f(x_0)
+$$
+
+
+## Visually
+
+```{r}
+#| echo: false
+f <- function(x) (x - 1)^2 * (x > 1) + log(1 + exp(-2 * x))
+fp <- function(x) 2 * (x - 1) * (x > 1) - 2 / (1 + exp(2 * x))
+quad <- function(x, x0, gam = .1) f(x0) + fp(x0) * (x - x0) + 1 / (2 * gam) * (x - x0)^2
+x <- c(-1.75, -1, -.5)
+
+ggplot(data.frame(x = c(-2, 3)), aes(x)) +
+  stat_function(fun = f, colour = blue) +
+  geom_point(data = data.frame(x = x, y = f(x)), aes(x, y), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -1.75), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -1), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -.5), colour = red) +
+  coord_cartesian(ylim = c(0, 4)) +
+  ggtitle("gamma = 0.1")
+```
+
+## Visually
+
+```{r}
+#| echo: false
+ggplot(data.frame(x = c(-2, 3)), aes(x)) +
+  stat_function(fun = f, colour = blue) +
+  geom_point(data = data.frame(x = x, y = f(x)), aes(x, y), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -1.75, gam = .25), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -1, gam = .25), colour = red) +
+  stat_function(fun = quad, args = list(x0 = -.5, gam = .25), colour = red) +
+  coord_cartesian(ylim = c(0, 4)) +
+  ggtitle("gamma = 0.25")
+```
+
+
+## What $\gamma$? (more details than we have time for)
+
+What to use for $\gamma_k$? 
+
+
+[Fixed]{.secondary}
+
+- Only works if $\gamma$ is exactly right 
+- Usually does not work
+
+[Decay on a schedule]{.secondary}
+
+$\gamma_{k+1} = \frac{\gamma_k}{1+ck}$ or $\gamma_{k} = \gamma_0 b^k$
+
+[Exact line search]{.secondary}
+
+- Tells you exactly how far to go.
+- At each $k$, solve
+$\gamma_k = \arg\min_{s \geq 0} f( x^{(k)} - s f(x^{(k-1)}))$
+- Usually can't solve this.
+
+
+
+##
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=TRUE}
+x <- matrix(0, 40, 2); x[1, ] <- c(1, 1)
+grad <- function(x) c(2, 1) * x
+```
+
+
+```{r, message=FALSE, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 4
+df <- expand.grid(b1 = seq(-1, 1, length.out = 100), b2 = seq(-1, 1, length.out = 100))
+df <- df %>% mutate(f = b1^2 + b2^2 / 2)
+g <- ggplot(df, aes(b1, b2)) +
+  geom_raster(aes(fill = log10(f))) +
+  scale_fill_viridis_c() +
+  xlab("x1") +
+  ylab("x2") +
+  coord_cartesian(expand = FALSE, ylim = c(-1, 1), xlim = c(-1, 1))
+g
+```
+
+##
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=TRUE}
+gamma <- .1
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma * grad(x[k - 1, ])
+```
+
+```{r, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 4
+b <- tibble(b1 = x[, 1], b2 = x[, 2])
+g + geom_path(data = b, aes(b1, b2)) +
+  geom_point(data = b, aes(b1, b2), size = 2)
+```
+
+##
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=FALSE}
+x <- matrix(0, 40, 2)
+x[1, ] <- c(1, 1)
+```
+
+```{r, echo=TRUE}
+gamma <- .9 # bigger gamma
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma * grad(x[k - 1, ])
+```
+
+```{r, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 4
+b <- tibble(b1 = x[, 1], b2 = x[, 2])
+g + geom_path(data = b, aes(b1, b2)) +
+  geom_point(data = b, aes(b1, b2), size = 2)
+```
+
+##
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=FALSE, fig.align='center'}
+x <- matrix(0, 40, 2)
+x[1, ] <- c(1, 1)
+```
+
+```{r, echo=TRUE}
+gamma <- .9 # big, but decrease it on schedule
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma * .9^k * grad(x[k - 1, ])
+```
+
+```{r, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 4
+b <- tibble(b1 = x[, 1], b2 = x[, 2])
+g + geom_path(data = b, aes(b1, b2)) + geom_point(data = b, aes(b1, b2), size = 2)
+```
+
+##
+
+$$ f(x_1,x_2) = x_1^2 + 0.5x_2^2$$
+
+```{r, message=FALSE, echo=FALSE, fig.align='center'}
+x <- matrix(0, 40, 2)
+x[1, ] <- c(1, 1)
+```
+
+```{r, echo=TRUE}
+gamma <- .5 # theoretically optimal
+for (k in 2:40) x[k, ] <- x[k - 1, ] - gamma * grad(x[k - 1, ])
+```
+
+```{r, echo=FALSE}
+#| fig-width: 8
+#| fig-height: 4
+b <- tibble(b1 = x[, 1], b2 = x[, 2])
+g + geom_path(data = b, aes(b1, b2)) + geom_point(data = b, aes(b1, b2), size = 2)
+```
+
+
+
+
+## When do we stop?
+
+For $\epsilon>0$, small
+
+
+Check any / all of
+
+1. $|f'(x)| < \epsilon$
+1. $|x^{(k)} - x^{(k-1)}| < \epsilon$
+1. $|f(x^{(k)}) - f(x^{(k-1)})| < \epsilon$
+
+
+## Stochastic gradient descent
+
+Suppose $f(x) = \frac{1}{n}\sum_{i=1}^n f_i(x)$
+
+Like if $f(\beta) = \frac{1}{n}\sum_{i=1}^n (y_i - x^\top_i\beta)^2$.
+
+Then $f'(\beta) = \frac{1}{n}\sum_{i=1}^n f'_i(\beta) = \frac{1}{n} \sum_{i=1}^n -2x_i^\top(y_i - x^\top_i\beta)$ 
+
+If $n$ is really big, it may take a long time to compute $f'$
+
+So, just sample some partition our data into mini-batches $\mathcal{M}_j$
+
+And approximate (imagine the Law of Large Numbers, use a sample to approximate the population)
+$$f'(x) = \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}_j}f'_{i}(x)$$
+
+## SGD
+
+$$
+\begin{aligned}
+f'(\beta) &= \frac{1}{n}\sum_{i=1}^n f'_i(\beta) = \frac{1}{n} \sum_{i=1}^n -2x_i^\top(y_i - x^\top_i\beta)\\
+f'(x) &= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}_j}f'_{i}(x)
+\end{aligned}
+$$
+
+
+Usually cycle through "mini-batches":
+
+* Use a different mini-batch at each iteration of GD
+* Cycle through until we see all the data
+
+
+This is the workhorse for neural network optimization
+
+
+
+# Practice with GD and Logistic regression
+
+
+## Gradient descent for Logistic regression
+
+Suppose $Y=1$ with probability $p(x)$ and $Y=0$ with probability $1-p(x)$, $x \in \R$.  
+
+I want to model $P(Y=1| X=x)$. 
+
+I'll assume that $\log\left(\frac{p(x)}{1-p(x)}\right) = ax$ for some scalar $a$. This means that
+$p(x) = \frac{\exp(ax)}{1+\exp(ax)} = \frac{1}{1+\exp(-ax)}$
+
+. . .
+
+```{r generate-data}
+#| output-location: column
+#| fig-width: 6
+#| fig-height: 4
+n <- 100
+a <- 2
+x <- runif(n, -5, 5)
+logit <- function(x) 1 / (1 + exp(-x))
+p <- logit(a * x)
+y <- rbinom(n, 1, p)
+df <- tibble(x, y)
+ggplot(df, aes(x, y)) +
+  geom_point(colour = "cornflowerblue") +
+  stat_function(fun = ~ logit(a * .x))
+```
+
+
+
+## Reminder: the likelihood
+
+$$
+L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
+p(x) = \frac{1}{1+\exp(-ax)}
+$$
+
+
+$$
+\begin{aligned}
+\ell(y | a, x) &= \log \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i} 
+= \sum_{i=1}^n y_i\log p(x_i) + (1-y_i)\log(1-p(x_i))\\
+&= \sum_{i=1}^n\log(1-p(x_i)) + y_i\log\left(\frac{p(x_i)}{1-p(x_i)}\right)\\
+&=\sum_{i=1}^n ax_i y_i + \log\left(1-p(x_i)\right)\\
+&=\sum_{i=1}^n ax_i y_i + \log\left(\frac{1}{1+\exp(ax_i)}\right)
+\end{aligned}
+$$
+
+## Reminder: the likelihood
+
+$$
+L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
+p(x) = \frac{1}{1+\exp(-ax)}
+$$
+
+Now, we want the negative of this. Why? 
+
+We would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood (and scale by $1/n$)
+
+
+$$-\ell(y | a, x) = \frac{1}{n}\sum_{i=1}^n -ax_i y_i - \log\left(\frac{1}{1+\exp(ax_i)}\right)$$
+
+## Reminder: the likelihood
+
+$$
+\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
+p(x) = \frac{1}{1+\exp(-ax)}
+$$
+
+This is, in the notation of our slides $f(a)$. 
+
+We want to minimize it in $a$ by gradient descent. 
+
+So we need the derivative with respect to $a$: $f'(a)$. 
+
+Now, conveniently, this simplifies a lot. 
+
+
+$$
+\begin{aligned}
+\frac{d}{d a} f(a) &= \frac{1}{n}\sum_{i=1}^n -x_i y_i - \left(-\frac{x_i \exp(ax_i)}{1+\exp(ax_i)}\right)\\
+&=\frac{1}{n}\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \frac{1}{n}\sum_{i=1}^n -x_i(y_i-p(x_i)).
+\end{aligned}
+$$
+
+## Reminder: the likelihood
+
+$$
+\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
+p(x) = \frac{1}{1+\exp(-ax)}
+$$
+
+(Simple) gradient descent to minimize $-\ell(a)$ or maximize $L(y|a,x)$ is:
+
+1. Input $a_1,\ \gamma>0,\ j_\max,\ \epsilon>0,\ \frac{d}{da} -\ell(a)$.
+2. For $j=1,\ 2,\ \ldots,\ j_\max$,
+$$a_j = a_{j-1} - \gamma \frac{d}{da} (-\ell(a_{j-1}))$$
+3. Stop if $\epsilon > |a_j - a_{j-1}|$ or $|d / da\  \ell(a)| < \epsilon$.
+
+## Reminder: the likelihood
+
+$$
+\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
+p(x) = \frac{1}{1+\exp(-ax)}
+$$
+
+```{r amlecorrect}
+#| code-line-numbers: "1,10-11|2-3|4-9|"
+amle <- function(x, y, a0, gam = 0.5, jmax = 50, eps = 1e-6) {
+  a <- double(jmax) # place to hold stuff (always preallocate space)
+  a[1] <- a0 # starting value
+  for (j in 2:jmax) { # avoid possibly infinite while loops
+    px <- logit(a[j - 1] * x)
+    grad <- mean(-x * (y - px))
+    a[j] <- a[j - 1] - gam * grad
+    if (abs(grad) < eps || abs(a[j] - a[j - 1]) < eps) break
+  }
+  a[1:j]
+}
+```
+
+
+
+## Try it:
+
+```{r ourmle1}
+round(too_big <- amle(x, y, 5, 50), 3)
+round(too_small <- amle(x, y, 5, 1), 3)
+round(just_right <- amle(x, y, 5, 10), 3)
+```
+
+
+## Visual
+
+
+
+```{r}
+#| output-location: column
+#| fig-width: 6
+#| fig-height: 8
+negll <- function(a) {
+  -a * mean(x * y) -
+    rowMeans(log(1 / (1 + exp(outer(a, x)))))
+}
+blah <- list_rbind(
+  map(
+    rlang::dots_list(
+      too_big, too_small, just_right, .named = TRUE
+    ), 
+    as_tibble),
+  names_to = "gamma"
+) |> mutate(negll = negll(value))
+ggplot(blah, aes(value, negll)) +
+  geom_point(aes(colour = gamma)) +
+  facet_wrap(~gamma, ncol = 1) +
+  stat_function(fun = negll, xlim = c(-2.5, 5)) +
+  scale_y_log10() + 
+  xlab("a") + 
+  ylab("negative log likelihood") +
+  geom_vline(xintercept = tail(just_right, 1)) +
+  scale_colour_brewer(palette = "Set1") +
+  theme(legend.position = "none")
+```
+
+## Check vs. `glm()`
+
+```{r}
+summary(glm(y ~ x - 1, family = "binomial"))
+```

@@ -70,13 +70,15 @@ Of course, we didn't predict **exactly** $\hat{p}(x_i)=0.2$ ever, so lets look a
 #| output-location: fragment
 n <- 250
 dat <- tibble(
-  x = seq(-5, 5, length.out = n), 
+  x = seq(-5, 5, length.out = n),
   p = 1 / (1 + exp(-x)),
   y = rbinom(n, 1, p)
 )
 fit <- glm(y ~ x, family = binomial, data = dat)
 dat$phat <- predict(fit, type = "response") # predicted probabilities
-dat |> filter(phat > .15, phat < .25) |> summarize(target = .2, obs = mean(y))
+dat |>
+  filter(phat > .15, phat < .25) |>
+  summarize(target = .2, obs = mean(y))
 ```
 
 
@@ -88,20 +90,23 @@ binary_calibration_plot <- function(y, phat, nbreaks = 10) {
     mutate(bins = cut_number(phat, n = nbreaks))
   midpts <- quantile(dat$phat, seq(0, 1, length.out = nbreaks + 1), na.rm = TRUE)
   midpts <- midpts[-length(midpts)] + diff(midpts) / 2
-  sum_dat <- dat |> 
+  sum_dat <- dat |>
     group_by(bins) |>
-    summarise(p = mean(y, na.rm = TRUE), 
-              se = sqrt(p * (1 - p) / n())) |>
+    summarise(
+      p = mean(y, na.rm = TRUE),
+      se = sqrt(p * (1 - p) / n())
+    ) |>
     arrange(p)
   sum_dat$x <- midpts
-  
-  ggplot(sum_dat, aes(x = x)) + 
-    geom_errorbar(aes(ymin = pmax(p - 1.96*se, 0), ymax = pmin(p + 1.96*se, 1))) +
-    geom_point(aes(y = p), color = blue) + 
-    geom_abline(slope = 1, intercept = 0, color = orange) +
-    ylab("observed frequency") + xlab("average predicted probability") +
+
+  ggplot(sum_dat, aes(x = x)) +
+    geom_errorbar(aes(ymin = pmax(p - 1.96 * se, 0), ymax = pmin(p + 1.96 * se, 1))) +
+    geom_point(aes(y = p), colour = blue) +
+    geom_abline(slope = 1, intercept = 0, colour = orange) +
+    ylab("observed frequency") +
+    xlab("average predicted probability") +
     coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
-    geom_rug(data = dat, aes(x = phat), sides = 'b')
+    geom_rug(data = dat, aes(x = phat), sides = "b")
 }
 ```
 
@@ -179,13 +184,13 @@ roc <- function(prediction, y) {
     noty <- rev(tapply(noty, preds, sum))
   }
   tibble(
-    FPR = cumsum(noty) / sum(noty), 
+    FPR = cumsum(noty) / sum(noty),
     TPR = cumsum(y) / sum(y)
   )
 }
 
 ggplot(roc(dat$phat, dat$y), aes(FPR, TPR)) +
-  geom_step(color = blue, size = 2) +
+  geom_step(colour = blue, size = 2) +
   geom_abline(slope = 1, intercept = 0)
 ```
 
