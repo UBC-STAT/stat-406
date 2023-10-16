@@ -1428,39 +1428,256 @@
     "text": "Prediction accuracy (last year)\n\nsummary(lm(actual ~ predicted - 1, data = acc))\n\n\nCall:\nlm(formula = actual ~ predicted - 1, data = acc)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-63.931  -2.931   1.916   6.052  21.217 \n\nCoefficients:\n          Estimate Std. Error t value Pr(&gt;|t|)    \npredicted  0.96590    0.01025   94.23   &lt;2e-16 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 10.2 on 137 degrees of freedom\n  (8 observations deleted due to missingness)\nMultiple R-squared:  0.9848,    Adjusted R-squared:  0.9847 \nF-statistic:  8880 on 1 and 137 DF,  p-value: &lt; 2.2e-16\n\n\n\n\nUBC Stat 406 - 2023"
   },
   {
-    "objectID": "schedule/slides/00-cv-for-many-models.html#meta-lecture",
-    "href": "schedule/slides/00-cv-for-many-models.html#meta-lecture",
+    "objectID": "schedule/slides/00-gradient-descent.html#meta-lecture",
+    "href": "schedule/slides/00-gradient-descent.html#meta-lecture",
     "title": "UBC Stat406 2023W",
-    "section": "00 CV for many models",
-    "text": "00 CV for many models\nStat 406\nDaniel J. McDonald\nLast modified – 19 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "section": "00 Gradient descent",
+    "text": "00 Gradient descent\nStat 406\nDaniel J. McDonald\nLast modified – 16 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/00-cv-for-many-models.html#some-data-and-4-models",
-    "href": "schedule/slides/00-cv-for-many-models.html#some-data-and-4-models",
+    "objectID": "schedule/slides/00-gradient-descent.html#simple-optimization-techniques",
+    "href": "schedule/slides/00-gradient-descent.html#simple-optimization-techniques",
     "title": "UBC Stat406 2023W",
-    "section": "Some data and 4 models",
-    "text": "Some data and 4 models\n\ndata(\"mobility\", package = \"Stat406\")\n\nModel 1: Lasso on all predictors, use CV min\nModel 2: Ridge on all predictors, use CV min\nModel 3: OLS on all predictors (no tuning parameters)\nModel 4: (1) Lasso on all predictors, then (2) OLS on those chosen at CV min\n\nHow do I decide between these 4 models?"
+    "section": "Simple optimization techniques",
+    "text": "Simple optimization techniques\nWe’ll see “gradient descent” a few times:\n\nsolves logistic regression (simple version of IRWLS)\ngradient boosting\nNeural networks\n\nThis seems like a good time to explain it.\nSo what is it and how does it work?"
   },
   {
-    "objectID": "schedule/slides/00-cv-for-many-models.html#cv-functions",
-    "href": "schedule/slides/00-cv-for-many-models.html#cv-functions",
+    "objectID": "schedule/slides/00-gradient-descent.html#very-basic-example",
+    "href": "schedule/slides/00-gradient-descent.html#very-basic-example",
     "title": "UBC Stat406 2023W",
-    "section": "CV functions",
-    "text": "CV functions\n\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  fold_labels &lt;- sample(rep(seq_len(kfolds), length.out = nrow(data)))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\nloo_cv &lt;- function(dat) {\n  mdl &lt;- lm(Mobility ~ ., data = dat)\n  mean( abs(residuals(mdl)) / abs(1 - hatvalues(mdl)) ) # MAE version\n}"
+    "section": "Very basic example",
+    "text": "Very basic example\n\n\nSuppose I want to minimize \\(f(x)=(x-6)^2\\) numerically.\nI start at a point (say \\(x_1=23\\))\nI want to “go” in the negative direction of the gradient.\nThe gradient (at \\(x_1=23\\)) is \\(f'(23)=2(23-6)=34\\).\nMove current value toward current value - 34.\n\\(x_2 = x_1 - \\gamma 34\\), for \\(\\gamma\\) small.\nIn general, \\(x_{n+1} = x_n -\\gamma f'(x_n)\\).\n\nniter &lt;- 10\ngam &lt;- 0.1\nx &lt;- double(niter)\nx[1] &lt;- 23\ngrad &lt;- function(x) 2 * (x - 6)\nfor (i in 2:niter) x[i] &lt;- x[i - 1] - gam * grad(x[i - 1])"
   },
   {
-    "objectID": "schedule/slides/00-cv-for-many-models.html#experiment-setup",
-    "href": "schedule/slides/00-cv-for-many-models.html#experiment-setup",
+    "objectID": "schedule/slides/00-gradient-descent.html#why-does-this-work",
+    "href": "schedule/slides/00-gradient-descent.html#why-does-this-work",
     "title": "UBC Stat406 2023W",
-    "section": "Experiment setup",
-    "text": "Experiment setup\n\n# prepare our data\n# note that mob has only continuous predictors, otherwise could be trouble\nmob &lt;- mobility[complete.cases(mobility), ] |&gt; select(-ID, -State, -Name)\n# avoid doing this same operation a bunch\nxmat &lt;- function(dat) dat |&gt; select(!Mobility) |&gt; as.matrix()\n\n# set up our model functions\nlibrary(glmnet)\nmod1 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, type.measure = \"mae\", ...)\nmod2 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, alpha = 0, type.measure = \"mae\", ...)\nmod3 &lt;- function(dat, ...) glmnet(xmat(dat), dat$Mobility, lambda = 0, ...) # just does lm()\nmod4 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, relax = TRUE, gamma = 1, type.measure = \"mae\", ...)\n\n# this will still \"work\" on mod3, because there's only 1 s\npredictor &lt;- function(mod, dat) drop(predict(mod, newx = xmat(dat), s = \"lambda.min\"))\n\n# chose mean absolute error just 'cause\nerror_fun &lt;- function(testdata) mean(abs(testdata$Mobility - testdata$.preds))"
+    "section": "Why does this work?",
+    "text": "Why does this work?\nHeuristic interpretation:\n\nGradient tells me the slope.\nnegative gradient points toward the minimum\ngo that way, but not too far (or we’ll miss it)"
   },
   {
-    "objectID": "schedule/slides/00-cv-for-many-models.html#run-the-experiment",
-    "href": "schedule/slides/00-cv-for-many-models.html#run-the-experiment",
+    "objectID": "schedule/slides/00-gradient-descent.html#why-does-this-work-1",
+    "href": "schedule/slides/00-gradient-descent.html#why-does-this-work-1",
     "title": "UBC Stat406 2023W",
-    "section": "Run the experiment",
-    "text": "Run the experiment\n\nall_model_funs &lt;- lst(mod1, mod2, mod3, mod4)\nall_fits &lt;- map(all_model_funs, .f = exec, dat = mob)\n\n# unfortunately, does different splits for each method, so we use 10, \n# it would be better to use the _SAME_ splits\nten_fold_cv &lt;- map_dbl(all_model_funs, ~ kfold_cv(mob, .x, predictor, error_fun, 10)) \n\nin_sample_cv &lt;- c(\n  mod1 = min(all_fits[[1]]$cvm),\n  mod2 = min(all_fits[[2]]$cvm),\n  mod3 = loo_cv(mob),\n  mod4 = min(all_fits[[4]]$cvm)\n)\n\ntib &lt;- bind_rows(in_sample_cv, ten_fold_cv)\ntib$method = c(\"in_sample\", \"out_of_sample\")\ntib\n\n# A tibble: 2 × 5\n    mod1   mod2   mod3   mod4 method       \n   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;        \n1 0.0159 0.0161 0.0164 0.0156 in_sample    \n2 0.0158 0.0161 0.0165 0.0161 out_of_sample\n\n\n\n\nUBC Stat 406 - 2023"
+    "section": "Why does this work?",
+    "text": "Why does this work?\nMore rigorous interpretation:\n\nTaylor expansion \\[\nf(x) \\approx f(x_0) + \\nabla f(x_0)^{\\top}(x-x_0) + \\frac{1}{2}(x-x_0)^\\top H(x_0) (x-x_0)\n\\]\nreplace \\(H\\) with \\(\\gamma^{-1} I\\)\nminimize this quadratic approximation in \\(x\\): \\[\n0\\overset{\\textrm{set}}{=}\\nabla f(x_0) + \\frac{1}{\\gamma}(x-x_0) \\Longrightarrow x = x_0 - \\gamma \\nabla f(x_0)\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#visually",
+    "href": "schedule/slides/00-gradient-descent.html#visually",
+    "title": "UBC Stat406 2023W",
+    "section": "Visually",
+    "text": "Visually"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#visually-1",
+    "href": "schedule/slides/00-gradient-descent.html#visually-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Visually",
+    "text": "Visually"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#what-gamma-more-details-than-we-have-time-for",
+    "href": "schedule/slides/00-gradient-descent.html#what-gamma-more-details-than-we-have-time-for",
+    "title": "UBC Stat406 2023W",
+    "section": "What \\(\\gamma\\)? (more details than we have time for)",
+    "text": "What \\(\\gamma\\)? (more details than we have time for)\nWhat to use for \\(\\gamma_k\\)?\nFixed\n\nOnly works if \\(\\gamma\\) is exactly right\nUsually does not work\n\nDecay on a schedule\n\\(\\gamma_{k+1} = \\frac{\\gamma_k}{1+ck}\\) or \\(\\gamma_{k} = \\gamma_0 b^k\\)\nExact line search\n\nTells you exactly how far to go.\nAt each \\(k\\), solve \\(\\gamma_k = \\arg\\min_{s \\geq 0} f( x^{(k)} - s f(x^{(k-1)}))\\)\nUsually can’t solve this."
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#section",
+    "href": "schedule/slides/00-gradient-descent.html#section",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "\\[ f(x_1,x_2) = x_1^2 + 0.5x_2^2\\]\n\nx &lt;- matrix(0, 40, 2); x[1, ] &lt;- c(1, 1)\ngrad &lt;- function(x) c(2, 1) * x"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#section-1",
+    "href": "schedule/slides/00-gradient-descent.html#section-1",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "\\[ f(x_1,x_2) = x_1^2 + 0.5x_2^2\\]\n\ngamma &lt;- .1\nfor (k in 2:40) x[k, ] &lt;- x[k - 1, ] - gamma * grad(x[k - 1, ])"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#section-2",
+    "href": "schedule/slides/00-gradient-descent.html#section-2",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "\\[ f(x_1,x_2) = x_1^2 + 0.5x_2^2\\]\n\ngamma &lt;- .9 # bigger gamma\nfor (k in 2:40) x[k, ] &lt;- x[k - 1, ] - gamma * grad(x[k - 1, ])"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#section-3",
+    "href": "schedule/slides/00-gradient-descent.html#section-3",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "\\[ f(x_1,x_2) = x_1^2 + 0.5x_2^2\\]\n\ngamma &lt;- .9 # big, but decrease it on schedule\nfor (k in 2:40) x[k, ] &lt;- x[k - 1, ] - gamma * .9^k * grad(x[k - 1, ])"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#section-4",
+    "href": "schedule/slides/00-gradient-descent.html#section-4",
+    "title": "UBC Stat406 2023W",
+    "section": "",
+    "text": "\\[ f(x_1,x_2) = x_1^2 + 0.5x_2^2\\]\n\ngamma &lt;- .5 # theoretically optimal\nfor (k in 2:40) x[k, ] &lt;- x[k - 1, ] - gamma * grad(x[k - 1, ])"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#when-do-we-stop",
+    "href": "schedule/slides/00-gradient-descent.html#when-do-we-stop",
+    "title": "UBC Stat406 2023W",
+    "section": "When do we stop?",
+    "text": "When do we stop?\nFor \\(\\epsilon&gt;0\\), small\nCheck any / all of\n\n\\(|f'(x)| &lt; \\epsilon\\)\n\\(|x^{(k)} - x^{(k-1)}| &lt; \\epsilon\\)\n\\(|f(x^{(k)}) - f(x^{(k-1)})| &lt; \\epsilon\\)"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#stochastic-gradient-descent",
+    "href": "schedule/slides/00-gradient-descent.html#stochastic-gradient-descent",
+    "title": "UBC Stat406 2023W",
+    "section": "Stochastic gradient descent",
+    "text": "Stochastic gradient descent\nSuppose \\(f(x) = \\frac{1}{n}\\sum_{i=1}^n f_i(x)\\)\nLike if \\(f(\\beta) = \\frac{1}{n}\\sum_{i=1}^n (y_i - x^\\top_i\\beta)^2\\).\nThen \\(f'(\\beta) = \\frac{1}{n}\\sum_{i=1}^n f'_i(\\beta) = \\frac{1}{n} \\sum_{i=1}^n -2x_i^\\top(y_i - x^\\top_i\\beta)\\)\nIf \\(n\\) is really big, it may take a long time to compute \\(f'\\)\nSo, just sample some partition our data into mini-batches \\(\\mathcal{M}_j\\)\nAnd approximate (imagine the Law of Large Numbers, use a sample to approximate the population) \\[f'(x) = \\frac{1}{n}\\sum_{i=1}^n f'_i(x) \\approx \\frac{1}{m}\\sum_{i\\in\\mathcal{M}_j}f'_{i}(x)\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#sgd",
+    "href": "schedule/slides/00-gradient-descent.html#sgd",
+    "title": "UBC Stat406 2023W",
+    "section": "SGD",
+    "text": "SGD\n\\[\n\\begin{aligned}\nf'(\\beta) &= \\frac{1}{n}\\sum_{i=1}^n f'_i(\\beta) = \\frac{1}{n} \\sum_{i=1}^n -2x_i^\\top(y_i - x^\\top_i\\beta)\\\\\nf'(x) &= \\frac{1}{n}\\sum_{i=1}^n f'_i(x) \\approx \\frac{1}{m}\\sum_{i\\in\\mathcal{M}_j}f'_{i}(x)\n\\end{aligned}\n\\]\nUsually cycle through “mini-batches”:\n\nUse a different mini-batch at each iteration of GD\nCycle through until we see all the data\n\nThis is the workhorse for neural network optimization"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#gradient-descent-for-logistic-regression",
+    "href": "schedule/slides/00-gradient-descent.html#gradient-descent-for-logistic-regression",
+    "title": "UBC Stat406 2023W",
+    "section": "Gradient descent for Logistic regression",
+    "text": "Gradient descent for Logistic regression\nSuppose \\(Y=1\\) with probability \\(p(x)\\) and \\(Y=0\\) with probability \\(1-p(x)\\), \\(x \\in \\R\\).\nI want to model \\(P(Y=1| X=x)\\).\nI’ll assume that \\(\\log\\left(\\frac{p(x)}{1-p(x)}\\right) = ax\\) for some scalar \\(a\\). This means that \\(p(x) = \\frac{\\exp(ax)}{1+\\exp(ax)} = \\frac{1}{1+\\exp(-ax)}\\)\n\n\n\nn &lt;- 100\na &lt;- 2\nx &lt;- runif(n, -5, 5)\nlogit &lt;- function(x) 1 / (1 + exp(-x))\np &lt;- logit(a * x)\ny &lt;- rbinom(n, 1, p)\ndf &lt;- tibble(x, y)\nggplot(df, aes(x, y)) +\n  geom_point(colour = \"cornflowerblue\") +\n  stat_function(fun = ~ logit(a * .x))"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood",
+    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood",
+    "title": "UBC Stat406 2023W",
+    "section": "Reminder: the likelihood",
+    "text": "Reminder: the likelihood\n\\[\nL(y | a, x) = \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n\\[\n\\begin{aligned}\n\\ell(y | a, x) &= \\log \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\n= \\sum_{i=1}^n y_i\\log p(x_i) + (1-y_i)\\log(1-p(x_i))\\\\\n&= \\sum_{i=1}^n\\log(1-p(x_i)) + y_i\\log\\left(\\frac{p(x_i)}{1-p(x_i)}\\right)\\\\\n&=\\sum_{i=1}^n ax_i y_i + \\log\\left(1-p(x_i)\\right)\\\\\n&=\\sum_{i=1}^n ax_i y_i + \\log\\left(\\frac{1}{1+\\exp(ax_i)}\\right)\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-1",
+    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-1",
+    "title": "UBC Stat406 2023W",
+    "section": "Reminder: the likelihood",
+    "text": "Reminder: the likelihood\n\\[\nL(y | a, x) = \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\nNow, we want the negative of this. Why?\nWe would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood (and scale by \\(1/n\\))\n\\[-\\ell(y | a, x) = \\frac{1}{n}\\sum_{i=1}^n -ax_i y_i - \\log\\left(\\frac{1}{1+\\exp(ax_i)}\\right)\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-2",
+    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-2",
+    "title": "UBC Stat406 2023W",
+    "section": "Reminder: the likelihood",
+    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\nThis is, in the notation of our slides \\(f(a)\\).\nWe want to minimize it in \\(a\\) by gradient descent.\nSo we need the derivative with respect to \\(a\\): \\(f'(a)\\).\nNow, conveniently, this simplifies a lot.\n\\[\n\\begin{aligned}\n\\frac{d}{d a} f(a) &= \\frac{1}{n}\\sum_{i=1}^n -x_i y_i - \\left(-\\frac{x_i \\exp(ax_i)}{1+\\exp(ax_i)}\\right)\\\\\n&=\\frac{1}{n}\\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \\frac{1}{n}\\sum_{i=1}^n -x_i(y_i-p(x_i)).\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-3",
+    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-3",
+    "title": "UBC Stat406 2023W",
+    "section": "Reminder: the likelihood",
+    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n(Simple) gradient descent to minimize \\(-\\ell(a)\\) or maximize \\(L(y|a,x)\\) is:\n\nInput \\(a_1,\\ \\gamma&gt;0,\\ j_\\max,\\ \\epsilon&gt;0,\\ \\frac{d}{da} -\\ell(a)\\).\nFor \\(j=1,\\ 2,\\ \\ldots,\\ j_\\max\\), \\[a_j = a_{j-1} - \\gamma \\frac{d}{da} (-\\ell(a_{j-1}))\\]\nStop if \\(\\epsilon &gt; |a_j - a_{j-1}|\\) or \\(|d / da\\  \\ell(a)| &lt; \\epsilon\\)."
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-4",
+    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-4",
+    "title": "UBC Stat406 2023W",
+    "section": "Reminder: the likelihood",
+    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n\namle &lt;- function(x, y, a0, gam = 0.5, jmax = 50, eps = 1e-6) {\n  a &lt;- double(jmax) # place to hold stuff (always preallocate space)\n  a[1] &lt;- a0 # starting value\n  for (j in 2:jmax) { # avoid possibly infinite while loops\n    px &lt;- logit(a[j - 1] * x)\n    grad &lt;- mean(-x * (y - px))\n    a[j] &lt;- a[j - 1] - gam * grad\n    if (abs(grad) &lt; eps || abs(a[j] - a[j - 1]) &lt; eps) break\n  }\n  a[1:j]\n}"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#try-it",
+    "href": "schedule/slides/00-gradient-descent.html#try-it",
+    "title": "UBC Stat406 2023W",
+    "section": "Try it:",
+    "text": "Try it:\n\nround(too_big &lt;- amle(x, y, 5, 50), 3)\n\n [1] 5.000 3.360 2.019 1.815 2.059 1.782 2.113 1.746 2.180 1.711 2.250 1.684\n[13] 2.309 1.669 2.344 1.663 2.359 1.661 2.364 1.660 2.365 1.660 2.366 1.660\n[25] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660\n[37] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660\n[49] 2.366 1.660\n\nround(too_small &lt;- amle(x, y, 5, 1), 3)\n\n [1] 5.000 4.967 4.934 4.902 4.869 4.837 4.804 4.772 4.739 4.707 4.675 4.643\n[13] 4.611 4.579 4.547 4.515 4.483 4.451 4.420 4.388 4.357 4.326 4.294 4.263\n[25] 4.232 4.201 4.170 4.140 4.109 4.078 4.048 4.018 3.988 3.957 3.927 3.898\n[37] 3.868 3.838 3.809 3.779 3.750 3.721 3.692 3.663 3.635 3.606 3.578 3.550\n[49] 3.522 3.494\n\nround(just_right &lt;- amle(x, y, 5, 10), 3)\n\n [1] 5.000 4.672 4.351 4.038 3.735 3.445 3.171 2.917 2.688 2.488 2.322 2.191\n[13] 2.094 2.027 1.983 1.956 1.940 1.930 1.925 1.922 1.920 1.919 1.918 1.918\n[25] 1.918 1.918 1.918 1.917 1.917 1.917 1.917"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#visual",
+    "href": "schedule/slides/00-gradient-descent.html#visual",
+    "title": "UBC Stat406 2023W",
+    "section": "Visual",
+    "text": "Visual\n\n\nnegll &lt;- function(a) {\n  -a * mean(x * y) -\n    rowMeans(log(1 / (1 + exp(outer(a, x)))))\n}\nblah &lt;- list_rbind(\n  map(\n    rlang::dots_list(\n      too_big, too_small, just_right, .named = TRUE\n    ), \n    as_tibble),\n  names_to = \"gamma\"\n) |&gt; mutate(negll = negll(value))\nggplot(blah, aes(value, negll)) +\n  geom_point(aes(colour = gamma)) +\n  facet_wrap(~gamma, ncol = 1) +\n  stat_function(fun = negll, xlim = c(-2.5, 5)) +\n  scale_y_log10() + \n  xlab(\"a\") + \n  ylab(\"negative log likelihood\") +\n  geom_vline(xintercept = tail(just_right, 1)) +\n  scale_colour_brewer(palette = \"Set1\") +\n  theme(legend.position = \"none\")"
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#check-vs.-glm",
+    "href": "schedule/slides/00-gradient-descent.html#check-vs.-glm",
+    "title": "UBC Stat406 2023W",
+    "section": "Check vs. glm()",
+    "text": "Check vs. glm()\n\nsummary(glm(y ~ x - 1, family = \"binomial\"))\n\n\nCall:\nglm(formula = y ~ x - 1, family = \"binomial\")\n\nCoefficients:\n  Estimate Std. Error z value Pr(&gt;|z|)    \nx   1.9174     0.4785   4.008 6.13e-05 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n(Dispersion parameter for binomial family taken to be 1)\n\n    Null deviance: 138.629  on 100  degrees of freedom\nResidual deviance:  32.335  on  99  degrees of freedom\nAIC: 34.335\n\nNumber of Fisher Scoring iterations: 7\n\n\n\n\nUBC Stat 406 - 2023"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#meta-lecture",
+    "href": "schedule/slides/00-classification-losses.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "00 Evaluating classifiers",
+    "text": "00 Evaluating classifiers\nStat 406\nDaniel J. McDonald\nLast modified – 16 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
+    "href": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
+    "title": "UBC Stat406 2023W",
+    "section": "How do we measure accuracy?",
+    "text": "How do we measure accuracy?\nSo far — 0-1 loss. If correct class, lose 0 else lose 1.\nAsymmetric classification loss — If correct class, lose 0 else lose something.\nFor example, consider facial recognition. Goal is “person OK”, “person has expired passport”, “person is a known terrorist”\n\nIf classify OK, but was terrorist, lose 1,000,000\nIf classify OK, but expired passport, lose 2\nIf classify terrorist, but was OK, lose 100\nIf classify terrorist, but was expired passport, lose 10\netc.\n\n\nResults in a 3x3 matrix of losses with 0 on the diagonal.\n\n\n        [,1]  [,2] [,3]\n[1,]       0     2   30\n[2,]      10     0  100\n[3,] 1000000 50000    0"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#deviance-loss",
+    "href": "schedule/slides/00-classification-losses.html#deviance-loss",
+    "title": "UBC Stat406 2023W",
+    "section": "Deviance loss",
+    "text": "Deviance loss\nSometimes we output probabilities as well as class labels.\nFor example, logistic regression returns the probability that an observation is in class 1. \\(P(Y_i = 1 \\given x_i) = 1 / (1 + \\exp\\{-x'_i \\hat\\beta\\})\\)\nLDA and QDA produce probabilities as well. So do Neural Networks (typically)\n(Trees “don’t”, neither does KNN, though you could fake it)\n\n\n\nDeviance loss for 2-class classification is \\(-2\\textrm{loglikelihood}(y, \\hat{p}) = -2 (y_i x'_i\\hat{\\beta} - \\log (1-\\hat{p}))\\)\n\n(Technically, it’s the difference between this and the loss of the null model, but people play fast and loose)\n\nCould also use cross entropy or Gini index."
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#calibration",
+    "href": "schedule/slides/00-classification-losses.html#calibration",
+    "title": "UBC Stat406 2023W",
+    "section": "Calibration",
+    "text": "Calibration\nSuppose we predict some probabilities for our data, how often do those events happen?\nIn principle, if we predict \\(\\hat{p}(x_i)=0.2\\) for a bunch of events observations \\(i\\), we’d like to see about 20% 1 and 80% 0. (In training set and test set)\nThe same goes for the other probabilities. If we say “20% chance of rain” it should rain 20% of such days.\nOf course, we didn’t predict exactly \\(\\hat{p}(x_i)=0.2\\) ever, so lets look at \\([.15, .25]\\).\n\nn &lt;- 250\ndat &lt;- tibble(\n  x = seq(-5, 5, length.out = n),\n  p = 1 / (1 + exp(-x)),\n  y = rbinom(n, 1, p)\n)\nfit &lt;- glm(y ~ x, family = binomial, data = dat)\ndat$phat &lt;- predict(fit, type = \"response\") # predicted probabilities\ndat |&gt;\n  filter(phat &gt; .15, phat &lt; .25) |&gt;\n  summarize(target = .2, obs = mean(y))\n\n\n\n# A tibble: 1 × 2\n  target   obs\n   &lt;dbl&gt; &lt;dbl&gt;\n1    0.2 0.222"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#calibration-plot",
+    "href": "schedule/slides/00-classification-losses.html#calibration-plot",
+    "title": "UBC Stat406 2023W",
+    "section": "Calibration plot",
+    "text": "Calibration plot\n\nbinary_calibration_plot &lt;- function(y, phat, nbreaks = 10) {\n  dat &lt;- tibble(y = y, phat = phat) |&gt;\n    mutate(bins = cut_number(phat, n = nbreaks))\n  midpts &lt;- quantile(dat$phat, seq(0, 1, length.out = nbreaks + 1), na.rm = TRUE)\n  midpts &lt;- midpts[-length(midpts)] + diff(midpts) / 2\n  sum_dat &lt;- dat |&gt;\n    group_by(bins) |&gt;\n    summarise(\n      p = mean(y, na.rm = TRUE),\n      se = sqrt(p * (1 - p) / n())\n    ) |&gt;\n    arrange(p)\n  sum_dat$x &lt;- midpts\n\n  ggplot(sum_dat, aes(x = x)) +\n    geom_errorbar(aes(ymin = pmax(p - 1.96 * se, 0), ymax = pmin(p + 1.96 * se, 1))) +\n    geom_point(aes(y = p), colour = blue) +\n    geom_abline(slope = 1, intercept = 0, colour = orange) +\n    ylab(\"observed frequency\") +\n    xlab(\"average predicted probability\") +\n    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +\n    geom_rug(data = dat, aes(x = phat), sides = \"b\")\n}"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
+    "href": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
+    "title": "UBC Stat406 2023W",
+    "section": "Amazingly well-calibrated",
+    "text": "Amazingly well-calibrated\n\nbinary_calibration_plot(dat$y, dat$phat, 20L)"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#less-well-calibrated",
+    "href": "schedule/slides/00-classification-losses.html#less-well-calibrated",
+    "title": "UBC Stat406 2023W",
+    "section": "Less well-calibrated",
+    "text": "Less well-calibrated"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
+    "href": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
+    "title": "UBC Stat406 2023W",
+    "section": "True positive, false negative, sensitivity, specificity",
+    "text": "True positive, false negative, sensitivity, specificity\n\nTrue positive rate\n\n# correct predict positive / # actual positive (1 - FNR)\n\nFalse negative rate\n\n# incorrect predict negative / # actual positive (1 - TPR), Type II Error\n\nTrue negative rate\n\n# correct predict negative / # actual negative\n\nFalse positive rate\n\n# incorrect predict positive / # actual negative (1 - TNR), Type I Error\n\nSensitivity\n\nTPR, 1 - Type II error\n\nSpecificity\n\nTNR, 1 - Type I error"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
+    "href": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
+    "title": "UBC Stat406 2023W",
+    "section": "ROC and thresholds",
+    "text": "ROC and thresholds\n\nROC (Receiver Operating Characteristic) Curve\n\nTPR (sensitivity) vs. FPR (1 - specificity)\n\nAUC (Area under the curve)\n\nIntegral of ROC. Closer to 1 is better.\n\n\nSo far, we’ve been thresholding at 0.5, though you shouldn’t always do that.\nWith unbalanced data (say 10% 0 and 90% 1), if you care equally about predicting both classes, you might want to choose a different cutoff (like in LDA).\nTo make the ROC we look at our errors as we vary the cutoff"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#roc-curve",
+    "href": "schedule/slides/00-classification-losses.html#roc-curve",
+    "title": "UBC Stat406 2023W",
+    "section": "ROC curve",
+    "text": "ROC curve\n\n\nroc &lt;- function(prediction, y) {\n  op &lt;- order(prediction, decreasing = TRUE)\n  preds &lt;- prediction[op]\n  y &lt;- y[op]\n  noty &lt;- 1 - y\n  if (any(duplicated(preds))) {\n    y &lt;- rev(tapply(y, preds, sum))\n    noty &lt;- rev(tapply(noty, preds, sum))\n  }\n  tibble(\n    FPR = cumsum(noty) / sum(noty),\n    TPR = cumsum(y) / sum(y)\n  )\n}\n\nggplot(roc(dat$phat, dat$y), aes(FPR, TPR)) +\n  geom_step(colour = blue, size = 2) +\n  geom_abline(slope = 1, intercept = 0)"
+  },
+  {
+    "objectID": "schedule/slides/00-classification-losses.html#other-stuff",
+    "href": "schedule/slides/00-classification-losses.html#other-stuff",
+    "title": "UBC Stat406 2023W",
+    "section": "Other stuff",
+    "text": "Other stuff\n\n\nSource: worth exploring Wikipedia\n\n\n\nUBC Stat 406 - 2023"
   },
   {
     "objectID": "course-setup.html",
@@ -1944,6 +2161,41 @@
     "title": " Schedule",
     "section": "F Final exam",
     "text": "F Final exam\nDate and time TBD.\n\n\n\n\n\n\nImportant\n\n\n\nDo not make any plans to leave Vancouver before the final exam date is announced.\n\n\n\nIn person attendance is required (per Faculty of Science guidelines)\nYou must bring your computer as the exam will be given through Canvas\nPlease arrange to borrow one from the library if you do not have your own. Let me know ASAP if this may pose a problem.\nYou may bring 2 sheets of front/back 8.5x11 paper with any notes you want to use. No other materials will be allowed.\nThere will be no required coding, but I may show code or output and ask questions about it.\nIt will be entirely multiple choice / True-False / matching, etc. Delivered on Canvas."
+  },
+  {
+    "objectID": "schedule/slides/00-cv-for-many-models.html#meta-lecture",
+    "href": "schedule/slides/00-cv-for-many-models.html#meta-lecture",
+    "title": "UBC Stat406 2023W",
+    "section": "00 CV for many models",
+    "text": "00 CV for many models\nStat 406\nDaniel J. McDonald\nLast modified – 19 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-cv-for-many-models.html#some-data-and-4-models",
+    "href": "schedule/slides/00-cv-for-many-models.html#some-data-and-4-models",
+    "title": "UBC Stat406 2023W",
+    "section": "Some data and 4 models",
+    "text": "Some data and 4 models\n\ndata(\"mobility\", package = \"Stat406\")\n\nModel 1: Lasso on all predictors, use CV min\nModel 2: Ridge on all predictors, use CV min\nModel 3: OLS on all predictors (no tuning parameters)\nModel 4: (1) Lasso on all predictors, then (2) OLS on those chosen at CV min\n\nHow do I decide between these 4 models?"
+  },
+  {
+    "objectID": "schedule/slides/00-cv-for-many-models.html#cv-functions",
+    "href": "schedule/slides/00-cv-for-many-models.html#cv-functions",
+    "title": "UBC Stat406 2023W",
+    "section": "CV functions",
+    "text": "CV functions\n\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  fold_labels &lt;- sample(rep(seq_len(kfolds), length.out = nrow(data)))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\nloo_cv &lt;- function(dat) {\n  mdl &lt;- lm(Mobility ~ ., data = dat)\n  mean( abs(residuals(mdl)) / abs(1 - hatvalues(mdl)) ) # MAE version\n}"
+  },
+  {
+    "objectID": "schedule/slides/00-cv-for-many-models.html#experiment-setup",
+    "href": "schedule/slides/00-cv-for-many-models.html#experiment-setup",
+    "title": "UBC Stat406 2023W",
+    "section": "Experiment setup",
+    "text": "Experiment setup\n\n# prepare our data\n# note that mob has only continuous predictors, otherwise could be trouble\nmob &lt;- mobility[complete.cases(mobility), ] |&gt; select(-ID, -State, -Name)\n# avoid doing this same operation a bunch\nxmat &lt;- function(dat) dat |&gt; select(!Mobility) |&gt; as.matrix()\n\n# set up our model functions\nlibrary(glmnet)\nmod1 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, type.measure = \"mae\", ...)\nmod2 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, alpha = 0, type.measure = \"mae\", ...)\nmod3 &lt;- function(dat, ...) glmnet(xmat(dat), dat$Mobility, lambda = 0, ...) # just does lm()\nmod4 &lt;- function(dat, ...) cv.glmnet(xmat(dat), dat$Mobility, relax = TRUE, gamma = 1, type.measure = \"mae\", ...)\n\n# this will still \"work\" on mod3, because there's only 1 s\npredictor &lt;- function(mod, dat) drop(predict(mod, newx = xmat(dat), s = \"lambda.min\"))\n\n# chose mean absolute error just 'cause\nerror_fun &lt;- function(testdata) mean(abs(testdata$Mobility - testdata$.preds))"
+  },
+  {
+    "objectID": "schedule/slides/00-cv-for-many-models.html#run-the-experiment",
+    "href": "schedule/slides/00-cv-for-many-models.html#run-the-experiment",
+    "title": "UBC Stat406 2023W",
+    "section": "Run the experiment",
+    "text": "Run the experiment\n\nall_model_funs &lt;- lst(mod1, mod2, mod3, mod4)\nall_fits &lt;- map(all_model_funs, .f = exec, dat = mob)\n\n# unfortunately, does different splits for each method, so we use 10, \n# it would be better to use the _SAME_ splits\nten_fold_cv &lt;- map_dbl(all_model_funs, ~ kfold_cv(mob, .x, predictor, error_fun, 10)) \n\nin_sample_cv &lt;- c(\n  mod1 = min(all_fits[[1]]$cvm),\n  mod2 = min(all_fits[[2]]$cvm),\n  mod3 = loo_cv(mob),\n  mod4 = min(all_fits[[4]]$cvm)\n)\n\ntib &lt;- bind_rows(in_sample_cv, ten_fold_cv)\ntib$method = c(\"in_sample\", \"out_of_sample\")\ntib\n\n# A tibble: 2 × 5\n    mod1   mod2   mod3   mod4 method       \n   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;        \n1 0.0159 0.0161 0.0164 0.0156 in_sample    \n2 0.0158 0.0161 0.0165 0.0161 out_of_sample\n\n\n\n\nUBC Stat 406 - 2023"
   },
   {
     "objectID": "schedule/slides/00-intro-to-class.html#meta-lecture",
