@@ -346,12 +346,44 @@ err <- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))
 ```{r}
 #| echo: false
 ggplot(data.frame(k = 1:kmax, error = err), aes(k, error)) +
-  geom_point(color = red) +
-  geom_line(color = red)
+  geom_point(color = orange) +
+  geom_line(color = orange)
 ```
 
 I would use the _largest_ (odd) `k` that is close to the minimum.  
 This produces simpler, smoother, decision boundaries.
+
+
+## Alternative (using deviance loss, I think this is right)
+
+```{r}
+#| code-fold: true
+dev <- function(y, prob, prob_min = 1e-5) {
+  y <- as.numeric(as.factor(y)) - 1 # 0/1 valued
+  m <- mean(y)
+  prob_max <- 1 - prob_min
+  prob <- pmin(pmax(prob, prob_min), prob_max)
+  lp <- (1 - y) * log(1 - prob) + y * log(prob)
+  ly <- (1 - y) * log(1 - m) + y * log(m)
+  2 * (ly - lp)
+}
+knn.cv_probs <- function(train, cl, k = 1) {
+  o <- knn.cv(train, cl, k = k, prob = TRUE)
+  p <- attr(o, "prob")
+  o <- as.numeric(as.factor(o)) - 1
+  p[o == 0] <- 1 - p[o == 0]
+  p
+}
+dev_err <- map_dbl(1:kmax, ~ mean(dev(dat1$y, knn.cv_probs(dat1[, -1], dat1$y, k = .x))))
+```
+
+```{r}
+#| echo: false
+ggplot(data.frame(k = 1:kmax, error = dev_err), aes(k, error)) +
+  geom_point(color = orange) +
+  geom_line(color = orange)
+```
+
 
 
 

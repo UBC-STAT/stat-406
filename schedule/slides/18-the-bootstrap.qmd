@@ -92,10 +92,26 @@ Can I get a 95% confidence interval for $Pr(y_0=1 \given x_0)$?
 $\hat{F}$ is the "empirical" distribution of the bootstraps. 
 
 
+## Empirical distribution
+
+```{r}
+#| code-fold: true
+r <- rexp(50, 1 / 5)
+ggplot(tibble(r = r), aes(r)) + 
+  stat_ecdf(colour = orange) +
+  geom_vline(xintercept = quantile(r, probs = c(.05, .95))) +
+  geom_hline(yintercept = c(.05, .95), linetype = "dashed") +
+  annotate(
+    "label", x = c(5, 12), y = c(.25, .75), 
+    label = c("hat(F)[boot](.05)", "hat(F)[boot](.95)"), 
+    parse = TRUE
+  )
+```
+
 
 ## Very basic example
 
-* Let $X_i\sim Exponential(1/5)$. The pdf is $f(x) = \frac{1}{5}e^{-x/5}$
+* Let $X_i\sim \textrm{Exponential}(1/5)$. The pdf is $f(x) = \frac{1}{5}e^{-x/5}$
 
 
 * I know if I estimate the mean with $\bar{X}$, then by the CLT (if $n$ is big), 
@@ -368,7 +384,7 @@ where $\theta^*_q$ is the $q$ quantile of $\hat{\Theta}$.
 Let $\hat{\theta}$ be our sample statistic, $\hat{\Theta}$ be the resamples
 
 $$
-[\hat{\theta} - t_{\alpha/2}\hat{s},\ \hat{\theta} - t_{\alpha/2}\hat{s}]
+[\hat{\theta} - t_{\alpha/2}s,\ \hat{\theta} - t_{\alpha/2}s]
 $$
 
 where $\hat{s} = \sqrt{\Var{\hat{\Theta}}}$
