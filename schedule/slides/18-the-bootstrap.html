@@ -397,7 +397,7 @@
 <h2>18 The bootstrap</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 11 October 2023</p>
+<p>Last modified – 30 October 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -493,10 +493,29 @@
 <p><span class="math inline">\(\hat{F}\)</span> is the “empirical” distribution of the bootstraps.</p>
 </div>
 </section>
+<section id="empirical-distribution" class="slide level2">
+<h2>Empirical distribution</h2>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>r <span class="ot">&lt;-</span> <span class="fu">rexp</span>(<span class="dv">50</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">ggplot</span>(<span class="fu">tibble</span>(<span class="at">r =</span> r), <span class="fu">aes</span>(r)) <span class="sc">+</span> </span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">stat_ecdf</span>(<span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">quantile</span>(r, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>))) <span class="sc">+</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">annotate</span>(</span>
+<span id="cb1-7"><a href="#cb1-7"></a>    <span class="st">"label"</span>, <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">12</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>), </span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"hat(F)[boot](.05)"</span>, <span class="st">"hat(F)[boot](.95)"</span>), </span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-1-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="very-basic-example" class="slide level2">
 <h2>Very basic example</h2>
 <ul>
-<li><p>Let <span class="math inline">\(X_i\sim Exponential(1/5)\)</span>. The pdf is <span class="math inline">\(f(x) = \frac{1}{5}e^{-x/5}\)</span></p></li>
+<li><p>Let <span class="math inline">\(X_i\sim \textrm{Exponential}(1/5)\)</span>. The pdf is <span class="math inline">\(f(x) = \frac{1}{5}e^{-x/5}\)</span></p></li>
 <li><p>I know if I estimate the mean with <span class="math inline">\(\bar{X}\)</span>, then by the CLT (if <span class="math inline">\(n\)</span> is big),</p></li>
 </ul>
 <p><span class="math display">\[\frac{\sqrt{n}(\bar{X}-E[X])}{s} \approx N(0, 1).\]</span></p>
@@ -510,19 +529,19 @@
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="cf">function</span>(x) <span class="fu">dexp</span>(x, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> orange) <span class="sc">+</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">5</span>, <span class="at">color =</span> blue) <span class="sc">+</span> <span class="co"># mean</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> red) <span class="sc">+</span> <span class="co"># median</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
-<span id="cb1-6"><a href="#cb1-6"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">5.5</span>, <span class="dv">10</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">15</span>, .<span class="dv">05</span>),</span>
-<span id="cb1-7"><a href="#cb1-7"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"bar(x)"</span>, <span class="st">"pdf"</span>), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb1-8"><a href="#cb1-8"></a>    <span class="at">color =</span> <span class="fu">c</span>(red, blue, orange), <span class="at">size =</span> <span class="dv">6</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="cf">function</span>(x) <span class="fu">dexp</span>(x, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> orange) <span class="sc">+</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">5</span>, <span class="at">color =</span> blue) <span class="sc">+</span> <span class="co"># mean</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> red) <span class="sc">+</span> <span class="co"># median</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">5.5</span>, <span class="dv">10</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">15</span>, .<span class="dv">05</span>),</span>
+<span id="cb2-7"><a href="#cb2-7"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"bar(x)"</span>, <span class="st">"pdf"</span>), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="at">color =</span> <span class="fu">c</span>(red, blue, orange), <span class="at">size =</span> <span class="dv">6</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-1-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="now-what" class="slide level2">
 <h2>Now what…</h2>
 <ul>
@@ -531,16 +550,16 @@
 <li><p>You can use the bootstrap!</p></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>(med <span class="ot">&lt;-</span> <span class="fu">median</span>(x)) <span class="co"># sample median</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>(med <span class="ot">&lt;-</span> <span class="fu">median</span>(x)) <span class="co"># sample median</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 3.611615</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>B <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>Fhat <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> <span class="fu">median</span>(<span class="fu">sample</span>(x, <span class="at">replace =</span> <span class="cn">TRUE</span>))) <span class="co"># repeat B times, "empirical distribution"</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>CI <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> <span class="fu">quantile</span>(Fhat, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>B <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>Fhat <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> <span class="fu">median</span>(<span class="fu">sample</span>(x, <span class="at">replace =</span> <span class="cn">TRUE</span>))) <span class="co"># repeat B times, "empirical distribution"</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>CI <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> <span class="fu">quantile</span>(Fhat, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="section-2" class="slide level2">
@@ -548,23 +567,23 @@
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(Fhat), <span class="fu">aes</span>(Fhat)) <span class="sc">+</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> orange) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> CI, <span class="at">color =</span> orange, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> med, <span class="at">col =</span> blue) <span class="sc">+</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">col =</span> red) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
-<span id="cb5-7"><a href="#cb5-7"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">3.15</span>, <span class="fl">3.5</span>, <span class="fl">3.75</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>),</span>
-<span id="cb5-8"><a href="#cb5-8"></a>    <span class="at">color =</span> <span class="fu">c</span>(orange, red, blue),</span>
-<span id="cb5-9"><a href="#cb5-9"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"widehat(F)"</span>, <span class="st">"true~median"</span>, <span class="st">"widehat(median)"</span>),</span>
-<span id="cb5-10"><a href="#cb5-10"></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a>  ) <span class="sc">+</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a>  <span class="fu">xlab</span>(<span class="st">"x"</span>) <span class="sc">+</span></span>
-<span id="cb5-13"><a href="#cb5-13"></a>  <span class="fu">geom_rug</span>(<span class="fu">aes</span>(<span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> Fhat))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(Fhat), <span class="fu">aes</span>(Fhat)) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> orange) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> CI, <span class="at">color =</span> orange, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> med, <span class="at">col =</span> blue) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">col =</span> red) <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">3.15</span>, <span class="fl">3.5</span>, <span class="fl">3.75</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>),</span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="at">color =</span> <span class="fu">c</span>(orange, red, blue),</span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"widehat(F)"</span>, <span class="st">"true~median"</span>, <span class="st">"widehat(median)"</span>),</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12"></a>  <span class="fu">xlab</span>(<span class="st">"x"</span>) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a>  <span class="fu">geom_rug</span>(<span class="fu">aes</span>(<span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> Fhat))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="how-does-this-work" class="slide level2">
 <h2>How does this work?</h2>
 
@@ -578,14 +597,14 @@
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">ggplot</span>(fatcats, <span class="fu">aes</span>(Bwt, Hwt)) <span class="sc">+</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> blue) <span class="sc">+</span></span>
-<span id="cb6-3"><a href="#cb6-3"></a>  <span class="fu">xlab</span>(<span class="st">"Cat body weight (Kg)"</span>) <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">ylab</span>(<span class="st">"Cat heart weight (g)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">ggplot</span>(fatcats, <span class="fu">aes</span>(Bwt, Hwt)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> blue) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">xlab</span>(<span class="st">"Cat body weight (Kg)"</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="fu">ylab</span>(<span class="st">"Cat heart weight (g)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-6-1.svg"></p>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-7-1.svg"></p>
 </figure>
 </div>
 </div>
@@ -593,8 +612,8 @@
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="fu">summary</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">summary</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -614,7 +633,7 @@ Residual standard error: 2.089 on 143 degrees of freedom
 Multiple R-squared:  0.965, Adjusted R-squared:  0.9648 
 F-statistic:  3947 on 1 and 143 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">confint</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">confint</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
 Bwt 3.829836 4.078652</code></pre>
@@ -628,12 +647,12 @@ Bwt 3.829836 4.078652</code></pre>
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">qqnorm</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> blue)</span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="fu">qqline</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">col =</span> orange, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">qqnorm</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> blue)</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="fu">qqline</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">col =</span> orange, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-8-1.svg"></p>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-9-1.svg"></p>
 </figure>
 </div>
 </div>
@@ -643,21 +662,21 @@ Bwt 3.829836 4.078652</code></pre>
 <div class="w-50">
 <p><strong>We bootstrap</strong></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
-<span id="cb12-3"><a href="#cb12-3"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb12-4"><a href="#cb12-4"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-6"><a href="#cb12-6"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb12-7"><a href="#cb12-7"></a>})</span>
-<span id="cb12-8"><a href="#cb12-8"></a></span>
-<span id="cb12-9"><a href="#cb12-9"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Bootstrap CI</span></span>
-<span id="cb12-10"><a href="#cb12-10"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb13-4"><a href="#cb13-4"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-6"><a href="#cb13-6"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb13-7"><a href="#cb13-7"></a>})</span>
+<span id="cb13-8"><a href="#cb13-8"></a></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Bootstrap CI</span></span>
+<span id="cb13-10"><a href="#cb13-10"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
 3.826735 4.084322 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
 Bwt 3.829836 4.078652</code></pre>
@@ -688,21 +707,21 @@ Bwt 3.829836 4.078652</code></pre>
 <p><span class="secondary">Non-parametric bootstrap</span></p>
 <p>Same as before</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
-<span id="cb16-3"><a href="#cb16-3"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb16-4"><a href="#cb16-4"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-6"><a href="#cb16-6"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb16-7"><a href="#cb16-7"></a>})</span>
-<span id="cb16-8"><a href="#cb16-8"></a></span>
-<span id="cb16-9"><a href="#cb16-9"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># NP Bootstrap CI</span></span>
-<span id="cb16-10"><a href="#cb16-10"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
+<span id="cb17-3"><a href="#cb17-3"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb17-4"><a href="#cb17-4"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5"></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-6"><a href="#cb17-6"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb17-7"><a href="#cb17-7"></a>})</span>
+<span id="cb17-8"><a href="#cb17-8"></a></span>
+<span id="cb17-9"><a href="#cb17-9"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># NP Bootstrap CI</span></span>
+<span id="cb17-10"><a href="#cb17-10"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
 3.832907 4.070232 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
 Bwt 3.829836 4.078652</code></pre>
@@ -717,20 +736,20 @@ Bwt 3.829836 4.078652</code></pre>
 <li>The <span class="math inline">\(\epsilon_i\)</span> is random <span class="math inline">\(\longrightarrow\)</span> just resample <span class="math inline">\(\widehat{e}_i\)</span>.</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb20-2"><a href="#cb20-2"></a>bhats <span class="ot">&lt;-</span> <span class="fu">double</span>(B)</span>
-<span id="cb20-3"><a href="#cb20-3"></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
-<span id="cb20-4"><a href="#cb20-4"></a>r <span class="ot">&lt;-</span> <span class="fu">residuals</span>(cats.lm)</span>
-<span id="cb20-5"><a href="#cb20-5"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb20-6"><a href="#cb20-6"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
-<span id="cb20-7"><a href="#cb20-7"></a>    <span class="at">Hwt =</span> <span class="fu">predict</span>(cats.lm) <span class="sc">+</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a>      <span class="fu">sample</span>(r, <span class="fu">n</span>(), <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb20-9"><a href="#cb20-9"></a>  )</span>
-<span id="cb20-10"><a href="#cb20-10"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb20-11"><a href="#cb20-11"></a>})</span>
-<span id="cb20-12"><a href="#cb20-12"></a></span>
-<span id="cb20-13"><a href="#cb20-13"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Parametric Bootstrap CI</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>bhats <span class="ot">&lt;-</span> <span class="fu">double</span>(B)</span>
+<span id="cb21-3"><a href="#cb21-3"></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
+<span id="cb21-4"><a href="#cb21-4"></a>r <span class="ot">&lt;-</span> <span class="fu">residuals</span>(cats.lm)</span>
+<span id="cb21-5"><a href="#cb21-5"></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb21-6"><a href="#cb21-6"></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
+<span id="cb21-7"><a href="#cb21-7"></a>    <span class="at">Hwt =</span> <span class="fu">predict</span>(cats.lm) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a>      <span class="fu">sample</span>(r, <span class="fu">n</span>(), <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb21-9"><a href="#cb21-9"></a>  )</span>
+<span id="cb21-10"><a href="#cb21-10"></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb21-11"><a href="#cb21-11"></a>})</span>
+<span id="cb21-12"><a href="#cb21-12"></a></span>
+<span id="cb21-13"><a href="#cb21-13"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Parametric Bootstrap CI</span></span>
+<span id="cb21-14"><a href="#cb21-14"></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
 3.815162 4.065045 </code></pre>
@@ -775,7 +794,7 @@ If we use the parametric bootstrap, and our model is wrong, then we are overconf
 <h2>Types of intervals</h2>
 <p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat{\Theta}\)</span> be the resamples</p>
 <p><span class="math display">\[
-[\hat{\theta} - t_{\alpha/2}\hat{s},\ \hat{\theta} - t_{\alpha/2}\hat{s}]
+[\hat{\theta} - t_{\alpha/2}s,\ \hat{\theta} - t_{\alpha/2}s]
 \]</span></p>
 <p>where <span class="math inline">\(\hat{s} = \sqrt{\Var{\hat{\Theta}}}\)</span></p>
 <hr>

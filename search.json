@@ -186,7 +186,7 @@
     "href": "schedule/slides/18-the-bootstrap.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "18 The bootstrap",
-    "text": "18 The bootstrap\nStat 406\nDaniel J. McDonald\nLast modified – 11 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "18 The bootstrap\nStat 406\nDaniel J. McDonald\nLast modified – 30 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
     "objectID": "schedule/slides/18-the-bootstrap.html#a-small-detour",
@@ -231,11 +231,18 @@
     "text": "Bootstrap procedure\n\nResample your training data w/ replacement.\nCalculate LDA on this sample.\nProduce a new prediction, call it \\(\\widehat{Pr}_b(y_0 =1 \\given x_0)\\).\nRepeat 1-3 \\(b = 1,\\ldots,B\\) times.\nCI: \\(\\left[2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(1-\\alpha/2),\\ 2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(\\alpha/2)\\right]\\)\n\n\n\\(\\hat{F}\\) is the “empirical” distribution of the bootstraps."
   },
   {
+    "objectID": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
+    "href": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
+    "title": "UBC Stat406 2023W",
+    "section": "Empirical distribution",
+    "text": "Empirical distribution\n\n\nCode\nr &lt;- rexp(50, 1 / 5)\nggplot(tibble(r = r), aes(r)) + \n  stat_ecdf(colour = orange) +\n  geom_vline(xintercept = quantile(r, probs = c(.05, .95))) +\n  geom_hline(yintercept = c(.05, .95), linetype = \"dashed\") +\n  annotate(\n    \"label\", x = c(5, 12), y = c(.25, .75), \n    label = c(\"hat(F)[boot](.05)\", \"hat(F)[boot](.95)\"), \n    parse = TRUE\n  )"
+  },
+  {
     "objectID": "schedule/slides/18-the-bootstrap.html#very-basic-example",
     "href": "schedule/slides/18-the-bootstrap.html#very-basic-example",
     "title": "UBC Stat406 2023W",
     "section": "Very basic example",
-    "text": "Very basic example\n\nLet \\(X_i\\sim Exponential(1/5)\\). The pdf is \\(f(x) = \\frac{1}{5}e^{-x/5}\\)\nI know if I estimate the mean with \\(\\bar{X}\\), then by the CLT (if \\(n\\) is big),\n\n\\[\\frac{\\sqrt{n}(\\bar{X}-E[X])}{s} \\approx N(0, 1).\\]\n\nThis gives me a 95% confidence interval like \\[\\bar{X} \\pm 2s/\\sqrt{n}\\]\nBut I don’t want to estimate the mean, I want to estimate the median."
+    "text": "Very basic example\n\nLet \\(X_i\\sim \\textrm{Exponential}(1/5)\\). The pdf is \\(f(x) = \\frac{1}{5}e^{-x/5}\\)\nI know if I estimate the mean with \\(\\bar{X}\\), then by the CLT (if \\(n\\) is big),\n\n\\[\\frac{\\sqrt{n}(\\bar{X}-E[X])}{s} \\approx N(0, 1).\\]\n\nThis gives me a 95% confidence interval like \\[\\bar{X} \\pm 2s/\\sqrt{n}\\]\nBut I don’t want to estimate the mean, I want to estimate the median."
   },
   {
     "objectID": "schedule/slides/18-the-bootstrap.html#section-1",
@@ -319,7 +326,7 @@
     "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
     "title": "UBC Stat406 2023W",
     "section": "Types of intervals",
-    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\hat{\\theta} - t_{\\alpha/2}\\hat{s},\\ \\hat{\\theta} - t_{\\alpha/2}\\hat{s}]\n\\]\nwhere \\(\\hat{s} = \\sqrt{\\Var{\\hat{\\Theta}}}\\)\n\n\nCalled the “Normal Interval”\nOnly works if the distribution of \\(\\hat{\\Theta}\\) is approximately Normal.\nUnlikely to work well\nDon’t do this"
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\hat{\\theta} - t_{\\alpha/2}s,\\ \\hat{\\theta} - t_{\\alpha/2}s]\n\\]\nwhere \\(\\hat{s} = \\sqrt{\\Var{\\hat{\\Theta}}}\\)\n\n\nCalled the “Normal Interval”\nOnly works if the distribution of \\(\\hat{\\Theta}\\) is approximately Normal.\nUnlikely to work well\nDon’t do this"
   },
   {
     "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
@@ -3546,7 +3553,7 @@
     "href": "schedule/slides/17-nonlinear-classifiers.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "17 Nonlinear classifiers",
-    "text": "17 Nonlinear classifiers\nStat 406\nDaniel J. McDonald\nLast modified – 26 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "17 Nonlinear classifiers\nStat 406\nDaniel J. McDonald\nLast modified – 30 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
     "objectID": "schedule/slides/17-nonlinear-classifiers.html#last-time",
@@ -3638,6 +3645,13 @@
     "title": "UBC Stat406 2023W",
     "section": "knn.cv() (leave one out)",
     "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#alternative-using-deviance-loss-i-think-this-is-right",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#alternative-using-deviance-loss-i-think-this-is-right",
+    "title": "UBC Stat406 2023W",
+    "section": "Alternative (using deviance loss, I think this is right)",
+    "text": "Alternative (using deviance loss, I think this is right)\n\n\nCode\ndev &lt;- function(y, prob, prob_min = 1e-5) {\n  y &lt;- as.numeric(as.factor(y)) - 1 # 0/1 valued\n  m &lt;- mean(y)\n  prob_max &lt;- 1 - prob_min\n  prob &lt;- pmin(pmax(prob, prob_min), prob_max)\n  lp &lt;- (1 - y) * log(1 - prob) + y * log(prob)\n  ly &lt;- (1 - y) * log(1 - m) + y * log(m)\n  2 * (ly - lp)\n}\nknn.cv_probs &lt;- function(train, cl, k = 1) {\n  o &lt;- knn.cv(train, cl, k = k, prob = TRUE)\n  p &lt;- attr(o, \"prob\")\n  o &lt;- as.numeric(as.factor(o)) - 1\n  p[o == 0] &lt;- 1 - p[o == 0]\n  p\n}\ndev_err &lt;- map_dbl(1:kmax, ~ mean(dev(dat1$y, knn.cv_probs(dat1[, -1], dat1$y, k = .x))))"
   },
   {
     "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",

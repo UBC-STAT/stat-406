@@ -397,7 +397,7 @@
 <h2>17 Nonlinear classifiers</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 26 October 2023</p>
+<p>Last modified – 30 October 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -716,6 +716,32 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"><p>I would use the <em>largest</em> (odd) <code>k</code> that is close to the minimum.<br>
 This produces simpler, smoother, decision boundaries.</p>
 </section>
+<section id="alternative-using-deviance-loss-i-think-this-is-right" class="slide level2">
+<h2>Alternative (using deviance loss, I think this is right)</h2>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>dev <span class="ot">&lt;-</span> <span class="cf">function</span>(y, prob, <span class="at">prob_min =</span> <span class="fl">1e-5</span>) {</span>
+<span id="cb11-2"><a href="#cb11-2"></a>  y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(y)) <span class="sc">-</span> <span class="dv">1</span> <span class="co"># 0/1 valued</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>  m <span class="ot">&lt;-</span> <span class="fu">mean</span>(y)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  prob_max <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> prob_min</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  prob <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(prob, prob_min), prob_max)</span>
+<span id="cb11-6"><a href="#cb11-6"></a>  lp <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> prob) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(prob)</span>
+<span id="cb11-7"><a href="#cb11-7"></a>  ly <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> m) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(m)</span>
+<span id="cb11-8"><a href="#cb11-8"></a>  <span class="dv">2</span> <span class="sc">*</span> (ly <span class="sc">-</span> lp)</span>
+<span id="cb11-9"><a href="#cb11-9"></a>}</span>
+<span id="cb11-10"><a href="#cb11-10"></a>knn.cv_probs <span class="ot">&lt;-</span> <span class="cf">function</span>(train, cl, <span class="at">k =</span> <span class="dv">1</span>) {</span>
+<span id="cb11-11"><a href="#cb11-11"></a>  o <span class="ot">&lt;-</span> <span class="fu">knn.cv</span>(train, cl, <span class="at">k =</span> k, <span class="at">prob =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-12"><a href="#cb11-12"></a>  p <span class="ot">&lt;-</span> <span class="fu">attr</span>(o, <span class="st">"prob"</span>)</span>
+<span id="cb11-13"><a href="#cb11-13"></a>  o <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(o)) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a>  p[o <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> p[o <span class="sc">==</span> <span class="dv">0</span>]</span>
+<span id="cb11-15"><a href="#cb11-15"></a>  p</span>
+<span id="cb11-16"><a href="#cb11-16"></a>}</span>
+<span id="cb11-17"><a href="#cb11-17"></a>dev_err <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>kmax, <span class="sc">~</span> <span class="fu">mean</span>(<span class="fu">dev</span>(dat1<span class="sc">$</span>y, <span class="fu">knn.cv_probs</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> .x))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-8-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="final-version" class="slide level2">
 <h2>Final version</h2>
 <div class="flex">
@@ -723,26 +749,26 @@ This produces simpler, smoother, decision boundaries.</p>
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>kopt <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">which</span>(err <span class="sc">==</span> <span class="fu">min</span>(err)))</span>
-<span id="cb11-2"><a href="#cb11-2"></a>kopt <span class="ot">&lt;-</span> kopt <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (kopt <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb11-3"><a href="#cb11-3"></a>gr<span class="sc">$</span>opt <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt)</span>
-<span id="cb11-4"><a href="#cb11-4"></a>tt <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt), dat1<span class="sc">$</span>y, <span class="at">dnn =</span> <span class="fu">c</span>(<span class="st">"predicted"</span>, <span class="st">"truth"</span>))</span>
-<span id="cb11-5"><a href="#cb11-5"></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb11-6"><a href="#cb11-6"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb11-7"><a href="#cb11-7"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb11-8"><a href="#cb11-8"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> gr, <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> opt), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
-<span id="cb11-9"><a href="#cb11-9"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> y), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb11-10"><a href="#cb11-10"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb11-11"><a href="#cb11-11"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
-<span id="cb11-12"><a href="#cb11-12"></a>  <span class="fu">theme</span>(</span>
-<span id="cb11-13"><a href="#cb11-13"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb11-14"><a href="#cb11-14"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
-<span id="cb11-15"><a href="#cb11-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>kopt <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">which</span>(err <span class="sc">==</span> <span class="fu">min</span>(err)))</span>
+<span id="cb12-2"><a href="#cb12-2"></a>kopt <span class="ot">&lt;-</span> kopt <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (kopt <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb12-3"><a href="#cb12-3"></a>gr<span class="sc">$</span>opt <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt)</span>
+<span id="cb12-4"><a href="#cb12-4"></a>tt <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt), dat1<span class="sc">$</span>y, <span class="at">dnn =</span> <span class="fu">c</span>(<span class="st">"predicted"</span>, <span class="st">"truth"</span>))</span>
+<span id="cb12-5"><a href="#cb12-5"></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> gr, <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> opt), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> y), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
+<span id="cb12-12"><a href="#cb12-12"></a>  <span class="fu">theme</span>(</span>
+<span id="cb12-13"><a href="#cb12-13"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb12-14"><a href="#cb12-14"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-7-1.svg"></p>
+<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-9-1.svg"></p>
 </figure>
 </div>
 </div>
