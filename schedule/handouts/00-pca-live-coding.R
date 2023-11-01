@@ -7,22 +7,22 @@ x <- cbind(x_signal, x_noise)
 
 # noise free
 s0 <- svd(scale(x_signal, TRUE, FALSE))
-z0 <- s$u %*% diag(s$d)
+z0 <- s0$u %*% diag(s0$d)
 par(mfrow = c(1, 2))
 plot(x_signal)
-plot(z)
+plot(z0)
 s0$v
 
 # manual PCA (full data)
 s1 <- svd(scale(x, TRUE, FALSE))
-z1 <- s$u[,1:2] %*% diag(s$d[1:2])
+z1 <- s1$u[,1:2] %*% diag(s1$d[1:2])
 par(mfrow = c(1, 2))
 plot(x_signal)
-plot(z)
+plot(z1)
 s1$v[,1:2]
 
 sdev0 <- s0$d^2 / (2 - 1)
-sdev1 <- s1$d^2 / (n - 1) 
+sdev1 <- s1$d^2 / (n - 1)
 
 par(mfrow = c(1, 2))
 plot(sdev0)

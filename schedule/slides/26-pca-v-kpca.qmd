@@ -1,48 +1,20 @@
 ---
-title: "26 PCA v KPCA"
-author: 
-  - "STAT 406"
-  - "Daniel J. McDonald"
-date: 'Last modified - `r Sys.Date()`'
+lecture: "26 PCA v KPCA"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
 ---
 
+{{< include _titleslide.qmd >}}
 
-
-```{r setup, include=FALSE, warning=FALSE, message=FALSE}
-source("rmd_config.R")
-```
-
-```{r css-extras, file="css-extras.R", echo=FALSE}
-```
-
-
-## PCA v KPCA
-
-
-
-$$\newcommand{\Expect}[1]{\mathbb{E}\left[ #1 \right]}
-\newcommand{\Var}[1]{\mathrm{Var}\left[ #1 \right]}
-\newcommand{\Cov}[2]{\mathrm{Cov}\left[#1,\ #2\right]}
-\newcommand{\given}{\ \vert\ }
-\newcommand{\argmin}{\arg\min}
-\newcommand{\argmax}{\arg\max}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\P}{P}
-\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
-\renewcommand{\hat}{\widehat}
-\newcommand{\tr}[1]{\mbox{tr}(#1)}
-\newcommand{\X}{\mathbf{X}}
-\newcommand{\y}{\mathbf{y}}
-\newcommand{\x}{\mathbf{x}}
-\newcommand{\U}{\mathbf{U}}
-\newcommand{\D}{\mathbf{D}}
-\newcommand{\V}{\mathbf{V}}$$
+## PCA v KPCA 
 
 (We assume $\X$ is already centered/scaled, $n$ rows, $p$ columns)
 
+::: flex
+::: w-50
 
-.pull-left[
-__PCA:__
+[PCA:]{.secondary}
 
 0. Start with data.
 1. Decompose $\X=\U\D\V^\top$ (SVD). 
@@ -53,13 +25,12 @@ The "embedding" is $\U_M \D_M$.
 
 (called the "Principal Components" or the "scores" or occasionally the "factors")
 
-The "loadings" are $\V_M$
-]
+The "loadings" or "weights" are $\V_M$
+:::
 
---
+::: w-50
 
-.pull-right[
-__KPCA:__
+[KPCA:]{.secondary}
 
 1. Choose $k(x_i, x_{i'})$. Create $\mathbf{K}$.
 1. Double center $\mathbf{K} = \mathbf{PKP}$.
@@ -70,10 +41,11 @@ $$\U_M \D_M$$
 The "embedding" is $\U_M \D_M$.
 
 There are no "loadings"  
-(there exists no matrix $\mathbf{B}$ such that $\X\mathbf{B} = \U_M \D_M$)
-]
+($\not\exists\ \mathbf{B}$ such that $\X\mathbf{B} = \U_M \D_M$)
 
----
+:::
+:::
+
 
 ## Why is this the solution?
 
@@ -93,35 +65,37 @@ $$0 = 2\X^\top\X\alpha - 2\lambda\alpha$$
 
 This is the equation for an eigenproblem. The solution is $\alpha=\V_1$ and the maximum is $\D_1^2$.
 
----
 
 ## Example (not real unless there's code)
 
 ```{r}
 data("mobility", package = "Stat406")
-X <- mobility %>% select(Black:Married) %>% as.matrix()
+X <- mobility %>%
+  select(Black:Married) %>%
+  as.matrix()
 not_missing <- X %>% complete.cases()
 X <- scale(X[not_missing, ], center = TRUE, scale = TRUE)
-colors <- mob$Mobility[not_missing] 
+colors <- mobility$Mobility[not_missing]
 M <- 2 # embedding dimension
 P <- diag(nrow(X)) - 1 / nrow(X)
 ```
 
---
 
-.pull-left[
-__PCA:__ (all 3 are equivalent)
+::: flex
+::: w-50
+
+[PCA:]{.secondary} (all 3 are equivalent)
 
 ```{r}
-s <- svd(X) # use svd 
-pca_loadings <- s$v[,1:M]
+s <- svd(X) # use svd
+pca_loadings <- s$v[, 1:M]
 pca_scores <- X %*% pca_loadings
 ```
 
 
 ```{r, echo=TRUE, eval=FALSE}
 s <- eigen(t(X) %*% X) # V D^2 V'
-pca_loadings <- s$vectors[,1:M]
+pca_loadings <- s$vectors[, 1:M]
 pca_scores <- X %*% pca_loadings
 ```
 
@@ -129,58 +103,53 @@ pca_scores <- X %*% pca_loadings
 ```{r, echo=TRUE, eval=FALSE}
 s <- eigen(X %*% t(X)) # U D^2 U'
 D <- sqrt(diag(s$values[1:M]))
-U <- s$vectors[,1:M]
+U <- s$vectors[, 1:M]
 pca_scores <- U %*% D
-pca_loadings = (1/D) %*% t(U) %*% X
-
+pca_loadings <- (1 / D) %*% t(U) %*% X
 ```
 
+:::
 
-
-]
-
-.pull-right[
-__KPCA:__
+::: w-50
+[KPCA:]{.secondary}
 
 ```{r}
 d <- 2
 K <- P %*% (1 + X %*% t(X))^d %*% P # polynomial
-e <- eigen(K) # U D^2 U' 
+e <- eigen(K) # U D^2 U'
 # (different from the PCA one, K /= XX')
-U <- e$vectors[,1:M]
+U <- e$vectors[, 1:M]
 D <- diag(sqrt(e$values[1:M]))
 kpca_poly <- U %*% D
 ```
 
 ```{r}
 K <- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel
-e <- eigen(K) # U D^2 U' 
+e <- eigen(K) # U D^2 U'
 # (different from the PCA one, K /= XX')
-U <- e$vectors[,1:M]
+U <- e$vectors[, 1:M]
 D <- diag(sqrt(e$values[1:M]))
 kpca_sigmoid <- U %*% D
 ```
 
-
-]
-
----
+:::
+:::
 
 ## Plotting
 
 ```{r, echo=FALSE, fig.align="center", fig.width=10, fig.height=6}
-pca = tibble(score1=pca_scores[,1], score2=pca_scores[,2], colors=colors)
-kpca_poly = tibble(score1=kpca_poly[,1], score2=kpca_poly[,2], colors=colors)
-kpca_sigmoid = tibble(score1=kpca_sigmoid[,1], score2=kpca_sigmoid[,2], colors=colors)
-bind_rows(pca=pca, kpca_poly=kpca_poly, kpca_sigmoid = kpca_sigmoid, .id="method") %>%
-  ggplot(aes(score1, score2, color=colors)) + 
-  facet_wrap(~method, scales = "free") + 
+pca <- tibble(score1 = pca_scores[, 1], score2 = pca_scores[, 2], colors = colors)
+kpca_poly <- tibble(score1 = kpca_poly[, 1], score2 = kpca_poly[, 2], colors = colors)
+kpca_sigmoid <- tibble(score1 = kpca_sigmoid[, 1], score2 = kpca_sigmoid[, 2], colors = colors)
+bind_rows(pca = pca, kpca_poly = kpca_poly, kpca_sigmoid = kpca_sigmoid, .id = "method") %>%
+  ggplot(aes(score1, score2, color = colors)) +
+  facet_wrap(~method, scales = "free") +
   theme(legend.position = "bottom") +
   guides(color = guide_colorbar(barwidth = unit(.5, "npc"))) +
-  scale_color_viridis_c(name = "Mobility") + geom_point()
+  scale_color_viridis_c(name = "Mobility") +
+  geom_point()
 ```
 
----
 
 ## PCA loadings
 
@@ -191,23 +160,22 @@ Showing the first 10 PCA loadings:
 * How much does that variable contribute to that score?
 
 ```{r}
-head(round(pca_loadings,2), 10)
+head(round(pca_loadings, 2), 10)
 ```
 
----
 
 ## KPCA, feature map version
 
 ```{r, echo=TRUE, eval=FALSE}
 p <- ncol(X)
 scX <- scale(X)
-width <- p*(p-1)/2 + p # ~630
+width <- p * (p - 1) / 2 + p # ~630
 Z <- matrix(NA, nrow(X), width)
-k <-  0
-for(i in 1:p){
-  for(j in i:p){
+k <- 0
+for (i in 1:p) {
+  for (j in i:p) {
     k <- k + 1
-    Z[,k] <- X[,i] * X[,j]
+    Z[, k] <- X[, i] * X[, j]
   }
 }
 wideX <- scale(cbind(X, Z))
