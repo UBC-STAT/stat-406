@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.3.450">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – boosting</title>
+  <title>UBC Stat406 2023W – hclust</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,10 +394,10 @@
 
 
 <section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>20 Boosting</h2>
+<h2>28 Hierarchical clustering</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 02 November 2023</p>
+<p>Last modified – 01 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -428,239 +428,254 @@
 \newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="last-time" class="slide level2">
-<h2>Last time</h2>
-<p>We learned about bagging, for averaging <span class="secondary">low-bias</span> / <span class="tertiary">high-variance</span> estimators.</p>
-<p>Today, we examine it’s opposite: Boosting.</p>
-<p>Boosting also combines estimators, but it combines <span class="secondary">high-bias</span> / <span class="tertiary">low-variance</span> estimators.</p>
-<p>Boosting has a number of flavours. And if you Google descriptions, most are wrong.</p>
-<p>For a deep (and accurate) treatment, see [ESL] Chapter 10</p>
-<div class="fragment">
-<p>We’ll discuss 2 flavours: <span class="secondary">AdaBoost</span> and <span class="secondary">Gradient Boosting</span></p>
-<p>Neither requires a tree, but that’s the typical usage.</p>
-<p>Boosting needs a “weak learner”, so small trees (stumps) are natural.</p>
+<section id="from-k-means-to-hierarchical-clustering" class="slide level2">
+<h2>From <span class="math inline">\(K\)</span>-means to hierarchical clustering</h2>
+<div class="flex">
+<div class="w-50">
+<p><span class="secondary">K-means</span></p>
+<ol type="1">
+<li><p>It fits exactly <span class="math inline">\(K\)</span> clusters.</p></li>
+<li><p>Final clustering assignments depend on the chosen initial cluster centers.</p></li>
+</ol>
+<p><span class="secondary">Hierarchical clustering</span></p>
+<ol type="1">
+<li><p>No need to choose the number of clusters before hand.</p></li>
+<li><p>There is no random component (nor choice of starting point).</p></li>
+</ol>
+<p>There is a catch: we need to choose a way to measure the distance between clusters, called the <span class="secondary">linkage</span>.</p>
 </div>
-</section>
-<section id="adaboost-intuition-for-classification" class="slide level2">
-<h2>AdaBoost intuition (for classification)</h2>
-<p>At each iteration, we weight the <span class="secondary">observations</span>.</p>
-<p>Observations that are currently misclassified, get <span class="tertiary">higher</span> weights.</p>
-<p>So on the next iteration, we’ll try harder to correctly classify our mistakes.</p>
-<p>The number of iterations must be chosen.</p>
-</section>
-<section id="adaboost-freund-and-schapire-generic" class="slide level2">
-<h2>AdaBoost (Freund and Schapire, generic)</h2>
-<p>Let <span class="math inline">\(G(x, \theta)\)</span> be any weak learner</p>
-<p>⛭ imagine a tree with one split: then <span class="math inline">\(\theta=\)</span> (feature, split point)</p>
-<p>Algorithm (AdaBoost) 🛠️</p>
-<ul>
-<li>Set observation weights <span class="math inline">\(w_i=1/n\)</span>.</li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Estimate the classifier <span class="math inline">\(G(x,\theta_m)\)</span> using weights <span class="math inline">\(w_i\)</span></li>
-<li>Calculate it’s weighted error <span class="math inline">\(\textrm{err}_m = \sum_{i=1}^n w_i I(y_i \neq G(x_i, \theta_m)) / \sum w_i\)</span></li>
-<li>Set <span class="math inline">\(\alpha_m = \log((1-\textrm{err}_m)/\text{err}_m)\)</span></li>
-<li>Update <span class="math inline">\(w_i \leftarrow w_i \exp(\alpha_m I(y_i \neq G(x_i,\theta_m)))\)</span></li>
-</ol></li>
-<li>Final classifier is <span class="math inline">\(G(x) = \textrm{sign}\left( \sum_{m=1}^M \alpha_m G(x, \theta_m)\right)\)</span></li>
-</ul>
-</section>
-<section id="using-mobility-data-again" class="slide level2">
-<h2>Using mobility data again</h2>
+<div class="w-50">
+<p>Same data as the K-means example:</p>
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(randomForest)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>mob <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility <span class="sc">|&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.factor</span>(Mobility <span class="sc">&gt;</span> .<span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>Name, <span class="sc">-</span>Mobility, <span class="sc">-</span>State) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">drop_na</span>()</span>
-<span id="cb1-7"><a href="#cb1-7"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>trainidx <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>))</span>
-<span id="cb1-9"><a href="#cb1-9"></a>testidx <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, trainidx)</span>
-<span id="cb1-10"><a href="#cb1-10"></a>train <span class="ot">&lt;-</span> mob[trainidx, ]</span>
-<span id="cb1-11"><a href="#cb1-11"></a>test <span class="ot">&lt;-</span> mob[testidx, ]</span>
-<span id="cb1-12"><a href="#cb1-12"></a>rf <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
-<span id="cb1-13"><a href="#cb1-13"></a>bag <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">mtry =</span> <span class="fu">ncol</span>(mob) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb1-14"><a href="#cb1-14"></a>preds <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">truth =</span> test<span class="sc">$</span>mobile, <span class="at">rf =</span> <span class="fu">predict</span>(rf, test), <span class="at">bag =</span> <span class="fu">predict</span>(bag, test))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># same data as K-means "Dumb example"</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>heatmaply<span class="sc">::</span><span class="fu">ggheatmap</span>(</span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">rbind</span>(X1, X2, X3))),</span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">showticklabels =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>), <span class="at">hide_colorbar =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-</div>
-<div class="cell columns column-output-location" data-layout-align="center">
-<div class="column">
-<div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-6|7-12|17|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(gbm)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>train_boost <span class="ot">&lt;-</span> train <span class="sc">|&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.integer</span>(mobile) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># needs {0, 1} responses</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>test_boost <span class="ot">&lt;-</span> test <span class="sc">|&gt;</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.integer</span>(mobile) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>adab <span class="ot">&lt;-</span> <span class="fu">gbm</span>(</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  mobile <span class="sc">~</span> .,</span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">data =</span> train_boost,</span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">n.trees =</span> <span class="dv">500</span>,</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">distribution =</span> <span class="st">"adaboost"</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>)</span>
-<span id="cb2-13"><a href="#cb2-13"></a>preds<span class="sc">$</span>adab <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="fu">predict</span>(adab, test_boost) <span class="sc">&gt;</span> <span class="dv">0</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>)</span>
-<span id="cb2-16"><a href="#cb2-16"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">11</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb2-17"><a href="#cb2-17"></a>s <span class="ot">&lt;-</span> <span class="fu">summary</span>(adab, <span class="at">las =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div><div class="column fragment">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="20-boosting_files/figure-revealjs/unnamed-chunk-2-1.svg"></p>
+<p><img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-2-1.svg"></p>
 </figure>
 </div>
 </div>
 </div>
 </div>
-</section>
-<section id="forward-stagewise-additive-modeling-fsam-completely-generic" class="slide level2">
-<h2>Forward stagewise additive modeling (FSAM, completely generic)</h2>
-<p>Algorithm 🛠️</p>
-<ul>
-<li>Set initial predictor <span class="math inline">\(f_0(x)=0\)</span></li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Compute <span class="math inline">\((\beta_m, \theta_m) = \argmin_{\beta, \theta} \sum_{i=1}^n L\left(y_i,\ f_{m-1}(x_i) + \beta G(x_i,\ \theta)\right)\)</span></li>
-<li>Set <span class="math inline">\(f_m(x) = f_{m-1}(x) + \beta_m G(x,\ \theta_m)\)</span></li>
-</ol></li>
-<li>Final classifier is <span class="math inline">\(G(x, \theta_M) = \textrm{sign}\left( f_M(x) \right)\)</span></li>
-</ul>
-<p>Here, <span class="math inline">\(L\)</span> is a loss function that measures prediction accuracy</p>
-<div class="fragment">
-<ul>
-<li>If <span class="secondary">(1)</span> <span class="math inline">\(L(y,\ f(x))= \exp(-y f(x))\)</span>, <span class="secondary">(2)</span> <span class="math inline">\(G\)</span> is a classifier, and WLOG <span class="math inline">\(y \in \{-1, 1\}\)</span></li>
-</ul>
-<p>FSAM is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000).</p>
 </div>
 </section>
-<section id="so-what" class="slide level2">
-<h2>So what?</h2>
-<p>It turns out that “exponential loss” <span class="math inline">\(L(y,\ f(x))= \exp(-y f(x))\)</span> is not very robust.</p>
-<p>Here are some other loss functions for 2-class classification</p>
-
-<img data-src="20-boosting_files/figure-revealjs/loss-funs-1.svg" class="r-stretch quarto-figure-center"><div class="fragment">
-<p>Want losses which penalize negative margin, but not positive margins.</p>
-<p>Robust means <span class="hand">don’t over-penalize large negatives</span></p>
-</div>
-</section>
-<section id="gradient-boosting" class="slide level2">
-<h2>Gradient boosting</h2>
-<p>In the forward stagewise algorithm, we solved a minimization and then made an update:</p>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) + \beta_m G(x, \theta_m)\]</span></p>
-<p>For most loss functions <span class="math inline">\(L\)</span> / procedures <span class="math inline">\(G\)</span> this optimization is difficult: <span class="math display">\[\argmin_{\beta, \theta} \sum_{i=1}^n L\left(y_i,\ f_{m-1}(x_i) + \beta G(x_i, \theta)\right)\]</span></p>
-<p>💡 Just take one gradient step toward the minimum 💡</p>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\gamma_m \left(-\nabla L(y,f_{m-1}(x))\right)\]</span></p>
-<p>This is called <span class="secondary">Gradient boosting</span></p>
-<p>Notice how similar the update steps look.</p>
-</section>
-<section id="gradient-boosting-1" class="slide level2">
-<h2>Gradient boosting</h2>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\gamma_m \left(-\nabla L(y,f_{m-1}(x))\right)\]</span></p>
-<p>Gradient boosting goes only part of the way toward the minimum at each <span class="math inline">\(m\)</span>.</p>
-<p>This has two advantages:</p>
-<ol type="1">
-<li><p>Since we’re not fitting <span class="math inline">\(\beta, \theta\)</span> to the data as “hard”, the learner is weaker.</p></li>
-<li><p>This procedure is computationally much simpler.</p></li>
-</ol>
-<p>Simpler because we only require the gradient at one value, don’t have to fully optimize.</p>
-</section>
-<section id="gradient-boosting-algorithm" class="slide level2">
-<h2>Gradient boosting – Algorithm 🛠️</h2>
-<ul>
-<li>Set initial predictor <span class="math inline">\(f_0(x)=\overline{\y}\)</span></li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Compute pseudo-residuals (what is the gradient of <span class="math inline">\(L(y,f)=(y-f(x))^2\)</span>?) <span class="math display">\[r_i = -\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}\bigg|_{f(x_i)=f_{m-1}(x_i)}\]</span></li>
-<li>Estimate weak learner, <span class="math inline">\(G(x, \theta_m)\)</span>, with the training set <span class="math inline">\(\{r_i, x_i\}\)</span>.</li>
-<li>Find the step size <span class="math inline">\(\gamma_m = \argmin_\gamma \sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \gamma G(x_i, \theta_m))\)</span></li>
-<li>Set <span class="math inline">\(f_m(x) = f_{m-1}(x) + \gamma_m G(x, \theta_m)\)</span></li>
-</ol></li>
-<li>Final predictor is <span class="math inline">\(f_M(x)\)</span>.</li>
-</ul>
-</section>
-<section id="gradient-boosting-modifications" class="slide level2">
-<h2>Gradient boosting modifications</h2>
+<section id="hierarchical-clustering" class="slide level2">
+<h2>Hierarchical clustering</h2>
+<div class="flex">
+<div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>grad_boost <span class="ot">&lt;-</span> <span class="fu">gbm</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train_boost, <span class="at">n.trees =</span> <span class="dv">500</span>, <span class="at">distribution =</span> <span class="st">"bernoulli"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-3-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="w-50">
+<ul>
+<li>Given the linkage, hierarchical clustering produces a sequence of clustering assignments.</li>
+<li>At one end, all points are in their <span class="secondary">own</span> cluster.</li>
+<li>At the other, all points are in <span class="secondary">one</span> cluster.</li>
+<li>In the middle, there are <span class="secondary">nontrivial</span> solutions.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="agglomeration" class="slide level2">
+<h2>Agglomeration</h2>
+<div class="flex">
+<div class="w-50">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-4-1.svg"></p>
+</figure>
+</div>
+</div>
 </div>
 <ul>
-<li><p>Typically done with “small” trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)</p></li>
-<li><p>Usually modify the gradient step to <span class="math inline">\(f_m(x) = f_{m-1}(x) + \gamma_m \alpha G(x,\theta_m)\)</span> with <span class="math inline">\(0&lt;\alpha&lt;1\)</span>. Helps to keep from fitting too hard.</p></li>
-<li><p>Often combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.</p></li>
-<li><p>There are many other extensions, notably XGBoost.</p></li>
+<li>Given these data points, an agglomerative algorithm chooses a cluster sequence by combining the points into groups.</li>
+<li>We can also represent the sequence of clustering assignments as a dendrogram</li>
+<li>Cutting the dendrogram horizontally partitions the data points into clusters</li>
 </ul>
+</div>
+<div class="w-50">
+<ul>
+<li><p>Notation: Define <span class="math inline">\(x_1,\ldots, x_n\)</span> to be the data</p></li>
+<li><p>Let the dissimiliarities be <span class="math inline">\(d_{ij}\)</span> between each pair <span class="math inline">\(x_i, x_j\)</span></p></li>
+<li><p>At any level, clustering assignments can be expressed by sets <span class="math inline">\(G = \{ i_1, i_2, \ldots, i_r\}\)</span> giving the indicies of points in this group. Define <span class="math inline">\(|G|\)</span> to be the size of <span class="math inline">\(G\)</span>.</p></li>
+</ul>
+<dl>
+<dt>Linkage</dt>
+<dd>
+The function <span class="math inline">\(d(G,H)\)</span> that takes two groups <span class="math inline">\(G,\ H\)</span> and returns the linkage distance between them.
+</dd>
+</dl>
+</div>
+</div>
 </section>
-<section id="results-for-mobility" class="slide level2">
-<h2>Results for <code>mobility</code></h2>
+<section id="agglomerative-clustering-given-the-linkage" class="slide level2">
+<h2>Agglomerative clustering, given the linkage</h2>
+<ol type="1">
+<li>Start with each point in its own group</li>
+<li>Until there is only one cluster, repeatedly merge the two groups <span class="math inline">\(G,H\)</span> that minimize <span class="math inline">\(d(G,H)\)</span>.</li>
+</ol>
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Important</strong></p>
+</div>
+<div class="callout-content">
+<p><span class="math inline">\(d\)</span> measures the distance between GROUPS.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="single-linkage" class="slide level2">
+<h2>Single linkage</h2>
+<p>In <span class="secondary">single linkage</span> (a.k.a nearest-neighbor linkage), the linkage distance between <span class="math inline">\(G,\ H\)</span> is the smallest dissimilarity between two points in different groups: <span class="math display">\[d_{\textrm{single}}(G,H) = \min_{i \in G, \, j \in H} d_{ij}\]</span></p>
+
+<img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="complete-linkage" class="slide level2">
+<h2>Complete linkage</h2>
+<p>In <span class="secondary">complete linkage</span> (i.e.&nbsp;farthest-neighbor linkage), linkage distance between <span class="math inline">\(G,H\)</span> is the largest dissimilarity between two points in different clusters: <span class="math display">\[d_{\textrm{complete}}(G,H) = \max_{i \in G,\, j \in H} d_{ij}.\]</span></p>
+
+<img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="average-linkage" class="slide level2">
+<h2>Average linkage</h2>
+<p>In <span class="secondary">average linkage</span>, the linkage distance between <span class="math inline">\(G,H\)</span> is the average dissimilarity over all points in different clusters: <span class="math display">\[d_{\textrm{average}}(G,H) = \frac{1}{|G| \cdot |H| }\sum_{i \in G, \,j \in H} d_{ij}.\]</span></p>
+
+<img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-7-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="common-properties" class="slide level2">
+<h2>Common properties</h2>
+<p><span class="secondary">Single</span>, <span class="secondary">complete</span>, and <span class="secondary">average</span> linkage share the following:</p>
+<ul>
+<li><p>They all operate on the dissimilarities <span class="math inline">\(d_{ij}\)</span>.</p>
+<p>This means that the points we are clustering can be quite general (number of mutations on a genome, polygons, faces, whatever).</p></li>
+<li><p>Running agglomerative clustering with any of these linkages produces a dendrogram with no inversions</p></li>
+<li><p>“No inversions” means that the linkage distance between merged clusters only <span class="secondary">increases</span> as we run the algorithm.</p></li>
+</ul>
+<p>In other words, we can draw a proper dendrogram, where the height of a parent is always higher than the height of either daughter.</p>
+<p>(We’ll return to this again shortly)</p>
+</section>
+<section id="centroid-linkage" class="slide level2">
+<h2>Centroid linkage</h2>
+<p><span class="secondary">Centroid linkage</span> is relatively new. We need <span class="math inline">\(x_i \in \mathbb{R}^p\)</span>.</p>
+<p><span class="math inline">\(\overline{x}_G\)</span> and <span class="math inline">\(\overline{x}_H\)</span> are group averages</p>
+<p><span class="math inline">\(d_{\textrm{centroid}} = ||\overline{x}_G - \overline{x}_H||_2^2\)</span></p>
+
+<img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-8-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="centroid-linkage-1" class="slide level2">
+<h2>Centroid linkage</h2>
+<div class="flex">
+<div class="w-50">
+<p>Centroid linkage is</p>
+<ul>
+<li><p>… quite intuitive</p></li>
+<li><p>… nicely analogous to <span class="math inline">\(K\)</span>-means.</p></li>
+<li><p>… very related to average linkage (and much, much faster)</p></li>
+</ul>
+<p>However, it may introduce inversions.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-10-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="w-50">
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>boost_preds <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb4-3"><a href="#cb4-3"></a>  <span class="at">adaboost =</span> <span class="fu">predict</span>(adab, test_boost),</span>
-<span id="cb4-4"><a href="#cb4-4"></a>  <span class="at">gbm =</span> <span class="fu">predict</span>(grad_boost, test_boost),</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  <span class="at">truth =</span> test<span class="sc">$</span>mobile</span>
-<span id="cb4-6"><a href="#cb4-6"></a>)</span>
-<span id="cb4-7"><a href="#cb4-7"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(boost_preds, <span class="fu">aes</span>(adaboost, gbm, <span class="at">color =</span> <span class="fu">as.factor</span>(truth))) <span class="sc">+</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">as.integer</span>(truth) <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="fu">xlab</span>(<span class="st">"adaboost margin"</span>) <span class="sc">+</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="fu">ylab</span>(<span class="st">"gbm margin"</span>) <span class="sc">+</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"orange"</span>, <span class="st">"blue"</span>)) <span class="sc">+</span></span>
-<span id="cb4-15"><a href="#cb4-15"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
-<span id="cb4-16"><a href="#cb4-16"></a>    <span class="at">x =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">color =</span> red,</span>
-<span id="cb4-17"><a href="#cb4-17"></a>    <span class="at">label =</span> <span class="fu">paste</span>(</span>
-<span id="cb4-18"><a href="#cb4-18"></a>      <span class="st">"gbm error</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-19"><a href="#cb4-19"></a>      <span class="fu">round</span>(<span class="fu">with</span>(boost_preds, <span class="fu">mean</span>((gbm <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">!=</span> truth)), <span class="dv">2</span>)</span>
-<span id="cb4-20"><a href="#cb4-20"></a>    )</span>
-<span id="cb4-21"><a href="#cb4-21"></a>  ) <span class="sc">+</span></span>
-<span id="cb4-22"><a href="#cb4-22"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
-<span id="cb4-23"><a href="#cb4-23"></a>    <span class="at">x =</span> <span class="dv">4</span>, <span class="at">y =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">color =</span> red,</span>
-<span id="cb4-24"><a href="#cb4-24"></a>    <span class="at">label =</span> <span class="fu">paste</span>(<span class="st">"adaboost error</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">round</span>(<span class="fu">with</span>(boost_preds, <span class="fu">mean</span>((adaboost <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">!=</span> truth)), <span class="dv">2</span>))</span>
-<span id="cb4-25"><a href="#cb4-25"></a>  )</span>
-<span id="cb4-26"><a href="#cb4-26"></a>boost_oob <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb4-27"><a href="#cb4-27"></a>  <span class="at">adaboost =</span> adab<span class="sc">$</span>oobag.improve, <span class="at">gbm =</span> grad_boost<span class="sc">$</span>oobag.improve,</span>
-<span id="cb4-28"><a href="#cb4-28"></a>  <span class="at">ntrees =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">500</span></span>
-<span id="cb4-29"><a href="#cb4-29"></a>)</span>
-<span id="cb4-30"><a href="#cb4-30"></a>g2 <span class="ot">&lt;-</span> boost_oob <span class="sc">%&gt;%</span></span>
-<span id="cb4-31"><a href="#cb4-31"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>ntrees, <span class="at">values_to =</span> <span class="st">"OOB_Error"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-32"><a href="#cb4-32"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> ntrees, <span class="at">y =</span> OOB_Error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
-<span id="cb4-33"><a href="#cb4-33"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb4-34"><a href="#cb4-34"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, blue)) <span class="sc">+</span></span>
-<span id="cb4-35"><a href="#cb4-35"></a>  <span class="fu">theme</span>(<span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span>
-<span id="cb4-36"><a href="#cb4-36"></a><span class="fu">plot_grid</span>(g1, g2, <span class="at">rel_widths =</span> <span class="fu">c</span>(.<span class="dv">4</span>, .<span class="dv">6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>tt <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">len =</span> <span class="dv">50</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>tt2 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">len =</span> <span class="dv">75</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>c1 <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="fu">cos</span>(tt), <span class="at">y =</span> <span class="fu">sin</span>(tt))</span>
+<span id="cb2-4"><a href="#cb2-4"></a>c2 <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="fl">1.5</span> <span class="sc">*</span> <span class="fu">cos</span>(tt2), <span class="at">y =</span> <span class="fl">1.5</span> <span class="sc">*</span> <span class="fu">sin</span>(tt2))</span>
+<span id="cb2-5"><a href="#cb2-5"></a>circles <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(c1, c2)</span>
+<span id="cb2-6"><a href="#cb2-6"></a>di <span class="ot">&lt;-</span> <span class="fu">dist</span>(circles[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
+<span id="cb2-7"><a href="#cb2-7"></a>hc <span class="ot">&lt;-</span> <span class="fu">hclust</span>(di, <span class="at">method =</span> <span class="st">"centroid"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(.<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">3</span>, .<span class="dv">1</span>))</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="fu">plot</span>(hc, <span class="at">xlab =</span> <span class="st">""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-11-1.svg"></p>
+</figure>
 </div>
-<img data-src="20-boosting_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="major-takeaways" class="slide level2">
-<h2>Major takeaways</h2>
-<ul>
-<li><p>Two flavours of Boosting</p>
-<ol type="1">
-<li>AdaBoost (the original) and</li>
-<li>gradient boosting (easier and more computationally friendly)</li>
-</ol></li>
-<li><p>The connection is “Forward stagewise additive modelling” (AdaBoost is a special case)</p></li>
-<li><p>The connection reveals that AdaBoost “isn’t robust because it uses exponential loss” (squared error is even worse)</p></li>
-<li><p>Gradient boosting is a computationally easier version of FSAM</p></li>
-<li><p>All use <strong>weak learners</strong> (compare to Bagging)</p></li>
-<li><p>Think about the Bias-Variance implications</p></li>
-<li><p>You can use these for regression or classification</p></li>
-<li><p>You can do this with other weak learners besides trees.</p></li>
-</ul>
+</div>
+</div>
+</div>
+</div>
 </section>
+<section id="shortcomings-of-some-linkages" class="slide level2">
+<h2>Shortcomings of some linkages</h2>
+<dl>
+<dt>Single</dt>
+<dd>
+👎 chaining — a single pair of close points merges two clusters. <span class="math inline">\(\Rightarrow\)</span> clusters can be too spread out, not compact
+</dd>
+<dt>Complete linkage</dt>
+<dd>
+👎 crowding — a point can be closer to points in other clusters than to points in its own cluster.<span class="math inline">\(\Rightarrow\)</span> clusters are compact, not far enough apart.
+</dd>
+<dt>Average linkage</dt>
+<dd>
+tries to strike a balance these
+</dd>
+<dd>
+👎 Unclear what properties the resulting clusters have when we cut an average linkage tree.
+</dd>
+<dd>
+👎 Results change with a monotone increasing transformation of the dissimilarities
+</dd>
+<dt>Centroid linkage</dt>
+<dd>
+👎 same monotonicity problem
+</dd>
+<dd>
+👎 and inversions
+</dd>
+<dt>All linkages</dt>
+<dd>
+⁇ where do we cut?
+</dd>
+</dl>
+</section>
+<section id="distances" class="slide level2">
+<h2>Distances</h2>
+<p>Note how all the methods depend on the distance function</p>
+<p>Can do lots of things besides Euclidean</p>
+<p>This is very important</p>
+
+<img data-src="28-hclust_files/figure-revealjs/unnamed-chunk-12-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
-<p>Neural networks and deep learning, the beginning</p>
+<p>No more slides. All done.</p>
+<p><svg aria-hidden="true" role="img" viewbox="0 0 512 512" style="height:6em;width:6em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#2c365e;overflow:visible;position:relative;"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM183.2 132.6c-1.3-2.8-4.1-4.6-7.2-4.6s-5.9 1.8-7.2 4.6l-16.6 34.7-38.1 5c-3.1 .4-5.6 2.5-6.6 5.5s-.1 6.2 2.1 8.3l27.9 26.5-7 37.8c-.6 3 .7 6.1 3.2 7.9s5.8 2 8.5 .6L176 240.5l33.8 18.3c2.7 1.5 6 1.3 8.5-.6s3.7-4.9 3.2-7.9l-7-37.8L242.4 186c2.2-2.1 3.1-5.3 2.1-8.3s-3.5-5.1-6.6-5.5l-38.1-5-16.6-34.7zm160 0c-1.3-2.8-4.1-4.6-7.2-4.6s-5.9 1.8-7.2 4.6l-16.6 34.7-38.1 5c-3.1 .4-5.6 2.5-6.6 5.5s-.1 6.2 2.1 8.3l27.9 26.5-7 37.8c-.6 3 .7 6.1 3.2 7.9s5.8 2 8.5 .6L336 240.5l33.8 18.3c2.7 1.5 6 1.3 8.5-.6s3.7-4.9 3.2-7.9l-7-37.8L402.4 186c2.2-2.1 3.1-5.3 2.1-8.3s-3.5-5.1-6.6-5.5l-38.1-5-16.6-34.7zm6.3 175.8c-28.9 6.8-60.5 10.5-93.6 10.5s-64.7-3.7-93.6-10.5c-18.7-4.4-35.9 12-25.5 28.1c24.6 38.1 68.7 63.5 119.1 63.5s94.5-25.4 119.1-63.5c10.4-16.1-6.8-32.5-25.5-28.1z"></path></svg></p>
+<div class="fragment">
+<p>FINAL EXAM!!</p>
+<p><svg aria-hidden="true" role="img" viewbox="0 0 448 512" style="height:6em;width:5.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#a8201a;overflow:visible;position:relative;"><path d="M368 128c0 44.4-25.4 83.5-64 106.4V256c0 17.7-14.3 32-32 32H176c-17.7 0-32-14.3-32-32V234.4c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z"></path></svg></p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -674,8 +689,6 @@
   <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
   <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
   <script src="../../site_libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
-  <script src="../../site_libs/revealjs/plugin/multiplex/socket.io.js"></script>
-  <script src="../../site_libs/revealjs/plugin/multiplex/multiplex.js"></script>
   <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
   
 
@@ -699,7 +712,6 @@
 'autoAnimateUnmatched': true,
 'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
 'chalkboard': {"buttons":true},
-'multiplex': {"secret":null,"id":"1ed558baedabdc3f","url":"https://reveal-multiplex.glitch.me/"},
 'smaller': false,
  
         // Display controls in the bottom right corner
@@ -873,7 +885,7 @@
         plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
 
           RevealMath,
-          
+          RevealNotes,
           RevealSearch,
           RevealZoom
         ]

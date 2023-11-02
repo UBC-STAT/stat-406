@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.3.450">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – boosting</title>
+  <title>UBC Stat406 2023W – pca-intro</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -394,10 +394,10 @@
 
 
 <section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>20 Boosting</h2>
+<h2>24 Principal components, introduction</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 02 November 2023</p>
+<p>Last modified – 01 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -428,236 +428,200 @@
 \newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="last-time" class="slide level2">
-<h2>Last time</h2>
-<p>We learned about bagging, for averaging <span class="secondary">low-bias</span> / <span class="tertiary">high-variance</span> estimators.</p>
-<p>Today, we examine it’s opposite: Boosting.</p>
-<p>Boosting also combines estimators, but it combines <span class="secondary">high-bias</span> / <span class="tertiary">low-variance</span> estimators.</p>
-<p>Boosting has a number of flavours. And if you Google descriptions, most are wrong.</p>
-<p>For a deep (and accurate) treatment, see [ESL] Chapter 10</p>
+<section id="unsupervised-learning" class="slide level2">
+<h2>Unsupervised learning</h2>
+<p>In Machine Learning, rather than calling <span class="math inline">\(\y\)</span> the <span class="hand">response</span>, people call it the <span class="hand">supervisor</span></p>
+<p>So <span class="hand">unsupervised</span> learning means <span class="hand">learning without</span> <span class="math inline">\(\y\)</span></p>
+<p>The only data you get are the <span class="hand">features</span> <span class="math inline">\(\{x_1,\ldots,x_n\}\)</span>.</p>
+<p>This type of analysis is more often <span class="hand">exploratory</span></p>
+<p>We’re not necessarily using this for prediction (but we could)</p>
+<p>So now, we get <span class="math inline">\(\X\)</span></p>
+<p>The two main activities are <span class="secondary">representation learning</span> and <span class="secondary">clustering</span></p>
+</section>
+<section id="representation-learning" class="slide level2">
+<h2>Representation learning</h2>
+<p>Representation learning is the idea that performance of ML methods is highly dependent on the choice of representation</p>
+<p>For this reason, much of ML is geared towards transforming the data into the relevant features and then using these as inputs</p>
+<p>This idea is as old as statistics itself, really,</p>
+<p>However, the idea is constantly revisited in a variety of fields and contexts</p>
+<p>Commonly, these learned representations capture low-level information like overall shapes</p>
+<p>It is possible to quantify this intuition for PCA at least</p>
 <div class="fragment">
-<p>We’ll discuss 2 flavours: <span class="secondary">AdaBoost</span> and <span class="secondary">Gradient Boosting</span></p>
-<p>Neither requires a tree, but that’s the typical usage.</p>
-<p>Boosting needs a “weak learner”, so small trees (stumps) are natural.</p>
+<dl>
+<dt>Goal</dt>
+<dd>
+Transform <span class="math inline">\(\mathbf{X}\in \R^{n\times p}\)</span> into <span class="math inline">\(\mathbf{Z} \in \R^{n \times ?}\)</span>
+</dd>
+</dl>
+<p>?-dimension can be bigger (feature creation) or smaller (dimension reduction) than <span class="math inline">\(p\)</span></p>
 </div>
 </section>
-<section id="adaboost-intuition-for-classification" class="slide level2">
-<h2>AdaBoost intuition (for classification)</h2>
-<p>At each iteration, we weight the <span class="secondary">observations</span>.</p>
-<p>Observations that are currently misclassified, get <span class="tertiary">higher</span> weights.</p>
-<p>So on the next iteration, we’ll try harder to correctly classify our mistakes.</p>
-<p>The number of iterations must be chosen.</p>
-</section>
-<section id="adaboost-freund-and-schapire-generic" class="slide level2">
-<h2>AdaBoost (Freund and Schapire, generic)</h2>
-<p>Let <span class="math inline">\(G(x, \theta)\)</span> be any weak learner</p>
-<p>⛭ imagine a tree with one split: then <span class="math inline">\(\theta=\)</span> (feature, split point)</p>
-<p>Algorithm (AdaBoost) 🛠️</p>
+<section id="youve-done-this-already" class="slide level2">
+<h2>You’ve done this already!</h2>
 <ul>
-<li>Set observation weights <span class="math inline">\(w_i=1/n\)</span>.</li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Estimate the classifier <span class="math inline">\(G(x,\theta_m)\)</span> using weights <span class="math inline">\(w_i\)</span></li>
-<li>Calculate it’s weighted error <span class="math inline">\(\textrm{err}_m = \sum_{i=1}^n w_i I(y_i \neq G(x_i, \theta_m)) / \sum w_i\)</span></li>
-<li>Set <span class="math inline">\(\alpha_m = \log((1-\textrm{err}_m)/\text{err}_m)\)</span></li>
-<li>Update <span class="math inline">\(w_i \leftarrow w_i \exp(\alpha_m I(y_i \neq G(x_i,\theta_m)))\)</span></li>
-</ol></li>
-<li>Final classifier is <span class="math inline">\(G(x) = \textrm{sign}\left( \sum_{m=1}^M \alpha_m G(x, \theta_m)\right)\)</span></li>
+<li><p>You added transformations as predictors in regression</p></li>
+<li><p>You “expanded” <span class="math inline">\(\mathbf{X}\)</span> using a basis <span class="math inline">\(\Phi\)</span> (polynomials, splines, etc.)</p></li>
+<li><p>You used Neural Nets to do a “feature map”</p></li>
 </ul>
-</section>
-<section id="using-mobility-data-again" class="slide level2">
-<h2>Using mobility data again</h2>
-<div class="cell" data-layout-align="center">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(randomForest)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>mob <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility <span class="sc">|&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.factor</span>(Mobility <span class="sc">&gt;</span> .<span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>Name, <span class="sc">-</span>Mobility, <span class="sc">-</span>State) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">drop_na</span>()</span>
-<span id="cb1-7"><a href="#cb1-7"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>trainidx <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>))</span>
-<span id="cb1-9"><a href="#cb1-9"></a>testidx <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, trainidx)</span>
-<span id="cb1-10"><a href="#cb1-10"></a>train <span class="ot">&lt;-</span> mob[trainidx, ]</span>
-<span id="cb1-11"><a href="#cb1-11"></a>test <span class="ot">&lt;-</span> mob[testidx, ]</span>
-<span id="cb1-12"><a href="#cb1-12"></a>rf <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
-<span id="cb1-13"><a href="#cb1-13"></a>bag <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">mtry =</span> <span class="fu">ncol</span>(mob) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb1-14"><a href="#cb1-14"></a>preds <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">truth =</span> test<span class="sc">$</span>mobile, <span class="at">rf =</span> <span class="fu">predict</span>(rf, test), <span class="at">bag =</span> <span class="fu">predict</span>(bag, test))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<div class="cell columns column-output-location" data-layout-align="center">
-<div class="column">
-<div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-6|7-12|17|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(gbm)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>train_boost <span class="ot">&lt;-</span> train <span class="sc">|&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.integer</span>(mobile) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># needs {0, 1} responses</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>test_boost <span class="ot">&lt;-</span> test <span class="sc">|&gt;</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.integer</span>(mobile) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>adab <span class="ot">&lt;-</span> <span class="fu">gbm</span>(</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  mobile <span class="sc">~</span> .,</span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">data =</span> train_boost,</span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">n.trees =</span> <span class="dv">500</span>,</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">distribution =</span> <span class="st">"adaboost"</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>)</span>
-<span id="cb2-13"><a href="#cb2-13"></a>preds<span class="sc">$</span>adab <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="fu">predict</span>(adab, test_boost) <span class="sc">&gt;</span> <span class="dv">0</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>)</span>
-<span id="cb2-16"><a href="#cb2-16"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">11</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb2-17"><a href="#cb2-17"></a>s <span class="ot">&lt;-</span> <span class="fu">summary</span>(adab, <span class="at">las =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div><div class="column fragment">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="20-boosting_files/figure-revealjs/unnamed-chunk-2-1.svg"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="forward-stagewise-additive-modeling-fsam-completely-generic" class="slide level2">
-<h2>Forward stagewise additive modeling (FSAM, completely generic)</h2>
-<p>Algorithm 🛠️</p>
-<ul>
-<li>Set initial predictor <span class="math inline">\(f_0(x)=0\)</span></li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Compute <span class="math inline">\((\beta_m, \theta_m) = \argmin_{\beta, \theta} \sum_{i=1}^n L\left(y_i,\ f_{m-1}(x_i) + \beta G(x_i,\ \theta)\right)\)</span></li>
-<li>Set <span class="math inline">\(f_m(x) = f_{m-1}(x) + \beta_m G(x,\ \theta_m)\)</span></li>
-</ol></li>
-<li>Final classifier is <span class="math inline">\(G(x, \theta_M) = \textrm{sign}\left( f_M(x) \right)\)</span></li>
-</ul>
-<p>Here, <span class="math inline">\(L\)</span> is a loss function that measures prediction accuracy</p>
 <div class="fragment">
+<p>This is the same, just no <span class="math inline">\(Y\)</span> around</p>
+</div>
+</section>
+<section id="pca" class="slide level2">
+<h2>PCA</h2>
+<p>Principal components analysis (PCA) is an (unsupervised) dimension reduction technique</p>
+<p>It solves various equivalent optimization problems</p>
+<p>(Maximize variance, minimize <span class="math inline">\(\ell_2\)</span> distortions, find closest subspace of a given rank, <span class="math inline">\(\ldots\)</span>)</p>
+<p>At its core, we are finding linear combinations of the original (centered) covariates <span class="math display">\[z_{ij} = \alpha_j^{\top} x_i\]</span></p>
+<p>This is expressed via the SVD: <span class="math inline">\(\X = \U\D\V^{\top}\)</span>.</p>
+<div class="fragment">
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Important</strong></p>
+</div>
+<div class="callout-content">
+<p>We assume throughout that <span class="math inline">\(\X - \mathbf{11^\top}\overline{x} = 0\)</span> (we center the columns)</p>
+</div>
+</div>
+</div>
+<p>Then our new features are</p>
+<p><span class="math display">\[\mathbf{Z} = \X \V = \U\D\]</span></p>
+</div>
+</section>
+<section id="short-svd-aside-reminder-from-ridge-regression" class="slide level2">
+<h2>Short SVD aside (reminder from Ridge Regression)</h2>
 <ul>
-<li>If <span class="secondary">(1)</span> <span class="math inline">\(L(y,\ f(x))= \exp(-y f(x))\)</span>, <span class="secondary">(2)</span> <span class="math inline">\(G\)</span> is a classifier, and WLOG <span class="math inline">\(y \in \{-1, 1\}\)</span></li>
+<li><p>Any <span class="math inline">\(n\times p\)</span> matrix can be decomposed into <span class="math inline">\(\mathbf{UDV}^\top\)</span>.</p></li>
+<li><p>These have properties:</p></li>
 </ul>
-<p>FSAM is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000).</p>
-</div>
-</section>
-<section id="so-what" class="slide level2">
-<h2>So what?</h2>
-<p>It turns out that “exponential loss” <span class="math inline">\(L(y,\ f(x))= \exp(-y f(x))\)</span> is not very robust.</p>
-<p>Here are some other loss functions for 2-class classification</p>
-
-<img data-src="20-boosting_files/figure-revealjs/loss-funs-1.svg" class="r-stretch quarto-figure-center"><div class="fragment">
-<p>Want losses which penalize negative margin, but not positive margins.</p>
-<p>Robust means <span class="hand">don’t over-penalize large negatives</span></p>
-</div>
-</section>
-<section id="gradient-boosting" class="slide level2">
-<h2>Gradient boosting</h2>
-<p>In the forward stagewise algorithm, we solved a minimization and then made an update:</p>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) + \beta_m G(x, \theta_m)\]</span></p>
-<p>For most loss functions <span class="math inline">\(L\)</span> / procedures <span class="math inline">\(G\)</span> this optimization is difficult: <span class="math display">\[\argmin_{\beta, \theta} \sum_{i=1}^n L\left(y_i,\ f_{m-1}(x_i) + \beta G(x_i, \theta)\right)\]</span></p>
-<p>💡 Just take one gradient step toward the minimum 💡</p>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\gamma_m \left(-\nabla L(y,f_{m-1}(x))\right)\]</span></p>
-<p>This is called <span class="secondary">Gradient boosting</span></p>
-<p>Notice how similar the update steps look.</p>
-</section>
-<section id="gradient-boosting-1" class="slide level2">
-<h2>Gradient boosting</h2>
-<p><span class="math display">\[f_m(x) = f_{m-1}(x) -\gamma_m \nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\gamma_m \left(-\nabla L(y,f_{m-1}(x))\right)\]</span></p>
-<p>Gradient boosting goes only part of the way toward the minimum at each <span class="math inline">\(m\)</span>.</p>
-<p>This has two advantages:</p>
 <ol type="1">
-<li><p>Since we’re not fitting <span class="math inline">\(\beta, \theta\)</span> to the data as “hard”, the learner is weaker.</p></li>
-<li><p>This procedure is computationally much simpler.</p></li>
+<li><span class="math inline">\(\mathbf{U}^\top \mathbf{U} = \mathbf{I}_n\)</span></li>
+<li><span class="math inline">\(\mathbf{V}^\top \mathbf{V} = \mathbf{I}_p\)</span></li>
+<li><span class="math inline">\(\mathbf{D}\)</span> is diagonal (0 off the diagonal)</li>
 </ol>
-<p>Simpler because we only require the gradient at one value, don’t have to fully optimize.</p>
+<p>Almost all the methods for we’ll talk about for representation learning use the SVD of some matrix.</p>
 </section>
-<section id="gradient-boosting-algorithm" class="slide level2">
-<h2>Gradient boosting – Algorithm 🛠️</h2>
+<section id="why" class="slide level2 smaller" data-background-color="#97D4E9">
+<h2>Why?</h2>
+<ol type="1">
+<li><p>Given <span class="math inline">\(\X\)</span>, find a projection <span class="math inline">\(\mathbf{P}\)</span> onto <span class="math inline">\(\R^M\)</span> with <span class="math inline">\(M \leq p\)</span> that minimizes the reconstruction error <span class="math display">\[
+\begin{aligned}
+\min_{\mathbf{P}} &amp;\,\, \lVert \mathbf{X} - \mathbf{X}\mathbf{P} \rVert^2_F \,\,\, \textrm{(sum all the elements)}\\
+\textrm{subject to} &amp;\,\, \textrm{rank}(\mathbf{P}) = M,\, \mathbf{P} = \mathbf{P}^T,\, \mathbf{P} = \mathbf{P}^2
+\end{aligned}
+\]</span> The conditions ensure that <span class="math inline">\(\mathbf{P}\)</span> is a projection matrix onto <span class="math inline">\(M\)</span> dimensions.</p></li>
+<li><p>Maximize the variance explained by an orthogonal transformation <span class="math inline">\(\mathbf{A} \in \R^{p\times M}\)</span> <span class="math display">\[
+\begin{aligned}
+\max_{\mathbf{A}} &amp;\,\, \textrm{trace}\left(\frac{1}{n}\mathbf{A}^\top \X^\top \X \mathbf{A}\right)\\
+\textrm{subject to} &amp;\,\, \mathbf{A}^\top\mathbf{A} = \mathbf{I}_M
+\end{aligned}
+\]</span></p></li>
+</ol>
 <ul>
-<li>Set initial predictor <span class="math inline">\(f_0(x)=\overline{\y}\)</span></li>
-<li>Until we quit ( <span class="math inline">\(m&lt;M\)</span> iterations )
-<ol type="a">
-<li>Compute pseudo-residuals (what is the gradient of <span class="math inline">\(L(y,f)=(y-f(x))^2\)</span>?) <span class="math display">\[r_i = -\frac{\partial L(y_i,f(x_i))}{\partial f(x_i)}\bigg|_{f(x_i)=f_{m-1}(x_i)}\]</span></li>
-<li>Estimate weak learner, <span class="math inline">\(G(x, \theta_m)\)</span>, with the training set <span class="math inline">\(\{r_i, x_i\}\)</span>.</li>
-<li>Find the step size <span class="math inline">\(\gamma_m = \argmin_\gamma \sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \gamma G(x_i, \theta_m))\)</span></li>
-<li>Set <span class="math inline">\(f_m(x) = f_{m-1}(x) + \gamma_m G(x, \theta_m)\)</span></li>
-</ol></li>
-<li>Final predictor is <span class="math inline">\(f_M(x)\)</span>.</li>
+<li>In case one, the minimizer is <span class="math inline">\(\mathbf{P} = \mathbf{V}_M\mathbf{V}_M^\top\)</span></li>
+<li>In case two, the maximizer is <span class="math inline">\(\mathbf{A} = \mathbf{V}_M\)</span>.</li>
 </ul>
 </section>
-<section id="gradient-boosting-modifications" class="slide level2">
-<h2>Gradient boosting modifications</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>grad_boost <span class="ot">&lt;-</span> <span class="fu">gbm</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train_boost, <span class="at">n.trees =</span> <span class="dv">500</span>, <span class="at">distribution =</span> <span class="st">"bernoulli"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<section id="lower-dimensional-embeddings" class="slide level2">
+<h2>Lower dimensional embeddings</h2>
+<p>Suppose we have predictors <span class="math inline">\(\x_1\)</span> and <span class="math inline">\(\x_2\)</span></p>
 <ul>
-<li><p>Typically done with “small” trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)</p></li>
-<li><p>Usually modify the gradient step to <span class="math inline">\(f_m(x) = f_{m-1}(x) + \gamma_m \alpha G(x,\theta_m)\)</span> with <span class="math inline">\(0&lt;\alpha&lt;1\)</span>. Helps to keep from fitting too hard.</p></li>
-<li><p>Often combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.</p></li>
-<li><p>There are many other extensions, notably XGBoost.</p></li>
+<li>We more faithfully preserve the structure of this data by keeping <span class="math inline">\(\x_1\)</span> and setting <span class="math inline">\(\x_2\)</span> to zero than the opposite</li>
 </ul>
+
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-1-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="lower-dimensional-embeddings-1" class="slide level2">
+<h2>Lower dimensional embeddings</h2>
+<p>An important feature of the previous example is that <span class="math inline">\(\x_1\)</span> and <span class="math inline">\(\x_2\)</span> aren’t correlated</p>
+<p>What if they are?</p>
+
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"><p>We lose a lot of structure by setting either <span class="math inline">\(\x_1\)</span> or <span class="math inline">\(\x_2\)</span> to zero</p>
 </section>
-<section id="results-for-mobility" class="slide level2">
-<h2>Results for <code>mobility</code></h2>
+<section id="lower-dimensional-embeddings-2" class="slide level2">
+<h2>Lower dimensional embeddings</h2>
+<p>The only difference is the first is a rotation of the second</p>
+
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="pca-1" class="slide level2">
+<h2>PCA</h2>
+<p>If we knew how to rotate our data, then we could more easily retain the structure.</p>
+<p><span class="secondary">PCA</span> gives us exactly this rotation</p>
+<ol type="1">
+<li>Center (+scale?) the data matrix <span class="math inline">\(\X\)</span></li>
+<li>Compute the SVD of <span class="math inline">\(\X = \U\D \V^\top\)</span> or <span class="math inline">\(\X\X^\top = \U\D^2\U^\top\)</span> or <span class="math inline">\(\X^\top \X = \V\D^2 \V^\top\)</span></li>
+<li>Return <span class="math inline">\(\U_M\D_M\)</span>, where <span class="math inline">\(\D_M\)</span> is the largest <span class="math inline">\(M\)</span> eigenvalues of <span class="math inline">\(\X\)</span></li>
+</ol>
+</section>
+<section id="pca-2" class="slide level2">
+<h2>PCA</h2>
 <div class="cell" data-layout-align="center">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>boost_preds <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb4-3"><a href="#cb4-3"></a>  <span class="at">adaboost =</span> <span class="fu">predict</span>(adab, test_boost),</span>
-<span id="cb4-4"><a href="#cb4-4"></a>  <span class="at">gbm =</span> <span class="fu">predict</span>(grad_boost, test_boost),</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  <span class="at">truth =</span> test<span class="sc">$</span>mobile</span>
-<span id="cb4-6"><a href="#cb4-6"></a>)</span>
-<span id="cb4-7"><a href="#cb4-7"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(boost_preds, <span class="fu">aes</span>(adaboost, gbm, <span class="at">color =</span> <span class="fu">as.factor</span>(truth))) <span class="sc">+</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">as.integer</span>(truth) <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="fu">xlab</span>(<span class="st">"adaboost margin"</span>) <span class="sc">+</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="fu">ylab</span>(<span class="st">"gbm margin"</span>) <span class="sc">+</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"orange"</span>, <span class="st">"blue"</span>)) <span class="sc">+</span></span>
-<span id="cb4-15"><a href="#cb4-15"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
-<span id="cb4-16"><a href="#cb4-16"></a>    <span class="at">x =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">color =</span> red,</span>
-<span id="cb4-17"><a href="#cb4-17"></a>    <span class="at">label =</span> <span class="fu">paste</span>(</span>
-<span id="cb4-18"><a href="#cb4-18"></a>      <span class="st">"gbm error</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-19"><a href="#cb4-19"></a>      <span class="fu">round</span>(<span class="fu">with</span>(boost_preds, <span class="fu">mean</span>((gbm <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">!=</span> truth)), <span class="dv">2</span>)</span>
-<span id="cb4-20"><a href="#cb4-20"></a>    )</span>
-<span id="cb4-21"><a href="#cb4-21"></a>  ) <span class="sc">+</span></span>
-<span id="cb4-22"><a href="#cb4-22"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>,</span>
-<span id="cb4-23"><a href="#cb4-23"></a>    <span class="at">x =</span> <span class="dv">4</span>, <span class="at">y =</span> <span class="sc">-</span><span class="dv">5</span>, <span class="at">color =</span> red,</span>
-<span id="cb4-24"><a href="#cb4-24"></a>    <span class="at">label =</span> <span class="fu">paste</span>(<span class="st">"adaboost error</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">round</span>(<span class="fu">with</span>(boost_preds, <span class="fu">mean</span>((adaboost <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">!=</span> truth)), <span class="dv">2</span>))</span>
-<span id="cb4-25"><a href="#cb4-25"></a>  )</span>
-<span id="cb4-26"><a href="#cb4-26"></a>boost_oob <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb4-27"><a href="#cb4-27"></a>  <span class="at">adaboost =</span> adab<span class="sc">$</span>oobag.improve, <span class="at">gbm =</span> grad_boost<span class="sc">$</span>oobag.improve,</span>
-<span id="cb4-28"><a href="#cb4-28"></a>  <span class="at">ntrees =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">500</span></span>
-<span id="cb4-29"><a href="#cb4-29"></a>)</span>
-<span id="cb4-30"><a href="#cb4-30"></a>g2 <span class="ot">&lt;-</span> boost_oob <span class="sc">%&gt;%</span></span>
-<span id="cb4-31"><a href="#cb4-31"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>ntrees, <span class="at">values_to =</span> <span class="st">"OOB_Error"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-32"><a href="#cb4-32"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> ntrees, <span class="at">y =</span> OOB_Error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
-<span id="cb4-33"><a href="#cb4-33"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb4-34"><a href="#cb4-34"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, blue)) <span class="sc">+</span></span>
-<span id="cb4-35"><a href="#cb4-35"></a>  <span class="fu">theme</span>(<span class="at">legend.title =</span> <span class="fu">element_blank</span>())</span>
-<span id="cb4-36"><a href="#cb4-36"></a><span class="fu">plot_grid</span>(g1, g2, <span class="at">rel_widths =</span> <span class="fu">c</span>(.<span class="dv">4</span>, .<span class="dv">6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>s <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>tib <span class="ot">&lt;-</span> <span class="fu">rbind</span>(X, s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d), s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">c</span>(s<span class="sc">$</span>d[<span class="dv">1</span>], <span class="dv">0</span>)))</span>
+<span id="cb1-3"><a href="#cb1-3"></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">x1 =</span> tib[,<span class="dv">1</span>], <span class="at">x2 =</span> tib[,<span class="dv">2</span>], </span>
+<span id="cb1-5"><a href="#cb1-5"></a>  <span class="at">name =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">each =</span> <span class="dv">20</span>)</span>
+<span id="cb1-6"><a href="#cb1-6"></a>)</span>
+<span id="cb1-7"><a href="#cb1-7"></a>plotter <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">set =</span> <span class="dv">1</span>, <span class="at">main =</span> <span class="st">"original"</span>) {</span>
+<span id="cb1-8"><a href="#cb1-8"></a>  tib <span class="sc">|&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>    <span class="fu">filter</span>(name <span class="sc">==</span> set) <span class="sc">|&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>    <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">+</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>    <span class="fu">theme</span>(<span class="at">legend.title =</span> <span class="fu">element_blank</span>(), <span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>    <span class="fu">ggtitle</span>(main)</span>
+<span id="cb1-15"><a href="#cb1-15"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16"></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(</span>
+<span id="cb1-17"><a href="#cb1-17"></a>  <span class="fu">plotter</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(x[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(x[<span class="dv">2</span>])), </span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">plotter</span>(<span class="dv">2</span>, <span class="st">"rotated"</span>) <span class="sc">+</span> </span>
+<span id="cb1-19"><a href="#cb1-19"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>((UD)[<span class="dv">1</span>] <span class="sc">==</span> (XV)[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>((UD)[<span class="dv">2</span>] <span class="sc">==</span> (XV)[<span class="dv">2</span>])),</span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="fu">plotter</span>(<span class="dv">3</span>, <span class="st">"rotated and projected"</span>) <span class="sc">+</span> </span>
+<span id="cb1-21"><a href="#cb1-21"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(U[<span class="dv">1</span>]<span class="sc">~</span>D[<span class="dv">1</span>] <span class="sc">==</span> (XV)[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(U[<span class="dv">2</span>]<span class="sc">~</span>D[<span class="dv">2</span>] <span class="sc">%==%</span> <span class="dv">0</span>)),</span>
+<span id="cb1-22"><a href="#cb1-22"></a>  <span class="at">nrow =</span> <span class="dv">1</span></span>
+<span id="cb1-23"><a href="#cb1-23"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="20-boosting_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
-<section id="major-takeaways" class="slide level2">
-<h2>Major takeaways</h2>
-<ul>
-<li><p>Two flavours of Boosting</p>
-<ol type="1">
-<li>AdaBoost (the original) and</li>
-<li>gradient boosting (easier and more computationally friendly)</li>
-</ol></li>
-<li><p>The connection is “Forward stagewise additive modelling” (AdaBoost is a special case)</p></li>
-<li><p>The connection reveals that AdaBoost “isn’t robust because it uses exponential loss” (squared error is even worse)</p></li>
-<li><p>Gradient boosting is a computationally easier version of FSAM</p></li>
-<li><p>All use <strong>weak learners</strong> (compare to Bagging)</p></li>
-<li><p>Think about the Bias-Variance implications</p></li>
-<li><p>You can use these for regression or classification</p></li>
-<li><p>You can do this with other weak learners besides trees.</p></li>
-</ul>
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="pca-on-some-pop-music-data" class="slide level2">
+<h2>PCA on some pop music data</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>music <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(Stat406<span class="sc">::</span>popmusic_test, Stat406<span class="sc">::</span>popmusic_train)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">str</span>(music)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [1,694 × 15] (S3: tbl_df/tbl/data.frame)
+ $ artist          : Factor w/ 3 levels "Radiohead","Taylor Swift",..: 2 2 2 2 2 2 2 2 2 2 ...
+ $ danceability    : num [1:1694] 0.694 0.7 0.334 0.483 0.65 0.722 0.654 0.696 0.571 0.681 ...
+ $ energy          : num [1:1694] 0.38 0.55 0.161 0.84 0.404 0.494 0.638 0.485 0.477 0.396 ...
+ $ key             : int [1:1694] 2 7 0 7 7 7 8 7 11 0 ...
+ $ loudness        : num [1:1694] -10.31 -9.13 -14.88 -6.51 -8.4 ...
+ $ mode            : int [1:1694] 1 1 1 1 1 1 1 1 0 1 ...
+ $ speechiness     : num [1:1694] 0.0614 0.0653 0.0506 0.119 0.0356 0.204 0.075 0.123 0.246 0.0487 ...
+ $ acousticness    : num [1:1694] 0.416 0.0661 0.967 0.43 0.0616 0.216 0.0727 0.103 0.313 0.487 ...
+ $ instrumentalness: num [1:1694] 8.47e-06 1.02e-04 4.71e-05 5.75e-04 0.00 0.00 0.00 6.69e-05 0.00 1.38e-03 ...
+ $ liveness        : num [1:1694] 0.126 0.091 0.115 0.146 0.104 0.226 0.497 0.136 0.11 0.117 ...
+ $ valence         : num [1:1694] 0.376 0.412 0.396 0.55 0.0379 0.131 0.0941 0.339 0.331 0.157 ...
+ $ tempo           : num [1:1694] 120 164 177 158 108 ...
+ $ time_signature  : int [1:1694] 4 4 4 4 4 4 4 4 4 4 ...
+ $ duration_ms     : int [1:1694] 194206 194165 188496 260361 218270 210556 204852 196258 148781 225194 ...
+ $ explicit        : logi [1:1694] FALSE FALSE FALSE FALSE FALSE FALSE ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>X <span class="ot">&lt;-</span> music <span class="sc">|&gt;</span> <span class="fu">select</span>(danceability<span class="sc">:</span>valence)</span>
+<span id="cb4-2"><a href="#cb4-2"></a>pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X, <span class="at">scale =</span> <span class="cn">TRUE</span>) <span class="do">## DON'T USE princomp()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
+<section id="pca-on-some-pop-music-data-1" class="slide level2">
+<h2>PCA on some pop music data</h2>
+
+<img data-src="24-pca-intro_files/figure-revealjs/pca-music-plot-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
-<p>Neural networks and deep learning, the beginning</p>
+<p>When does PCA work?</p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
@@ -674,8 +638,6 @@
   <script src="../../site_libs/revealjs/plugin/reveal-menu/menu.js"></script>
   <script src="../../site_libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
   <script src="../../site_libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
-  <script src="../../site_libs/revealjs/plugin/multiplex/socket.io.js"></script>
-  <script src="../../site_libs/revealjs/plugin/multiplex/multiplex.js"></script>
   <script src="../../site_libs/revealjs/plugin/quarto-support/support.js"></script>
   
 
@@ -699,7 +661,6 @@
 'autoAnimateUnmatched': true,
 'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
 'chalkboard': {"buttons":true},
-'multiplex': {"secret":null,"id":"1ed558baedabdc3f","url":"https://reveal-multiplex.glitch.me/"},
 'smaller': false,
  
         // Display controls in the bottom right corner
@@ -873,7 +834,7 @@
         plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
 
           RevealMath,
-          
+          RevealNotes,
           RevealSearch,
           RevealZoom
         ]
