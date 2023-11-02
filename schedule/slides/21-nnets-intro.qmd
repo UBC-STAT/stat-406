@@ -70,13 +70,6 @@ the main one)
 
 . . .
 
-In the mid 2000's, new approaches for
-[initializing]{.tertiary} neural networks became
-available
-
- 
-These approaches are collectively known as [deep learning]{.secondary}
-
  
 State-of-the-art performance on various classification
 tasks has been accomplished via neural networks
@@ -105,10 +98,11 @@ In Module 2, we discussed basis expansion,
 
 
 
-1.  We know $f_*(x) =\sum_{k=1}^\infty \beta_k h_k(x)$ some basis $h_1,h_2,\ldots$ (using $h$ instead of $\phi$ to match ISLR)
+1.  We know $f_*(x) =\sum_{k=1}^\infty \beta_k \phi_k(x)$ some basis 
+$\phi_1,\phi_2,\ldots$
 
 2.  Truncate this expansion at $K$: 
-    $f_*^K(x) \approx \sum_{k=1}^K \beta_k h_k(x)$
+$f_*^K(x) \approx \sum_{k=1}^K \beta_k \phi_k(x)$
 
 3.  Estimate $\beta_k$ with least squares
 
@@ -135,14 +129,14 @@ An alternative would be to have the data
 A single layer neural network model is
 $$
 \begin{aligned}
-&f(x) = \beta_0 + \sum_{k=1}^K \beta_k h_k(x) \\
-&= \beta_0 + \sum_{k=1}^K \beta_k \ g(w_{k0} + w_k^{\top}x)\\
-&= \beta_0 + \sum_{k=1}^K \beta_k \ A_k\\
+&f(x) = \sum_{k=1}^K \beta_k h_k(x) \\
+&= \sum_{k=1}^K \beta_k \ g(w_k^{\top}x)\\
+&= \sum_{k=1}^K \beta_k \ A_k\\
 \end{aligned}
 $$
 
 [Compare:]{.secondary} A nonparametric regression
-$$f(x) = \beta_0 + \sum_{k=1}^K \beta_k {\phi_k(x)}$$
+$$f(x) = \sum_{k=1}^K \beta_k {\phi_k(x)}$$
 
 :::
 
@@ -158,26 +152,32 @@ $$f(x) = \beta_0 + \sum_{k=1}^K \beta_k {\phi_k(x)}$$
 
 ## Terminology
 
-$$f(x) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {g(w_{k0} + w_k^{\top}x)}$$
+$$f(x) = \sum_{k=1}^{{K}} {\beta_k} {g( w_k^{\top}x)}$$
 The main components are
 
--   The derived features ${A_k = g(w_{k0} + w_k^{\top}x)}$ and are called the [hidden units]{.secondary} or [activations]{.secondary}
+-   The derived features ${A_k = g(w_k^{\top}x)}$ and are called the [hidden units]{.secondary} or [activations]{.secondary}
 -   The function $g$ is called the [activation function]{.secondary}  (more on this later)
 -   The parameters
-${\beta_0},{\beta_k},{w_{k0}},{w_k}$ are estimated from the data for all $k = 1,\ldots, K$.
+${\beta_k},{w_k}$ are estimated from the data for all $k = 1,\ldots, K$.
 -   The number of hidden units ${K}$ is a tuning
     parameter
-- $\beta_0$ and $w_{k0}$ are usually called [biases]{.secondary} (I'm going to set them to 0 and ignore them in future formulas. Just for space. It's just an intercept)    
+    
+$$f(x) = \sum_{k=1}^{{K}} \beta_0 + {\beta_k} {g(w_{k0} + w_k^{\top}x)}$$
+
+- Could add $\beta_0$ and $w_{k0}$. Called [biases]{.secondary} 
+(I'm going to ignore them. It's just an intercept)    
 
 
 ## Terminology
 
-$$f(x) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {g(w_{k0} + w_k^{\top}x)}$$
+$$f(x) = \sum_{k=1}^{{K}} {\beta_k} {g(w_k^{\top}x)}$$
 
 
 Notes (no biases):
 
-$\beta \in \R^k$.  
+<br/>
+
+$\beta \in \R^k$  
 
 $w_k \in \R^p,\ k = 1,\ldots,K$  
 
@@ -207,7 +207,7 @@ $$
 :::
 :::
 
-Predict class with largest probability: $\hat{Y} = \argmax_{m} f_m(x)$
+Predict class with largest probability $\longrightarrow\ \widehat{Y} = \argmax_{m} f_m(x)$
 
 ## What about classification (10 classes, 2 layers)
 
