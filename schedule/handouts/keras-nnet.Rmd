@@ -45,10 +45,9 @@ Restart R again.
 
 ```{r setup, echo=FALSE, warning=FALSE}
 library(tidyverse)
-library(reticulate)
-library(keras)
-use_virtualenv("r-tensorflow", TRUE)
+reticulate::use_virtualenv("r-tensorflow", TRUE)
 library(tensorflow)
+library(keras)
 ```
 
 
@@ -93,7 +92,7 @@ articles of clothing at low resolution (28 by 28 pixels), as seen here:
 Fashion MNIST is intended as a drop-in replacement for the classic [MNIST](http://yann.lecun.com/exdb/mnist/) dataset. The MNIST dataset contains 
 images of handwritten digits (0, 1, 2, etc) in an identical format to the 
 articles of clothing we'll use here. The original MNIST was curated by Yann 
-Lecun, and he maintained a 
+LeCun, and he maintained a 
 [database of performance results](http://yann.lecun.com/exdb/mnist/) for many 
 years.
 
@@ -107,6 +106,7 @@ how accurately the network learned to classify images. You can access the
 Fashion MNIST directly from Keras.
 
 ```{r}
+
 fashion_mnist <- dataset_fashion_mnist()
 
 c(train_images, train_labels) %<-% fashion_mnist$train
@@ -321,7 +321,7 @@ model |> compile(
 
 Training the neural network model requires the following steps:
 
-1 Feed the training data to the model — in this example, the `train_images` and `train_labels` arrays.
+1. Feed the training data to the model — in this example, the `train_images` and `train_labels` arrays.
 1. The model learns to associate images and labels.
 1. We ask the model to make predictions about a test set — in this example, the `test_images` array. We verify that the predictions match the labels from the `test_labels` array.
 
@@ -394,8 +394,8 @@ as.vector(class_pred[1:20])
 
 
 
-As the labels are 0-based, this actually means a predicted label of 9 (to be 
-found in `class_names[9]`). So the model is most confident that this image is 
+As the labels are 0-based, this actually means a predicted label of 9 would correspond to the label 
+found in `class_names[10]`. So the model is most confident that this image is 
 an ankle boot. And we can check the test label to see this is correct:
 
 ```{r test-lab1}
@@ -418,7 +418,7 @@ for (i in 1:25) {
   true_label <- test_labels[i]
   color <- ifelse(predicted_label == true_label, "#0b62a4", "#ff9200")
   image(1:28, 1:28, img,
-    col = gray((0:255) / 255),
+    col = gray((255:0) / 255),
     xaxt = "n", yaxt = "n",
     main = paste0(
       class_names[predicted_label + 1], " (",
@@ -449,5 +449,7 @@ preds <- predict(rf, data = test_images)
 ```
 
 The Test Set accuracy from Random Forests is 
-`r round(mean(preds$predictions == test_labels), 2) * 100`%. Pretty close.
+`r round(mean(preds$predictions == test_labels), 2) * 100`%. 
+
+Slightly better than the Neural Net for my run, but reasonably close.
 
