@@ -332,7 +332,7 @@
 <h2>21 Neural nets</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 12 October 2023</p>
+<p>Last modified – 02 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -358,6 +358,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="overview" class="slide level2">
@@ -397,8 +400,6 @@
 <p>But, the growing popularity of SVMs and boosting/bagging in the late 1990s, neural networks again fell out of favor</p>
 <p>This was due to many of the problems we’ll discuss (non-convexity being the main one)</p>
 <div class="fragment">
-<p>In the mid 2000’s, new approaches for <span class="tertiary">initializing</span> neural networks became available</p>
-<p>These approaches are collectively known as <span class="secondary">deep learning</span></p>
 <p>State-of-the-art performance on various classification tasks has been accomplished via neural networks</p>
 <p>Today, Neural Networks/Deep Learning are the hottest…</p>
 </div>
@@ -416,8 +417,8 @@
 <p>Suppose <span class="math inline">\(Y \in \mathbb{R}\)</span> and we are trying estimate the regression function <span class="math display">\[\Expect{Y\given X} = f_*(X)\]</span></p>
 <p>In Module 2, we discussed basis expansion,</p>
 <ol type="1">
-<li><p>We know <span class="math inline">\(f_*(x) =\sum_{k=1}^\infty \beta_k h_k(x)\)</span> some basis <span class="math inline">\(h_1,h_2,\ldots\)</span> (using <span class="math inline">\(h\)</span> instead of <span class="math inline">\(\phi\)</span> to match ISLR)</p></li>
-<li><p>Truncate this expansion at <span class="math inline">\(K\)</span>: <span class="math inline">\(f_*^K(x) \approx \sum_{k=1}^K \beta_k h_k(x)\)</span></p></li>
+<li><p>We know <span class="math inline">\(f_*(x) =\sum_{k=1}^\infty \beta_k \phi_k(x)\)</span> some basis <span class="math inline">\(\phi_1,\phi_2,\ldots\)</span></p></li>
+<li><p>Truncate this expansion at <span class="math inline">\(K\)</span>: <span class="math inline">\(f_*^K(x) \approx \sum_{k=1}^K \beta_k \phi_k(x)\)</span></p></li>
 <li><p>Estimate <span class="math inline">\(\beta_k\)</span> with least squares</p></li>
 </ol>
 </section>
@@ -438,12 +439,12 @@
 <div class="w-50">
 <p>A single layer neural network model is <span class="math display">\[
 \begin{aligned}
-&amp;f(x) = \beta_0 + \sum_{k=1}^K \beta_k h_k(x) \\
-&amp;= \beta_0 + \sum_{k=1}^K \beta_k \ g(w_{k0} + w_k^{\top}x)\\
-&amp;= \beta_0 + \sum_{k=1}^K \beta_k \ A_k\\
+&amp;f(x) = \sum_{k=1}^K \beta_k h_k(x) \\
+&amp;= \sum_{k=1}^K \beta_k \ g(w_k^{\top}x)\\
+&amp;= \sum_{k=1}^K \beta_k \ A_k\\
 \end{aligned}
 \]</span></p>
-<p><span class="secondary">Compare:</span> A nonparametric regression <span class="math display">\[f(x) = \beta_0 + \sum_{k=1}^K \beta_k {\phi_k(x)}\]</span></p>
+<p><span class="secondary">Compare:</span> A nonparametric regression <span class="math display">\[f(x) = \sum_{k=1}^K \beta_k {\phi_k(x)}\]</span></p>
 </div>
 <div class="w-50">
 <div class="quarto-figure quarto-figure-center">
@@ -456,20 +457,24 @@
 </section>
 <section id="terminology" class="slide level2">
 <h2>Terminology</h2>
-<p><span class="math display">\[f(x) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {g(w_{k0} + w_k^{\top}x)}\]</span> The main components are</p>
+<p><span class="math display">\[f(x) = \sum_{k=1}^{{K}} {\beta_k} {g( w_k^{\top}x)}\]</span> The main components are</p>
 <ul>
-<li>The derived features <span class="math inline">\({A_k = g(w_{k0} + w_k^{\top}x)}\)</span> and are called the <span class="secondary">hidden units</span> or <span class="secondary">activations</span></li>
+<li>The derived features <span class="math inline">\({A_k = g(w_k^{\top}x)}\)</span> and are called the <span class="secondary">hidden units</span> or <span class="secondary">activations</span></li>
 <li>The function <span class="math inline">\(g\)</span> is called the <span class="secondary">activation function</span> (more on this later)</li>
-<li>The parameters <span class="math inline">\({\beta_0},{\beta_k},{w_{k0}},{w_k}\)</span> are estimated from the data for all <span class="math inline">\(k = 1,\ldots, K\)</span>.</li>
+<li>The parameters <span class="math inline">\({\beta_k},{w_k}\)</span> are estimated from the data for all <span class="math inline">\(k = 1,\ldots, K\)</span>.</li>
 <li>The number of hidden units <span class="math inline">\({K}\)</span> is a tuning parameter</li>
-<li><span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(w_{k0}\)</span> are usually called <span class="secondary">biases</span> (I’m going to set them to 0 and ignore them in future formulas. Just for space. It’s just an intercept)</li>
+</ul>
+<p><span class="math display">\[f(x) = \sum_{k=1}^{{K}} \beta_0 + {\beta_k} {g(w_{k0} + w_k^{\top}x)}\]</span></p>
+<ul>
+<li>Could add <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(w_{k0}\)</span>. Called <span class="secondary">biases</span> (I’m going to ignore them. It’s just an intercept)</li>
 </ul>
 </section>
 <section id="terminology-1" class="slide level2">
 <h2>Terminology</h2>
-<p><span class="math display">\[f(x) = {\beta_0} + \sum_{k=1}^{{K}} {\beta_k} {g(w_{k0} + w_k^{\top}x)}\]</span></p>
+<p><span class="math display">\[f(x) = \sum_{k=1}^{{K}} {\beta_k} {g(w_k^{\top}x)}\]</span></p>
 <p>Notes (no biases):</p>
-<p><span class="math inline">\(\beta \in \R^k\)</span>.</p>
+<p><br></p>
+<p><span class="math inline">\(\beta \in \R^k\)</span></p>
 <p><span class="math inline">\(w_k \in \R^p,\ k = 1,\ldots,K\)</span></p>
 <p><span class="math inline">\(\mathbf{W} \in \R^{K\times p}\)</span></p>
 </section>
@@ -494,7 +499,7 @@ f_m(x) &amp;= \frac{1}{1 + \exp(-z_m)}\\
 </div>
 </div>
 </div>
-<p>Predict class with largest probability: <span class="math inline">\(\hat{Y} = \argmax_{m} f_m(x)\)</span></p>
+<p>Predict class with largest probability <span class="math inline">\(\longrightarrow\ \widehat{Y} = \argmax_{m} f_m(x)\)</span></p>
 </section>
 <section id="what-about-classification-10-classes-2-layers-1" class="slide level2">
 <h2>What about classification (10 classes, 2 layers)</h2>
