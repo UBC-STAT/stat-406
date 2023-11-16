@@ -397,7 +397,7 @@
 <h2>22 Neural nets - estimation</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 12 October 2023</p>
+<p>Last modified – 16 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -423,6 +423,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="neural-network-terms-again-t-hidden-layers-regression" class="slide level2">
@@ -535,20 +538,20 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
 </div>
 <div class="w-50">
 <p><span class="secondary">Back propogate</span> <svg aria-hidden="true" role="img" viewbox="0 0 384 512" style="height:1em;width:0.75em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:#e98a15;overflow:visible;position:relative;"><path d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2V448c0 17.7 14.3 32 32 32s32-14.3 32-32V141.2L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z"></path></svg></p>
-<p><span class="math display">\[r = \begin{cases}
+<p><span class="math display">\[-r = \begin{cases}
 -\left(\mathbf{y} - \widehat{\mathbf{y}}\right) \\
 -\left(1 - \widehat{\Pi}\right)[y]\end{cases}\]</span></p>
 <p><span class="math display">\[
 \begin{aligned}
 \frac{\partial}{\partial \mathbf{B}} \widehat{R} &amp;= \left(\mathbf{A}^{(T)}\right)^\top \mathbf{r}\\
-\boldsymbol{\Gamma} &amp;\leftarrow \mathbf{r}\\
+-\boldsymbol{\Gamma} &amp;\leftarrow -\mathbf{r}\\
 \mathbf{W}_{T+1} &amp;\leftarrow \mathbf{B}
 \end{aligned}
 \]</span></p>
 <p>Repeat, <span class="math inline">\(t = T,...,1\)</span>,</p>
 <ol type="1">
-<li><span class="math inline">\(\boldsymbol{\Gamma} \leftarrow \left(\boldsymbol{\Gamma} \mathbf{W}_{t+1}\right) \odot\dot{\mathbf{A}}^{(t)}\)</span></li>
-<li><span class="math inline">\(\frac{\partial R}{\partial \mathbf{W}_t} =\left(\mathbf{A}^{(t)}\right)^\top \Gamma\)</span></li>
+<li><span class="math inline">\(-\boldsymbol{\Gamma} \leftarrow -\left(\boldsymbol{\Gamma} \mathbf{W}_{t+1}\right) \odot\dot{\mathbf{A}}^{(t)}\)</span></li>
+<li><span class="math inline">\(\frac{\partial R}{\partial \mathbf{W}_t} = -\left(\mathbf{A}^{(t)}\right)^\top \Gamma\)</span></li>
 </ol>
 </div>
 </div>
