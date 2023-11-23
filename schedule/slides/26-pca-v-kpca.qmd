@@ -187,3 +187,63 @@ fkpca_scores <- s$u %*% diag(s$d)
 * Also can cause numerical issues
 * But should be the "same" (assuming I didn't screw up...)
 * Would also allow me to get the loadings, though they'd depend on polynomials
+
+## Other manifold learning methods
+
+To name a few
+
+* Hessian maps
+* Laplacian eigenmaps
+* Classical Multidimensional Scaling
+* tSNE
+* UMAP
+* Locally linear embeddings
+* Diffusion maps
+* Local tangent space alignment
+* Isomap
+
+## Issues with nonlinear techniques
+
+::: flex
+
+::: w-40
+
+1. Need to choose $M$ (also with linear)
+2. Also other tuning parameters.
+3. These others can have __huge__ effects
+4. The difference between the data lying [on]{.hand} the manifold and the 
+data lying [near]{.hand} the manifold is important
+
+:::
+
+::: w-60
+
+```{r}
+#| code-fold: true
+#| fig-width: 6.5
+#| fig-height: 6
+elephant <- function(eye = TRUE) {
+  tib <- tibble(
+    tt = -100:500 / 100,
+    y = -(12 * cos(3 * tt) - 14 * cos(5 * tt) + 50 * sin(tt) + 18 * sin(2 * tt)),
+    x = -30 * sin(tt) + 8 * sin(2 * tt) - 10 * sin(3 * tt) - 60 * cos(tt)
+  )
+  if (eye) tib <- add_row(tib, y = 20, x = 20)
+  tib
+}
+ele <- elephant(FALSE)
+noisy_ele <- ele |>
+  mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))
+ggplot(noisy_ele, aes(x, y, colour = tt)) + 
+  geom_point() + 
+  scale_color_viridis_c() + 
+  theme(legend.position = 'none') +
+  geom_path(data = ele, colour="black", linewidth = 2)
+```
+
+:::
+:::
+
+# Next time...
+
+Clustering

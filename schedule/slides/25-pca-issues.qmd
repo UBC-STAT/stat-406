@@ -288,7 +288,66 @@ learner
 
 3. You use the learned features to find a predictor $\hat{f}$ (say, do OLS on them)
 
+## Quick example
+
+```{r}
+music <- Stat406::popmusic_train
+X <- music |> select(danceability:energy, loudness, speechiness:valence)
+pca <- prcomp(X, scale = TRUE)
+Z <- predict(pca)[, 1:2]
+Zgrid <- expand.grid(
+  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), 
+  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)
+)
+out <- class::knn(Z, Zgrid, music$artist, k = 6)
+```
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 4
+tibble(pred_class = out, Zgrid) |>
+  ggplot(aes(Z1, Z2)) +
+  geom_raster(aes(fill = pred_class), alpha = .3) +
+  geom_point(
+    aes(colour = artist),
+    data = tibble(artist = music$artist, as_tibble(Z)) |> 
+      rename(Z1 = PC1, Z2 = PC2)
+  ) +
+  scale_colour_viridis_d() +
+  scale_fill_viridis_d()
+```
+
+
+## Why?
+
+Recall that for nonparametric regression, we must deal with the curse of dimensionality.
+
+* This did KNN in 2 dimensions instead of 8: less curse
+
+* However, the dimensions were learned independently of $\y$: may not be helpful
+
+* There's a bias-variance tradeoff here...
+
+## What is PCA / KPCA estimating?
+
+Imagine that the Population data lie near a low-dimensional linear manifold...
+
+* Think of the spiral. (1D manifold in 2D space)
+* Or a flat piece of paper (2D manifold in 3D space)
+
+PCA / KPCA are estimating the manifold.
+
+* This works well under some conditions
+* And if it's true, then we have reduced variance but added a bit of bias
+* And the downstream method may work [better]{.secondary}, because there are 
+fewer predictors.
+
+We just need the data [near]{.secondary} the manifold. But if not, then we 
+introduced a [lot]{.secondary} of bias.
+
+PCA estimates linear manifolds, KPCA estimates non-linear
 
 # Next time...
 
-Other nonlinear dimension reduction
+More PCA vs. KPCA
