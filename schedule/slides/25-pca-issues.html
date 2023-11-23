@@ -397,7 +397,7 @@
 <h2>25 Principal components, the troubles</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 01 November 2023</p>
+<p>Last modified – 23 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -588,9 +588,49 @@ gives a function space spanned by the infinite Fourier basis
 <li><p>You use the learned features to find a predictor <span class="math inline">\(\hat{f}\)</span> (say, do OLS on them)</p></li>
 </ol>
 </section>
+<section id="quick-example" class="slide level2">
+<h2>Quick example</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>music <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>popmusic_train</span>
+<span id="cb2-2"><a href="#cb2-2"></a>X <span class="ot">&lt;-</span> music <span class="sc">|&gt;</span> <span class="fu">select</span>(danceability<span class="sc">:</span>energy, loudness, speechiness<span class="sc">:</span>valence)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X, <span class="at">scale =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>Z <span class="ot">&lt;-</span> <span class="fu">predict</span>(pca)[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb2-5"><a href="#cb2-5"></a>Zgrid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">Z1 =</span> <span class="fu">seq</span>(<span class="fu">min</span>(Z[,<span class="dv">1</span>]), <span class="fu">max</span>(Z[,<span class="dv">1</span>]), <span class="at">len =</span> 100L), </span>
+<span id="cb2-7"><a href="#cb2-7"></a>  <span class="at">Z2 =</span> <span class="fu">seq</span>(<span class="fu">min</span>(Z[,<span class="dv">2</span>]), <span class="fu">max</span>(Z[,<span class="dv">2</span>]), <span class="at">len =</span> 100L)</span>
+<span id="cb2-8"><a href="#cb2-8"></a>)</span>
+<span id="cb2-9"><a href="#cb2-9"></a>out <span class="ot">&lt;-</span> class<span class="sc">::</span><span class="fu">knn</span>(Z, Zgrid, music<span class="sc">$</span>artist, <span class="at">k =</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<img data-src="25-pca-issues_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="why" class="slide level2">
+<h2>Why?</h2>
+<p>Recall that for nonparametric regression, we must deal with the curse of dimensionality.</p>
+<ul>
+<li><p>This did KNN in 2 dimensions instead of 8: less curse</p></li>
+<li><p>However, the dimensions were learned independently of <span class="math inline">\(\y\)</span>: may not be helpful</p></li>
+<li><p>There’s a bias-variance tradeoff here…</p></li>
+</ul>
+</section>
+<section id="what-is-pca-kpca-estimating" class="slide level2">
+<h2>What is PCA / KPCA estimating?</h2>
+<p>Imagine that the Population data lie near a low-dimensional linear manifold…</p>
+<ul>
+<li>Think of the spiral. (1D manifold in 2D space)</li>
+<li>Or a flat piece of paper (2D manifold in 3D space)</li>
+</ul>
+<p>PCA / KPCA are estimating the manifold.</p>
+<ul>
+<li>This works well under some conditions</li>
+<li>And if it’s true, then we have reduced variance but added a bit of bias</li>
+<li>And the downstream method may work <span class="secondary">better</span>, because there are fewer predictors.</li>
+</ul>
+<p>We just need the data <span class="secondary">near</span> the manifold. But if not, then we introduced a <span class="secondary">lot</span> of bias.</p>
+<p>PCA estimates linear manifolds, KPCA estimates non-linear</p>
+</section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
-<p>Other nonlinear dimension reduction</p>
+<p>More PCA vs.&nbsp;KPCA</p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>

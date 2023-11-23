@@ -123,7 +123,7 @@
     "href": "schedule/slides/26-pca-v-kpca.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "26 PCA v KPCA",
-    "text": "26 PCA v KPCA\nStat 406\nDaniel J. McDonald\nLast modified – 01 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "text": "26 PCA v KPCA\nStat 406\nDaniel J. McDonald\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/26-pca-v-kpca.html#pca-v-kpca",
@@ -165,14 +165,28 @@
     "href": "schedule/slides/26-pca-v-kpca.html#kpca-feature-map-version",
     "title": "UBC Stat406 2023W",
     "section": "KPCA, feature map version",
-    "text": "KPCA, feature map version\n\np &lt;- ncol(X)\nscX &lt;- scale(X)\nwidth &lt;- p * (p - 1) / 2 + p # ~630\nZ &lt;- matrix(NA, nrow(X), width)\nk &lt;- 0\nfor (i in 1:p) {\n  for (j in i:p) {\n    k &lt;- k + 1\n    Z[, k] &lt;- X[, i] * X[, j]\n  }\n}\nwideX &lt;- scale(cbind(X, Z))\ns &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow\nfkpca_scores &lt;- s$u %*% diag(s$d)\n\n\nUnfortunately, can’t easily compare to check whether the result is the same\nAlso can cause numerical issues\nBut should be the “same” (assuming I didn’t screw up…)\nWould also allow me to get the loadings, though they’d depend on polynomials\n\n\n\nUBC Stat 406 - 2023"
+    "text": "KPCA, feature map version\n\np &lt;- ncol(X)\nscX &lt;- scale(X)\nwidth &lt;- p * (p - 1) / 2 + p # ~630\nZ &lt;- matrix(NA, nrow(X), width)\nk &lt;- 0\nfor (i in 1:p) {\n  for (j in i:p) {\n    k &lt;- k + 1\n    Z[, k] &lt;- X[, i] * X[, j]\n  }\n}\nwideX &lt;- scale(cbind(X, Z))\ns &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow\nfkpca_scores &lt;- s$u %*% diag(s$d)\n\n\nUnfortunately, can’t easily compare to check whether the result is the same\nAlso can cause numerical issues\nBut should be the “same” (assuming I didn’t screw up…)\nWould also allow me to get the loadings, though they’d depend on polynomials"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
+    "href": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
+    "title": "UBC Stat406 2023W",
+    "section": "Other manifold learning methods",
+    "text": "Other manifold learning methods\nTo name a few\n\nHessian maps\nLaplacian eigenmaps\nClassical Multidimensional Scaling\ntSNE\nUMAP\nLocally linear embeddings\nDiffusion maps\nLocal tangent space alignment\nIsomap"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
+    "href": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
+    "title": "UBC Stat406 2023W",
+    "section": "Issues with nonlinear techniques",
+    "text": "Issues with nonlinear techniques\n\n\n\nNeed to choose \\(M\\) (also with linear)\nAlso other tuning parameters.\nThese others can have huge effects\nThe difference between the data lying on the manifold and the data lying near the manifold is important\n\n\n\n\n\nCode\nelephant &lt;- function(eye = TRUE) {\n  tib &lt;- tibble(\n    tt = -100:500 / 100,\n    y = -(12 * cos(3 * tt) - 14 * cos(5 * tt) + 50 * sin(tt) + 18 * sin(2 * tt)),\n    x = -30 * sin(tt) + 8 * sin(2 * tt) - 10 * sin(3 * tt) - 60 * cos(tt)\n  )\n  if (eye) tib &lt;- add_row(tib, y = 20, x = 20)\n  tib\n}\nele &lt;- elephant(FALSE)\nnoisy_ele &lt;- ele |&gt;\n  mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))\nggplot(noisy_ele, aes(x, y, colour = tt)) + \n  geom_point() + \n  scale_color_viridis_c() + \n  theme(legend.position = 'none') +\n  geom_path(data = ele, colour=\"black\", linewidth = 2)"
   },
   {
     "objectID": "schedule/slides/24-pca-intro.html#meta-lecture",
     "href": "schedule/slides/24-pca-intro.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "24 Principal components, introduction",
-    "text": "24 Principal components, introduction\nStat 406\nDaniel J. McDonald\nLast modified – 01 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "text": "24 Principal components, introduction\nStat 406\nDaniel J. McDonald\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/24-pca-intro.html#unsupervised-learning",
@@ -242,28 +256,42 @@
     "href": "schedule/slides/24-pca-intro.html#pca-1",
     "title": "UBC Stat406 2023W",
     "section": "PCA",
-    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\n\nCenter (+scale?) the data matrix \\(\\X\\)\nCompute the SVD of \\(\\X = \\U\\D \\V^\\top\\) or \\(\\X\\X^\\top = \\U\\D^2\\U^\\top\\) or \\(\\X^\\top \\X = \\V\\D^2 \\V^\\top\\)\nReturn \\(\\U_M\\D_M\\), where \\(\\D_M\\) is the largest \\(M\\) eigenvalues of \\(\\X\\)"
+    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\n\nCenter (+scale?) the data matrix \\(\\X\\)\nCompute the SVD of \\(\\X = \\U\\D \\V^\\top\\) or \\(\\X\\X^\\top = \\U\\D^2\\U^\\top\\) or \\(\\X^\\top \\X = \\V\\D^2 \\V^\\top\\)\nReturn \\(\\U_M\\D_M\\), where \\(\\D_M\\) is the largest \\(M\\) singular values of \\(\\X\\)"
   },
   {
     "objectID": "schedule/slides/24-pca-intro.html#pca-2",
     "href": "schedule/slides/24-pca-intro.html#pca-2",
     "title": "UBC Stat406 2023W",
     "section": "PCA",
-    "text": "PCA\n\n\nCode\ns &lt;- svd(X)\ntib &lt;- rbind(X, s$u %*% diag(s$d), s$u %*% diag(c(s$d[1], 0)))\ntib &lt;- tibble(\n  x1 = tib[,1], x2 = tib[,2], \n  name = rep(1:3, each = 20)\n)\nplotter &lt;- function(set = 1, main = \"original\") {\n  tib |&gt;\n    filter(name == set) |&gt;\n    ggplot(aes(x1, x2)) +\n    geom_point(colour = blue) +\n    coord_cartesian(c(-2, 2), c(-2, 2)) +\n    theme(legend.title = element_blank(), legend.position = \"bottom\") +\n    ggtitle(main)\n}\ncowplot::plot_grid(\n  plotter() + labs(x = bquote(x[1]), y = bquote(x[2])), \n  plotter(2, \"rotated\") + \n    labs(x = bquote((UD)[1] == (XV)[1]), y = bquote((UD)[2] == (XV)[2])),\n  plotter(3, \"rotated and projected\") + \n    labs(x = bquote(U[1]~D[1] == (XV)[1]), y = bquote(U[2]~D[2] %==% 0)),\n  nrow = 1\n)"
+    "text": "PCA\n\n\nCode\ns &lt;- svd(X)\ntib &lt;- rbind(X, s$u %*% diag(s$d), s$u %*% diag(c(s$d[1], 0)))\ntib &lt;- tibble(\n  x1 = tib[, 1], x2 = tib[, 2],\n  name = rep(1:3, each = 20)\n)\nplotter &lt;- function(set = 1, main = \"original\") {\n  tib |&gt;\n    filter(name == set) |&gt;\n    ggplot(aes(x1, x2)) +\n    geom_point(colour = blue) +\n    coord_cartesian(c(-2, 2), c(-2, 2)) +\n    theme(legend.title = element_blank(), legend.position = \"bottom\") +\n    ggtitle(main)\n}\ncowplot::plot_grid(\n  plotter() + labs(x = bquote(x[1]), y = bquote(x[2])),\n  plotter(2, \"rotated\") +\n    labs(x = bquote((UD)[1] == (XV)[1]), y = bquote((UD)[2] == (XV)[2])),\n  plotter(3, \"rotated and projected\") +\n    labs(x = bquote(U[1] ~ D[1] == (XV)[1]), y = bquote(U[2] ~ D[2] %==% 0)),\n  nrow = 1\n)"
   },
   {
     "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
     "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
     "title": "UBC Stat406 2023W",
     "section": "PCA on some pop music data",
-    "text": "PCA on some pop music data\n\nmusic &lt;- bind_rows(Stat406::popmusic_test, Stat406::popmusic_train)\nstr(music)\n\ntibble [1,694 × 15] (S3: tbl_df/tbl/data.frame)\n $ artist          : Factor w/ 3 levels \"Radiohead\",\"Taylor Swift\",..: 2 2 2 2 2 2 2 2 2 2 ...\n $ danceability    : num [1:1694] 0.694 0.7 0.334 0.483 0.65 0.722 0.654 0.696 0.571 0.681 ...\n $ energy          : num [1:1694] 0.38 0.55 0.161 0.84 0.404 0.494 0.638 0.485 0.477 0.396 ...\n $ key             : int [1:1694] 2 7 0 7 7 7 8 7 11 0 ...\n $ loudness        : num [1:1694] -10.31 -9.13 -14.88 -6.51 -8.4 ...\n $ mode            : int [1:1694] 1 1 1 1 1 1 1 1 0 1 ...\n $ speechiness     : num [1:1694] 0.0614 0.0653 0.0506 0.119 0.0356 0.204 0.075 0.123 0.246 0.0487 ...\n $ acousticness    : num [1:1694] 0.416 0.0661 0.967 0.43 0.0616 0.216 0.0727 0.103 0.313 0.487 ...\n $ instrumentalness: num [1:1694] 8.47e-06 1.02e-04 4.71e-05 5.75e-04 0.00 0.00 0.00 6.69e-05 0.00 1.38e-03 ...\n $ liveness        : num [1:1694] 0.126 0.091 0.115 0.146 0.104 0.226 0.497 0.136 0.11 0.117 ...\n $ valence         : num [1:1694] 0.376 0.412 0.396 0.55 0.0379 0.131 0.0941 0.339 0.331 0.157 ...\n $ tempo           : num [1:1694] 120 164 177 158 108 ...\n $ time_signature  : int [1:1694] 4 4 4 4 4 4 4 4 4 4 ...\n $ duration_ms     : int [1:1694] 194206 194165 188496 260361 218270 210556 204852 196258 148781 225194 ...\n $ explicit        : logi [1:1694] FALSE FALSE FALSE FALSE FALSE FALSE ...\n\nX &lt;- music |&gt; select(danceability:valence)\npca &lt;- prcomp(X, scale = TRUE) ## DON'T USE princomp()"
+    "text": "PCA on some pop music data\n\nmusic &lt;- bind_rows(Stat406::popmusic_test, Stat406::popmusic_train)\nstr(music)\n\ntibble [1,694 × 15] (S3: tbl_df/tbl/data.frame)\n $ artist          : Factor w/ 3 levels \"Radiohead\",\"Taylor Swift\",..: 2 2 2 2 2 2 2 2 2 2 ...\n $ danceability    : num [1:1694] 0.694 0.7 0.334 0.483 0.65 0.722 0.654 0.696 0.571 0.681 ...\n $ energy          : num [1:1694] 0.38 0.55 0.161 0.84 0.404 0.494 0.638 0.485 0.477 0.396 ...\n $ key             : int [1:1694] 2 7 0 7 7 7 8 7 11 0 ...\n $ loudness        : num [1:1694] -10.31 -9.13 -14.88 -6.51 -8.4 ...\n $ mode            : int [1:1694] 1 1 1 1 1 1 1 1 0 1 ...\n $ speechiness     : num [1:1694] 0.0614 0.0653 0.0506 0.119 0.0356 0.204 0.075 0.123 0.246 0.0487 ...\n $ acousticness    : num [1:1694] 0.416 0.0661 0.967 0.43 0.0616 0.216 0.0727 0.103 0.313 0.487 ...\n $ instrumentalness: num [1:1694] 8.47e-06 1.02e-04 4.71e-05 5.75e-04 0.00 0.00 0.00 6.69e-05 0.00 1.38e-03 ...\n $ liveness        : num [1:1694] 0.126 0.091 0.115 0.146 0.104 0.226 0.497 0.136 0.11 0.117 ...\n $ valence         : num [1:1694] 0.376 0.412 0.396 0.55 0.0379 0.131 0.0941 0.339 0.331 0.157 ...\n $ tempo           : num [1:1694] 120 164 177 158 108 ...\n $ time_signature  : int [1:1694] 4 4 4 4 4 4 4 4 4 4 ...\n $ duration_ms     : int [1:1694] 194206 194165 188496 260361 218270 210556 204852 196258 148781 225194 ...\n $ explicit        : logi [1:1694] FALSE FALSE FALSE FALSE FALSE FALSE ...\n\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE) ## DON'T USE princomp()"
   },
   {
     "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
     "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
     "title": "UBC Stat406 2023W",
     "section": "PCA on some pop music data",
-    "text": "PCA on some pop music data"
+    "text": "PCA on some pop music data\n\nproj_pca &lt;- predict(pca)[,1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(artist = music$artist)"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#things-to-look-at",
+    "href": "schedule/slides/24-pca-intro.html#things-to-look-at",
+    "title": "UBC Stat406 2023W",
+    "section": "Things to look at",
+    "text": "Things to look at\n\npca$rotation[, 1:2]\n\n                         PC1         PC2\ndanceability      0.04471011 -0.58094113\nenergy            0.55810688  0.01925442\nloudness          0.54041747 -0.08353013\nspeechiness      -0.29564125 -0.43826345\nacousticness     -0.51350014 -0.08720133\ninstrumentalness -0.01133137  0.37264684\nliveness          0.00407531  0.18482527\nvalence           0.20793154 -0.53146441\n\npca$sdev\n\n[1] 1.6226985 1.3431762 1.0699165 0.9563693 0.7685220 0.6750828 0.5426974\n[8] 0.4030887\n\npca$sdev^2 / sum(pca$sdev^2)\n\n[1] 0.32914381 0.22551528 0.14309016 0.11433029 0.07382825 0.05696709 0.03681505\n[8] 0.02031006"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#plotting-the-weights",
+    "href": "schedule/slides/24-pca-intro.html#plotting-the-weights",
+    "title": "UBC Stat406 2023W",
+    "section": "Plotting the weights",
+    "text": "Plotting the weights\n\n\nCode\npca$rotation[, 1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(feature = names(X)) |&gt;\n  pivot_longer(-feature) |&gt;\n  ggplot(aes(value, feature, fill = feature)) +\n  facet_wrap(~name) +\n  geom_col() +\n  theme(legend.position = \"none\", axis.title = element_blank()) +\n  scale_fill_brewer(palette = \"Dark2\") +\n  geom_vline(xintercept = 0)"
   },
   {
     "objectID": "schedule/slides/22-nnets-estimation.html#meta-lecture",
@@ -4253,7 +4281,7 @@
     "href": "schedule/slides/25-pca-issues.html#meta-lecture",
     "title": "UBC Stat406 2023W",
     "section": "25 Principal components, the troubles",
-    "text": "25 Principal components, the troubles\nStat 406\nDaniel J. McDonald\nLast modified – 01 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "text": "25 Principal components, the troubles\nStat 406\nDaniel J. McDonald\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/25-pca-issues.html#pca",
@@ -4338,6 +4366,27 @@
     "title": "UBC Stat406 2023W",
     "section": "Basic semi-supervised (see [ISLR 6.3.1])",
     "text": "Basic semi-supervised (see [ISLR 6.3.1])\n\nYou get data \\(\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\).\nYou do something unsupervised on \\(\\X\\) to create new features (like PCA).\nYou use the learned features to find a predictor \\(\\hat{f}\\) (say, do OLS on them)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#quick-example",
+    "href": "schedule/slides/25-pca-issues.html#quick-example",
+    "title": "UBC Stat406 2023W",
+    "section": "Quick example",
+    "text": "Quick example\n\nmusic &lt;- Stat406::popmusic_train\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE)\nZ &lt;- predict(pca)[, 1:2]\nZgrid &lt;- expand.grid(\n  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), \n  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)\n)\nout &lt;- class::knn(Z, Zgrid, music$artist, k = 6)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#why",
+    "href": "schedule/slides/25-pca-issues.html#why",
+    "title": "UBC Stat406 2023W",
+    "section": "Why?",
+    "text": "Why?\nRecall that for nonparametric regression, we must deal with the curse of dimensionality.\n\nThis did KNN in 2 dimensions instead of 8: less curse\nHowever, the dimensions were learned independently of \\(\\y\\): may not be helpful\nThere’s a bias-variance tradeoff here…"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "href": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "title": "UBC Stat406 2023W",
+    "section": "What is PCA / KPCA estimating?",
+    "text": "What is PCA / KPCA estimating?\nImagine that the Population data lie near a low-dimensional linear manifold…\n\nThink of the spiral. (1D manifold in 2D space)\nOr a flat piece of paper (2D manifold in 3D space)\n\nPCA / KPCA are estimating the manifold.\n\nThis works well under some conditions\nAnd if it’s true, then we have reduced variance but added a bit of bias\nAnd the downstream method may work better, because there are fewer predictors.\n\nWe just need the data near the manifold. But if not, then we introduced a lot of bias.\nPCA estimates linear manifolds, KPCA estimates non-linear"
   },
   {
     "objectID": "schedule/slides/27-kmeans.html#meta-lecture",

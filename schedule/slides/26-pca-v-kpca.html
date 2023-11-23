@@ -397,7 +397,7 @@
 <h2>26 PCA v KPCA</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 01 November 2023</p>
+<p>Last modified – 23 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -577,6 +577,69 @@
 <li>But should be the “same” (assuming I didn’t screw up…)</li>
 <li>Would also allow me to get the loadings, though they’d depend on polynomials</li>
 </ul>
+</section>
+<section id="other-manifold-learning-methods" class="slide level2">
+<h2>Other manifold learning methods</h2>
+<p>To name a few</p>
+<ul>
+<li>Hessian maps</li>
+<li>Laplacian eigenmaps</li>
+<li>Classical Multidimensional Scaling</li>
+<li>tSNE</li>
+<li>UMAP</li>
+<li>Locally linear embeddings</li>
+<li>Diffusion maps</li>
+<li>Local tangent space alignment</li>
+<li>Isomap</li>
+</ul>
+</section>
+<section id="issues-with-nonlinear-techniques" class="slide level2">
+<h2>Issues with nonlinear techniques</h2>
+<div class="flex">
+<div class="w-40">
+<ol type="1">
+<li>Need to choose <span class="math inline">\(M\)</span> (also with linear)</li>
+<li>Also other tuning parameters.</li>
+<li>These others can have <strong>huge</strong> effects</li>
+<li>The difference between the data lying <span class="hand">on</span> the manifold and the data lying <span class="hand">near</span> the manifold is important</li>
+</ol>
+</div>
+<div class="w-60">
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>elephant <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">eye =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb10-2"><a href="#cb10-2"></a>  tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="at">tt =</span> <span class="sc">-</span><span class="dv">100</span><span class="sc">:</span><span class="dv">500</span> <span class="sc">/</span> <span class="dv">100</span>,</span>
+<span id="cb10-4"><a href="#cb10-4"></a>    <span class="at">y =</span> <span class="sc">-</span>(<span class="dv">12</span> <span class="sc">*</span> <span class="fu">cos</span>(<span class="dv">3</span> <span class="sc">*</span> tt) <span class="sc">-</span> <span class="dv">14</span> <span class="sc">*</span> <span class="fu">cos</span>(<span class="dv">5</span> <span class="sc">*</span> tt) <span class="sc">+</span> <span class="dv">50</span> <span class="sc">*</span> <span class="fu">sin</span>(tt) <span class="sc">+</span> <span class="dv">18</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> tt)),</span>
+<span id="cb10-5"><a href="#cb10-5"></a>    <span class="at">x =</span> <span class="sc">-</span><span class="dv">30</span> <span class="sc">*</span> <span class="fu">sin</span>(tt) <span class="sc">+</span> <span class="dv">8</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> tt) <span class="sc">-</span> <span class="dv">10</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">3</span> <span class="sc">*</span> tt) <span class="sc">-</span> <span class="dv">60</span> <span class="sc">*</span> <span class="fu">cos</span>(tt)</span>
+<span id="cb10-6"><a href="#cb10-6"></a>  )</span>
+<span id="cb10-7"><a href="#cb10-7"></a>  <span class="cf">if</span> (eye) tib <span class="ot">&lt;-</span> <span class="fu">add_row</span>(tib, <span class="at">y =</span> <span class="dv">20</span>, <span class="at">x =</span> <span class="dv">20</span>)</span>
+<span id="cb10-8"><a href="#cb10-8"></a>  tib</span>
+<span id="cb10-9"><a href="#cb10-9"></a>}</span>
+<span id="cb10-10"><a href="#cb10-10"></a>ele <span class="ot">&lt;-</span> <span class="fu">elephant</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb10-11"><a href="#cb10-11"></a>noisy_ele <span class="ot">&lt;-</span> ele <span class="sc">|&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>  <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="dv">0</span>, <span class="dv">5</span>), <span class="at">x =</span> x <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="dv">0</span>, <span class="dv">5</span>))</span>
+<span id="cb10-13"><a href="#cb10-13"></a><span class="fu">ggplot</span>(noisy_ele, <span class="fu">aes</span>(x, y, <span class="at">colour =</span> tt)) <span class="sc">+</span> </span>
+<span id="cb10-14"><a href="#cb10-14"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb10-15"><a href="#cb10-15"></a>  <span class="fu">scale_color_viridis_c</span>() <span class="sc">+</span> </span>
+<span id="cb10-16"><a href="#cb10-16"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">'none'</span>) <span class="sc">+</span></span>
+<span id="cb10-17"><a href="#cb10-17"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> ele, <span class="at">colour=</span><span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="26-pca-v-kpca_files/figure-revealjs/unnamed-chunk-10-1.svg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="next-time" class="title-slide slide level1 center">
+<h1>Next time…</h1>
+<p>Clustering</p>
 
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>

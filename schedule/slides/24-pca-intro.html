@@ -397,7 +397,7 @@
 <h2>24 Principal components, introduction</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 01 November 2023</p>
+<p>Last modified – 23 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -553,7 +553,7 @@ Transform <span class="math inline">\(\mathbf{X}\in \R^{n\times p}\)</span> into
 <ol type="1">
 <li>Center (+scale?) the data matrix <span class="math inline">\(\X\)</span></li>
 <li>Compute the SVD of <span class="math inline">\(\X = \U\D \V^\top\)</span> or <span class="math inline">\(\X\X^\top = \U\D^2\U^\top\)</span> or <span class="math inline">\(\X^\top \X = \V\D^2 \V^\top\)</span></li>
-<li>Return <span class="math inline">\(\U_M\D_M\)</span>, where <span class="math inline">\(\D_M\)</span> is the largest <span class="math inline">\(M\)</span> eigenvalues of <span class="math inline">\(\X\)</span></li>
+<li>Return <span class="math inline">\(\U_M\D_M\)</span>, where <span class="math inline">\(\D_M\)</span> is the largest <span class="math inline">\(M\)</span> singular values of <span class="math inline">\(\X\)</span></li>
 </ol>
 </section>
 <section id="pca-2" class="slide level2">
@@ -564,7 +564,7 @@ Transform <span class="math inline">\(\mathbf{X}\in \R^{n\times p}\)</span> into
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>s <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
 <span id="cb1-2"><a href="#cb1-2"></a>tib <span class="ot">&lt;-</span> <span class="fu">rbind</span>(X, s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d), s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="fu">c</span>(s<span class="sc">$</span>d[<span class="dv">1</span>], <span class="dv">0</span>)))</span>
 <span id="cb1-3"><a href="#cb1-3"></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">x1 =</span> tib[,<span class="dv">1</span>], <span class="at">x2 =</span> tib[,<span class="dv">2</span>], </span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">x1 =</span> tib[, <span class="dv">1</span>], <span class="at">x2 =</span> tib[, <span class="dv">2</span>],</span>
 <span id="cb1-5"><a href="#cb1-5"></a>  <span class="at">name =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">each =</span> <span class="dv">20</span>)</span>
 <span id="cb1-6"><a href="#cb1-6"></a>)</span>
 <span id="cb1-7"><a href="#cb1-7"></a>plotter <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">set =</span> <span class="dv">1</span>, <span class="at">main =</span> <span class="st">"original"</span>) {</span>
@@ -577,11 +577,11 @@ Transform <span class="math inline">\(\mathbf{X}\in \R^{n\times p}\)</span> into
 <span id="cb1-14"><a href="#cb1-14"></a>    <span class="fu">ggtitle</span>(main)</span>
 <span id="cb1-15"><a href="#cb1-15"></a>}</span>
 <span id="cb1-16"><a href="#cb1-16"></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(</span>
-<span id="cb1-17"><a href="#cb1-17"></a>  <span class="fu">plotter</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(x[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(x[<span class="dv">2</span>])), </span>
-<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">plotter</span>(<span class="dv">2</span>, <span class="st">"rotated"</span>) <span class="sc">+</span> </span>
+<span id="cb1-17"><a href="#cb1-17"></a>  <span class="fu">plotter</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(x[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(x[<span class="dv">2</span>])),</span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">plotter</span>(<span class="dv">2</span>, <span class="st">"rotated"</span>) <span class="sc">+</span></span>
 <span id="cb1-19"><a href="#cb1-19"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>((UD)[<span class="dv">1</span>] <span class="sc">==</span> (XV)[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>((UD)[<span class="dv">2</span>] <span class="sc">==</span> (XV)[<span class="dv">2</span>])),</span>
-<span id="cb1-20"><a href="#cb1-20"></a>  <span class="fu">plotter</span>(<span class="dv">3</span>, <span class="st">"rotated and projected"</span>) <span class="sc">+</span> </span>
-<span id="cb1-21"><a href="#cb1-21"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(U[<span class="dv">1</span>]<span class="sc">~</span>D[<span class="dv">1</span>] <span class="sc">==</span> (XV)[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(U[<span class="dv">2</span>]<span class="sc">~</span>D[<span class="dv">2</span>] <span class="sc">%==%</span> <span class="dv">0</span>)),</span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="fu">plotter</span>(<span class="dv">3</span>, <span class="st">"rotated and projected"</span>) <span class="sc">+</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="fu">bquote</span>(U[<span class="dv">1</span>] <span class="sc">~</span> D[<span class="dv">1</span>] <span class="sc">==</span> (XV)[<span class="dv">1</span>]), <span class="at">y =</span> <span class="fu">bquote</span>(U[<span class="dv">2</span>] <span class="sc">~</span> D[<span class="dv">2</span>] <span class="sc">%==%</span> <span class="dv">0</span>)),</span>
 <span id="cb1-22"><a href="#cb1-22"></a>  <span class="at">nrow =</span> <span class="dv">1</span></span>
 <span id="cb1-23"><a href="#cb1-23"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
@@ -611,14 +611,65 @@ Transform <span class="math inline">\(\mathbf{X}\in \R^{n\times p}\)</span> into
  $ duration_ms     : int [1:1694] 194206 194165 188496 260361 218270 210556 204852 196258 148781 225194 ...
  $ explicit        : logi [1:1694] FALSE FALSE FALSE FALSE FALSE FALSE ...</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>X <span class="ot">&lt;-</span> music <span class="sc">|&gt;</span> <span class="fu">select</span>(danceability<span class="sc">:</span>valence)</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>X <span class="ot">&lt;-</span> music <span class="sc">|&gt;</span> <span class="fu">select</span>(danceability<span class="sc">:</span>energy, loudness, speechiness<span class="sc">:</span>valence)</span>
 <span id="cb4-2"><a href="#cb4-2"></a>pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X, <span class="at">scale =</span> <span class="cn">TRUE</span>) <span class="do">## DON'T USE princomp()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="pca-on-some-pop-music-data-1" class="slide level2">
 <h2>PCA on some pop music data</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>proj_pca <span class="ot">&lt;-</span> <span class="fu">predict</span>(pca)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="fu">mutate</span>(<span class="at">artist =</span> music<span class="sc">$</span>artist)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
-<img data-src="24-pca-intro_files/figure-revealjs/pca-music-plot-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
+<section id="things-to-look-at" class="slide level2">
+<h2>Things to look at</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                         PC1         PC2
+danceability      0.04471011 -0.58094113
+energy            0.55810688  0.01925442
+loudness          0.54041747 -0.08353013
+speechiness      -0.29564125 -0.43826345
+acousticness     -0.51350014 -0.08720133
+instrumentalness -0.01133137  0.37264684
+liveness          0.00407531  0.18482527
+valence           0.20793154 -0.53146441</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>pca<span class="sc">$</span>sdev</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.6226985 1.3431762 1.0699165 0.9563693 0.7685220 0.6750828 0.5426974
+[8] 0.4030887</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.32914381 0.22551528 0.14309016 0.11433029 0.07382825 0.05696709 0.03681505
+[8] 0.02031006</code></pre>
+</div>
+</div>
+</section>
+<section id="plotting-the-weights" class="slide level2">
+<h2>Plotting the weights</h2>
+<div class="cell" data-layout-align="center">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="fu">mutate</span>(<span class="at">feature =</span> <span class="fu">names</span>(X)) <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>feature) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(value, feature, <span class="at">fill =</span> feature)) <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name) <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>, <span class="at">axis.title =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="24-pca-intro_files/figure-revealjs/unnamed-chunk-7-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>When does PCA work?</p>
