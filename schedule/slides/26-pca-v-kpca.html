@@ -397,7 +397,7 @@
 <h2>26 PCA v KPCA</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 23 November 2023</p>
+<p>Last modified – 24 November 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -434,8 +434,7 @@
 <div class="flex">
 <div class="w-50">
 <p><span class="secondary">PCA:</span></p>
-<ol start="0" type="1">
-<li>Start with data.</li>
+<ol type="1">
 <li>Decompose <span class="math inline">\(\X=\U\D\V^\top\)</span> (SVD).</li>
 <li>Embed into <span class="math inline">\(M\leq p\)</span> dimensions: <span class="math display">\[\U_M \D_M = \X\V_M\]</span></li>
 </ol>
@@ -471,15 +470,14 @@
 <section id="example-not-real-unless-theres-code" class="slide level2">
 <h2>Example (not real unless there’s code)</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">data</span>(<span class="st">"mobility"</span>, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>X <span class="ot">&lt;-</span> mobility <span class="sc">%&gt;%</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">select</span>(Black<span class="sc">:</span>Married) <span class="sc">%&gt;%</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">as.matrix</span>()</span>
-<span id="cb1-5"><a href="#cb1-5"></a>not_missing <span class="ot">&lt;-</span> X <span class="sc">%&gt;%</span> <span class="fu">complete.cases</span>()</span>
-<span id="cb1-6"><a href="#cb1-6"></a>X <span class="ot">&lt;-</span> <span class="fu">scale</span>(X[not_missing, ], <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-7"><a href="#cb1-7"></a>colors <span class="ot">&lt;-</span> mobility<span class="sc">$</span>Mobility[not_missing]</span>
-<span id="cb1-8"><a href="#cb1-8"></a>M <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="co"># embedding dimension</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>P <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(X)) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="fu">nrow</span>(X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>X <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility <span class="sc">|&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">select</span>(Black<span class="sc">:</span>Married) <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">as.matrix</span>()</span>
+<span id="cb1-4"><a href="#cb1-4"></a>not_missing <span class="ot">&lt;-</span> <span class="fu">complete.cases</span>(X)</span>
+<span id="cb1-5"><a href="#cb1-5"></a>X <span class="ot">&lt;-</span> <span class="fu">scale</span>(X[not_missing, ], <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-6"><a href="#cb1-6"></a>colors <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility<span class="sc">$</span>Mobility[not_missing]</span>
+<span id="cb1-7"><a href="#cb1-7"></a>M <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="co"># embedding dimension</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>P <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(X)) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="fu">nrow</span>(X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="flex">
 <div class="w-50">
@@ -557,19 +555,18 @@
 <h2>KPCA, feature map version</h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X)</span>
-<span id="cb9-2"><a href="#cb9-2"></a>scX <span class="ot">&lt;-</span> <span class="fu">scale</span>(X)</span>
-<span id="cb9-3"><a href="#cb9-3"></a>width <span class="ot">&lt;-</span> p <span class="sc">*</span> (p <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="dv">2</span> <span class="sc">+</span> p <span class="co"># ~630</span></span>
-<span id="cb9-4"><a href="#cb9-4"></a>Z <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(X), width)</span>
-<span id="cb9-5"><a href="#cb9-5"></a>k <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>p) {</span>
-<span id="cb9-7"><a href="#cb9-7"></a>  <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span>p) {</span>
-<span id="cb9-8"><a href="#cb9-8"></a>    k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>    Z[, k] <span class="ot">&lt;-</span> X[, i] <span class="sc">*</span> X[, j]</span>
-<span id="cb9-10"><a href="#cb9-10"></a>  }</span>
-<span id="cb9-11"><a href="#cb9-11"></a>}</span>
-<span id="cb9-12"><a href="#cb9-12"></a>wideX <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">cbind</span>(X, Z))</span>
-<span id="cb9-13"><a href="#cb9-13"></a>s <span class="ot">&lt;-</span> RSpectra<span class="sc">::</span><span class="fu">svds</span>(wideX, <span class="dv">2</span>) <span class="co"># the whole svd would be super slow</span></span>
-<span id="cb9-14"><a href="#cb9-14"></a>fkpca_scores <span class="ot">&lt;-</span> s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-2"><a href="#cb9-2"></a>width <span class="ot">&lt;-</span> p <span class="sc">*</span> (p <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="dv">2</span> <span class="sc">+</span> p <span class="co"># = 630</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>Z <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="cn">NA</span>, <span class="fu">nrow</span>(X), width)</span>
+<span id="cb9-4"><a href="#cb9-4"></a>k <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>p) {</span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span>p) {</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>    Z[, k] <span class="ot">&lt;-</span> X[, i] <span class="sc">*</span> X[, j]</span>
+<span id="cb9-9"><a href="#cb9-9"></a>  }</span>
+<span id="cb9-10"><a href="#cb9-10"></a>}</span>
+<span id="cb9-11"><a href="#cb9-11"></a>wideX <span class="ot">&lt;-</span> <span class="fu">scale</span>(<span class="fu">cbind</span>(X, Z))</span>
+<span id="cb9-12"><a href="#cb9-12"></a>s <span class="ot">&lt;-</span> RSpectra<span class="sc">::</span><span class="fu">svds</span>(wideX, <span class="dv">2</span>) <span class="co"># the whole svd would be super slow</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a>fkpca_scores <span class="ot">&lt;-</span> s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <ul>
 <li>Unfortunately, can’t easily compare to check whether the result is the same</li>
@@ -620,11 +617,11 @@
 <span id="cb10-10"><a href="#cb10-10"></a>ele <span class="ot">&lt;-</span> <span class="fu">elephant</span>(<span class="cn">FALSE</span>)</span>
 <span id="cb10-11"><a href="#cb10-11"></a>noisy_ele <span class="ot">&lt;-</span> ele <span class="sc">|&gt;</span></span>
 <span id="cb10-12"><a href="#cb10-12"></a>  <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="dv">0</span>, <span class="dv">5</span>), <span class="at">x =</span> x <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="dv">0</span>, <span class="dv">5</span>))</span>
-<span id="cb10-13"><a href="#cb10-13"></a><span class="fu">ggplot</span>(noisy_ele, <span class="fu">aes</span>(x, y, <span class="at">colour =</span> tt)) <span class="sc">+</span> </span>
-<span id="cb10-14"><a href="#cb10-14"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb10-15"><a href="#cb10-15"></a>  <span class="fu">scale_color_viridis_c</span>() <span class="sc">+</span> </span>
-<span id="cb10-16"><a href="#cb10-16"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">'none'</span>) <span class="sc">+</span></span>
-<span id="cb10-17"><a href="#cb10-17"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> ele, <span class="at">colour=</span><span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-13"><a href="#cb10-13"></a><span class="fu">ggplot</span>(noisy_ele, <span class="fu">aes</span>(x, y, <span class="at">colour =</span> tt)) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>  <span class="fu">scale_color_viridis_c</span>() <span class="sc">+</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb10-17"><a href="#cb10-17"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> ele, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
