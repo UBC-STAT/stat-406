@@ -16,7 +16,6 @@ metadata-files:
 
 [PCA:]{.secondary}
 
-0. Start with data.
 1. Decompose $\X=\U\D\V^\top$ (SVD). 
 2. Embed into $M\leq p$ dimensions: 
 $$\U_M \D_M = \X\V_M$$
@@ -69,13 +68,12 @@ This is the equation for an eigenproblem. The solution is $\alpha=\V_1$ and the 
 ## Example (not real unless there's code)
 
 ```{r}
-data("mobility", package = "Stat406")
-X <- mobility %>%
-  select(Black:Married) %>%
+X <- Stat406::mobility |>
+  select(Black:Married) |>
   as.matrix()
-not_missing <- X %>% complete.cases()
+not_missing <- complete.cases(X)
 X <- scale(X[not_missing, ], center = TRUE, scale = TRUE)
-colors <- mobility$Mobility[not_missing]
+colors <- Stat406::mobility$Mobility[not_missing]
 M <- 2 # embedding dimension
 P <- diag(nrow(X)) - 1 / nrow(X)
 ```
@@ -141,9 +139,9 @@ kpca_sigmoid <- U %*% D
 pca <- tibble(score1 = pca_scores[, 1], score2 = pca_scores[, 2], colors = colors)
 kpca_poly <- tibble(score1 = kpca_poly[, 1], score2 = kpca_poly[, 2], colors = colors)
 kpca_sigmoid <- tibble(score1 = kpca_sigmoid[, 1], score2 = kpca_sigmoid[, 2], colors = colors)
-bind_rows(pca = pca, kpca_poly = kpca_poly, kpca_sigmoid = kpca_sigmoid, .id = "method") %>%
+bind_rows(pca = pca, kpca_poly = kpca_poly, kpca_sigmoid = kpca_sigmoid, .id = "method") |>
   ggplot(aes(score1, score2, color = colors)) +
-  facet_wrap(~method, scales = "free") +
+  facet_wrap(~ method, scales = "free") +
   theme(legend.position = "bottom") +
   guides(color = guide_colorbar(barwidth = unit(.5, "npc"))) +
   scale_color_viridis_c(name = "Mobility") +
@@ -168,8 +166,7 @@ head(round(pca_loadings, 2), 10)
 
 ```{r, echo=TRUE, eval=FALSE}
 p <- ncol(X)
-scX <- scale(X)
-width <- p * (p - 1) / 2 + p # ~630
+width <- p * (p - 1) / 2 + p # = 630
 Z <- matrix(NA, nrow(X), width)
 k <- 0
 for (i in 1:p) {
@@ -234,11 +231,11 @@ elephant <- function(eye = TRUE) {
 ele <- elephant(FALSE)
 noisy_ele <- ele |>
   mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))
-ggplot(noisy_ele, aes(x, y, colour = tt)) + 
-  geom_point() + 
-  scale_color_viridis_c() + 
-  theme(legend.position = 'none') +
-  geom_path(data = ele, colour="black", linewidth = 2)
+ggplot(noisy_ele, aes(x, y, colour = tt)) +
+  geom_point() +
+  scale_color_viridis_c() +
+  theme(legend.position = "none") +
+  geom_path(data = ele, colour = "black", linewidth = 2)
 ```
 
 :::
