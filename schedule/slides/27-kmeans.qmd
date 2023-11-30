@@ -96,7 +96,7 @@ that has the smallest value for
 $$\sum_{k=1}^K W(C_k)$$
 
 
-It turns out that [1.]{.tertiary} is difficult to do in a
+It turns out that [1.]{.secondary} is difficult to do in a
 principled way.
 
 
@@ -130,19 +130,23 @@ where $|C_k|$ is the number of points in $C_k$, and $\overline{x}$ is
 the grand mean
 
 ::: flex
-::: w-50
+::: w-30
 $W$ `r fa("arrow-down",fill=green)` when $K$ `r fa("arrow-up",fill=blue)`
 :::
-::: w-50
+::: w-30
 $B$ `r fa("arrow-up",fill=blue)` when $K$ `r fa("arrow-up",fill=blue)`
 :::
+::: w-30
+$B/K$ `r fa("arrow-down",fill=blue)` when $K$ `r fa("arrow-up",fill=blue)`
+:::
+
 :::
 
 
 
 ## CH index  
 
-> Want small $W$ and big $B$
+> Want small $W$, big $B/K$
 
 $$\textrm{CH}(K) = \frac{B(K)/(K-1)}{W(K)/(n-K)}$$ 
 
@@ -155,7 +159,8 @@ $$\widehat K = \argmax_{K \in \{ 2,\ldots, K_{\max} \}} CH(K).$$
 
 
 ::: callout-note
-CH is undefined for $K =1$
+* CH is undefined for $K = 1$. 
+* The divisors $(K-1)$ and $(n-K)$ scale $B$ and $W$ appropriately.
 :::
 
 
@@ -177,7 +182,7 @@ clust <- tibble(
   x1 = clust_raw[, 1], x2 = clust_raw[, 2],
   true = as.factor(rep(1:3, times = c(50, 40, 40)))
 )
-clust %>% ggplot(aes(x = x1, y = x2, color = true)) +
+clust |> ggplot(aes(x = x1, y = x2, color = true)) +
   geom_point(size = 2) +
   scale_colour_manual(values = c(blue, orange, green)) +
   theme(legend.position = "none")
@@ -197,11 +202,16 @@ N <- nrow(clust_raw)
 all_clusters <- map(K, ~ kmeans(clust_raw, .x, nstart = 20))
 all_assignments <- map_dfc(all_clusters, "cluster")
 names(all_assignments) <- paste0("K = ", K)
-summaries <- map_dfr(all_clusters, `[`, c("tot.withinss", "betweenss")) %>%
-  rename(W = tot.withinss, B = betweenss) %>%
-  mutate(K = K, `CH index` = (B / (K - 1)) / (W / (N - K)))
-summaries %>%
-  pivot_longer(-K) %>%
+summaries <- map_dfr(all_clusters, `[`, c("tot.withinss", "betweenss")) |>
+  rename(W = tot.withinss, B = betweenss) |>
+  mutate(
+    K = K,
+    `W / (N - K)` = W / (N - K),
+    `B / K` = B / (K - 1), 
+    `CH index` = `B / K` / `W / (N - K)`
+  )
+summaries |>
+  pivot_longer(-K) |>
   ggplot(aes(K, value)) +
   geom_line(color = blue, linewidth = 2) +
   ylab("") +
@@ -215,16 +225,16 @@ summaries %>%
 ```{r, echo=FALSE,fig.align='center',fig.width=10,fig.height=6}
 small_assignments <- all_assignments[, c(1, 2, 3, 4, 9, 14, 19, 29)]
 nums <- as.character(1:30)
-bind_cols(small_assignments, clust) %>%
-  mutate(across(starts_with("K = "), factor)) %>%
-  pivot_longer(-starts_with("x")) %>%
+bind_cols(small_assignments, clust) |>
+  mutate(across(starts_with("K = "), factor)) |>
+  pivot_longer(-starts_with("x")) |>
   mutate(value = fct_relevel(
     value, "1", "30", "29", "28", "27", "26", "10",
     "5", "25", "24", "23", "22", "21", "9",
     "3", "20", "19", "18", "17", "16", "8",
     "4", "15", "14", "13", "12", "11", "7",
     "2", "6"
-  )) %>%
+  )) |>
   ggplot(aes(x1, x2, color = value)) +
   geom_point() +
   facet_wrap(~ factor(
@@ -248,7 +258,7 @@ centers <- as_tibble(km$centers, .name_repair = "unique")
 
 ```{r, echo=FALSE, fig.align='center',fig.width=10,fig.height=3}
 names(centers) <- c("x1", "x2")
-bind_cols(clust, est = factor(km$cluster)) %>%
+bind_cols(clust, est = factor(km$cluster)) |>
   ggplot(aes(x1, x2)) +
   geom_point(aes(color = est), size = 2) +
   geom_point(data = centers, size = 10, pch = "😀") +
