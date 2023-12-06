@@ -5,18 +5,20 @@ title: Guide for setting up the course infrastructure
 
 _Version 2023_
 
-This guide (hopefully) gives enough instructions for recreating new iterations of Stat 406.
+This guide (hopefully) gives enough instructions for recreating new iterations 
+of Stat 406.
 
-## Github Org
+# Github Org
 
-### Create a GitHub.com organization
+## Create a GitHub.com organization
 
 * This is free for faculty with instructor credentials.
-* Allows more comprehensive GitHub actions, PR templates and CODEOWNER behaviour than the UBC Enterprise version
+* Allows more comprehensive GitHub actions, PR templates and CODEOWNER behaviour
+than the UBC Enterprise version (last I checked)
 * Downside is getting students added (though we include R scripts for this)
 
-Once done, go to <https://github.com/watching>. Click the Red Down arrow "Unwatch all". Then select this Org.
-The TAs should do the same.
+Once done, go to <https://github.com/watching>. Click the Red Down arrow 
+"Unwatch all". Then select this Org. The TAs should do the same.
 
 ### Permissions and structure
 
@@ -43,58 +45,62 @@ Workflow permissions: Read and write permissions.
 * 2 teams, one for the TAs and one for the students
 * You must then manually add the teams to any repos they should access
 
-I generally give the TAs "Write" permission, and the students "Read" permission with some exceptions.
-See the Repos section below.
+I generally give the TAs "Write" permission, and the students "Read" permission
+with some exceptions. See the Repos section below.
 
 ## Repos
 
-There are typically about 10 repositories. Homeworks and Labs each have 3 with very similar behaviours. 
+There are typically about 10 repositories. Homeworks and Labs each have 3 with
+very similar behaviours. 
 
-Be careful copying directories. All of them have hidden files and folders, e.g. `.git`.
-Of particular importance are the `.github` directories which contain PR templates and GitHub Actions.
-Also relevant are the `.Rprofile` files which try to override Student Language settings and avoid unprintible
-markdown characters.
+Be careful copying directories. All of them have hidden files and folders, e.g.
+`.git`. Of particular importance are the `.github` directories which contain PR
+templates and GitHub Actions. Also relevant are the `.Rprofile` files which try
+to override Student Language settings and avoid unprintible markdown characters.
 
 ### Homeworks
 
 #### homework-solutions
 
-This is where most of the work happens. My practice is to create the homework solutions first.
-I edit these (before school starts) until I'm happy. I then duplicate the file and remove the answers.
-The result is `hwxx-instructions.Rmd`. The `.gitignore` file should ignore all of the solutions
-and commmit only the instructions. Then, about 1 week after the deadline, I adjust the `.gitignore` and push
-the solution files.
+This is where most of the work happens. My practice is to create the homework 
+solutions first. I edit these (before school starts) until I'm happy. I then 
+duplicate the file and remove the answers. The result is 
+`hwxx-instructions.Rmd`. The `.gitignore` file should ignore all of the solutions
+and commit only the instructions. Then, about 1 week after the deadline, I 
+adjust the `.gitignore` and push the solution files.
 
 * Students have Read permission.
 * TAs have Write permission.
-* The `preamble.tex` file is common to HWs and Labs. It creates a lavender box where the solution will go. 
-This makes life easy for the TAs.
+* The `preamble.tex` file is common to HWs and Labs. It creates a lavender box 
+where the solution will go. This makes life easy for the TAs.
 
 #### homework-solutions-private
 
-Exactly the same as `homework-solutions` except that all solutions are available from the beginning for TA
-access. To create this, after I'm satisfied with `homework-solutions` I copy all files (not the directory)
-into a new directory, `git init` then upload to the org. The students never have permission here.
+Exactly the same as `homework-solutions` except that all solutions are available
+from the beginning for TA access. To create this, after I'm satisfied with 
+`homework-solutions` I copy all files (not the directory) into a new directory,
+`git init` then upload to the org. The students never have permission here.
 
 #### homework-template
 
-This is a "template repo" used for creating student specific `homework-studentgh` repos (using the setup
-scripts). 
+This is a "template repo" used for creating student specific `homework-studentgh`
+repos (using the setup scripts). 
 
-_Very Important_: copy the `hwxx-instructions` files over to a new directory. Do NOT copy the directory
-or you'll end up with the solutions visible to the students.
+_Very Important_: copy the `hwxx-instructions` files over to a new directory. Do
+NOT copy the directory or you'll end up with the solutions visible to the students.
 
-Then rename `hwxx-instructions.Rmd` to `hwxx.Rmd`. Now the students have a `.pdf` with instructions, and
-a template `.Rmd` to work on.
+Then rename `hwxx-instructions.Rmd` to `hwxx.Rmd`. Now the students have a 
+`.pdf` with instructions, and a template `.Rmd` to work on.
 
 Other important tasks:
-* The `.gitignore` is more elaborate in an attempt to avoid students pushing junk into these repos.
-* The `.github` directory contains 3 files: `CODEOWNERS` begins as an empty doc which will be populated with 
-the assigned grader later; `pull_request_template.md` is used for all HW
-submission PRs; `workflows`
-contains a GH-action to comment on the PR with the date+time when the PR is opened.
-* Under Settings > General, select "Template repository". This makes it easier to duplicate to the student
-repos.
+* The `.gitignore` is more elaborate in an attempt to avoid students pushing 
+junk into these repos.
+* The `.github` directory contains 3 files: 
+  - `CODEOWNERS` begins as an empty doc which will be populated with the assigned grader later;
+  - `pull_request_template.md` is used for all HW submission PRs; 
+  - `workflows` contains a GH-action to comment on the PR with the date+time when the PR is opened.
+* Under Settings > General, select "Template repository". This makes it easier 
+to duplicate to the student repos.
 
 ### Labs
 
@@ -130,40 +136,47 @@ and a link to the PR. If everything is configured properly, it should run automa
 every night.
 
 * Only the TAs should have access.
-* Under Settings > Secrets and Variables > Actions you must add a "Repository Secret". This should be
-a GitHub Personal Access Token created in your account (Settings > Developer settings > Tokens (classic)). 
-It needs Repo, Workflow, and Admin:Org permissions. I set it to expire at the end of the course. I use
+* Under Settings > Secrets and Variables > Actions you must add a "Repository 
+Secret". This should be a GitHub Personal Access Token created in your account 
+(Settings > Developer settings > Tokens (classic)). It needs Repo, Workflow, and
+Admin:Org permissions. I set it to expire at the end of the course. I use
 it only for this purpose (rather than my other tokens for typical logins).
 
 ### `.github` / `.github-private`
 
-These contains a README that gives some basic information about the available repos and the course.
-It's visible Publically, and appears on the Org homepage for all to see. The `.github-private`
-has the same function, but applies only to Org members.
+These contains a README that gives some basic information about the available 
+repos and the course.
+
+It's visible Publically, and appears on the Org homepage for all to see. The 
+`.github-private` has the same function, but applies only to Org members.
 
 ### `bakeoff-bakeoff`
 
-This is for the bonus for HW4. Both TAs and Students have access. I put the TA team as CODEOWNERS and 
-protect the `main` branch (Settings > Branches > Branch Protection Rules). Here, we "Require approvals" 
+This is for the bonus for HW4. Both TAs and Students have access. I put the 
+TA team as CODEOWNERS and protect the `main` branch 
+(Settings > Branches > Branch Protection Rules). Here, we "Require approvals" 
 and "Require Review from Code Owners".
 
 
-## R package
+# R package
 
-This is hosted at <https://github.com/ubc-stat/stat-406-rpackage/>. The main purposes are:
+This is hosted at <https://github.com/ubc-stat/stat-406-rpackage/>. The main 
+purposes are:
 
-1. Documentation of datasets used in class, homework, and labs (if not in other R packages)
+1. Documentation of datasets used in class, homework, and labs (if not in other
+R packages)
 2. Provide a few useful functions.
 3. Install all the packages the students need at once, and try to compile LaTeX. 
 
-Package requirements are done manually, unfortunately. Typically, I'll open the various projects 
-in RStudio and run `sort(unique(renv::dependencies()$Package))`. It's not infallible, but works
-well.
+Package requirements are done manually, unfortunately. Typically, I'll open the
+various projects in RStudio and run `sort(unique(renv::dependencies()$Package))`. 
+It's not infallible, but works well.
 
-All necessary packages should go in "Suggests:" in the `DESCRIPTION`. This avoids build errors.
-Note that install via `remotes::install_github()` then requires `dependencies = TRUE`.
+All necessary packages should go in "Suggests:" in the `DESCRIPTION`. This 
+avoids build errors. Note that install via `remotes::install_github()` then 
+requires `dependencies = TRUE`.
 
-## Worksheets
+# Worksheets
 
 These are derived from Matías's Rmd notes from 2018. They haven't been updated much. 
 
@@ -179,60 +192,69 @@ Note that there is a GHaction that automatically renders the book from source an
 to version control.
 
 
-## Course website / lectures
+# Course website / lectures
 
 
 
-## `{ghclass}` package
+# `{ghclass}` package
 
 
-## Canvas
+# Canvas
 
-I use a the shell provided by FoS.
+I use the shell provided by FoS.
 
 Nothing else goes here, but you have to update all the links.
 
 Two Canvas Quizzes:
-* Quiz 0 collects GitHub accounts, ensures that students read the syllabus. Due in Week 1.
+* Quiz 0 collects GitHub accounts, ensures that students read the syllabus. 
+Due in Week 1.
 * Final Exam is the final
-* I usually record lectures (automatically) using the classroom tech that automatically
-uploads.
+* I usually record lectures (automatically) using the classroom tech that 
+automatically uploads.
 * Update the various links on the Homepage.
 
-## Slack
+# Slack
 
 * Set up a free Org. Invite link gets posted to Canvas.
 * I add `@students.ubc.ca`, `@ubc.ca`, `@stat.ubc.ca` to the whitelist. 
 * I also post the invite on Canvas.
-* Create channels before people join. That way you can automatically add everyone to channels
-all at once. I do one for each module, 1 for code/github, 1 for mechanics. + 1 for the TAs (private)
+* Create channels before people join. That way you can automatically add 
+everyone to channels all at once. I do one for each module, 1 for code/github, 
+1 for mechanics. + 1 for the TAs (private)
 * Click through all the settings. It's useful to adjust these a bit.
+* I find it helpful to block posting in #general. So announcements can go there.
+* Once a Module is complete, I would like to archive the relevant channel. The
+goal being to avoid posting to the wrong place. However, then the students 
+won't know how to find it. A tradeoff I haven't solved.
 
-
-## Clickers
+# Clickers
 
 See <https://lthub.ubc.ca/guides/iclicker-cloud-instructor-guide/>
 
 I only use "Polling" no "Quizzing" and no "Attendance"
 
-* In clicker Settings > Polling > Sharing. Turn off the Sending (to avoid students doing it at home)
+* In clicker Settings > Polling > Sharing. Turn off the Sending (to avoid 
+students doing it at home)
 * No participation points.
 * 2 points for correct, 2 for answering.
-* Integrations > Set this up with Canvas. Sync the roster. You'll likely have to repeat this near the Add/Drop Deadline.
+* Integrations > Set this up with Canvas. Sync the roster. You'll likely have 
+to repeat this near the Add/Drop Deadline.
 * I only sync the total, since I'll recalibrate later.
 
 # Before Day 1
 
 * Ensure the above are all created.
-* Create a `labs-yourusername` from the `labs-template` repo (for the Version Control Lecture)
+* Create a `labs-yourusername` from the `labs-template` repo (for the Version 
+Control Lecture)
 * Double check links on the Canvas site (including the Slack invite)
-* Deal with any announcements
-* Add "notes" to the Canvas gradebook. This is a good place to put the ghusername:
-Grades > Gear (settings) > View Options > Notes.
+* Deal with any Canvas announcements
+* Add "notes" to the Canvas gradebook. This is a good place to put the 
+ghusername: Grades > Gear (settings) > View Options > Notes.
 
 # Populate the Org
 
-Once students start taking the quiz, use the scripts in `gh-class-management` to begin
+Once students start taking the quiz, use the scripts in `gh-class-management` 
+to begin
 1. Inviting students to GitHub (they must accept the invitation). Announce this!!!
 2. Adding those that accept to the "students" team.
   
