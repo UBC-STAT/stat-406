@@ -108,16 +108,17 @@ Same thing in `ggplot`
 #| fig-width: 8
 #| fig-height: 3.5
 stuff <- tibble(
-  residuals = residuals(full), 
+  residuals = residuals(full),
   fitted = fitted(full),
   stdresiduals = rstandard(full)
 )
 ggplot(stuff, aes(fitted, residuals)) +
   geom_point(colour = "salmon") +
   geom_smooth(
-    se = FALSE, 
-    colour = "steelblue", 
-    linewidth = 2) +
+    se = FALSE,
+    colour = "steelblue",
+    linewidth = 2
+  ) +
   ggtitle("Residuals vs Fitted")
 ```
 
@@ -129,9 +130,10 @@ ggplot(stuff, aes(sample = stdresiduals)) +
   geom_qq(colour = "purple", size = 2) +
   geom_qq_line(colour = "peachpuff", linewidth = 2) +
   labs(
-    x = "Theoretical quantiles", 
+    x = "Theoretical quantiles",
     y = "Standardized residuals",
-    title = "Normal Q-Q")
+    title = "Normal Q-Q"
+  )
 ```
 
 
@@ -140,12 +142,15 @@ ggplot(stuff, aes(sample = stdresiduals)) +
 ```{r}
 reduced <- lm(
   Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +
-    Manufacturing + Migration_in + Religious + Single_mothers, 
-  data = train)
+    Manufacturing + Migration_in + Religious + Single_mothers,
+  data = train
+)
 
 summary(reduced)$coefficients |> as_tibble()
 
-reduced |> broom::glance() |> print(width = 120)
+reduced |>
+  broom::glance() |>
+  print(width = 120)
 ```
 
 
@@ -178,8 +183,9 @@ plot(reduced, 2)
 
 ```{r}
 map( # smaller AIC is better
-  list(full = full, reduced = reduced), 
-  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq))
+  list(full = full, reduced = reduced),
+  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq)
+)
 ```
 
 * Use both models to predict `Mobility` 
@@ -191,16 +197,16 @@ map( # smaller AIC is better
 ::: w-50
 
 ```{r}
-mses <- function(preds, obs) {
-  round(mean((obs - preds)^2), 5)
-}
+mses <- function(preds, obs) round(mean((obs - preds)^2), 5)
 c(
   full = mses(
-    predict(full, newdata = test), 
-    test$Mobility),
+    predict(full, newdata = test),
+    test$Mobility
+  ),
   reduced = mses(
-    predict(reduced, newdata = test), 
-    test$Mobility)
+    predict(reduced, newdata = test),
+    test$Mobility
+  )
 )
 ```
 
@@ -211,15 +217,15 @@ c(
 #| code-fold: true
 test$full <- predict(full, newdata = test)
 test$reduced <- predict(reduced, newdata = test)
-test |> 
+test |>
   select(Mobility, full, reduced) |>
   pivot_longer(-Mobility) |>
-  ggplot(aes(Mobility, value)) + 
-  geom_point(color = "orange") + 
+  ggplot(aes(Mobility, value)) +
+  geom_point(color = "orange") +
   facet_wrap(~name, 2) +
-  xlab('observed mobility') + 
-  ylab('predicted mobility') +
-  geom_abline(slope = 1, intercept = 0, col = "darkblue")
+  xlab("observed mobility") +
+  ylab("predicted mobility") +
+  geom_abline(slope = 1, intercept = 0, colour = "darkblue")
 ```
 
 :::
@@ -232,6 +238,3 @@ test |>
 [Module 1]{.secondary .large}
 
 Selecting models
-
-
-
