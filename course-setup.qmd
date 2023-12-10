@@ -98,7 +98,8 @@ junk into these repos.
 * The `.github` directory contains 3 files: 
   - `CODEOWNERS` begins as an empty doc which will be populated with the assigned grader later;
   - `pull_request_template.md` is used for all HW submission PRs; 
-  - `workflows` contains a GH-action to comment on the PR with the date+time when the PR is opened.
+  - `workflows` contains a GH-action to comment on the PR with the date+time
+  when the PR is opened.
 * Under Settings > General, select "Template repository". This makes it easier 
 to duplicate to the student repos.
 
@@ -124,16 +125,23 @@ This contains the complete set of clicker questions.
 
 Answers are hidden in comments on the presentation.
 
-I release them incrementally after each module (copying over from my clicker deck).
+I release them incrementally after each module (copying over from my clicker
+deck).
+
+### practice-final
+
+Contains a length practice exam as well as solutions. I usually only post this
+during the last week of class.
 
 ### open-pr-log
 
-This contains a some GitHub actions to automatically keep track of open PRs for the TAs.
+This contains a some GitHub actions to automatically keep track of open PRs for
+the TAs.
 
-It's still in testing phase, but should work properly. It will create two markdown docs, 
-1 for labs and 1 for homework. Each shows the assigned TA, the date the PR was opened, 
-and a link to the PR. If everything is configured properly, it should run automatically at 3am
-every night.
+It's still in testing phase, but should work properly. It will create two 
+markdown docs, 1 for labs and 1 for homework. Each shows the assigned TA, the
+date the PR was opened, and a link to the PR. If everything is configured
+properly, it should run automatically at 3am every night.
 
 * Only the TAs should have access.
 * Under Settings > Secrets and Variables > Actions you must add a "Repository 
@@ -169,8 +177,9 @@ R packages)
 3. Install all the packages the students need at once, and try to compile LaTeX. 
 
 Package requirements are done manually, unfortunately. Typically, I'll open the
-various projects in RStudio and run `sort(unique(renv::dependencies()$Package))`. 
-It's not infallible, but works well.
+various projects in RStudio and run
+`sort(unique(renv::dependencies()$Package))`.  It's not infallible, but works
+well.
 
 All necessary packages should go in "Suggests:" in the `DESCRIPTION`. This 
 avoids build errors. Note that install via `remotes::install_github()` then 
@@ -178,14 +187,15 @@ requires `dependencies = TRUE`.
 
 # Worksheets
 
-These are derived from Matías's Rmd notes from 2018. They haven't been updated much. 
+These are derived from Matías's Rmd notes from 2018. They haven't been updated
+much. 
 
 They are hosted at <https://github.com/ubc-stat/stat-406-worksheets/>.
 
-I tried requiring them one year. The model was to distribute the R code for the chapters with
-some random lines removed. Then the students could submit the completed code for small amounts
-of credit. It didn't seem to move the needle much and was hard to grade (autograding would be
-nice here).
+I tried requiring them one year. The model was to distribute the R code for the
+chapters with some random lines removed. Then the students could submit the
+completed code for small amounts of credit. It didn't seem to move the needle
+much and was hard to grade (autograding would be nice here).
 
 Note that there is a GHaction that automatically renders the book from source and pushes to the
 `gh-pages` branch. So local build isn't necessary and derivative files should not be checked in
@@ -194,9 +204,34 @@ to version control.
 
 # Course website / lectures
 
+This is hosted at <https://github.com/ubc-stat/stat-406>.
+
+The entire site and all slides are `.qmd` files. It's configured 
+following the instructions at
+<https://quarto.org/docs/publishing/github-pages.html#publish-action>. This 
+means that the site is automatically built and pushed to the `gh-pages` branch 
+when the `main` branch is updated. But all `R` computations must be done
+_locally_ first (because `execute: freeze: auto`). This avoids the need for
+`renv` configuration for the GHaction. So you should render the entire site locally before committing / pushing.
+
+Some notes:
+
+* `_quarto.yml` contains the configuration for the site.
+* `_metadata.yml` contains configuration for the slides.
+* Installing the course package should install all necessary packages. But some
+may be missing.
 
 
 # `{ghclass}` package
+
+I have my own fork of Colin Rundel's `{ghclass}` package <https://github.com/dajmcdon/ghclass>. This is mainly because
+we need to be able to create repos and apply various branch protections and
+PR review requirements. I've added a few other things, but nothing major (and
+some no longer useful). The version numbering is different from Colin's to
+reflect the changes.
+
+Interaction with this package usually involves the course roster, so none of it
+is under version control (to avoid possible contamination). 
 
 
 # Canvas
@@ -205,10 +240,12 @@ I use the shell provided by FoS.
 
 Nothing else goes here, but you have to update all the links.
 
-Two Canvas Quizzes:
+Two or three Canvas Quizzes:
+
 * Quiz 0 collects GitHub accounts, ensures that students read the syllabus. 
 Due in Week 1.
 * Final Exam is the final
+* (optional) Midterm Survey. Sometimes ASDa does this, sometimes I do it.
 * I usually record lectures (automatically) using the classroom tech that 
 automatically uploads.
 * Update the various links on the Homepage.
@@ -255,6 +292,7 @@ ghusername: Grades > Gear (settings) > View Options > Notes.
 
 Once students start taking the quiz, use the scripts in `gh-class-management` 
 to begin
+
 1. Inviting students to GitHub (they must accept the invitation). Announce this!!!
 2. Adding those that accept to the "students" team.
   
