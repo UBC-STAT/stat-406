@@ -397,7 +397,7 @@
 <h2>02 Linear model example</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
-<p>Last modified – 06 September 2023</p>
+<p>Last modified – 10 December 2023</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -415,6 +415,17 @@
 \newcommand{\y}{\mathbf{y}}
 \newcommand{\P}{\mathcal{P}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\snorm}[1]{\lVert #1 \rVert}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="economic-mobility" class="slide level2">
@@ -603,17 +614,18 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>stuff <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb8-2"><a href="#cb8-2"></a>  <span class="at">residuals =</span> <span class="fu">residuals</span>(full), </span>
+<span id="cb8-2"><a href="#cb8-2"></a>  <span class="at">residuals =</span> <span class="fu">residuals</span>(full),</span>
 <span id="cb8-3"><a href="#cb8-3"></a>  <span class="at">fitted =</span> <span class="fu">fitted</span>(full),</span>
 <span id="cb8-4"><a href="#cb8-4"></a>  <span class="at">stdresiduals =</span> <span class="fu">rstandard</span>(full)</span>
 <span id="cb8-5"><a href="#cb8-5"></a>)</span>
 <span id="cb8-6"><a href="#cb8-6"></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(fitted, residuals)) <span class="sc">+</span></span>
 <span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"salmon"</span>) <span class="sc">+</span></span>
 <span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">geom_smooth</span>(</span>
-<span id="cb8-9"><a href="#cb8-9"></a>    <span class="at">se =</span> <span class="cn">FALSE</span>, </span>
-<span id="cb8-10"><a href="#cb8-10"></a>    <span class="at">colour =</span> <span class="st">"steelblue"</span>, </span>
-<span id="cb8-11"><a href="#cb8-11"></a>    <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a>  <span class="fu">ggtitle</span>(<span class="st">"Residuals vs Fitted"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb8-10"><a href="#cb8-10"></a>    <span class="at">colour =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb8-11"><a href="#cb8-11"></a>    <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>  <span class="fu">ggtitle</span>(<span class="st">"Residuals vs Fitted"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -630,9 +642,10 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb9-2"><a href="#cb9-2"></a>  <span class="fu">geom_qq</span>(<span class="at">colour =</span> <span class="st">"purple"</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a>  <span class="fu">geom_qq_line</span>(<span class="at">colour =</span> <span class="st">"peachpuff"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
 <span id="cb9-4"><a href="#cb9-4"></a>  <span class="fu">labs</span>(</span>
-<span id="cb9-5"><a href="#cb9-5"></a>    <span class="at">x =</span> <span class="st">"Theoretical quantiles"</span>, </span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="at">x =</span> <span class="st">"Theoretical quantiles"</span>,</span>
 <span id="cb9-6"><a href="#cb9-6"></a>    <span class="at">y =</span> <span class="st">"Standardized residuals"</span>,</span>
-<span id="cb9-7"><a href="#cb9-7"></a>    <span class="at">title =</span> <span class="st">"Normal Q-Q"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="at">title =</span> <span class="st">"Normal Q-Q"</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -649,10 +662,11 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>reduced <span class="ot">&lt;-</span> <span class="fu">lm</span>(</span>
 <span id="cb10-2"><a href="#cb10-2"></a>  Mobility <span class="sc">~</span> Commute <span class="sc">+</span> Gini_99 <span class="sc">+</span> Test_scores <span class="sc">+</span> HS_dropout <span class="sc">+</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>    Manufacturing <span class="sc">+</span> Migration_in <span class="sc">+</span> Religious <span class="sc">+</span> Single_mothers, </span>
-<span id="cb10-4"><a href="#cb10-4"></a>  <span class="at">data =</span> train)</span>
-<span id="cb10-5"><a href="#cb10-5"></a></span>
-<span id="cb10-6"><a href="#cb10-6"></a><span class="fu">summary</span>(reduced)<span class="sc">$</span>coefficients <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-3"><a href="#cb10-3"></a>    Manufacturing <span class="sc">+</span> Migration_in <span class="sc">+</span> Religious <span class="sc">+</span> Single_mothers,</span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="at">data =</span> train</span>
+<span id="cb10-5"><a href="#cb10-5"></a>)</span>
+<span id="cb10-6"><a href="#cb10-6"></a></span>
+<span id="cb10-7"><a href="#cb10-7"></a><span class="fu">summary</span>(reduced)<span class="sc">$</span>coefficients <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 9 × 4
    Estimate `Std. Error` `t value` `Pr(&gt;|t|)`
@@ -667,7 +681,9 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 8  0.0436       0.0105        4.16   4.08e- 5
 9 -0.286        0.0466       -6.15   2.44e- 9</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>reduced <span class="sc">|&gt;</span> broom<span class="sc">::</span><span class="fu">glance</span>() <span class="sc">|&gt;</span> <span class="fu">print</span>(<span class="at">width =</span> <span class="dv">120</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>reduced <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>  broom<span class="sc">::</span><span class="fu">glance</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="fu">print</span>(<span class="at">width =</span> <span class="dv">120</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 12
   r.squared adj.r.squared  sigma statistic  p.value    df logLik    AIC    BIC
@@ -717,8 +733,9 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 </ul>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="fu">map</span>( <span class="co"># smaller AIC is better</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>  <span class="fu">list</span>(<span class="at">full =</span> full, <span class="at">reduced =</span> reduced), </span>
-<span id="cb16-3"><a href="#cb16-3"></a>  <span class="sc">~</span> <span class="fu">c</span>(<span class="at">aic =</span> <span class="fu">AIC</span>(.x), <span class="at">rsq =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="fu">list</span>(<span class="at">full =</span> full, <span class="at">reduced =</span> reduced),</span>
+<span id="cb16-3"><a href="#cb16-3"></a>  <span class="sc">~</span> <span class="fu">c</span>(<span class="at">aic =</span> <span class="fu">AIC</span>(.x), <span class="at">rsq =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq)</span>
+<span id="cb16-4"><a href="#cb16-4"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$full
           aic           rsq 
@@ -736,16 +753,16 @@ $reduced
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>mses <span class="ot">&lt;-</span> <span class="cf">function</span>(preds, obs) {</span>
-<span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">round</span>(<span class="fu">mean</span>((obs <span class="sc">-</span> preds)<span class="sc">^</span><span class="dv">2</span>), <span class="dv">5</span>)</span>
-<span id="cb18-3"><a href="#cb18-3"></a>}</span>
-<span id="cb18-4"><a href="#cb18-4"></a><span class="fu">c</span>(</span>
-<span id="cb18-5"><a href="#cb18-5"></a>  <span class="at">full =</span> <span class="fu">mses</span>(</span>
-<span id="cb18-6"><a href="#cb18-6"></a>    <span class="fu">predict</span>(full, <span class="at">newdata =</span> test), </span>
-<span id="cb18-7"><a href="#cb18-7"></a>    test<span class="sc">$</span>Mobility),</span>
-<span id="cb18-8"><a href="#cb18-8"></a>  <span class="at">reduced =</span> <span class="fu">mses</span>(</span>
-<span id="cb18-9"><a href="#cb18-9"></a>    <span class="fu">predict</span>(reduced, <span class="at">newdata =</span> test), </span>
-<span id="cb18-10"><a href="#cb18-10"></a>    test<span class="sc">$</span>Mobility)</span>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>mses <span class="ot">&lt;-</span> <span class="cf">function</span>(preds, obs) <span class="fu">round</span>(<span class="fu">mean</span>((obs <span class="sc">-</span> preds)<span class="sc">^</span><span class="dv">2</span>), <span class="dv">5</span>)</span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="fu">c</span>(</span>
+<span id="cb18-3"><a href="#cb18-3"></a>  <span class="at">full =</span> <span class="fu">mses</span>(</span>
+<span id="cb18-4"><a href="#cb18-4"></a>    <span class="fu">predict</span>(full, <span class="at">newdata =</span> test),</span>
+<span id="cb18-5"><a href="#cb18-5"></a>    test<span class="sc">$</span>Mobility</span>
+<span id="cb18-6"><a href="#cb18-6"></a>  ),</span>
+<span id="cb18-7"><a href="#cb18-7"></a>  <span class="at">reduced =</span> <span class="fu">mses</span>(</span>
+<span id="cb18-8"><a href="#cb18-8"></a>    <span class="fu">predict</span>(reduced, <span class="at">newdata =</span> test),</span>
+<span id="cb18-9"><a href="#cb18-9"></a>    test<span class="sc">$</span>Mobility</span>
+<span id="cb18-10"><a href="#cb18-10"></a>  )</span>
 <span id="cb18-11"><a href="#cb18-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   full reduced 
@@ -757,15 +774,15 @@ $reduced
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>test<span class="sc">$</span>full <span class="ot">&lt;-</span> <span class="fu">predict</span>(full, <span class="at">newdata =</span> test)</span>
 <span id="cb20-2"><a href="#cb20-2"></a>test<span class="sc">$</span>reduced <span class="ot">&lt;-</span> <span class="fu">predict</span>(reduced, <span class="at">newdata =</span> test)</span>
-<span id="cb20-3"><a href="#cb20-3"></a>test <span class="sc">|&gt;</span> </span>
+<span id="cb20-3"><a href="#cb20-3"></a>test <span class="sc">|&gt;</span></span>
 <span id="cb20-4"><a href="#cb20-4"></a>  <span class="fu">select</span>(Mobility, full, reduced) <span class="sc">|&gt;</span></span>
 <span id="cb20-5"><a href="#cb20-5"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>Mobility) <span class="sc">|&gt;</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(Mobility, value)) <span class="sc">+</span> </span>
-<span id="cb20-7"><a href="#cb20-7"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span> </span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(Mobility, value)) <span class="sc">+</span></span>
+<span id="cb20-7"><a href="#cb20-7"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
 <span id="cb20-8"><a href="#cb20-8"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb20-9"><a href="#cb20-9"></a>  <span class="fu">xlab</span>(<span class="st">'observed mobility'</span>) <span class="sc">+</span> </span>
-<span id="cb20-10"><a href="#cb20-10"></a>  <span class="fu">ylab</span>(<span class="st">'predicted mobility'</span>) <span class="sc">+</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-9"><a href="#cb20-9"></a>  <span class="fu">xlab</span>(<span class="st">"observed mobility"</span>) <span class="sc">+</span></span>
+<span id="cb20-10"><a href="#cb20-10"></a>  <span class="fu">ylab</span>(<span class="st">"predicted mobility"</span>) <span class="sc">+</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> <span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
