@@ -1,57 +1,101 @@
-## ----setup, include=FALSE----------------------------------------------------------------
-source("rmd_config.R")
-quiz = readr::read_csv("../grade-processing/quiz0-for-R.csv")
+## ----load-quiz, include=FALSE---------------------------------------------------
+quiz <- read_rds(here::here(
+  "..", "..", "..", "WinterT1-2023", "gh-class-management", "lab0",
+  "lab0-anon.rds"
+))
 
 
-## ---- echo=FALSE, fig.height=6, fig.align='center'---------------------------------------
-quiz %>% ggplot(aes(str_wrap(syllabus,20))) + geom_bar(fill=blue) + 
-  xlab("") + theme_cowplot()
+## -------------------------------------------------------------------------------
+#| echo: false
+#| fig-height: 6
+#| fig-width: 12
+quiz |> 
+  ggplot(aes(str_wrap(syllabus, 20))) + 
+  geom_bar(fill = blue) + 
+  scale_y_continuous(expand = expansion(c(0,0.05))) +
+  xlab("") 
 
 
-## ---- echo=FALSE, fig.height=6, fig.width=12, fig.align='center'-------------------------
-quiz %>% ggplot(aes(str_wrap(R,20))) + geom_bar(fill=blue) + 
-  xlab("") + theme_cowplot()
+## -------------------------------------------------------------------------------
+#| echo: false
+#| fig-height: 6
+#| fig-width: 12
+quiz |> 
+  ggplot(aes(str_wrap(r_coding, 20))) + 
+  geom_bar(fill = blue) + 
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  xlab("")
+
+
+## -------------------------------------------------------------------------------
 library(MASS)
-
-
-## ----------------------------------------------------------------------------------------
-X = matrix(c(5,3,1,-1), nrow=2)
+X <- matrix(c(5, 3, 1, -1), nrow = 2)
 X
 solve(X)
 ginv(X)
 X^(-1)
 
 
-## ----------------------------------------------------------------------------------------
-y = X %*% c(2,-1) + rnorm(2)
-coefficients(lm(y~X))
-coef(lm(y~X))
+## -------------------------------------------------------------------------------
+y <- X %*% c(2, -1) + rnorm(2)
+coefficients(lm(y ~ X))
+coef(lm(y ~ X))
 solve(t(X) %*% X) %*% t(X) %*% y
-# X \ y this it Matlab
+solve(crossprod(X), crossprod(X, y))
 
 
-## ---- echo=FALSE, fig.height=6, fig.width=12, fig.align='center'-------------------------
-p1 = quiz %>% 
-  ggplot(aes(str_wrap(pets,30))) + geom_bar(fill=blue) + 
-  coord_flip() + 
-  xlab("") + theme_cowplot()
-p2 = quiz %>% 
-  ggplot(aes(str_wrap(plans,20))) + geom_bar(fill=orange) + 
-  coord_flip() + 
-  xlab("") + theme_cowplot()
-plot_grid(p1,p2)
+## -------------------------------------------------------------------------------
+#| error: true
+X \ y # this is Matlab
 
 
-## ---- echo=FALSE, fig.height=6, fig.width=12, fig.align='center'-------------------------
-s406 = as.factor(rep(c("50-54%","55-59%","60-63%","64-67%","68-71%","72-75%","76-79%","80-84%","85-89%","90-100%"), times=c(3,1,3,9,5,13,10,11,20,27)))
-preds = cut(quiz$grade[!is.na(quiz$grade)], 
-            c(0,50,54,59,63,67,71,75,79,84,89,101),
-            c("<50%","50-54%","55-59%","60-63%","64-67%","68-71%","72-75%","76-79%","80-84%","85-89%","90-100%"))
-data.frame(name=rep(c("2018 distribution", "your predictions"), 
-                    times=c(length(s406),length(preds))), 
-           value=fct_c(s406,preds)) %>%
-  mutate(value = fct_relevel(value, "<50%")) %>%
-  ggplot(aes(value, fill=name)) + geom_bar(position = position_dodge()) +
-  scale_fill_manual(values=c(blue,orange)) + theme_cowplot()
+## -------------------------------------------------------------------------------
+#| echo: false
+#| fig-height: 6
+#| fig-width: 12
+library(cowplot)
+p1 <- quiz %>%
+  ggplot(aes(str_wrap(pets, 30))) +
+  geom_bar(fill = blue) +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  xlab("")
+p2 <- quiz %>%
+  ggplot(aes(str_wrap(plans, 20))) +
+  geom_bar(fill = orange) +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  xlab("")
+plot_grid(p1, p2)
 
+
+## ----echo=FALSE, fig.height=4, fig.width=12, fig.align='center'-----------------
+#| echo: false
+#| fig-height: 4
+#| fig-width: 12
+quiz |>
+  ggplot(aes(grade)) +
+  geom_histogram(
+    fill = orange, colour = "black", 
+    breaks = c(0, 50, 54, 59, 63, 67, 71, 75, 79, 84, 89, 101)
+  ) +
+  scale_y_continuous(expand = expansion(c(0, 0.05)))
+
+
+## -------------------------------------------------------------------------------
+#| echo: false
+acc <- read_rds(here::here(
+  "..", "..", "..", "WinterT1-2022", "final-grades",
+  "prediction-accuracy.rds"
+)) |>
+  rename(predicted = pfg, actual = fg)
+
+ggplot(acc, aes(predicted, actual)) +
+  geom_point(colour = orange) +
+  geom_abline(slope = 1, intercept = 0) +
+  coord_equal(xlim = c(0, 100), ylim = c(0, 100))
+
+
+## -------------------------------------------------------------------------------
+summary(lm(actual ~ predicted - 1, data = acc))
 

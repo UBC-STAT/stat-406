@@ -1,112 +1,200 @@
-## ----setup, include=FALSE, warning=FALSE, message=FALSE----------------------------------
-source("rmd_config.R")
-
-
-## ----data-setup--------------------------------------------------------------------------
-set.seed(123)
-n = 406
-df = tibble(
-  x1 = rnorm(n),
-  x2 = rnorm(n, mean=2, sd=1),
-  x3 = rexp(n, rate=1),
-  x4 = x2 + rnorm(n, sd=.1),
-  x5 = x1 + rnorm(n, sd=.1),
-  x6 = x1 - x2 + rnorm(n, sd=.1),
-  x7 = x1 + x3 + rnorm(n, sd=.1),
-  y = x1*3 + x2/3 + rnorm(n, sd=2.2)
+## -------------------------------------------------------------------------------
+dat <- tibble(
+  x1 = rnorm(100), 
+  x2 = rnorm(100),
+  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)
 )
 
 
-## ----full-model--------------------------------------------------------------------------
-full = lm(y~., data=df)
+## -------------------------------------------------------------------------------
+forms <- list("y ~ x1 + x2", "y ~ x1 * x2", "y ~ x2 + sin(x1*x2)") |> 
+  map(as.formula)
+fits <- map(forms, ~ lm(.x, data = dat))
+map(fits, ~ tibble(
+  R2 = summary(.x)$r.sq,
+  training_error = mean(residuals(.x)^2),
+  loocv = mean( (residuals(.x) / (1 - hatvalues(.x)))^2 ),
+  AIC = AIC(.x),
+  BIC = BIC(.x)
+)) |> list_rbind()
 
 
-## ----full-table, echo=FALSE--------------------------------------------------------------
+## ----data-setup-----------------------------------------------------------------
+set.seed(123)
+n <- 406
+df <- tibble( # like data.frame, but columns can be functions of preceding
+  x1 = rnorm(n),
+  x2 = rnorm(n, mean = 2, sd = 1),
+  x3 = rexp(n, rate = 1),
+  x4 = x2 + rnorm(n, sd = .1), # correlated with x2
+  x5 = x1 + rnorm(n, sd = .1), # correlated with x1
+  x6 = x1 - x2 + rnorm(n, sd = .1), # correlated with x2 and x1 (and others)
+  x7 = x1 + x3 + rnorm(n, sd = .1), # correlated with x1 and x3 (and others)
+  y = x1 * 3 + x2 / 3 + rnorm(n, sd = 2.2) # function of x1 and x2 only
+)
+
+
+## ----full-model-----------------------------------------------------------------
+full <- lm(y ~ ., data = df)
 summary(full)
 
 
-## ----true-model--------------------------------------------------------------------------
-truth = lm(y~x1+x2, data=df)
-
-
-## ----true-table, echo=FALSE--------------------------------------------------------------
+## ----true-model-----------------------------------------------------------------
+truth <- lm(y ~ x1 + x2, data = df)
 summary(truth)
 
 
-## ----try-them-all------------------------------------------------------------------------
+## ----try-them-all---------------------------------------------------------------
 library(leaps)
-trythemall = regsubsets(y~., data=df)
+trythemall <- regsubsets(y ~ ., data = df)
 summary(trythemall)
 
 
-## ----more-all-subsets1-------------------------------------------------------------------
-infocrit = tibble(
+## ----more-all-subsets1----------------------------------------------------------
+#| output-location: column
+#| fig-height: 6
+#| fig-width: 8
+tibble(
   BIC = summary(trythemall)$bic, 
   Cp = summary(trythemall)$cp,
-  size = 1:7)
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) + 
+  geom_point() + 
+  geom_line() + 
+  facet_wrap(~name, scales = "free_y") + 
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange), 
+    guide = "none"
+  )
 
 
-## ----more-all-subsets2, echo=FALSE, dev="svg"--------------------------------------------
-infocrit %>% pivot_longer(-size, names_to="crit") %>%
-  ggplot(aes(size, value, color=crit)) + geom_point() + geom_line() + 
-  facet_wrap(~crit, 2, scales = "free_y") + theme_cowplot() +
-  scale_color_brewer(palette = "Set1") +
-  theme(axis.title.y=element_blank(), legend.position = "none")
-
-
-## ----step-forward------------------------------------------------------------------------
-stepup = regsubsets(y~., data=df, method = "forward")
+## ----step-forward---------------------------------------------------------------
+stepup <- regsubsets(y ~ ., data = df, method = "forward")
 summary(stepup)
 
 
-## ----more-step-forward, echo=FALSE, dev="svg", fig.width=10, fig.height=5, fig.align="center"----
-infocrit2 = tibble(
-  BIC = summary(stepup)$bic, 
+## ----more-step-forward----------------------------------------------------------
+#| output-location: column
+#| fig-height: 6
+#| fig-width: 8
+tibble(
+  BIC = summary(stepup)$bic,
   Cp = summary(stepup)$cp,
-  size = 1:7)
-infocrit2 %>% pivot_longer(-size, names_to="crit") %>%
-  ggplot(aes(size, value, color=crit)) + geom_point() + geom_line() + 
-  facet_wrap(~crit, 1, scales = "free_y") + theme_cowplot() +
-  scale_color_brewer(palette = "Set1") +
-  theme(axis.title.y=element_blank(), legend.position = "none")
-
-
-## ----replication-exercise, cache=TRUE, echo=FALSE----------------------------------------
-fun <- function() {
-  n = 812
-  df = tibble(x1 = rnorm(n), x2 = rnorm(n, mean=2, sd=1), x3 = rexp(n, rate=1),
-    x4 = x2 + rnorm(n, sd=.1), x5 = x1 + rnorm(n, sd=.1),
-    x6 = x1 - x2 + rnorm(n, sd=.1), x7 = x1 + x3 + rnorm(n, sd=.1),
-    y = x1*3 + x2/3 + rnorm(n, sd=2.2)
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~name, scales = "free_y") +
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange),
+    guide = "none"
   )
-  train = df[1:406,]; test=df[407:n,]
-  truth = lm(y~x1+x2, data=train)
-  full = lm(y~., data=train)
-  stepup = regsubsets(y~., data=train, method="forward")
-  coefs = double(8)
-  names(coefs) = names(coef(full))
-  best = which.min(summary(stepup)$cp)
-  coefs[names(coef(stepup,best))] = coef(stepup,best)
-  out = c(correct = mean((test$y-predict(truth, newdata = test))^2),
-          full = mean((test$y-predict(full, newdata = test))^2),
-          step = mean((test$y - as.matrix(cbind(1,test[,-8])) %*% coefs )^2),
-          truth = mean((test$y - as.matrix(test[,1:2]) %*% c(3,1/3))^2),
-          nbest = best)
-  out
+
+
+## ----step-backward--------------------------------------------------------------
+stepdown <- regsubsets(y ~ ., data = df, method = "backward")
+summary(stepdown)
+
+
+## ----more-step-backward---------------------------------------------------------
+#| output-location: column
+#| fig-height: 6
+#| fig-width: 8
+tibble(
+  BIC = summary(stepdown)$bic,
+  Cp = summary(stepdown)$cp,
+  size = 1:7
+) |>
+  pivot_longer(-size) |>
+  ggplot(aes(size, value, colour = name)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~name, scales = "free_y") +
+  ylab("") +
+  scale_colour_manual(
+    values = c(blue, orange), 
+    guide = "none"
+  )
+
+
+## ----predict-regsubsets---------------------------------------------------------
+#| code-line-numbers: "|2"
+predict.regsubsets <- function(object, newdata, risk_estimate = c("cp", "bic"), ...) {
+  risk_estimate <- match.arg(risk_estimate)
+  chosen <- coef(object, which.min(summary(object)[[risk_estimate]]))
+  predictors <- names(chosen)
+  if (object$intercept) predictors <- predictors[-1]
+  X <- newdata[, predictors]
+  if (object$intercept) X <- cbind2(1, X)
+  drop(as.matrix(X) %*% chosen)
 }
+
+
+## ----replication-exercise-------------------------------------------------------
+simulate_and_estimate_them_all <- function(n = 406) {
+  N <- 2 * n # generate 2x the amount of data (half train, half test)
+  df <- tibble( # generate data
+    x1 = rnorm(N), 
+    x2 = rnorm(N, mean = 2), 
+    x3 = rexp(N),
+    x4 = x2 + rnorm(N, sd = .1), 
+    x5 = x1 + rnorm(N, sd = .1),
+    x6 = x1 - x2 + rnorm(N, sd = .1), 
+    x7 = x1 + x3 + rnorm(N, sd = .1),
+    y = x1 * 3 + x2 / 3 + rnorm(N, sd = 2.2)
+  )
+  train <- df[1:n, ] # half the data for training
+  test <- df[(n + 1):N, ] # half the data for evaluation
+  
+  oracle <- lm(y ~ x1 + x2 - 1, data = train) # knowing the right model, not the coefs
+  full <- lm(y ~ ., data = train)
+  stepup <- regsubsets(y ~ ., data = train, method = "forward")
+  stepdown <- regsubsets(y ~ ., data = train, method = "backward")
+  
+  tibble(
+    y = test$y,
+    oracle = predict(oracle, newdata = test),
+    full = predict(full, newdata = test),
+    stepup = predict(stepup, newdata = test),
+    stepdown = predict(stepdown, newdata = test),
+    truth = drop(as.matrix(test[, c("x1", "x2")]) %*% c(3, 1/3))
+  )
+}
+
 set.seed(12345)
-sim = t(replicate(50, fun()))
+our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
+  list_rbind(names_to = "sim")
 
 
-## ----synth-results, dev="svg", fig.width=10, fig.height=5, echo=FALSE, fig.align="center"----
-sim = as.data.frame(sim)
-mses = sim %>% dplyr::select(-nbest) %>% mutate(full = (full-truth)/truth*100, step=(step-truth)/truth*100, correct = (correct-truth)/truth*100,truth=NULL)
-g1 = mses %>% pivot_longer(everything(), names_to = "method", values_to = "mse") %>%
-  ggplot(aes(method,mse,fill=method)) + geom_boxplot() +
-  theme_cowplot() + scale_fill_brewer(palette = "Set1") +
-  theme(legend.position = "none") + ylab("% increase in mse relative to oracle")
-g2 = sim %>% ggplot(aes(y=nbest)) + geom_bar(aes(x=..prop..), fill=orange) + 
-  theme_cowplot() + xlab("proportion of times") + ylim(c(0,7.5)) + 
-  ylab("# selected predictors")
-plot_grid(g1,g2,rel_widths = c(.66,.34), axis = "b")
+## ----synth-results--------------------------------------------------------------
+#| output-location: column
+#| fig-height: 6
+#| fig-width: 6
+our_sim |> 
+  group_by(sim) %>%
+  summarise(
+    across(oracle:truth, ~ mean((y - .)^2)), 
+    .groups = "drop"
+  ) %>%
+  transmute(across(oracle:stepdown, ~ . / truth - 1)) |> 
+  pivot_longer(
+    everything(), 
+    names_to = "method", 
+    values_to = "mse"
+  ) |> 
+  ggplot(aes(method, mse, fill = method)) +
+  geom_boxplot(notch = TRUE) +
+  geom_hline(yintercept = 0, linewidth = 2) +
+  scale_fill_viridis_d() +
+  theme(legend.position = "none") +
+  scale_y_continuous(
+    labels = scales::label_percent()
+  ) +
+  ylab("% increase in mse relative\n to the truth")
 
