@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – kmeans</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>27 K-means clustering</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -551,72 +552,74 @@
 <section id="dumb-example" class="slide level2">
 <h2>Dumb example</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(mvtnorm)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>X1 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">50</span>, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">2</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">2</span>))</span>
-<span id="cb1-4"><a href="#cb1-4"></a>X2 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">1.5</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="fl">1.5</span>), <span class="dv">2</span>))</span>
-<span id="cb1-5"><a href="#cb1-5"></a>X3 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-2"><a></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb1-3"><a></a>X1 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">50</span>, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">2</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">2</span>))</span>
+<span id="cb1-4"><a></a>X2 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">1.5</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="fl">1.5</span>), <span class="dv">2</span>))</span>
+<span id="cb1-5"><a></a>X3 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="27-kmeans_files/figure-revealjs/plotting-dumb-clusts-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="27-kmeans_files/figure-revealjs/plotting-dumb-clusts-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="dumb-example-1" class="slide level2">
 <h2>Dumb example</h2>
 <ul>
 <li>We would <span class="secondary">maximize</span> CH</li>
 </ul>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>K <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">40</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(clust_raw)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>all_clusters <span class="ot">&lt;-</span> <span class="fu">map</span>(K, <span class="sc">~</span> <span class="fu">kmeans</span>(clust_raw, .x, <span class="at">nstart =</span> <span class="dv">20</span>))</span>
-<span id="cb2-4"><a href="#cb2-4"></a>all_assignments <span class="ot">&lt;-</span> <span class="fu">map_dfc</span>(all_clusters, <span class="st">"cluster"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="fu">names</span>(all_assignments) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"K = "</span>, K)</span>
-<span id="cb2-6"><a href="#cb2-6"></a>summaries <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(all_clusters, <span class="st">`</span><span class="at">[</span><span class="st">`</span>, <span class="fu">c</span>(<span class="st">"tot.withinss"</span>, <span class="st">"betweenss"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="fu">rename</span>(<span class="at">W =</span> tot.withinss, <span class="at">B =</span> betweenss) <span class="sc">|&gt;</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb2-9"><a href="#cb2-9"></a>    <span class="at">K =</span> K,</span>
-<span id="cb2-10"><a href="#cb2-10"></a>    <span class="st">`</span><span class="at">W / (N - K)</span><span class="st">`</span> <span class="ot">=</span> W <span class="sc">/</span> (N <span class="sc">-</span> K),</span>
-<span id="cb2-11"><a href="#cb2-11"></a>    <span class="st">`</span><span class="at">B / K</span><span class="st">`</span> <span class="ot">=</span> B <span class="sc">/</span> (K <span class="sc">-</span> <span class="dv">1</span>), </span>
-<span id="cb2-12"><a href="#cb2-12"></a>    <span class="st">`</span><span class="at">CH index</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">B / K</span><span class="st">`</span> <span class="sc">/</span> <span class="st">`</span><span class="at">W / (N - K)</span><span class="st">`</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>  )</span>
-<span id="cb2-14"><a href="#cb2-14"></a>summaries <span class="sc">|&gt;</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>K) <span class="sc">|&gt;</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(K, value)) <span class="sc">+</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> blue, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">20</span>)) <span class="sc">+</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>K <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">40</span></span>
+<span id="cb2-2"><a></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(clust_raw)</span>
+<span id="cb2-3"><a></a>all_clusters <span class="ot">&lt;-</span> <span class="fu">map</span>(K, <span class="sc">~</span> <span class="fu">kmeans</span>(clust_raw, .x, <span class="at">nstart =</span> <span class="dv">20</span>))</span>
+<span id="cb2-4"><a></a>all_assignments <span class="ot">&lt;-</span> <span class="fu">map_dfc</span>(all_clusters, <span class="st">"cluster"</span>)</span>
+<span id="cb2-5"><a></a><span class="fu">names</span>(all_assignments) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"K = "</span>, K)</span>
+<span id="cb2-6"><a></a>summaries <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(all_clusters, <span class="st">`</span><span class="at">[</span><span class="st">`</span>, <span class="fu">c</span>(<span class="st">"tot.withinss"</span>, <span class="st">"betweenss"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb2-7"><a></a>  <span class="fu">rename</span>(<span class="at">W =</span> tot.withinss, <span class="at">B =</span> betweenss) <span class="sc">|&gt;</span></span>
+<span id="cb2-8"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-9"><a></a>    <span class="at">K =</span> K,</span>
+<span id="cb2-10"><a></a>    <span class="st">`</span><span class="at">W / (N - K)</span><span class="st">`</span> <span class="ot">=</span> W <span class="sc">/</span> (N <span class="sc">-</span> K),</span>
+<span id="cb2-11"><a></a>    <span class="st">`</span><span class="at">B / K</span><span class="st">`</span> <span class="ot">=</span> B <span class="sc">/</span> (K <span class="sc">-</span> <span class="dv">1</span>), </span>
+<span id="cb2-12"><a></a>    <span class="st">`</span><span class="at">CH index</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">B / K</span><span class="st">`</span> <span class="sc">/</span> <span class="st">`</span><span class="at">W / (N - K)</span><span class="st">`</span></span>
+<span id="cb2-13"><a></a>  )</span>
+<span id="cb2-14"><a></a>summaries <span class="sc">|&gt;</span></span>
+<span id="cb2-15"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>K) <span class="sc">|&gt;</span></span>
+<span id="cb2-16"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(K, value)) <span class="sc">+</span></span>
+<span id="cb2-17"><a></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> blue, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-18"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb2-19"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">20</span>)) <span class="sc">+</span></span>
+<span id="cb2-20"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="dumb-example-2" class="slide level2">
 <h2>Dumb example</h2>
 
-<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="dumb-example-3" class="slide level2">
 <h2>Dumb example</h2>
 <ul>
 <li><span class="math inline">\(K = 3\)</span></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>km <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(clust_raw, <span class="dv">3</span>, <span class="at">nstart =</span> <span class="dv">20</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">names</span>(km)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>km <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(clust_raw, <span class="dv">3</span>, <span class="at">nstart =</span> <span class="dv">20</span>)</span>
+<span id="cb3-2"><a></a><span class="fu">names</span>(km)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
 [6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>centers <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(km<span class="sc">$</span>centers, <span class="at">.name_repair =</span> <span class="st">"unique"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>centers <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(km<span class="sc">$</span>centers, <span class="at">.name_repair =</span> <span class="st">"unique"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="27-kmeans_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>Hierarchical clustering</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -646,7 +649,6 @@
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -946,10 +948,34 @@
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -959,8 +985,17 @@
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -974,7 +1009,11 @@
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1014,22 +1053,6 @@
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

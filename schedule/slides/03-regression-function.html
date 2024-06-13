@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – regression-function</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>03 The regression function</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -510,7 +511,7 @@
 </ul>
 <p><span class="secondary">Revised Model 1</span> - <span class="math inline">\(\P=\{ Z_i \textrm{ has a density function } f : \int (f'')^2 dx &lt; M \}\)</span></p>
 <p><span class="secondary">Revised Model 2</span> - <span class="math inline">\(\P=\{ Z_i \textrm{ has a density function } f : \int (f'')^2 dx &lt; K &lt; M \}\)</span></p>
-<p><span class="secondary">Revised Model 3</span> - <span class="math inline">\(\P=\{ Z_i \textrm{ has a density function } f : \int |f'| dx &lt; M \}\)</span></p>
+<p><span class="secondary">Revised Model 3</span> - <span class="math inline">\(\P=\{ Z_i \textrm{ has a density function } f : \int |f'| dx &lt;  M \}\)</span></p>
 <ul>
 <li>Each of these suggests different ways of estimating <span class="math inline">\(f\)</span></li>
 </ul>
@@ -555,24 +556,24 @@
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">+</span>.x<span class="sc">^</span><span class="dv">2</span>), <span class="at">colour =</span> <span class="st">'purple'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span>.x<span class="sc">^</span><span class="dv">2</span>, <span class="at">colour =</span> tertiary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">abs</span>(.x), <span class="at">colour =</span> primary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">geom_line</span>(</span>
-<span id="cb1-7"><a href="#cb1-7"></a>    <span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length.out =</span> <span class="dv">100</span>), <span class="at">y =</span> <span class="fu">as.numeric</span>(x <span class="sc">!=</span> <span class="dv">0</span>)), </span>
-<span id="cb1-8"><a href="#cb1-8"></a>    <span class="fu">aes</span>(x, y), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>), <span class="fu">aes</span>(x, y), </span>
-<span id="cb1-10"><a href="#cb1-10"></a>             <span class="at">colour =</span> orange, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb1-11"><a href="#cb1-11"></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(<span class="st">"\u2113"</span> <span class="sc">*</span> (y <span class="sc">-</span> mu))) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="fu">bquote</span>(y <span class="sc">-</span> mu))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb1-2"><a></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-3"><a></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">+</span>.x<span class="sc">^</span><span class="dv">2</span>), <span class="at">colour =</span> <span class="st">'purple'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-4"><a></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span>.x<span class="sc">^</span><span class="dv">2</span>, <span class="at">colour =</span> tertiary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-5"><a></a>  <span class="fu">geom_function</span>(<span class="at">fun =</span> <span class="sc">~</span><span class="fu">abs</span>(.x), <span class="at">colour =</span> primary, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-6"><a></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb1-7"><a></a>    <span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length.out =</span> <span class="dv">100</span>), <span class="at">y =</span> <span class="fu">as.numeric</span>(x <span class="sc">!=</span> <span class="dv">0</span>)), </span>
+<span id="cb1-8"><a></a>    <span class="fu">aes</span>(x, y), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-9"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="dv">0</span>), <span class="fu">aes</span>(x, y), </span>
+<span id="cb1-10"><a></a>             <span class="at">colour =</span> orange, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb1-11"><a></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(<span class="st">"\u2113"</span> <span class="sc">*</span> (y <span class="sc">-</span> mu))) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="fu">bquote</span>(y <span class="sc">-</span> mu))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="03-regression-function_files/figure-revealjs/unnamed-chunk-1-1.svg"></p>
+<p><img data-src="03-regression-function_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -767,7 +768,7 @@
 <section id="risk-relations" class="slide level2">
 <h2>Risk relations</h2>
 <p>Prediction risk: <span class="math inline">\(R_n(\overline{Y}_n) = 1 + \frac{1}{n}\)</span></p>
-<p>Estimation risk: <span class="math inline">\(E[(\overline{Y}_n - \mu)^2] = \frac{1}{n}\)</span></p>
+<p>Estimation risk: <span class="math inline">\(E[(\overline{Y}_n - \mu)^2] =  \frac{1}{n}\)</span></p>
 <p>There is actually a nice interpretation here:</p>
 <ol type="1">
 <li><p>The common <span class="math inline">\(1/n\)</span> term is <span class="math inline">\(\Var{\overline{Y}_n}\)</span><br>
@@ -787,8 +788,10 @@
 <h1>Next time…</h1>
 <p>Trading bias and variance</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -818,7 +821,6 @@
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1118,10 +1120,34 @@
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1131,8 +1157,17 @@
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1146,7 +1181,11 @@
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1186,22 +1225,6 @@
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

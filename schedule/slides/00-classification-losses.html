@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – classification-losses</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>00 Evaluating classifiers</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -473,17 +474,17 @@
 <p>The same goes for the other probabilities. If we say “20% chance of rain” it should rain 20% of such days.</p>
 <p>Of course, we didn’t predict <strong>exactly</strong> <span class="math inline">\(\hat{p}(x_i)=0.2\)</span> ever, so lets look at <span class="math inline">\([.15, .25]\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-6|7|8-9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>n <span class="ot">&lt;-</span> <span class="dv">250</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">5</span>, <span class="at">length.out =</span> n),</span>
-<span id="cb2-4"><a href="#cb2-4"></a>  <span class="at">p =</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x)),</span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">y =</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p)</span>
-<span id="cb2-6"><a href="#cb2-6"></a>)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x, <span class="at">family =</span> binomial, <span class="at">data =</span> dat)</span>
-<span id="cb2-8"><a href="#cb2-8"></a>dat<span class="sc">$</span>phat <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">type =</span> <span class="st">"response"</span>) <span class="co"># predicted probabilities</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>dat <span class="sc">|&gt;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="fu">filter</span>(phat <span class="sc">&gt;</span> .<span class="dv">15</span>, phat <span class="sc">&lt;</span> .<span class="dv">25</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="fu">summarize</span>(<span class="at">target =</span> .<span class="dv">2</span>, <span class="at">obs =</span> <span class="fu">mean</span>(y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2" data-code-line-numbers="1-6|7|8-9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">250</span></span>
+<span id="cb2-2"><a></a>dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb2-3"><a></a>  <span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">5</span>, <span class="dv">5</span>, <span class="at">length.out =</span> n),</span>
+<span id="cb2-4"><a></a>  <span class="at">p =</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x)),</span>
+<span id="cb2-5"><a></a>  <span class="at">y =</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p)</span>
+<span id="cb2-6"><a></a>)</span>
+<span id="cb2-7"><a></a>fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x, <span class="at">family =</span> binomial, <span class="at">data =</span> dat)</span>
+<span id="cb2-8"><a></a>dat<span class="sc">$</span>phat <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">type =</span> <span class="st">"response"</span>) <span class="co"># predicted probabilities</span></span>
+<span id="cb2-9"><a></a>dat <span class="sc">|&gt;</span></span>
+<span id="cb2-10"><a></a>  <span class="fu">filter</span>(phat <span class="sc">&gt;</span> .<span class="dv">15</span>, phat <span class="sc">&lt;</span> .<span class="dv">25</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-11"><a></a>  <span class="fu">summarize</span>(<span class="at">target =</span> .<span class="dv">2</span>, <span class="at">obs =</span> <span class="fu">mean</span>(y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell fragment" data-layout-align="center">
 <div class="cell-output cell-output-stdout">
@@ -497,42 +498,42 @@
 <section id="calibration-plot" class="slide level2">
 <h2>Calibration plot</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>binary_calibration_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(y, phat, <span class="at">nbreaks =</span> <span class="dv">10</span>) {</span>
-<span id="cb4-2"><a href="#cb4-2"></a>  dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">y =</span> y, <span class="at">phat =</span> phat) <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>    <span class="fu">mutate</span>(<span class="at">bins =</span> <span class="fu">cut_number</span>(phat, <span class="at">n =</span> nbreaks))</span>
-<span id="cb4-4"><a href="#cb4-4"></a>  midpts <span class="ot">&lt;-</span> <span class="fu">quantile</span>(dat<span class="sc">$</span>phat, <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> nbreaks <span class="sc">+</span> <span class="dv">1</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  midpts <span class="ot">&lt;-</span> midpts[<span class="sc">-</span><span class="fu">length</span>(midpts)] <span class="sc">+</span> <span class="fu">diff</span>(midpts) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb4-6"><a href="#cb4-6"></a>  sum_dat <span class="ot">&lt;-</span> dat <span class="sc">|&gt;</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a>    <span class="fu">group_by</span>(bins) <span class="sc">|&gt;</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>    <span class="fu">summarise</span>(</span>
-<span id="cb4-9"><a href="#cb4-9"></a>      <span class="at">p =</span> <span class="fu">mean</span>(y, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb4-10"><a href="#cb4-10"></a>      <span class="at">se =</span> <span class="fu">sqrt</span>(p <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p) <span class="sc">/</span> <span class="fu">n</span>())</span>
-<span id="cb4-11"><a href="#cb4-11"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>    <span class="fu">arrange</span>(p)</span>
-<span id="cb4-13"><a href="#cb4-13"></a>  sum_dat<span class="sc">$</span>x <span class="ot">&lt;-</span> midpts</span>
-<span id="cb4-14"><a href="#cb4-14"></a></span>
-<span id="cb4-15"><a href="#cb4-15"></a>  <span class="fu">ggplot</span>(sum_dat, <span class="fu">aes</span>(<span class="at">x =</span> x)) <span class="sc">+</span></span>
-<span id="cb4-16"><a href="#cb4-16"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> <span class="fu">pmax</span>(p <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se, <span class="dv">0</span>), <span class="at">ymax =</span> <span class="fu">pmin</span>(p <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se, <span class="dv">1</span>))) <span class="sc">+</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> p), <span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb4-18"><a href="#cb4-18"></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb4-19"><a href="#cb4-19"></a>    <span class="fu">ylab</span>(<span class="st">"observed frequency"</span>) <span class="sc">+</span></span>
-<span id="cb4-20"><a href="#cb4-20"></a>    <span class="fu">xlab</span>(<span class="st">"average predicted probability"</span>) <span class="sc">+</span></span>
-<span id="cb4-21"><a href="#cb4-21"></a>    <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb4-22"><a href="#cb4-22"></a>    <span class="fu">geom_rug</span>(<span class="at">data =</span> dat, <span class="fu">aes</span>(<span class="at">x =</span> phat), <span class="at">sides =</span> <span class="st">"b"</span>)</span>
-<span id="cb4-23"><a href="#cb4-23"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>binary_calibration_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(y, phat, <span class="at">nbreaks =</span> <span class="dv">10</span>) {</span>
+<span id="cb4-2"><a></a>  dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">y =</span> y, <span class="at">phat =</span> phat) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a></a>    <span class="fu">mutate</span>(<span class="at">bins =</span> <span class="fu">cut_number</span>(phat, <span class="at">n =</span> nbreaks))</span>
+<span id="cb4-4"><a></a>  midpts <span class="ot">&lt;-</span> <span class="fu">quantile</span>(dat<span class="sc">$</span>phat, <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> nbreaks <span class="sc">+</span> <span class="dv">1</span>), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-5"><a></a>  midpts <span class="ot">&lt;-</span> midpts[<span class="sc">-</span><span class="fu">length</span>(midpts)] <span class="sc">+</span> <span class="fu">diff</span>(midpts) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb4-6"><a></a>  sum_dat <span class="ot">&lt;-</span> dat <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a></a>    <span class="fu">group_by</span>(bins) <span class="sc">|&gt;</span></span>
+<span id="cb4-8"><a></a>    <span class="fu">summarise</span>(</span>
+<span id="cb4-9"><a></a>      <span class="at">p =</span> <span class="fu">mean</span>(y, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-10"><a></a>      <span class="at">se =</span> <span class="fu">sqrt</span>(p <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> p) <span class="sc">/</span> <span class="fu">n</span>())</span>
+<span id="cb4-11"><a></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb4-12"><a></a>    <span class="fu">arrange</span>(p)</span>
+<span id="cb4-13"><a></a>  sum_dat<span class="sc">$</span>x <span class="ot">&lt;-</span> midpts</span>
+<span id="cb4-14"><a></a></span>
+<span id="cb4-15"><a></a>  <span class="fu">ggplot</span>(sum_dat, <span class="fu">aes</span>(<span class="at">x =</span> x)) <span class="sc">+</span></span>
+<span id="cb4-16"><a></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> <span class="fu">pmax</span>(p <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se, <span class="dv">0</span>), <span class="at">ymax =</span> <span class="fu">pmin</span>(p <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se, <span class="dv">1</span>))) <span class="sc">+</span></span>
+<span id="cb4-17"><a></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> p), <span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb4-18"><a></a>    <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb4-19"><a></a>    <span class="fu">ylab</span>(<span class="st">"observed frequency"</span>) <span class="sc">+</span></span>
+<span id="cb4-20"><a></a>    <span class="fu">xlab</span>(<span class="st">"average predicted probability"</span>) <span class="sc">+</span></span>
+<span id="cb4-21"><a></a>    <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb4-22"><a></a>    <span class="fu">geom_rug</span>(<span class="at">data =</span> dat, <span class="fu">aes</span>(<span class="at">x =</span> phat), <span class="at">sides =</span> <span class="st">"b"</span>)</span>
+<span id="cb4-23"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="amazingly-well-calibrated" class="slide level2">
 <h2>Amazingly well-calibrated</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">binary_calibration_plot</span>(dat<span class="sc">$</span>y, dat<span class="sc">$</span>phat, 20L)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">binary_calibration_plot</span>(dat<span class="sc">$</span>y, dat<span class="sc">$</span>phat, <span class="dv">20</span>L)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="less-well-calibrated" class="slide level2">
 <h2>Less well-calibrated</h2>
 
-<img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="true-positive-false-negative-sensitivity-specificity" class="slide level2">
 <h2>True positive, false negative, sensitivity, specificity</h2>
 <dl>
@@ -582,29 +583,29 @@ Integral of ROC. Closer to 1 is better.
 <h2>ROC curve</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>roc <span class="ot">&lt;-</span> <span class="cf">function</span>(prediction, y) {</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  op <span class="ot">&lt;-</span> <span class="fu">order</span>(prediction, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-3"><a href="#cb6-3"></a>  preds <span class="ot">&lt;-</span> prediction[op]</span>
-<span id="cb6-4"><a href="#cb6-4"></a>  y <span class="ot">&lt;-</span> y[op]</span>
-<span id="cb6-5"><a href="#cb6-5"></a>  noty <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> y</span>
-<span id="cb6-6"><a href="#cb6-6"></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">duplicated</span>(preds))) {</span>
-<span id="cb6-7"><a href="#cb6-7"></a>    y <span class="ot">&lt;-</span> <span class="fu">rev</span>(<span class="fu">tapply</span>(y, preds, sum))</span>
-<span id="cb6-8"><a href="#cb6-8"></a>    noty <span class="ot">&lt;-</span> <span class="fu">rev</span>(<span class="fu">tapply</span>(noty, preds, sum))</span>
-<span id="cb6-9"><a href="#cb6-9"></a>  }</span>
-<span id="cb6-10"><a href="#cb6-10"></a>  <span class="fu">tibble</span>(</span>
-<span id="cb6-11"><a href="#cb6-11"></a>    <span class="at">FPR =</span> <span class="fu">cumsum</span>(noty) <span class="sc">/</span> <span class="fu">sum</span>(noty),</span>
-<span id="cb6-12"><a href="#cb6-12"></a>    <span class="at">TPR =</span> <span class="fu">cumsum</span>(y) <span class="sc">/</span> <span class="fu">sum</span>(y)</span>
-<span id="cb6-13"><a href="#cb6-13"></a>  )</span>
-<span id="cb6-14"><a href="#cb6-14"></a>}</span>
-<span id="cb6-15"><a href="#cb6-15"></a></span>
-<span id="cb6-16"><a href="#cb6-16"></a><span class="fu">ggplot</span>(<span class="fu">roc</span>(dat<span class="sc">$</span>phat, dat<span class="sc">$</span>y), <span class="fu">aes</span>(FPR, TPR)) <span class="sc">+</span></span>
-<span id="cb6-17"><a href="#cb6-17"></a>  <span class="fu">geom_step</span>(<span class="at">colour =</span> blue, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb6-18"><a href="#cb6-18"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>roc <span class="ot">&lt;-</span> <span class="cf">function</span>(prediction, y) {</span>
+<span id="cb6-2"><a></a>  op <span class="ot">&lt;-</span> <span class="fu">order</span>(prediction, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-3"><a></a>  preds <span class="ot">&lt;-</span> prediction[op]</span>
+<span id="cb6-4"><a></a>  y <span class="ot">&lt;-</span> y[op]</span>
+<span id="cb6-5"><a></a>  noty <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> y</span>
+<span id="cb6-6"><a></a>  <span class="cf">if</span> (<span class="fu">any</span>(<span class="fu">duplicated</span>(preds))) {</span>
+<span id="cb6-7"><a></a>    y <span class="ot">&lt;-</span> <span class="fu">rev</span>(<span class="fu">tapply</span>(y, preds, sum))</span>
+<span id="cb6-8"><a></a>    noty <span class="ot">&lt;-</span> <span class="fu">rev</span>(<span class="fu">tapply</span>(noty, preds, sum))</span>
+<span id="cb6-9"><a></a>  }</span>
+<span id="cb6-10"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb6-11"><a></a>    <span class="at">FPR =</span> <span class="fu">cumsum</span>(noty) <span class="sc">/</span> <span class="fu">sum</span>(noty),</span>
+<span id="cb6-12"><a></a>    <span class="at">TPR =</span> <span class="fu">cumsum</span>(y) <span class="sc">/</span> <span class="fu">sum</span>(y)</span>
+<span id="cb6-13"><a></a>  )</span>
+<span id="cb6-14"><a></a>}</span>
+<span id="cb6-15"><a></a></span>
+<span id="cb6-16"><a></a><span class="fu">ggplot</span>(<span class="fu">roc</span>(dat<span class="sc">$</span>phat, dat<span class="sc">$</span>y), <span class="fu">aes</span>(FPR, TPR)) <span class="sc">+</span></span>
+<span id="cb6-17"><a></a>  <span class="fu">geom_step</span>(<span class="at">colour =</span> blue, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-18"><a></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column fragment">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-6-1.svg"></p>
+<p><img data-src="00-classification-losses_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -618,8 +619,10 @@ Integral of ROC. Closer to 1 is better.
 <li>Source: worth exploring <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">Wikipedia</a></li>
 </ul>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -649,7 +652,6 @@ Integral of ROC. Closer to 1 is better.
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -949,10 +951,34 @@ Integral of ROC. Closer to 1 is better.
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -962,8 +988,17 @@ Integral of ROC. Closer to 1 is better.
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -977,7 +1012,11 @@ Integral of ROC. Closer to 1 is better.
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1017,22 +1056,6 @@ Integral of ROC. Closer to 1 is better.
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

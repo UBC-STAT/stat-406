@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – nnets-estimation</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>22 Neural nets - estimation</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -449,7 +450,7 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
 <div class="w-50">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="gfx/single-layer-net.svg" width="500"></p>
+<p><img data-src="gfx/single-layer-net.svg" class="quarto-figure quarto-figure-center" width="500"></p>
 </figure>
 </div>
 </div>
@@ -571,87 +572,89 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
 <section id="simple-example" class="slide level2">
 <h2>Simple example</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>n <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="at">x =</span> <span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length =</span> n),</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">y =</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> x) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, .<span class="dv">1</span>) <span class="co"># Doppler function</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>)</span>
-<span id="cb1-6"><a href="#cb1-6"></a>testdata <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fl">1e3</span>), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="fu">library</span>(neuralnet)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, <span class="at">data =</span> df, <span class="at">hidden =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>), <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span>)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>nn_preds <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="sc">~</span> <span class="fu">compute</span>(nn_out, testdata, .x)<span class="sc">$</span>net.result)</span>
-<span id="cb1-10"><a href="#cb1-10"></a>yhat <span class="ot">&lt;-</span> nn_preds <span class="sc">|&gt;</span> <span class="fu">bind_cols</span>() <span class="sc">|&gt;</span> <span class="fu">rowMeans</span>() <span class="co"># average over the runs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb1-2"><a></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-3"><a></a>  <span class="at">x =</span> <span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length =</span> n),</span>
+<span id="cb1-4"><a></a>  <span class="at">y =</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> x) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, .<span class="dv">1</span>) <span class="co"># Doppler function</span></span>
+<span id="cb1-5"><a></a>)</span>
+<span id="cb1-6"><a></a>testdata <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fl">1e3</span>), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb1-7"><a></a><span class="fu">library</span>(neuralnet)</span>
+<span id="cb1-8"><a></a>nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, <span class="at">data =</span> df, <span class="at">hidden =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">5</span>, <span class="dv">15</span>), <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span>)</span>
+<span id="cb1-9"><a></a>nn_preds <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="sc">~</span> <span class="fu">compute</span>(nn_out, testdata, .x)<span class="sc">$</span>net.result)</span>
+<span id="cb1-10"><a></a>yhat <span class="ot">&lt;-</span> nn_preds <span class="sc">|&gt;</span> <span class="fu">bind_cols</span>() <span class="sc">|&gt;</span> <span class="fu">rowMeans</span>() <span class="co"># average over the runs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># This code will reproduce the analysis, takes some time</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>n <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">x =</span> <span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length =</span> n),</span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">y =</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> x) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, .<span class="dv">1</span>) <span class="co"># Doppler function</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>)</span>
-<span id="cb2-8"><a href="#cb2-8"></a>testx <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fl">1e3</span>), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="fu">library</span>(neuralnet)</span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="fu">library</span>(splines)</span>
-<span id="cb2-11"><a href="#cb2-11"></a>fstar <span class="ot">&lt;-</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> testx)</span>
-<span id="cb2-12"><a href="#cb2-12"></a>spline_test_err <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
-<span id="cb2-13"><a href="#cb2-13"></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> k), <span class="at">data =</span> df)</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata =</span> <span class="fu">tibble</span>(<span class="at">x =</span> testx))</span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">mean</span>((yhat <span class="sc">-</span> fstar)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb2-16"><a href="#cb2-16"></a>}</span>
-<span id="cb2-17"><a href="#cb2-17"></a>Ks <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span> <span class="sc">*</span> <span class="dv">10</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>SplineErr <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(Ks, <span class="sc">~</span> <span class="fu">spline_test_err</span>(.x))</span>
-<span id="cb2-19"><a href="#cb2-19"></a></span>
-<span id="cb2-20"><a href="#cb2-20"></a>Jgrid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>)</span>
-<span id="cb2-21"><a href="#cb2-21"></a>NNerr <span class="ot">&lt;-</span> <span class="fu">double</span>(<span class="fu">length</span>(Jgrid)<span class="sc">^</span><span class="dv">3</span>)</span>
-<span id="cb2-22"><a href="#cb2-22"></a>NNplot <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="fu">length</span>(Jgrid)<span class="sc">^</span><span class="dv">3</span>)</span>
-<span id="cb2-23"><a href="#cb2-23"></a>sweep <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a><span class="cf">for</span> (J1 <span class="cf">in</span> Jgrid) {</span>
-<span id="cb2-25"><a href="#cb2-25"></a>  <span class="cf">for</span> (J2 <span class="cf">in</span> Jgrid) {</span>
-<span id="cb2-26"><a href="#cb2-26"></a>    <span class="cf">for</span> (J3 <span class="cf">in</span> Jgrid) {</span>
-<span id="cb2-27"><a href="#cb2-27"></a>      sweep <span class="ot">&lt;-</span> sweep <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>      NNplot[sweep] <span class="ot">&lt;-</span> <span class="fu">paste</span>(J1, J2, J3, <span class="at">sep =</span> <span class="st">" "</span>)</span>
-<span id="cb2-29"><a href="#cb2-29"></a>      nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, df,</span>
-<span id="cb2-30"><a href="#cb2-30"></a>        <span class="at">hidden =</span> <span class="fu">c</span>(J1, J2, J3),</span>
-<span id="cb2-31"><a href="#cb2-31"></a>        <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a>      )</span>
-<span id="cb2-33"><a href="#cb2-33"></a>      nn_results <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) {</span>
-<span id="cb2-34"><a href="#cb2-34"></a>        <span class="fu">compute</span>(nn_out, testx, x)<span class="sc">$</span>net.result</span>
-<span id="cb2-35"><a href="#cb2-35"></a>      })</span>
-<span id="cb2-36"><a href="#cb2-36"></a>      <span class="co"># Run them through the neural network</span></span>
-<span id="cb2-37"><a href="#cb2-37"></a>      Yhat <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(nn_results)</span>
-<span id="cb2-38"><a href="#cb2-38"></a>      NNerr[sweep] <span class="ot">&lt;-</span> <span class="fu">mean</span>((Yhat <span class="sc">-</span> fstar)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb2-39"><a href="#cb2-39"></a>    }</span>
-<span id="cb2-40"><a href="#cb2-40"></a>  }</span>
-<span id="cb2-41"><a href="#cb2-41"></a>}</span>
-<span id="cb2-42"><a href="#cb2-42"></a></span>
-<span id="cb2-43"><a href="#cb2-43"></a>bestK <span class="ot">&lt;-</span> Ks[<span class="fu">which.min</span>(SplineErr)]</span>
-<span id="cb2-44"><a href="#cb2-44"></a>bestspline <span class="ot">&lt;-</span> <span class="fu">predict</span>(<span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">bs</span>(x, bestK), <span class="at">data =</span> df), <span class="at">newdata =</span> <span class="fu">tibble</span>(<span class="at">x =</span> testx))</span>
-<span id="cb2-45"><a href="#cb2-45"></a>besthidden <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">unlist</span>(<span class="fu">strsplit</span>(NNplot[<span class="fu">which.min</span>(NNerr)], <span class="st">" "</span>)))</span>
-<span id="cb2-46"><a href="#cb2-46"></a>nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, df, <span class="at">hidden =</span> besthidden, <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span>)</span>
-<span id="cb2-47"><a href="#cb2-47"></a>nn_results <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) <span class="fu">compute</span>(nn_out, testdata, x)<span class="sc">$</span>net.result)</span>
-<span id="cb2-48"><a href="#cb2-48"></a><span class="co"># Run them through the neural network</span></span>
-<span id="cb2-49"><a href="#cb2-49"></a>bestnn <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(nn_results)</span>
-<span id="cb2-50"><a href="#cb2-50"></a>plotd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb2-51"><a href="#cb2-51"></a>  <span class="at">x =</span> testdata, <span class="at">spline =</span> bestspline, <span class="at">nnet =</span> bestnn, <span class="at">truth =</span> fstar</span>
-<span id="cb2-52"><a href="#cb2-52"></a>)</span>
-<span id="cb2-53"><a href="#cb2-53"></a><span class="fu">save.image</span>(<span class="at">file =</span> <span class="st">"data/nnet-example.Rdata"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="co"># This code will reproduce the analysis, takes some time</span></span>
+<span id="cb2-2"><a></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb2-3"><a></a>n <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb2-4"><a></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb2-5"><a></a>  <span class="at">x =</span> <span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length =</span> n),</span>
+<span id="cb2-6"><a></a>  <span class="at">y =</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> x) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, .<span class="dv">1</span>) <span class="co"># Doppler function</span></span>
+<span id="cb2-7"><a></a>)</span>
+<span id="cb2-8"><a></a>testx <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">seq</span>(.<span class="dv">05</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="fl">1e3</span>), <span class="at">ncol =</span> <span class="dv">1</span>)</span>
+<span id="cb2-9"><a></a><span class="fu">library</span>(neuralnet)</span>
+<span id="cb2-10"><a></a><span class="fu">library</span>(splines)</span>
+<span id="cb2-11"><a></a>fstar <span class="ot">&lt;-</span> <span class="fu">sin</span>(<span class="dv">1</span> <span class="sc">/</span> testx)</span>
+<span id="cb2-12"><a></a>spline_test_err <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
+<span id="cb2-13"><a></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> k), <span class="at">data =</span> df)</span>
+<span id="cb2-14"><a></a>  yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata =</span> <span class="fu">tibble</span>(<span class="at">x =</span> testx))</span>
+<span id="cb2-15"><a></a>  <span class="fu">mean</span>((yhat <span class="sc">-</span> fstar)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb2-16"><a></a>}</span>
+<span id="cb2-17"><a></a>Ks <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">15</span> <span class="sc">*</span> <span class="dv">10</span></span>
+<span id="cb2-18"><a></a>SplineErr <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(Ks, <span class="sc">~</span> <span class="fu">spline_test_err</span>(.x))</span>
+<span id="cb2-19"><a></a></span>
+<span id="cb2-20"><a></a>Jgrid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>)</span>
+<span id="cb2-21"><a></a>NNerr <span class="ot">&lt;-</span> <span class="fu">double</span>(<span class="fu">length</span>(Jgrid)<span class="sc">^</span><span class="dv">3</span>)</span>
+<span id="cb2-22"><a></a>NNplot <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="fu">length</span>(Jgrid)<span class="sc">^</span><span class="dv">3</span>)</span>
+<span id="cb2-23"><a></a>sweep <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-24"><a></a><span class="cf">for</span> (J1 <span class="cf">in</span> Jgrid) {</span>
+<span id="cb2-25"><a></a>  <span class="cf">for</span> (J2 <span class="cf">in</span> Jgrid) {</span>
+<span id="cb2-26"><a></a>    <span class="cf">for</span> (J3 <span class="cf">in</span> Jgrid) {</span>
+<span id="cb2-27"><a></a>      sweep <span class="ot">&lt;-</span> sweep <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb2-28"><a></a>      NNplot[sweep] <span class="ot">&lt;-</span> <span class="fu">paste</span>(J1, J2, J3, <span class="at">sep =</span> <span class="st">" "</span>)</span>
+<span id="cb2-29"><a></a>      nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, df,</span>
+<span id="cb2-30"><a></a>        <span class="at">hidden =</span> <span class="fu">c</span>(J1, J2, J3),</span>
+<span id="cb2-31"><a></a>        <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span></span>
+<span id="cb2-32"><a></a>      )</span>
+<span id="cb2-33"><a></a>      nn_results <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) {</span>
+<span id="cb2-34"><a></a>        <span class="fu">compute</span>(nn_out, testx, x)<span class="sc">$</span>net.result</span>
+<span id="cb2-35"><a></a>      })</span>
+<span id="cb2-36"><a></a>      <span class="co"># Run them through the neural network</span></span>
+<span id="cb2-37"><a></a>      Yhat <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(nn_results)</span>
+<span id="cb2-38"><a></a>      NNerr[sweep] <span class="ot">&lt;-</span> <span class="fu">mean</span>((Yhat <span class="sc">-</span> fstar)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb2-39"><a></a>    }</span>
+<span id="cb2-40"><a></a>  }</span>
+<span id="cb2-41"><a></a>}</span>
+<span id="cb2-42"><a></a></span>
+<span id="cb2-43"><a></a>bestK <span class="ot">&lt;-</span> Ks[<span class="fu">which.min</span>(SplineErr)]</span>
+<span id="cb2-44"><a></a>bestspline <span class="ot">&lt;-</span> <span class="fu">predict</span>(<span class="fu">lm</span>(y <span class="sc">~</span> <span class="fu">bs</span>(x, bestK), <span class="at">data =</span> df), <span class="at">newdata =</span> <span class="fu">tibble</span>(<span class="at">x =</span> testx))</span>
+<span id="cb2-45"><a></a>besthidden <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">unlist</span>(<span class="fu">strsplit</span>(NNplot[<span class="fu">which.min</span>(NNerr)], <span class="st">" "</span>)))</span>
+<span id="cb2-46"><a></a>nn_out <span class="ot">&lt;-</span> <span class="fu">neuralnet</span>(y <span class="sc">~</span> x, df, <span class="at">hidden =</span> besthidden, <span class="at">threshold =</span> <span class="fl">0.01</span>, <span class="at">rep =</span> <span class="dv">3</span>)</span>
+<span id="cb2-47"><a></a>nn_results <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) <span class="fu">compute</span>(nn_out, testdata, x)<span class="sc">$</span>net.result)</span>
+<span id="cb2-48"><a></a><span class="co"># Run them through the neural network</span></span>
+<span id="cb2-49"><a></a>bestnn <span class="ot">&lt;-</span> <span class="fu">rowMeans</span>(nn_results)</span>
+<span id="cb2-50"><a></a>plotd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-51"><a></a>  <span class="at">x =</span> testdata, <span class="at">spline =</span> bestspline, <span class="at">nnet =</span> bestnn, <span class="at">truth =</span> fstar</span>
+<span id="cb2-52"><a></a>)</span>
+<span id="cb2-53"><a></a><span class="fu">save.image</span>(<span class="at">file =</span> <span class="st">"data/nnet-example.Rdata"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
-<img data-src="22-nnets-estimation_files/figure-revealjs/fun-nnet-spline-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="22-nnets-estimation_files/figure-revealjs/fun-nnet-spline-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="different-architectures" class="slide level2">
 <h2>Different architectures</h2>
 
-<img data-src="22-nnets-estimation_files/figure-revealjs/nnet-vs-spline-plots-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="22-nnets-estimation_files/figure-revealjs/nnet-vs-spline-plots-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>Other considerations</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -681,7 +684,6 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -981,10 +983,34 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -994,8 +1020,17 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1009,7 +1044,11 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1049,22 +1088,6 @@ A_{\ell}^{(t)} &amp;= g\left(\sum_{k=1}^{K_{t-1}} w^{(t)}_{\ell,k} A_{k}^{(t-1)}
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

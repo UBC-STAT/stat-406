@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – bagging-and-rf</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -387,7 +388,6 @@
       margin-right: 0; 
     }
   </style>
-  
   <script src="../../site_libs/kePrint/kePrint.js"></script>
   <link href="../../site_libs/lightable/lightable.css" rel="stylesheet">
 </head>
@@ -396,7 +396,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>19 Bagging and random forests</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -561,26 +561,26 @@ Before we split, we randomly pick
 <section id="example-with-mobility-data" class="slide level2">
 <h2>Example with Mobility data</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(randomForest)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(kableExtra)</span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>mob <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.factor</span>(Mobility <span class="sc">&gt;</span> .<span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>  <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>Name, <span class="sc">-</span>Mobility, <span class="sc">-</span>State) <span class="sc">|&gt;</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a>  <span class="fu">drop_na</span>()</span>
-<span id="cb1-8"><a href="#cb1-8"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
-<span id="cb1-9"><a href="#cb1-9"></a>trainidx <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>))</span>
-<span id="cb1-10"><a href="#cb1-10"></a>testidx <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, trainidx)</span>
-<span id="cb1-11"><a href="#cb1-11"></a>train <span class="ot">&lt;-</span> mob[trainidx, ]</span>
-<span id="cb1-12"><a href="#cb1-12"></a>test <span class="ot">&lt;-</span> mob[testidx, ]</span>
-<span id="cb1-13"><a href="#cb1-13"></a>rf <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
-<span id="cb1-14"><a href="#cb1-14"></a>bag <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">mtry =</span> <span class="fu">ncol</span>(mob) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb1-15"><a href="#cb1-15"></a>preds <span class="ot">&lt;-</span>  <span class="fu">tibble</span>(<span class="at">truth =</span> test<span class="sc">$</span>mobile, <span class="at">rf =</span> <span class="fu">predict</span>(rf, test), <span class="at">bag =</span> <span class="fu">predict</span>(bag, test))</span>
-<span id="cb1-16"><a href="#cb1-16"></a></span>
-<span id="cb1-17"><a href="#cb1-17"></a><span class="fu">kbl</span>(<span class="fu">cbind</span>(<span class="fu">table</span>(preds<span class="sc">$</span>truth, preds<span class="sc">$</span>rf), <span class="fu">table</span>(preds<span class="sc">$</span>truth, preds<span class="sc">$</span>bag))) <span class="sc">|&gt;</span></span>
-<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"Truth"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"RF"</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">"Bagging"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(randomForest)</span>
+<span id="cb1-2"><a></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-3"><a></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb1-4"><a></a>mob <span class="ot">&lt;-</span> Stat406<span class="sc">::</span>mobility <span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a></a>  <span class="fu">mutate</span>(<span class="at">mobile =</span> <span class="fu">as.factor</span>(Mobility <span class="sc">&gt;</span> .<span class="dv">1</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a></a>  <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>Name, <span class="sc">-</span>Mobility, <span class="sc">-</span>State) <span class="sc">|&gt;</span></span>
+<span id="cb1-7"><a></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb1-8"><a></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
+<span id="cb1-9"><a></a>trainidx <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>))</span>
+<span id="cb1-10"><a></a>testidx <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, trainidx)</span>
+<span id="cb1-11"><a></a>train <span class="ot">&lt;-</span> mob[trainidx, ]</span>
+<span id="cb1-12"><a></a>test <span class="ot">&lt;-</span> mob[testidx, ]</span>
+<span id="cb1-13"><a></a>rf <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
+<span id="cb1-14"><a></a>bag <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(mobile <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">mtry =</span> <span class="fu">ncol</span>(mob) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb1-15"><a></a>preds <span class="ot">&lt;-</span>  <span class="fu">tibble</span>(<span class="at">truth =</span> test<span class="sc">$</span>mobile, <span class="at">rf =</span> <span class="fu">predict</span>(rf, test), <span class="at">bag =</span> <span class="fu">predict</span>(bag, test))</span>
+<span id="cb1-16"><a></a></span>
+<span id="cb1-17"><a></a><span class="fu">kbl</span>(<span class="fu">cbind</span>(<span class="fu">table</span>(preds<span class="sc">$</span>truth, preds<span class="sc">$</span>rf), <span class="fu">table</span>(preds<span class="sc">$</span>truth, preds<span class="sc">$</span>bag))) <span class="sc">|&gt;</span></span>
+<span id="cb1-18"><a></a>  <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"Truth"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"RF"</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">"Bagging"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<table data-quarto-postprocess="true">
+<table class="caption-top" data-quarto-postprocess="true">
 <colgroup>
 <col style="width: 20%">
 <col style="width: 20%">
@@ -633,10 +633,10 @@ Bagging
 <section id="example-with-mobility-data-1" class="slide level2">
 <h2>Example with Mobility data</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">varImpPlot</span>(rf, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">varImpPlot</span>(rf, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="19-bagging-and-rf_files/figure-revealjs/mobility-results-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="19-bagging-and-rf_files/figure-revealjs/mobility-results-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="one-last-thing" class="slide level2">
 <h2>One last thing…</h2>
 <dl>
@@ -656,10 +656,10 @@ drawing <span class="math inline">\(n\)</span> samples from <span class="math in
 <p>For <code>randomForest()</code>, <code>predict()</code> without passing <code>newdata =</code> gives the OOB prediction</p>
 <p><span class="secondary">not</span> like <code>lm()</code> where it gives the fitted values</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">predict</span>(bag), train<span class="sc">$</span>mobile) </span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">kbl</span>(tab) <span class="sc">|&gt;</span> <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"Truth"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"Bagging"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>tab <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">predict</span>(bag), train<span class="sc">$</span>mobile) </span>
+<span id="cb3-2"><a></a><span class="fu">kbl</span>(tab) <span class="sc">|&gt;</span> <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"Truth"</span> <span class="ot">=</span> <span class="dv">1</span>, <span class="st">"Bagging"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<table data-quarto-postprocess="true">
+<table class="caption-top" data-quarto-postprocess="true">
 <colgroup>
 <col style="width: 33%">
 <col style="width: 33%">
@@ -696,7 +696,7 @@ Bagging
 
 
 </div>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">sum</span>(<span class="fu">diag</span>(tab)) <span class="sc">/</span> <span class="fu">sum</span>(tab) <span class="do">## OOB misclassification error, no need for CV</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">sum</span>(<span class="fu">diag</span>(tab)) <span class="sc">/</span> <span class="fu">sum</span>(tab) <span class="do">## OOB misclassification error, no need for CV</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.1565495</code></pre>
 </div>
@@ -706,8 +706,10 @@ Bagging
 <h1>Next time…</h1>
 <p>Boosting</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -737,7 +739,6 @@ Bagging
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1037,10 +1038,34 @@ Bagging
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1050,8 +1075,17 @@ Bagging
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1065,7 +1099,11 @@ Bagging
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1105,22 +1143,6 @@ Bagging
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

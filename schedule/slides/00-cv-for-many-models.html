@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – cv-for-many-models</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>00 CV for many models</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -428,7 +429,7 @@
 <section id="some-data-and-4-models" class="slide level2">
 <h2>Some data and 4 models</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">data</span>(<span class="st">"mobility"</span>, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">data</span>(<span class="st">"mobility"</span>, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Model 1:</strong> Lasso on all predictors, use CV min</p>
 <p><strong>Model 2:</strong> Ridge on all predictors, use CV min</p>
@@ -441,69 +442,69 @@
 <section id="cv-functions" class="slide level2">
 <h2>CV functions</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
-<span id="cb2-2"><a href="#cb2-2"></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="fu">seq_len</span>(kfolds), <span class="at">length.out =</span> <span class="fu">nrow</span>(data)))</span>
-<span id="cb2-3"><a href="#cb2-3"></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
-<span id="cb2-5"><a href="#cb2-5"></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
-<span id="cb2-6"><a href="#cb2-6"></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
-<span id="cb2-8"><a href="#cb2-8"></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
-<span id="cb2-9"><a href="#cb2-9"></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
-<span id="cb2-10"><a href="#cb2-10"></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  }</span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="fu">mean</span>(errors)</span>
-<span id="cb2-13"><a href="#cb2-13"></a>}</span>
-<span id="cb2-14"><a href="#cb2-14"></a></span>
-<span id="cb2-15"><a href="#cb2-15"></a>loo_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(dat) {</span>
-<span id="cb2-16"><a href="#cb2-16"></a>  mdl <span class="ot">&lt;-</span> <span class="fu">lm</span>(Mobility <span class="sc">~</span> ., <span class="at">data =</span> dat)</span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="fu">mean</span>( <span class="fu">abs</span>(<span class="fu">residuals</span>(mdl)) <span class="sc">/</span> <span class="fu">abs</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)) ) <span class="co"># MAE version</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
+<span id="cb2-2"><a></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="fu">seq_len</span>(kfolds), <span class="at">length.out =</span> <span class="fu">nrow</span>(data)))</span>
+<span id="cb2-3"><a></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
+<span id="cb2-4"><a></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
+<span id="cb2-5"><a></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
+<span id="cb2-6"><a></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
+<span id="cb2-7"><a></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
+<span id="cb2-8"><a></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
+<span id="cb2-9"><a></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
+<span id="cb2-10"><a></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
+<span id="cb2-11"><a></a>  }</span>
+<span id="cb2-12"><a></a>  <span class="fu">mean</span>(errors)</span>
+<span id="cb2-13"><a></a>}</span>
+<span id="cb2-14"><a></a></span>
+<span id="cb2-15"><a></a>loo_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(dat) {</span>
+<span id="cb2-16"><a></a>  mdl <span class="ot">&lt;-</span> <span class="fu">lm</span>(Mobility <span class="sc">~</span> ., <span class="at">data =</span> dat)</span>
+<span id="cb2-17"><a></a>  <span class="fu">mean</span>( <span class="fu">abs</span>(<span class="fu">residuals</span>(mdl)) <span class="sc">/</span> <span class="fu">abs</span>(<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)) ) <span class="co"># MAE version</span></span>
+<span id="cb2-18"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="experiment-setup" class="slide level2">
 <h2>Experiment setup</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># prepare our data</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># note that mob has only continuous predictors, otherwise could be trouble</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ] <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>State, <span class="sc">-</span>Name)</span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># avoid doing this same operation a bunch</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>xmat <span class="ot">&lt;-</span> <span class="cf">function</span>(dat) dat <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">!</span>Mobility) <span class="sc">|&gt;</span> <span class="fu">as.matrix</span>()</span>
-<span id="cb3-6"><a href="#cb3-6"></a></span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># set up our model functions</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb3-9"><a href="#cb3-9"></a>mod1 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
-<span id="cb3-10"><a href="#cb3-10"></a>mod2 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
-<span id="cb3-11"><a href="#cb3-11"></a>mod3 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">lambda =</span> <span class="dv">0</span>, ...) <span class="co"># just does lm()</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a>mod4 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">relax =</span> <span class="cn">TRUE</span>, <span class="at">gamma =</span> <span class="dv">1</span>, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
-<span id="cb3-13"><a href="#cb3-13"></a></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="co"># this will still "work" on mod3, because there's only 1 s</span></span>
-<span id="cb3-15"><a href="#cb3-15"></a>predictor <span class="ot">&lt;-</span> <span class="cf">function</span>(mod, dat) <span class="fu">drop</span>(<span class="fu">predict</span>(mod, <span class="at">newx =</span> <span class="fu">xmat</span>(dat), <span class="at">s =</span> <span class="st">"lambda.min"</span>))</span>
-<span id="cb3-16"><a href="#cb3-16"></a></span>
-<span id="cb3-17"><a href="#cb3-17"></a><span class="co"># chose mean absolute error just 'cause</span></span>
-<span id="cb3-18"><a href="#cb3-18"></a>error_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(testdata) <span class="fu">mean</span>(<span class="fu">abs</span>(testdata<span class="sc">$</span>Mobility <span class="sc">-</span> testdata<span class="sc">$</span>.preds))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="co"># prepare our data</span></span>
+<span id="cb3-2"><a></a><span class="co"># note that mob has only continuous predictors, otherwise could be trouble</span></span>
+<span id="cb3-3"><a></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ] <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>State, <span class="sc">-</span>Name)</span>
+<span id="cb3-4"><a></a><span class="co"># avoid doing this same operation a bunch</span></span>
+<span id="cb3-5"><a></a>xmat <span class="ot">&lt;-</span> <span class="cf">function</span>(dat) dat <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">!</span>Mobility) <span class="sc">|&gt;</span> <span class="fu">as.matrix</span>()</span>
+<span id="cb3-6"><a></a></span>
+<span id="cb3-7"><a></a><span class="co"># set up our model functions</span></span>
+<span id="cb3-8"><a></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb3-9"><a></a>mod1 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
+<span id="cb3-10"><a></a>mod2 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
+<span id="cb3-11"><a></a>mod3 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">lambda =</span> <span class="dv">0</span>, ...) <span class="co"># just does lm()</span></span>
+<span id="cb3-12"><a></a>mod4 <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, ...) <span class="fu">cv.glmnet</span>(<span class="fu">xmat</span>(dat), dat<span class="sc">$</span>Mobility, <span class="at">relax =</span> <span class="cn">TRUE</span>, <span class="at">gamma =</span> <span class="dv">1</span>, <span class="at">type.measure =</span> <span class="st">"mae"</span>, ...)</span>
+<span id="cb3-13"><a></a></span>
+<span id="cb3-14"><a></a><span class="co"># this will still "work" on mod3, because there's only 1 s</span></span>
+<span id="cb3-15"><a></a>predictor <span class="ot">&lt;-</span> <span class="cf">function</span>(mod, dat) <span class="fu">drop</span>(<span class="fu">predict</span>(mod, <span class="at">newx =</span> <span class="fu">xmat</span>(dat), <span class="at">s =</span> <span class="st">"lambda.min"</span>))</span>
+<span id="cb3-16"><a></a></span>
+<span id="cb3-17"><a></a><span class="co"># chose mean absolute error just 'cause</span></span>
+<span id="cb3-18"><a></a>error_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(testdata) <span class="fu">mean</span>(<span class="fu">abs</span>(testdata<span class="sc">$</span>Mobility <span class="sc">-</span> testdata<span class="sc">$</span>.preds))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="run-the-experiment" class="slide level2">
 <h2>Run the experiment</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>all_model_funs <span class="ot">&lt;-</span> <span class="fu">lst</span>(mod1, mod2, mod3, mod4)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>all_fits <span class="ot">&lt;-</span> <span class="fu">map</span>(all_model_funs, <span class="at">.f =</span> exec, <span class="at">dat =</span> mob)</span>
-<span id="cb4-3"><a href="#cb4-3"></a></span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># unfortunately, does different splits for each method, so we use 10, </span></span>
-<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># it would be better to use the _SAME_ splits</span></span>
-<span id="cb4-6"><a href="#cb4-6"></a>ten_fold_cv <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(all_model_funs, <span class="sc">~</span> <span class="fu">kfold_cv</span>(mob, .x, predictor, error_fun, <span class="dv">10</span>)) </span>
-<span id="cb4-7"><a href="#cb4-7"></a></span>
-<span id="cb4-8"><a href="#cb4-8"></a>in_sample_cv <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="at">mod1 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">1</span>]]<span class="sc">$</span>cvm),</span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="at">mod2 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">2</span>]]<span class="sc">$</span>cvm),</span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="at">mod3 =</span> <span class="fu">loo_cv</span>(mob),</span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="at">mod4 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">4</span>]]<span class="sc">$</span>cvm)</span>
-<span id="cb4-13"><a href="#cb4-13"></a>)</span>
-<span id="cb4-14"><a href="#cb4-14"></a></span>
-<span id="cb4-15"><a href="#cb4-15"></a>tib <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(in_sample_cv, ten_fold_cv)</span>
-<span id="cb4-16"><a href="#cb4-16"></a>tib<span class="sc">$</span>method <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"in_sample"</span>, <span class="st">"out_of_sample"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17"></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>all_model_funs <span class="ot">&lt;-</span> <span class="fu">lst</span>(mod1, mod2, mod3, mod4)</span>
+<span id="cb4-2"><a></a>all_fits <span class="ot">&lt;-</span> <span class="fu">map</span>(all_model_funs, <span class="at">.f =</span> exec, <span class="at">dat =</span> mob)</span>
+<span id="cb4-3"><a></a></span>
+<span id="cb4-4"><a></a><span class="co"># unfortunately, does different splits for each method, so we use 10, </span></span>
+<span id="cb4-5"><a></a><span class="co"># it would be better to use the _SAME_ splits</span></span>
+<span id="cb4-6"><a></a>ten_fold_cv <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(all_model_funs, <span class="sc">~</span> <span class="fu">kfold_cv</span>(mob, .x, predictor, error_fun, <span class="dv">10</span>)) </span>
+<span id="cb4-7"><a></a></span>
+<span id="cb4-8"><a></a>in_sample_cv <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb4-9"><a></a>  <span class="at">mod1 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">1</span>]]<span class="sc">$</span>cvm),</span>
+<span id="cb4-10"><a></a>  <span class="at">mod2 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">2</span>]]<span class="sc">$</span>cvm),</span>
+<span id="cb4-11"><a></a>  <span class="at">mod3 =</span> <span class="fu">loo_cv</span>(mob),</span>
+<span id="cb4-12"><a></a>  <span class="at">mod4 =</span> <span class="fu">min</span>(all_fits[[<span class="dv">4</span>]]<span class="sc">$</span>cvm)</span>
+<span id="cb4-13"><a></a>)</span>
+<span id="cb4-14"><a></a></span>
+<span id="cb4-15"><a></a>tib <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(in_sample_cv, ten_fold_cv)</span>
+<span id="cb4-16"><a></a>tib<span class="sc">$</span>method <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"in_sample"</span>, <span class="st">"out_of_sample"</span>)</span>
+<span id="cb4-17"><a></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 5
     mod1   mod2   mod3   mod4 method       
@@ -513,8 +514,10 @@
 </div>
 </div>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -544,7 +547,6 @@
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -844,10 +846,34 @@
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -857,8 +883,17 @@
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -872,7 +907,11 @@
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -912,22 +951,6 @@
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

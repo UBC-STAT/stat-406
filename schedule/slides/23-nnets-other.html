@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – nnets-other</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -394,7 +395,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>23 Neural nets - other considerations</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -472,7 +473,7 @@ This is like ridge regression in that we penalize the squared Euclidean norm of 
 </dd>
 <dt>Weight elimination</dt>
 <dd>
-This encourages more shrinking of small weights <span class="math inline">\(\rho(\mathbf{W},\mathbf{B}) = \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}\)</span> or Lasso-type
+This encourages more shrinking of small weights <span class="math inline">\(\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}\)</span> or Lasso-type
 </dd>
 <dt>Dropout</dt>
 <dd>
@@ -568,7 +569,7 @@ It is generally better to have too many hidden units than too few (regularizatio
 <h1>Double descent and model complexity</h1>
 
 </section>
-<section id="section" class="slide level2">
+<section id="section-1" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -591,7 +592,7 @@ It is generally better to have too many hidden units than too few (regularizatio
 <p><span class="hand">Use CV or something to estimate MSE and decide how much flexibility.</span></p>
 </div>
 </section>
-<section id="section-1" class="slide level2">
+<section id="section-2" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -614,101 +615,101 @@ It is generally better to have too many hidden units than too few (regularizatio
 <p>We don’t even need deep learning to illustrate.</p>
 </div>
 </section>
-<section id="section-2" class="slide level2">
-<h2></h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(splines)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">set.seed</span>(<span class="dv">20221102</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>n <span class="ot">&lt;-</span> <span class="dv">20</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-5"><a href="#cb1-5"></a>  <span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> n),</span>
-<span id="cb1-6"><a href="#cb1-6"></a>  <span class="at">y =</span> <span class="fu">sin</span>(x) <span class="sc">+</span> <span class="fu">runif</span>(n, <span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
-<span id="cb1-7"><a href="#cb1-7"></a>)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x, y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> sin) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>))</span>
-<span id="cb1-9"><a href="#cb1-9"></a>g <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">4</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> green) <span class="sc">+</span> <span class="co"># too smooth</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">8</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> orange) <span class="co"># looks good</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
 <section id="section-3" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="co"># Spline by hand</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-5"><a href="#cb2-5"></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
-<span id="cb2-6"><a href="#cb2-6"></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb2-7"><a href="#cb2-7"></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x=</span>xn, <span class="at">y=</span>yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">ggtitle</span>(<span class="st">"20 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(splines)</span>
+<span id="cb1-2"><a></a><span class="fu">set.seed</span>(<span class="dv">20221102</span>)</span>
+<span id="cb1-3"><a></a>n <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb1-4"><a></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-5"><a></a>  <span class="at">x =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> n),</span>
+<span id="cb1-6"><a></a>  <span class="at">y =</span> <span class="fu">sin</span>(x) <span class="sc">+</span> <span class="fu">runif</span>(n, <span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb1-7"><a></a>)</span>
+<span id="cb1-8"><a></a>g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x, y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> sin) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb1-9"><a></a>g <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">4</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> green) <span class="sc">+</span> <span class="co"># too smooth</span></span>
+<span id="cb1-10"><a></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">8</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> orange) <span class="co"># looks good</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="section-4" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># Spline by hand</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> <span class="dv">40</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-4"><a href="#cb3-4"></a>Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> <span class="dv">40</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-5"><a href="#cb3-5"></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
-<span id="cb3-6"><a href="#cb3-6"></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb3-7"><a href="#cb3-7"></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> xn, <span class="at">y =</span> yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>  <span class="fu">ggtitle</span>(<span class="st">"40 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb2-2"><a></a><span class="co"># Spline by hand</span></span>
+<span id="cb2-3"><a></a>X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-4"><a></a>Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-5"><a></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
+<span id="cb2-6"><a></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
+<span id="cb2-7"><a></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x=</span>xn, <span class="at">y=</span>yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb2-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"20 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-5-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="section-5" class="slide level2">
+<h2></h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb3-2"><a></a><span class="co"># Spline by hand</span></span>
+<span id="cb3-3"><a></a>X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> <span class="dv">40</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-4"><a></a>Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> <span class="dv">40</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-5"><a></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
+<span id="cb3-6"><a></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
+<span id="cb3-7"><a></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> xn, <span class="at">y =</span> yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb3-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"40 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="what-happened" class="slide level2">
 <h2>What happened?!</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4" data-code-line-numbers="1|3-12|13-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>doffs <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">50</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>mse <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) <span class="fu">mean</span>((x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb4-3"><a href="#cb4-3"></a>get_errs <span class="ot">&lt;-</span> <span class="cf">function</span>(doff) {</span>
-<span id="cb4-4"><a href="#cb4-4"></a>  X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> doff, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> doff, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-6"><a href="#cb4-6"></a>  S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
-<span id="cb4-7"><a href="#cb4-7"></a>  yh <span class="ot">&lt;-</span> S<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb4-8"><a href="#cb4-8"></a>  bhat <span class="ot">&lt;-</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span> <span class="sc">/</span> S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb4-9"><a href="#cb4-9"></a>  yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span> <span class="sc">/</span> S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb4-10"><a href="#cb4-10"></a>  nb <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(bhat<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="fu">tibble</span>(<span class="at">train =</span> <span class="fu">mse</span>(df<span class="sc">$</span>y, yh), <span class="at">test =</span> <span class="fu">mse</span>(yhat, <span class="fu">sin</span>(xn)), <span class="at">norm =</span> nb)</span>
-<span id="cb4-12"><a href="#cb4-12"></a>}</span>
-<span id="cb4-13"><a href="#cb4-13"></a>errs <span class="ot">&lt;-</span> <span class="fu">map</span>(doffs, get_errs) <span class="sc">|&gt;</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb4-15"><a href="#cb4-15"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span> <span class="ot">=</span> doffs) <span class="sc">|&gt;</span> </span>
-<span id="cb4-16"><a href="#cb4-16"></a>  <span class="fu">pivot_longer</span>(train<span class="sc">:</span>test, <span class="at">values_to =</span> <span class="st">"error"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4" data-code-line-numbers="1|3-12|13-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>doffs <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">50</span></span>
+<span id="cb4-2"><a></a>mse <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) <span class="fu">mean</span>((x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb4-3"><a></a>get_errs <span class="ot">&lt;-</span> <span class="cf">function</span>(doff) {</span>
+<span id="cb4-4"><a></a>  X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> doff, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-5"><a></a>  Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> doff, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-6"><a></a>  S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
+<span id="cb4-7"><a></a>  yh <span class="ot">&lt;-</span> S<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
+<span id="cb4-8"><a></a>  bhat <span class="ot">&lt;-</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span> <span class="sc">/</span> S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
+<span id="cb4-9"><a></a>  yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span> <span class="sc">/</span> S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
+<span id="cb4-10"><a></a>  nb <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">sum</span>(bhat<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb4-11"><a></a>  <span class="fu">tibble</span>(<span class="at">train =</span> <span class="fu">mse</span>(df<span class="sc">$</span>y, yh), <span class="at">test =</span> <span class="fu">mse</span>(yhat, <span class="fu">sin</span>(xn)), <span class="at">norm =</span> nb)</span>
+<span id="cb4-12"><a></a>}</span>
+<span id="cb4-13"><a></a>errs <span class="ot">&lt;-</span> <span class="fu">map</span>(doffs, get_errs) <span class="sc">|&gt;</span></span>
+<span id="cb4-14"><a></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb4-15"><a></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span> <span class="ot">=</span> doffs) <span class="sc">|&gt;</span> </span>
+<span id="cb4-16"><a></a>  <span class="fu">pivot_longer</span>(train<span class="sc">:</span>test, <span class="at">values_to =</span> <span class="st">"error"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="what-happened-1" class="slide level2">
 <h2>What happened?!</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">ggplot</span>(errs, <span class="fu">aes</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span>, error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb5-3"><a href="#cb5-3"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">12</span>)) <span class="sc">+</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">ggplot</span>(errs, <span class="fu">aes</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span>, error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
+<span id="cb5-2"><a></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb5-3"><a></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">12</span>)) <span class="sc">+</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
+<span id="cb5-5"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-7-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="what-happened-2" class="slide level2">
 <h2>What happened?!</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>best_test <span class="ot">&lt;-</span> errs <span class="sc">|&gt;</span> <span class="fu">filter</span>(name <span class="sc">==</span> <span class="st">"test"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2"></a>min_norm <span class="ot">&lt;-</span> best_test<span class="sc">$</span>norm[<span class="fu">which.min</span>(best_test<span class="sc">$</span>error)]</span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="fu">ggplot</span>(best_test, <span class="fu">aes</span>(norm, error)) <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> blue, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"test error"</span>) <span class="sc">+</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> min_norm, <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>best_test <span class="ot">&lt;-</span> errs <span class="sc">|&gt;</span> <span class="fu">filter</span>(name <span class="sc">==</span> <span class="st">"test"</span>)</span>
+<span id="cb6-2"><a></a>min_norm <span class="ot">&lt;-</span> best_test<span class="sc">$</span>norm[<span class="fu">which.min</span>(best_test<span class="sc">$</span>error)]</span>
+<span id="cb6-3"><a></a><span class="fu">ggplot</span>(best_test, <span class="fu">aes</span>(norm, error)) <span class="sc">+</span></span>
+<span id="cb6-4"><a></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> blue, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"test error"</span>) <span class="sc">+</span></span>
+<span id="cb6-5"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> min_norm, <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb6-6"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-8-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-8-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="degrees-of-freedom-and-complexity" class="slide level2">
 <h2>Degrees of freedom and complexity</h2>
 <ul>
@@ -717,28 +718,28 @@ It is generally better to have too many hidden units than too few (regularizatio
 <li><p>We’ve already seen this:</p></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb7-2"><a href="#cb7-2"></a>out <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X, df<span class="sc">$</span>y, <span class="at">nfolds =</span> n) <span class="co"># leave one out</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb7-2"><a></a>out <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X, df<span class="sc">$</span>y, <span class="at">nfolds =</span> n) <span class="co"># leave one out</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">with</span>(</span>
-<span id="cb8-2"><a href="#cb8-2"></a>  out, </span>
-<span id="cb8-3"><a href="#cb8-3"></a>  <span class="fu">tibble</span>(<span class="at">lambda =</span> lambda, <span class="at">df =</span> nzero, <span class="at">cv =</span> cvm, <span class="at">cvup =</span> cvup, <span class="at">cvlo =</span> cvlo )</span>
-<span id="cb8-4"><a href="#cb8-4"></a>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">filter</span>(df <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="fu">pivot_longer</span>(lambda<span class="sc">:</span>df) <span class="sc">|&gt;</span> </span>
-<span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymax =</span> cvup, <span class="at">ymin =</span> cvlo)) <span class="sc">+</span></span>
-<span id="cb8-9"><a href="#cb8-9"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> cv), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb8-10"><a href="#cb8-10"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">strip.position =</span> <span class="st">"bottom"</span>, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">with</span>(</span>
+<span id="cb8-2"><a></a>  out, </span>
+<span id="cb8-3"><a></a>  <span class="fu">tibble</span>(<span class="at">lambda =</span> lambda, <span class="at">df =</span> nzero, <span class="at">cv =</span> cvm, <span class="at">cvup =</span> cvup, <span class="at">cvlo =</span> cvlo )</span>
+<span id="cb8-4"><a></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb8-5"><a></a>  <span class="fu">filter</span>(df <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-6"><a></a>  <span class="fu">pivot_longer</span>(lambda<span class="sc">:</span>df) <span class="sc">|&gt;</span> </span>
+<span id="cb8-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span></span>
+<span id="cb8-8"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymax =</span> cvup, <span class="at">ymin =</span> cvlo)) <span class="sc">+</span></span>
+<span id="cb8-9"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> cv), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb8-10"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">strip.position =</span> <span class="st">"bottom"</span>, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
+<span id="cb8-11"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb8-12"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-10-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-10-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="infinite-solutions" class="slide level2">
 <h2>Infinite solutions</h2>
 <ul>
@@ -774,8 +775,10 @@ It is generally better to have too many hidden units than too few (regularizatio
 <p><span class="secondary">Module 5</span></p>
 <p><span class="secondary">unsupervised learning</span></p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -805,7 +808,6 @@ It is generally better to have too many hidden units than too few (regularizatio
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1105,10 +1107,34 @@ It is generally better to have too many hidden units than too few (regularizatio
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1118,8 +1144,17 @@ It is generally better to have too many hidden units than too few (regularizatio
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1133,7 +1168,11 @@ It is generally better to have too many hidden units than too few (regularizatio
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1173,22 +1212,6 @@ It is generally better to have too many hidden units than too few (regularizatio
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

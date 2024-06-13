@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – kernel-smoothers</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>11 Local methods</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -436,43 +437,43 @@
 <section id="lets-use-3-neighbours" class="slide level2">
 <h2>Let’s use 3 neighbours</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(position)</span>
-<span id="cb1-5"><a href="#cb1-5"></a>pt <span class="ot">&lt;-</span> <span class="dv">15</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>nn <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a>seq_range <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">n =</span> <span class="dv">101</span>) <span class="fu">seq</span>(<span class="fu">min</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">max</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">length.out =</span> n)</span>
-<span id="cb1-8"><a href="#cb1-8"></a>neibs <span class="ot">&lt;-</span> <span class="fu">sort.int</span>(<span class="fu">abs</span>(arcuate_unif<span class="sc">$</span>position <span class="sc">-</span> arcuate_unif<span class="sc">$</span>position[pt]), <span class="at">index.return =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>ix[<span class="dv">1</span><span class="sc">:</span>nn]</span>
-<span id="cb1-9"><a href="#cb1-9"></a>arcuate_unif<span class="sc">$</span>neighbours <span class="ot">=</span> <span class="fu">seq_len</span>(<span class="dv">40</span>) <span class="sc">%in%</span> neibs</span>
-<span id="cb1-10"><a href="#cb1-10"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa, <span class="at">colour =</span> neighbours)) <span class="sc">+</span> </span>
-<span id="cb1-11"><a href="#cb1-11"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb1-12"><a href="#cb1-12"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, red)) <span class="sc">+</span> </span>
-<span id="cb1-13"><a href="#cb1-13"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> arcuate_unif<span class="sc">$</span>position[pt], <span class="at">colour =</span> red) <span class="sc">+</span> </span>
-<span id="cb1-14"><a href="#cb1-14"></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">fill =</span> red, <span class="at">alpha =</span> .<span class="dv">25</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
-<span id="cb1-15"><a href="#cb1-15"></a>           <span class="at">xmin =</span> <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position[neibs]), </span>
-<span id="cb1-16"><a href="#cb1-16"></a>           <span class="at">xmax =</span> <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position[neibs])</span>
-<span id="cb1-17"><a href="#cb1-17"></a>  ) <span class="sc">+</span></span>
-<span id="cb1-18"><a href="#cb1-18"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
-<span id="cb1-19"><a href="#cb1-19"></a>g2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb1-20"><a href="#cb1-20"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb1-21"><a href="#cb1-21"></a>  <span class="fu">geom_line</span>(</span>
-<span id="cb1-22"><a href="#cb1-22"></a>    <span class="at">data =</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-23"><a href="#cb1-23"></a>      <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
-<span id="cb1-24"><a href="#cb1-24"></a>      <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
-<span id="cb1-25"><a href="#cb1-25"></a>        arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
-<span id="cb1-26"><a href="#cb1-26"></a>        <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa</span>
-<span id="cb1-27"><a href="#cb1-27"></a>      )<span class="sc">$</span>pred</span>
-<span id="cb1-28"><a href="#cb1-28"></a>    ),</span>
-<span id="cb1-29"><a href="#cb1-29"></a>    <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span></span>
-<span id="cb1-30"><a href="#cb1-30"></a>  )</span>
-<span id="cb1-31"><a href="#cb1-31"></a><span class="fu">plot_grid</span>(g1, g2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-2"><a></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb1-3"><a></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb1-4"><a></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(position)</span>
+<span id="cb1-5"><a></a>pt <span class="ot">&lt;-</span> <span class="dv">15</span></span>
+<span id="cb1-6"><a></a>nn <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
+<span id="cb1-7"><a></a>seq_range <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">n =</span> <span class="dv">101</span>) <span class="fu">seq</span>(<span class="fu">min</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">max</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">length.out =</span> n)</span>
+<span id="cb1-8"><a></a>neibs <span class="ot">&lt;-</span> <span class="fu">sort.int</span>(<span class="fu">abs</span>(arcuate_unif<span class="sc">$</span>position <span class="sc">-</span> arcuate_unif<span class="sc">$</span>position[pt]), <span class="at">index.return =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>ix[<span class="dv">1</span><span class="sc">:</span>nn]</span>
+<span id="cb1-9"><a></a>arcuate_unif<span class="sc">$</span>neighbours <span class="ot">=</span> <span class="fu">seq_len</span>(<span class="dv">40</span>) <span class="sc">%in%</span> neibs</span>
+<span id="cb1-10"><a></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa, <span class="at">colour =</span> neighbours)) <span class="sc">+</span> </span>
+<span id="cb1-11"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb1-12"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, red)) <span class="sc">+</span> </span>
+<span id="cb1-13"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> arcuate_unif<span class="sc">$</span>position[pt], <span class="at">colour =</span> red) <span class="sc">+</span> </span>
+<span id="cb1-14"><a></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">fill =</span> red, <span class="at">alpha =</span> .<span class="dv">25</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb1-15"><a></a>           <span class="at">xmin =</span> <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position[neibs]), </span>
+<span id="cb1-16"><a></a>           <span class="at">xmax =</span> <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position[neibs])</span>
+<span id="cb1-17"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb1-18"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb1-19"><a></a>g2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb1-20"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb1-21"><a></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb1-22"><a></a>    <span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-23"><a></a>      <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb1-24"><a></a>      <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
+<span id="cb1-25"><a></a>        arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
+<span id="cb1-26"><a></a>        <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa</span>
+<span id="cb1-27"><a></a>      )<span class="sc">$</span>pred</span>
+<span id="cb1-28"><a></a>    ),</span>
+<span id="cb1-29"><a></a>    <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb1-30"><a></a>  )</span>
+<span id="cb1-31"><a></a><span class="fu">plot_grid</span>(g1, g2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/load-lidar-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/load-lidar-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="knn" class="slide level2">
 <h2>KNN</h2>
 <div class="flex">
@@ -481,7 +482,7 @@
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="11-kernel-smoothers_files/figure-revealjs/small-lidar-again-1.svg"></p>
+<p><img data-src="11-kernel-smoothers_files/figure-revealjs/small-lidar-again-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -489,24 +490,24 @@
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(FNN)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> </span>
-<span id="cb2-4"><a href="#cb2-4"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="fu">arrange</span>(position) </span>
-<span id="cb2-6"><a href="#cb2-6"></a></span>
-<span id="cb2-7"><a href="#cb2-7"></a>new_position <span class="ot">&lt;-</span> <span class="fu">seq</span>(</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position), </span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position),</span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">length.out =</span> <span class="dv">101</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>)</span>
-<span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a>knn3 <span class="ot">&lt;-</span> <span class="fu">knn.reg</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="at">train =</span> arcuate_unif<span class="sc">$</span>position, </span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="at">test =</span> <span class="fu">matrix</span>(arcuate_unif<span class="sc">$</span>position, <span class="at">ncol =</span> <span class="dv">1</span>), </span>
-<span id="cb2-16"><a href="#cb2-16"></a>  <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa, </span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="at">k =</span> <span class="dv">3</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb2-2"><a></a><span class="fu">library</span>(FNN)</span>
+<span id="cb2-3"><a></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> </span>
+<span id="cb2-4"><a></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-5"><a></a>  <span class="fu">arrange</span>(position) </span>
+<span id="cb2-6"><a></a></span>
+<span id="cb2-7"><a></a>new_position <span class="ot">&lt;-</span> <span class="fu">seq</span>(</span>
+<span id="cb2-8"><a></a>  <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position), </span>
+<span id="cb2-9"><a></a>  <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb2-10"><a></a>  <span class="at">length.out =</span> <span class="dv">101</span></span>
+<span id="cb2-11"><a></a>)</span>
+<span id="cb2-12"><a></a></span>
+<span id="cb2-13"><a></a>knn3 <span class="ot">&lt;-</span> <span class="fu">knn.reg</span>(</span>
+<span id="cb2-14"><a></a>  <span class="at">train =</span> arcuate_unif<span class="sc">$</span>position, </span>
+<span id="cb2-15"><a></a>  <span class="at">test =</span> <span class="fu">matrix</span>(arcuate_unif<span class="sc">$</span>position, <span class="at">ncol =</span> <span class="dv">1</span>), </span>
+<span id="cb2-16"><a></a>  <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa, </span>
+<span id="cb2-17"><a></a>  <span class="at">k =</span> <span class="dv">3</span></span>
+<span id="cb2-18"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -523,7 +524,7 @@
 <h2>Local averages</h2>
 <p>Instead of choosing the number of neighbours to average, we can average any observations within a certain distance.</p>
 
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="r-stretch quarto-figure-center"><div class="fragment">
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"><div class="fragment">
 <p>The boxes have width 30.</p>
 </div>
 </section>
@@ -543,86 +544,86 @@
 <section id="smoothing-with-the-boxcar" class="slide level2">
 <h2>Smoothing with the boxcar</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>testpts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="at">length.out =</span> <span class="dv">101</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>dmat <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">outer</span>(testpts, arcuate_unif<span class="sc">$</span>position, <span class="st">"-"</span>))</span>
-<span id="cb3-3"><a href="#cb3-3"></a>S <span class="ot">&lt;-</span> (dmat <span class="sc">&lt;</span> <span class="dv">15</span>)</span>
-<span id="cb3-4"><a href="#cb3-4"></a>S <span class="ot">&lt;-</span> S <span class="sc">/</span> <span class="fu">rowSums</span>(S)</span>
-<span id="cb3-5"><a href="#cb3-5"></a>boxcar <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">position =</span> testpts, <span class="at">fa =</span> S <span class="sc">%*%</span> arcuate_unif<span class="sc">$</span>fa)</span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb3-8"><a href="#cb3-8"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> boxcar, <span class="at">colour =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>testpts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="at">length.out =</span> <span class="dv">101</span>)</span>
+<span id="cb3-2"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">outer</span>(testpts, arcuate_unif<span class="sc">$</span>position, <span class="st">"-"</span>))</span>
+<span id="cb3-3"><a></a>S <span class="ot">&lt;-</span> (dmat <span class="sc">&lt;</span> <span class="dv">15</span>)</span>
+<span id="cb3-4"><a></a>S <span class="ot">&lt;-</span> S <span class="sc">/</span> <span class="fu">rowSums</span>(S)</span>
+<span id="cb3-5"><a></a>boxcar <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">position =</span> testpts, <span class="at">fa =</span> S <span class="sc">%*%</span> arcuate_unif<span class="sc">$</span>fa)</span>
+<span id="cb3-6"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb3-7"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb3-8"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> boxcar, <span class="at">colour =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/boxcar-1.svg" class="r-stretch quarto-figure-center"><p>This one gives the same non-zero weight to all points within <span class="math inline">\(\pm 15\)</span> range.</p>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/boxcar-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>This one gives the same non-zero weight to all points within <span class="math inline">\(\pm 15\)</span> range.</p>
 </section>
 <section id="other-kernels" class="slide level2">
 <h2>Other kernels</h2>
 <p>Most of the time, we don’t use the boxcar because the weights are weird. (constant)</p>
 <p>A more common one is the Gaussian kernel:</p>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="fl">7.5</span>) <span class="sc">*</span> <span class="dv">3</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="fl">7.5</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb4-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb4-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb4-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb4-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"><p>For the plot, I made <span class="math inline">\(\sigma=7.5\)</span>.</p>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>For the plot, I made <span class="math inline">\(\sigma=7.5\)</span>.</p>
 <p>Now the weights “die away” for points farther from where we’re predicting. (but all nonzero!!)</p>
 </section>
 <section id="other-kernels-1" class="slide level2">
 <h2>Other kernels</h2>
 <p>What if I made <span class="math inline">\(\sigma=15\)</span>?</p>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="dv">3</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb5-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb5-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb5-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"><p>Before, points far from <span class="math inline">\(x_{15}\)</span> got very small weights, now they have more influence.</p>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>Before, points far from <span class="math inline">\(x_{15}\)</span> got very small weights, now they have more influence.</p>
 <p>For the Gaussian kernel, <span class="math inline">\(\sigma\)</span> determines something like the “range” of the smoother.</p>
 </section>
 <section id="many-gaussians" class="slide level2">
 <h2>Many Gaussians</h2>
 <p>The following code creates <span class="math inline">\(\mathbf{S}\)</span> for Gaussian kernel smoothers with different <span class="math inline">\(\sigma\)</span></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(x))</span>
-<span id="cb6-2"><a href="#cb6-2"></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
-<span id="cb6-3"><a href="#cb6-3"></a>  gg <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg), <span class="st">"/"</span>) <span class="co"># make the rows sum to 1.</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(x))</span>
+<span id="cb6-2"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb6-3"><a></a>  gg <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb6-4"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg), <span class="st">"/"</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb6-5"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
-<span id="cb7-2"><a href="#cb7-2"></a>  gg <span class="ot">&lt;-</span>  <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg),<span class="st">'/'</span>) <span class="co"># make the rows sum to 1.</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>}</span>
-<span id="cb7-5"><a href="#cb7-5"></a>boxcar<span class="sc">$</span>S15 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">15</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-6"><a href="#cb7-6"></a>boxcar<span class="sc">$</span>S08 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">8</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-7"><a href="#cb7-7"></a>boxcar<span class="sc">$</span>S30 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">30</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-8"><a href="#cb7-8"></a>bc <span class="ot">=</span> boxcar <span class="sc">%&gt;%</span> <span class="fu">select</span>(position, S15, S08, S30) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>position, <span class="at">names_to =</span> <span class="st">"Sigma"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span> </span>
-<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span> </span>
-<span id="cb7-12"><a href="#cb7-12"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> bc, <span class="fu">aes</span>(position, value, <span class="at">colour =</span> Sigma), <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb7-13"><a href="#cb7-13"></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb7-2"><a></a>  gg <span class="ot">&lt;-</span>  <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb7-3"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg),<span class="st">'/'</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb7-4"><a></a>}</span>
+<span id="cb7-5"><a></a>boxcar<span class="sc">$</span>S15 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">15</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-6"><a></a>boxcar<span class="sc">$</span>S08 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">8</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-7"><a></a>boxcar<span class="sc">$</span>S30 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">30</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb7-8"><a></a>bc <span class="ot">=</span> boxcar <span class="sc">%&gt;%</span> <span class="fu">select</span>(position, S15, S08, S30) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-9"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>position, <span class="at">names_to =</span> <span class="st">"Sigma"</span>)</span>
+<span id="cb7-10"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span> </span>
+<span id="cb7-11"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span> </span>
+<span id="cb7-12"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> bc, <span class="fu">aes</span>(position, value, <span class="at">colour =</span> Sigma), <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb7-13"><a></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="the-bandwidth" class="slide level2">
 <h2>The bandwidth</h2>
 <ul>
@@ -632,11 +633,11 @@
 <li><p>The default kernel in <code>ksmooth()</code> is something called ‘Epanechnikov’:</p></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>epan <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> (<span class="fu">abs</span>(x) <span class="sc">&lt;</span> <span class="dv">1</span>)</span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> epan, <span class="at">colour =</span> green, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>epan <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> (<span class="fu">abs</span>(x) <span class="sc">&lt;</span> <span class="dv">1</span>)</span>
+<span id="cb8-2"><a></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> epan, <span class="at">colour =</span> green, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-7-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="choosing-the-bandwidth" class="slide level2">
 <h2>Choosing the bandwidth</h2>
 <p>As we have discussed, kernel smoothing (and KNN) are linear smoothers</p>
@@ -650,48 +651,48 @@
 <section id="smoothing-the-full-lidar-data" class="slide level2">
 <h2>Smoothing the full Lidar data</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>ar <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">200</span>)</span>
-<span id="cb9-2"><a href="#cb9-2"></a></span>
-<span id="cb9-3"><a href="#cb9-3"></a>gcv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
-<span id="cb9-4"><a href="#cb9-4"></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
-<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">mean</span>(<span class="fu">diag</span>(S)))<span class="sc">^</span><span class="dv">2</span> )</span>
-<span id="cb9-6"><a href="#cb9-6"></a>}</span>
-<span id="cb9-7"><a href="#cb9-7"></a></span>
-<span id="cb9-8"><a href="#cb9-8"></a>fake_loocv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
-<span id="cb9-9"><a href="#cb9-9"></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
-<span id="cb9-10"><a href="#cb9-10"></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">diag</span>(S))<span class="sc">^</span><span class="dv">2</span> )</span>
-<span id="cb9-11"><a href="#cb9-11"></a>}</span>
-<span id="cb9-12"><a href="#cb9-12"></a></span>
-<span id="cb9-13"><a href="#cb9-13"></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(ar<span class="sc">$</span>position))</span>
-<span id="cb9-14"><a href="#cb9-14"></a>sigmas <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span>(<span class="fu">seq</span>(<span class="fu">log10</span>(<span class="dv">300</span>), <span class="fu">log10</span>(.<span class="dv">3</span>), <span class="at">length =</span> <span class="dv">100</span>))</span>
-<span id="cb9-15"><a href="#cb9-15"></a></span>
-<span id="cb9-16"><a href="#cb9-16"></a>gcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">gcv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
-<span id="cb9-17"><a href="#cb9-17"></a>flcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">fake_loocv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
-<span id="cb9-18"><a href="#cb9-18"></a>best_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(gcvs)]</span>
-<span id="cb9-19"><a href="#cb9-19"></a>other_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(flcvs)]</span>
-<span id="cb9-20"><a href="#cb9-20"></a></span>
-<span id="cb9-21"><a href="#cb9-21"></a>ar<span class="sc">$</span>smoothed <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(best_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span>
-<span id="cb9-22"><a href="#cb9-22"></a>ar<span class="sc">$</span>other <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(other_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>ar <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">200</span>)</span>
+<span id="cb9-2"><a></a></span>
+<span id="cb9-3"><a></a>gcv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
+<span id="cb9-4"><a></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
+<span id="cb9-5"><a></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">mean</span>(<span class="fu">diag</span>(S)))<span class="sc">^</span><span class="dv">2</span> )</span>
+<span id="cb9-6"><a></a>}</span>
+<span id="cb9-7"><a></a></span>
+<span id="cb9-8"><a></a>fake_loocv <span class="ot">&lt;-</span> <span class="cf">function</span>(y, S) {</span>
+<span id="cb9-9"><a></a>  yhat <span class="ot">&lt;-</span> S <span class="sc">%*%</span> y</span>
+<span id="cb9-10"><a></a>  <span class="fu">mean</span>( (y <span class="sc">-</span> yhat)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">diag</span>(S))<span class="sc">^</span><span class="dv">2</span> )</span>
+<span id="cb9-11"><a></a>}</span>
+<span id="cb9-12"><a></a></span>
+<span id="cb9-13"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(ar<span class="sc">$</span>position))</span>
+<span id="cb9-14"><a></a>sigmas <span class="ot">&lt;-</span> <span class="dv">10</span><span class="sc">^</span>(<span class="fu">seq</span>(<span class="fu">log10</span>(<span class="dv">300</span>), <span class="fu">log10</span>(.<span class="dv">3</span>), <span class="at">length =</span> <span class="dv">100</span>))</span>
+<span id="cb9-15"><a></a></span>
+<span id="cb9-16"><a></a>gcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">gcv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
+<span id="cb9-17"><a></a>flcvs <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(sigmas, <span class="sc">~</span> <span class="fu">fake_loocv</span>(ar<span class="sc">$</span>fa, <span class="fu">Sgauss</span>(.x)))</span>
+<span id="cb9-18"><a></a>best_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(gcvs)]</span>
+<span id="cb9-19"><a></a>other_s <span class="ot">&lt;-</span> sigmas[<span class="fu">which.min</span>(flcvs)]</span>
+<span id="cb9-20"><a></a></span>
+<span id="cb9-21"><a></a>ar<span class="sc">$</span>smoothed <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(best_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span>
+<span id="cb9-22"><a></a>ar<span class="sc">$</span>other <span class="ot">&lt;-</span> <span class="fu">Sgauss</span>(other_s) <span class="sc">%*%</span> ar<span class="sc">$</span>fa</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="smoothing-the-full-lidar-data-1" class="slide level2">
 <h2>Smoothing the full Lidar data</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">sigma =</span> sigmas, <span class="at">gcv =</span> gcvs), <span class="fu">aes</span>(sigma, gcv)) <span class="sc">+</span></span>
-<span id="cb10-2"><a href="#cb10-2"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> best_s, <span class="at">colour =</span> red) <span class="sc">+</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
-<span id="cb10-5"><a href="#cb10-5"></a>  <span class="fu">xlab</span>(<span class="fu">sprintf</span>(<span class="st">"Sigma, best is sig = %.2f"</span>, best_s))</span>
-<span id="cb10-6"><a href="#cb10-6"></a>g4 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ar, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb10-7"><a href="#cb10-7"></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb10-8"><a href="#cb10-8"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> smoothed), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>)</span>
-<span id="cb10-9"><a href="#cb10-9"></a><span class="fu">plot_grid</span>(g3, g4, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>g3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">sigma =</span> sigmas, <span class="at">gcv =</span> gcvs), <span class="fu">aes</span>(sigma, gcv)) <span class="sc">+</span></span>
+<span id="cb10-2"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb10-3"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> best_s, <span class="at">colour =</span> red) <span class="sc">+</span></span>
+<span id="cb10-4"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
+<span id="cb10-5"><a></a>  <span class="fu">xlab</span>(<span class="fu">sprintf</span>(<span class="st">"Sigma, best is sig = %.2f"</span>, best_s))</span>
+<span id="cb10-6"><a></a>g4 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ar, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb10-7"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb10-8"><a></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> smoothed), <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span>)</span>
+<span id="cb10-9"><a></a><span class="fu">plot_grid</span>(g3, g4, <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/smoothed-lidar-1.svg" class="r-stretch quarto-figure-center"><p>I considered <span class="math inline">\(\sigma \in [0.3,\ 300]\)</span> and used <span class="math inline">\(3.97\)</span>.</p>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/smoothed-lidar-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>I considered <span class="math inline">\(\sigma \in [0.3,\ 300]\)</span> and used <span class="math inline">\(3.97\)</span>.</p>
 <p>It’s too wiggly, to my eye. Typical for GCV.</p>
 </section>
 <section id="smoothing-manually" class="slide level2">
@@ -709,11 +710,11 @@
 <h2><code>R</code> functions / packages</h2>
 <p>There are a number of other ways to do this in R</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">loess</span>()</span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="fu">ksmooth</span>()</span>
-<span id="cb11-3"><a href="#cb11-3"></a>KernSmooth<span class="sc">::</span><span class="fu">locpoly</span>()</span>
-<span id="cb11-4"><a href="#cb11-4"></a>mgcv<span class="sc">::</span><span class="fu">gam</span>()</span>
-<span id="cb11-5"><a href="#cb11-5"></a>np<span class="sc">::</span><span class="fu">npreg</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">loess</span>()</span>
+<span id="cb11-2"><a></a><span class="fu">ksmooth</span>()</span>
+<span id="cb11-3"><a></a>KernSmooth<span class="sc">::</span><span class="fu">locpoly</span>()</span>
+<span id="cb11-4"><a></a>mgcv<span class="sc">::</span><span class="fu">gam</span>()</span>
+<span id="cb11-5"><a></a>np<span class="sc">::</span><span class="fu">npreg</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>These have tricks and ways of doing CV and other things automatically.</p>
 <dl>
@@ -736,8 +737,10 @@ I can use these methods.
 <h1>Next time…</h1>
 <p>Why don’t we just smooth everything all the time?</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -767,7 +770,6 @@ I can use these methods.
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1067,10 +1069,34 @@ I can use these methods.
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1080,8 +1106,17 @@ I can use these methods.
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1095,7 +1130,11 @@ I can use these methods.
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1135,22 +1174,6 @@ I can use these methods.
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

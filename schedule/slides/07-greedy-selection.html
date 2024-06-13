@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – greedy-selection</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>07 Greedy selection</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -431,11 +432,11 @@
 <h2>Example</h2>
 <p>The truth:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), </span>
-<span id="cb1-3"><a href="#cb1-3"></a>  <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>),</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="at">y =</span> <span class="dv">3</span> <span class="sc">+</span> x1 <span class="sc">-</span> <span class="dv">5</span> <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">sin</span>(x1 <span class="sc">*</span> x2 <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> pi)) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
-<span id="cb1-5"><a href="#cb1-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb1-2"><a></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), </span>
+<span id="cb1-3"><a></a>  <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>),</span>
+<span id="cb1-4"><a></a>  <span class="at">y =</span> <span class="dv">3</span> <span class="sc">+</span> x1 <span class="sc">-</span> <span class="dv">5</span> <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">sin</span>(x1 <span class="sc">*</span> x2 <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> pi)) <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
+<span id="cb1-5"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Model 1: <code>y ~ x1 + x2</code></p>
 <p>Model 2: <code>y ~ x1 + x2 + x1*x2</code></p>
@@ -447,16 +448,16 @@
 <section id="fit-each-model-and-estimate-r_n" class="slide level2">
 <h2>Fit each model and estimate <span class="math inline">\(R_n\)</span></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>forms <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"y ~ x1 + x2"</span>, <span class="st">"y ~ x1 * x2"</span>, <span class="st">"y ~ x2 + sin(x1*x2)"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">map</span>(as.formula)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>fits <span class="ot">&lt;-</span> <span class="fu">map</span>(forms, <span class="sc">~</span> <span class="fu">lm</span>(.x, <span class="at">data =</span> dat))</span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">map</span>(fits, <span class="sc">~</span> <span class="fu">tibble</span>(</span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">R2 =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq,</span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">training_error =</span> <span class="fu">mean</span>(<span class="fu">residuals</span>(.x)<span class="sc">^</span><span class="dv">2</span>),</span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="at">loocv =</span> <span class="fu">mean</span>( (<span class="fu">residuals</span>(.x) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(.x)))<span class="sc">^</span><span class="dv">2</span> ),</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="at">AIC =</span> <span class="fu">AIC</span>(.x),</span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">BIC =</span> <span class="fu">BIC</span>(.x)</span>
-<span id="cb2-10"><a href="#cb2-10"></a>)) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>forms <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"y ~ x1 + x2"</span>, <span class="st">"y ~ x1 * x2"</span>, <span class="st">"y ~ x2 + sin(x1*x2)"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-2"><a></a>  <span class="fu">map</span>(as.formula)</span>
+<span id="cb2-3"><a></a>fits <span class="ot">&lt;-</span> <span class="fu">map</span>(forms, <span class="sc">~</span> <span class="fu">lm</span>(.x, <span class="at">data =</span> dat))</span>
+<span id="cb2-4"><a></a><span class="fu">map</span>(fits, <span class="sc">~</span> <span class="fu">tibble</span>(</span>
+<span id="cb2-5"><a></a>  <span class="at">R2 =</span> <span class="fu">summary</span>(.x)<span class="sc">$</span>r.sq,</span>
+<span id="cb2-6"><a></a>  <span class="at">training_error =</span> <span class="fu">mean</span>(<span class="fu">residuals</span>(.x)<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb2-7"><a></a>  <span class="at">loocv =</span> <span class="fu">mean</span>( (<span class="fu">residuals</span>(.x) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(.x)))<span class="sc">^</span><span class="dv">2</span> ),</span>
+<span id="cb2-8"><a></a>  <span class="at">AIC =</span> <span class="fu">AIC</span>(.x),</span>
+<span id="cb2-9"><a></a>  <span class="at">BIC =</span> <span class="fu">BIC</span>(.x)</span>
+<span id="cb2-10"><a></a>)) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 5
      R2 training_error loocv   AIC   BIC
@@ -547,18 +548,18 @@ combine forward and backward smartly
 <section id="synthetic-example" class="slide level2">
 <h2>Synthetic example</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>n <span class="ot">&lt;-</span> <span class="dv">406</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># like data.frame, but columns can be functions of preceding</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(n),</span>
-<span id="cb4-5"><a href="#cb4-5"></a>  <span class="at">x2 =</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">2</span>, <span class="at">sd =</span> <span class="dv">1</span>),</span>
-<span id="cb4-6"><a href="#cb4-6"></a>  <span class="at">x3 =</span> <span class="fu">rexp</span>(n, <span class="at">rate =</span> <span class="dv">1</span>),</span>
-<span id="cb4-7"><a href="#cb4-7"></a>  <span class="at">x4 =</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x2</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>  <span class="at">x5 =</span> x1 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x1</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="at">x6 =</span> x1 <span class="sc">-</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x2 and x1 (and others)</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="at">x7 =</span> x1 <span class="sc">+</span> x3 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x1 and x3 (and others)</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="at">y =</span> x1 <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> x2 <span class="sc">/</span> <span class="dv">3</span> <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> <span class="fl">2.2</span>) <span class="co"># function of x1 and x2 only</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb4-2"><a></a>n <span class="ot">&lt;-</span> <span class="dv">406</span></span>
+<span id="cb4-3"><a></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># like data.frame, but columns can be functions of preceding</span></span>
+<span id="cb4-4"><a></a>  <span class="at">x1 =</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb4-5"><a></a>  <span class="at">x2 =</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">2</span>, <span class="at">sd =</span> <span class="dv">1</span>),</span>
+<span id="cb4-6"><a></a>  <span class="at">x3 =</span> <span class="fu">rexp</span>(n, <span class="at">rate =</span> <span class="dv">1</span>),</span>
+<span id="cb4-7"><a></a>  <span class="at">x4 =</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x2</span></span>
+<span id="cb4-8"><a></a>  <span class="at">x5 =</span> x1 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x1</span></span>
+<span id="cb4-9"><a></a>  <span class="at">x6 =</span> x1 <span class="sc">-</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x2 and x1 (and others)</span></span>
+<span id="cb4-10"><a></a>  <span class="at">x7 =</span> x1 <span class="sc">+</span> x3 <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> .<span class="dv">1</span>), <span class="co"># correlated with x1 and x3 (and others)</span></span>
+<span id="cb4-11"><a></a>  <span class="at">y =</span> x1 <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> x2 <span class="sc">/</span> <span class="dv">3</span> <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> <span class="fl">2.2</span>) <span class="co"># function of x1 and x2 only</span></span>
+<span id="cb4-12"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <p><span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> are the true predictors</p>
@@ -568,8 +569,8 @@ combine forward and backward smartly
 <section id="full-model" class="slide level2">
 <h2>Full model</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">summary</span>(full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
+<span id="cb5-2"><a></a><span class="fu">summary</span>(full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -601,8 +602,8 @@ F-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="true-model" class="slide level2">
 <h2>True model</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>truth <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2, <span class="at">data =</span> df)</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="fu">summary</span>(truth)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>truth <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2, <span class="at">data =</span> df)</span>
+<span id="cb7-2"><a></a><span class="fu">summary</span>(truth)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -629,9 +630,9 @@ F-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="all-subsets" class="slide level2">
 <h2>All subsets</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">library</span>(leaps)</span>
-<span id="cb9-2"><a href="#cb9-2"></a>trythemall <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
-<span id="cb9-3"><a href="#cb9-3"></a><span class="fu">summary</span>(trythemall)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a><span class="fu">library</span>(leaps)</span>
+<span id="cb9-2"><a></a>trythemall <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df)</span>
+<span id="cb9-3"><a></a><span class="fu">summary</span>(trythemall)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Subset selection object
 Call: regsubsets.formula(y ~ ., data = df)
@@ -661,26 +662,26 @@ Selection Algorithm: exhaustive
 <h2>BIC and Cp</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb11-2"><a href="#cb11-2"></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(trythemall)<span class="sc">$</span>bic, </span>
-<span id="cb11-3"><a href="#cb11-3"></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(trythemall)<span class="sc">$</span>cp,</span>
-<span id="cb11-4"><a href="#cb11-4"></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb11-6"><a href="#cb11-6"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
-<span id="cb11-7"><a href="#cb11-7"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span> </span>
-<span id="cb11-8"><a href="#cb11-8"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb11-9"><a href="#cb11-9"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
-<span id="cb11-10"><a href="#cb11-10"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span> </span>
-<span id="cb11-11"><a href="#cb11-11"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb11-12"><a href="#cb11-12"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb11-13"><a href="#cb11-13"></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange), </span>
-<span id="cb11-14"><a href="#cb11-14"></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
-<span id="cb11-15"><a href="#cb11-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">tibble</span>(</span>
+<span id="cb11-2"><a></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(trythemall)<span class="sc">$</span>bic, </span>
+<span id="cb11-3"><a></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(trythemall)<span class="sc">$</span>cp,</span>
+<span id="cb11-4"><a></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
+<span id="cb11-5"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb11-6"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span> </span>
+<span id="cb11-8"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-9"><a></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb11-10"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span> </span>
+<span id="cb11-11"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb11-12"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb11-13"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange), </span>
+<span id="cb11-14"><a></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
+<span id="cb11-15"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="07-greedy-selection_files/figure-revealjs/more-all-subsets1-1.svg"></p>
+<p><img data-src="07-greedy-selection_files/figure-revealjs/more-all-subsets1-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -690,8 +691,8 @@ Selection Algorithm: exhaustive
 <section id="forward-stepwise" class="slide level2">
 <h2>Forward stepwise</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>stepup <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"forward"</span>)</span>
-<span id="cb12-2"><a href="#cb12-2"></a><span class="fu">summary</span>(stepup)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>stepup <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"forward"</span>)</span>
+<span id="cb12-2"><a></a><span class="fu">summary</span>(stepup)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Subset selection object
 Call: regsubsets.formula(y ~ ., data = df, method = "forward")
@@ -721,26 +722,26 @@ Selection Algorithm: forward
 <h2>BIC and Cp</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb14-2"><a href="#cb14-2"></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(stepup)<span class="sc">$</span>bic,</span>
-<span id="cb14-3"><a href="#cb14-3"></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(stepup)<span class="sc">$</span>cp,</span>
-<span id="cb14-4"><a href="#cb14-4"></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
-<span id="cb14-5"><a href="#cb14-5"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb14-6"><a href="#cb14-6"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
-<span id="cb14-7"><a href="#cb14-7"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
-<span id="cb14-8"><a href="#cb14-8"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb14-9"><a href="#cb14-9"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb14-10"><a href="#cb14-10"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb14-11"><a href="#cb14-11"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb14-12"><a href="#cb14-12"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb14-13"><a href="#cb14-13"></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange),</span>
-<span id="cb14-14"><a href="#cb14-14"></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
-<span id="cb14-15"><a href="#cb14-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a><span class="fu">tibble</span>(</span>
+<span id="cb14-2"><a></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(stepup)<span class="sc">$</span>bic,</span>
+<span id="cb14-3"><a></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(stepup)<span class="sc">$</span>cp,</span>
+<span id="cb14-4"><a></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
+<span id="cb14-5"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
+<span id="cb14-8"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb14-9"><a></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb14-10"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb14-11"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb14-12"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb14-13"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange),</span>
+<span id="cb14-14"><a></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
+<span id="cb14-15"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="07-greedy-selection_files/figure-revealjs/more-step-forward-1.svg"></p>
+<p><img data-src="07-greedy-selection_files/figure-revealjs/more-step-forward-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -750,8 +751,8 @@ Selection Algorithm: forward
 <section id="backward-selection" class="slide level2">
 <h2>Backward selection</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>stepdown <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"backward"</span>)</span>
-<span id="cb15-2"><a href="#cb15-2"></a><span class="fu">summary</span>(stepdown)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a>stepdown <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> df, <span class="at">method =</span> <span class="st">"backward"</span>)</span>
+<span id="cb15-2"><a></a><span class="fu">summary</span>(stepdown)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Subset selection object
 Call: regsubsets.formula(y ~ ., data = df, method = "backward")
@@ -781,33 +782,33 @@ Selection Algorithm: backward
 <h2>BIC and Cp</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb17-2"><a href="#cb17-2"></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(stepdown)<span class="sc">$</span>bic,</span>
-<span id="cb17-3"><a href="#cb17-3"></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(stepdown)<span class="sc">$</span>cp,</span>
-<span id="cb17-4"><a href="#cb17-4"></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
-<span id="cb17-5"><a href="#cb17-5"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb17-6"><a href="#cb17-6"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
-<span id="cb17-7"><a href="#cb17-7"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
-<span id="cb17-8"><a href="#cb17-8"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb17-9"><a href="#cb17-9"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb17-10"><a href="#cb17-10"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb17-11"><a href="#cb17-11"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb17-12"><a href="#cb17-12"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb17-13"><a href="#cb17-13"></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange), </span>
-<span id="cb17-14"><a href="#cb17-14"></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
-<span id="cb17-15"><a href="#cb17-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a><span class="fu">tibble</span>(</span>
+<span id="cb17-2"><a></a>  <span class="at">BIC =</span> <span class="fu">summary</span>(stepdown)<span class="sc">$</span>bic,</span>
+<span id="cb17-3"><a></a>  <span class="at">Cp =</span> <span class="fu">summary</span>(stepdown)<span class="sc">$</span>cp,</span>
+<span id="cb17-4"><a></a>  <span class="at">size =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span></span>
+<span id="cb17-5"><a></a>) <span class="sc">|&gt;</span></span>
+<span id="cb17-6"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>size) <span class="sc">|&gt;</span></span>
+<span id="cb17-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(size, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
+<span id="cb17-8"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb17-9"><a></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb17-10"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb17-11"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb17-12"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb17-13"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange), </span>
+<span id="cb17-14"><a></a>    <span class="at">guide =</span> <span class="st">"none"</span></span>
+<span id="cb17-15"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="07-greedy-selection_files/figure-revealjs/more-step-backward-1.svg"></p>
+<p><img data-src="07-greedy-selection_files/figure-revealjs/more-step-backward-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="section" class="slide level2">
+<section id="section-1" class="slide level2">
 <h2></h2>
 <p><br><br><br><br></p>
 <div class="r-stack">
@@ -840,53 +841,53 @@ Selection Algorithm: backward
 <h2>Code for simulation</h2>
 <p>… Annoyingly, no predict method for <code>regsubsets</code>, so we make one.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb18" data-code-line-numbers="|2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>predict.regsubsets <span class="ot">&lt;-</span> <span class="cf">function</span>(object, newdata, <span class="at">risk_estimate =</span> <span class="fu">c</span>(<span class="st">"cp"</span>, <span class="st">"bic"</span>), ...) {</span>
-<span id="cb18-2"><a href="#cb18-2"></a>  risk_estimate <span class="ot">&lt;-</span> <span class="fu">match.arg</span>(risk_estimate)</span>
-<span id="cb18-3"><a href="#cb18-3"></a>  chosen <span class="ot">&lt;-</span> <span class="fu">coef</span>(object, <span class="fu">which.min</span>(<span class="fu">summary</span>(object)[[risk_estimate]]))</span>
-<span id="cb18-4"><a href="#cb18-4"></a>  predictors <span class="ot">&lt;-</span> <span class="fu">names</span>(chosen)</span>
-<span id="cb18-5"><a href="#cb18-5"></a>  <span class="cf">if</span> (object<span class="sc">$</span>intercept) predictors <span class="ot">&lt;-</span> predictors[<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb18-6"><a href="#cb18-6"></a>  X <span class="ot">&lt;-</span> newdata[, predictors]</span>
-<span id="cb18-7"><a href="#cb18-7"></a>  <span class="cf">if</span> (object<span class="sc">$</span>intercept) X <span class="ot">&lt;-</span> <span class="fu">cbind2</span>(<span class="dv">1</span>, X)</span>
-<span id="cb18-8"><a href="#cb18-8"></a>  <span class="fu">drop</span>(<span class="fu">as.matrix</span>(X) <span class="sc">%*%</span> chosen)</span>
-<span id="cb18-9"><a href="#cb18-9"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18" data-code-line-numbers="|2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a></a>predict.regsubsets <span class="ot">&lt;-</span> <span class="cf">function</span>(object, newdata, <span class="at">risk_estimate =</span> <span class="fu">c</span>(<span class="st">"cp"</span>, <span class="st">"bic"</span>), ...) {</span>
+<span id="cb18-2"><a></a>  risk_estimate <span class="ot">&lt;-</span> <span class="fu">match.arg</span>(risk_estimate)</span>
+<span id="cb18-3"><a></a>  chosen <span class="ot">&lt;-</span> <span class="fu">coef</span>(object, <span class="fu">which.min</span>(<span class="fu">summary</span>(object)[[risk_estimate]]))</span>
+<span id="cb18-4"><a></a>  predictors <span class="ot">&lt;-</span> <span class="fu">names</span>(chosen)</span>
+<span id="cb18-5"><a></a>  <span class="cf">if</span> (object<span class="sc">$</span>intercept) predictors <span class="ot">&lt;-</span> predictors[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb18-6"><a></a>  X <span class="ot">&lt;-</span> newdata[, predictors]</span>
+<span id="cb18-7"><a></a>  <span class="cf">if</span> (object<span class="sc">$</span>intercept) X <span class="ot">&lt;-</span> <span class="fu">cbind2</span>(<span class="dv">1</span>, X)</span>
+<span id="cb18-8"><a></a>  <span class="fu">drop</span>(<span class="fu">as.matrix</span>(X) <span class="sc">%*%</span> chosen)</span>
+<span id="cb18-9"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="section-1" class="slide level2">
+<section id="section-2" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>simulate_and_estimate_them_all <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">406</span>) {</span>
-<span id="cb19-2"><a href="#cb19-2"></a>  N <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> n <span class="co"># generate 2x the amount of data (half train, half test)</span></span>
-<span id="cb19-3"><a href="#cb19-3"></a>  df <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># generate data</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>    <span class="at">x1 =</span> <span class="fu">rnorm</span>(N), </span>
-<span id="cb19-5"><a href="#cb19-5"></a>    <span class="at">x2 =</span> <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">2</span>), </span>
-<span id="cb19-6"><a href="#cb19-6"></a>    <span class="at">x3 =</span> <span class="fu">rexp</span>(N),</span>
-<span id="cb19-7"><a href="#cb19-7"></a>    <span class="at">x4 =</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>), </span>
-<span id="cb19-8"><a href="#cb19-8"></a>    <span class="at">x5 =</span> x1 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>),</span>
-<span id="cb19-9"><a href="#cb19-9"></a>    <span class="at">x6 =</span> x1 <span class="sc">-</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>), </span>
-<span id="cb19-10"><a href="#cb19-10"></a>    <span class="at">x7 =</span> x1 <span class="sc">+</span> x3 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>),</span>
-<span id="cb19-11"><a href="#cb19-11"></a>    <span class="at">y =</span> x1 <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> x2 <span class="sc">/</span> <span class="dv">3</span> <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> <span class="fl">2.2</span>)</span>
-<span id="cb19-12"><a href="#cb19-12"></a>  )</span>
-<span id="cb19-13"><a href="#cb19-13"></a>  train <span class="ot">&lt;-</span> df[<span class="dv">1</span><span class="sc">:</span>n, ] <span class="co"># half the data for training</span></span>
-<span id="cb19-14"><a href="#cb19-14"></a>  test <span class="ot">&lt;-</span> df[(n <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>N, ] <span class="co"># half the data for evaluation</span></span>
-<span id="cb19-15"><a href="#cb19-15"></a>  </span>
-<span id="cb19-16"><a href="#cb19-16"></a>  oracle <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> train) <span class="co"># knowing the right model, not the coefs</span></span>
-<span id="cb19-17"><a href="#cb19-17"></a>  full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
-<span id="cb19-18"><a href="#cb19-18"></a>  stepup <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">method =</span> <span class="st">"forward"</span>)</span>
-<span id="cb19-19"><a href="#cb19-19"></a>  stepdown <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">method =</span> <span class="st">"backward"</span>)</span>
-<span id="cb19-20"><a href="#cb19-20"></a>  </span>
-<span id="cb19-21"><a href="#cb19-21"></a>  <span class="fu">tibble</span>(</span>
-<span id="cb19-22"><a href="#cb19-22"></a>    <span class="at">y =</span> test<span class="sc">$</span>y,</span>
-<span id="cb19-23"><a href="#cb19-23"></a>    <span class="at">oracle =</span> <span class="fu">predict</span>(oracle, <span class="at">newdata =</span> test),</span>
-<span id="cb19-24"><a href="#cb19-24"></a>    <span class="at">full =</span> <span class="fu">predict</span>(full, <span class="at">newdata =</span> test),</span>
-<span id="cb19-25"><a href="#cb19-25"></a>    <span class="at">stepup =</span> <span class="fu">predict</span>(stepup, <span class="at">newdata =</span> test),</span>
-<span id="cb19-26"><a href="#cb19-26"></a>    <span class="at">stepdown =</span> <span class="fu">predict</span>(stepdown, <span class="at">newdata =</span> test),</span>
-<span id="cb19-27"><a href="#cb19-27"></a>    <span class="at">truth =</span> <span class="fu">drop</span>(<span class="fu">as.matrix</span>(test[, <span class="fu">c</span>(<span class="st">"x1"</span>, <span class="st">"x2"</span>)]) <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>))</span>
-<span id="cb19-28"><a href="#cb19-28"></a>  )</span>
-<span id="cb19-29"><a href="#cb19-29"></a>}</span>
-<span id="cb19-30"><a href="#cb19-30"></a></span>
-<span id="cb19-31"><a href="#cb19-31"></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
-<span id="cb19-32"><a href="#cb19-32"></a>our_sim <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>, <span class="sc">~</span> <span class="fu">simulate_and_estimate_them_all</span>(<span class="dv">406</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb19-33"><a href="#cb19-33"></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"sim"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a>simulate_and_estimate_them_all <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">406</span>) {</span>
+<span id="cb19-2"><a></a>  N <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> n <span class="co"># generate 2x the amount of data (half train, half test)</span></span>
+<span id="cb19-3"><a></a>  df <span class="ot">&lt;-</span> <span class="fu">tibble</span>( <span class="co"># generate data</span></span>
+<span id="cb19-4"><a></a>    <span class="at">x1 =</span> <span class="fu">rnorm</span>(N), </span>
+<span id="cb19-5"><a></a>    <span class="at">x2 =</span> <span class="fu">rnorm</span>(N, <span class="at">mean =</span> <span class="dv">2</span>), </span>
+<span id="cb19-6"><a></a>    <span class="at">x3 =</span> <span class="fu">rexp</span>(N),</span>
+<span id="cb19-7"><a></a>    <span class="at">x4 =</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>), </span>
+<span id="cb19-8"><a></a>    <span class="at">x5 =</span> x1 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>),</span>
+<span id="cb19-9"><a></a>    <span class="at">x6 =</span> x1 <span class="sc">-</span> x2 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>), </span>
+<span id="cb19-10"><a></a>    <span class="at">x7 =</span> x1 <span class="sc">+</span> x3 <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> .<span class="dv">1</span>),</span>
+<span id="cb19-11"><a></a>    <span class="at">y =</span> x1 <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> x2 <span class="sc">/</span> <span class="dv">3</span> <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="at">sd =</span> <span class="fl">2.2</span>)</span>
+<span id="cb19-12"><a></a>  )</span>
+<span id="cb19-13"><a></a>  train <span class="ot">&lt;-</span> df[<span class="dv">1</span><span class="sc">:</span>n, ] <span class="co"># half the data for training</span></span>
+<span id="cb19-14"><a></a>  test <span class="ot">&lt;-</span> df[(n <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>N, ] <span class="co"># half the data for evaluation</span></span>
+<span id="cb19-15"><a></a>  </span>
+<span id="cb19-16"><a></a>  oracle <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2 <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> train) <span class="co"># knowing the right model, not the coefs</span></span>
+<span id="cb19-17"><a></a>  full <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train)</span>
+<span id="cb19-18"><a></a>  stepup <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">method =</span> <span class="st">"forward"</span>)</span>
+<span id="cb19-19"><a></a>  stepdown <span class="ot">&lt;-</span> <span class="fu">regsubsets</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train, <span class="at">method =</span> <span class="st">"backward"</span>)</span>
+<span id="cb19-20"><a></a>  </span>
+<span id="cb19-21"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb19-22"><a></a>    <span class="at">y =</span> test<span class="sc">$</span>y,</span>
+<span id="cb19-23"><a></a>    <span class="at">oracle =</span> <span class="fu">predict</span>(oracle, <span class="at">newdata =</span> test),</span>
+<span id="cb19-24"><a></a>    <span class="at">full =</span> <span class="fu">predict</span>(full, <span class="at">newdata =</span> test),</span>
+<span id="cb19-25"><a></a>    <span class="at">stepup =</span> <span class="fu">predict</span>(stepup, <span class="at">newdata =</span> test),</span>
+<span id="cb19-26"><a></a>    <span class="at">stepdown =</span> <span class="fu">predict</span>(stepdown, <span class="at">newdata =</span> test),</span>
+<span id="cb19-27"><a></a>    <span class="at">truth =</span> <span class="fu">drop</span>(<span class="fu">as.matrix</span>(test[, <span class="fu">c</span>(<span class="st">"x1"</span>, <span class="st">"x2"</span>)]) <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>))</span>
+<span id="cb19-28"><a></a>  )</span>
+<span id="cb19-29"><a></a>}</span>
+<span id="cb19-30"><a></a></span>
+<span id="cb19-31"><a></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb19-32"><a></a>our_sim <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>, <span class="sc">~</span> <span class="fu">simulate_and_estimate_them_all</span>(<span class="dv">406</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb19-33"><a></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"sim"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="what-is-oracle" class="slide level2">
@@ -904,32 +905,32 @@ Selection Algorithm: backward
 <h2>Results</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>our_sim <span class="sc">|&gt;</span> </span>
-<span id="cb20-2"><a href="#cb20-2"></a>  <span class="fu">group_by</span>(sim) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb20-4"><a href="#cb20-4"></a>    <span class="fu">across</span>(oracle<span class="sc">:</span>truth, <span class="sc">~</span> <span class="fu">mean</span>((y <span class="sc">-</span> .)<span class="sc">^</span><span class="dv">2</span>)), </span>
-<span id="cb20-5"><a href="#cb20-5"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb20-7"><a href="#cb20-7"></a>  <span class="fu">transmute</span>(<span class="fu">across</span>(oracle<span class="sc">:</span>stepdown, <span class="sc">~</span> . <span class="sc">/</span> truth <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb20-8"><a href="#cb20-8"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb20-9"><a href="#cb20-9"></a>    <span class="fu">everything</span>(), </span>
-<span id="cb20-10"><a href="#cb20-10"></a>    <span class="at">names_to =</span> <span class="st">"method"</span>, </span>
-<span id="cb20-11"><a href="#cb20-11"></a>    <span class="at">values_to =</span> <span class="st">"mse"</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb20-13"><a href="#cb20-13"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(method, mse, <span class="at">fill =</span> method)) <span class="sc">+</span></span>
-<span id="cb20-14"><a href="#cb20-14"></a>  <span class="fu">geom_boxplot</span>(<span class="at">notch =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb20-15"><a href="#cb20-15"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb20-16"><a href="#cb20-16"></a>  <span class="fu">scale_fill_viridis_d</span>() <span class="sc">+</span></span>
-<span id="cb20-17"><a href="#cb20-17"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb20-18"><a href="#cb20-18"></a>  <span class="fu">scale_y_continuous</span>(</span>
-<span id="cb20-19"><a href="#cb20-19"></a>    <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()</span>
-<span id="cb20-20"><a href="#cb20-20"></a>  ) <span class="sc">+</span></span>
-<span id="cb20-21"><a href="#cb20-21"></a>  <span class="fu">ylab</span>(<span class="st">"% increase in mse relative</span><span class="sc">\n</span><span class="st"> to the truth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a></a>our_sim <span class="sc">|&gt;</span> </span>
+<span id="cb20-2"><a></a>  <span class="fu">group_by</span>(sim) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a></a>  <span class="fu">summarise</span>(</span>
+<span id="cb20-4"><a></a>    <span class="fu">across</span>(oracle<span class="sc">:</span>truth, <span class="sc">~</span> <span class="fu">mean</span>((y <span class="sc">-</span> .)<span class="sc">^</span><span class="dv">2</span>)), </span>
+<span id="cb20-5"><a></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb20-6"><a></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a></a>  <span class="fu">transmute</span>(<span class="fu">across</span>(oracle<span class="sc">:</span>stepdown, <span class="sc">~</span> . <span class="sc">/</span> truth <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb20-8"><a></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb20-9"><a></a>    <span class="fu">everything</span>(), </span>
+<span id="cb20-10"><a></a>    <span class="at">names_to =</span> <span class="st">"method"</span>, </span>
+<span id="cb20-11"><a></a>    <span class="at">values_to =</span> <span class="st">"mse"</span></span>
+<span id="cb20-12"><a></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb20-13"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(method, mse, <span class="at">fill =</span> method)) <span class="sc">+</span></span>
+<span id="cb20-14"><a></a>  <span class="fu">geom_boxplot</span>(<span class="at">notch =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb20-15"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb20-16"><a></a>  <span class="fu">scale_fill_viridis_d</span>() <span class="sc">+</span></span>
+<span id="cb20-17"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb20-18"><a></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb20-19"><a></a>    <span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()</span>
+<span id="cb20-20"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb20-21"><a></a>  <span class="fu">ylab</span>(<span class="st">"% increase in mse relative</span><span class="sc">\n</span><span class="st"> to the truth"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="07-greedy-selection_files/figure-revealjs/synth-results-1.svg"></p>
+<p><img data-src="07-greedy-selection_files/figure-revealjs/synth-results-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -941,8 +942,10 @@ Selection Algorithm: backward
 <p><span class="large">Module 2</span></p>
 <p><span class="secondary">regularization, constraints, and nonparametrics</span></p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -972,7 +975,6 @@ Selection Algorithm: backward
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1272,10 +1274,34 @@ Selection Algorithm: backward
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1285,8 +1311,17 @@ Selection Algorithm: backward
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1300,7 +1335,11 @@ Selection Algorithm: backward
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1340,22 +1379,6 @@ Selection Algorithm: backward
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

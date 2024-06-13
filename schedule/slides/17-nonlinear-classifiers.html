@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – nonlinear-classifiers</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>17 Nonlinear classifiers</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -439,41 +440,41 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <p><strong>Polynomials</strong></p>
 <p><span class="math inline">\((x_1, x_2) \mapsto \left(1,\ x_1,\ x_1^2,\ x_2,\ x_2^2,\ x_1 x_2\right)\)</span></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>)) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">as.factor</span>(y))</span>
-<span id="cb1-2"><a href="#cb1-2"></a>logit_poly <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x1 <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">I</span>(x1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x2<span class="sc">^</span><span class="dv">2</span>), dat1, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>lda_poly <span class="ot">&lt;-</span> <span class="fu">lda</span>(y <span class="sc">~</span> x1 <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">I</span>(x1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x2<span class="sc">^</span><span class="dv">2</span>), dat1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>)) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">as.factor</span>(y))</span>
+<span id="cb1-2"><a></a>logit_poly <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x1 <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">I</span>(x1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x2<span class="sc">^</span><span class="dv">2</span>), dat1, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb1-3"><a></a>lda_poly <span class="ot">&lt;-</span> <span class="fu">lda</span>(y <span class="sc">~</span> x1 <span class="sc">*</span> x2 <span class="sc">+</span> <span class="fu">I</span>(x1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(x2<span class="sc">^</span><span class="dv">2</span>), dat1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="visualizing-the-classification-boundary" class="slide level2">
 <h2>Visualizing the classification boundary</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
-<span id="cb2-3"><a href="#cb2-3"></a>pts_logit <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit_poly, gr)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>pts_lda <span class="ot">&lt;-</span> <span class="fu">predict</span>(lda_poly, gr)</span>
-<span id="cb2-5"><a href="#cb2-5"></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts_logit), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="fu">scale_fill_viridis_b</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">alpha =</span> .<span class="dv">5</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) <span class="sc">+</span></span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="fu">ggtitle</span>(<span class="st">"Polynomial logit"</span>) <span class="sc">+</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">1.5</span>, <span class="st">"cm"</span>))</span>
-<span id="cb2-13"><a href="#cb2-13"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts_lda<span class="sc">$</span>x), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>  <span class="fu">scale_fill_viridis_b</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">alpha =</span> .<span class="dv">5</span>, <span class="at">name =</span> <span class="fu">bquote</span>(delta[<span class="dv">1</span>] <span class="sc">-</span> delta[<span class="dv">0</span>])) <span class="sc">+</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>  <span class="fu">ggtitle</span>(<span class="st">"Polynomial lda"</span>) <span class="sc">+</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">1.5</span>, <span class="st">"cm"</span>))</span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="fu">plot_grid</span>(g0, g1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb2-2"><a></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
+<span id="cb2-3"><a></a>pts_logit <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit_poly, gr)</span>
+<span id="cb2-4"><a></a>pts_lda <span class="ot">&lt;-</span> <span class="fu">predict</span>(lda_poly, gr)</span>
+<span id="cb2-5"><a></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb2-6"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb2-7"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts_logit), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
+<span id="cb2-8"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb2-9"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb2-10"><a></a>  <span class="fu">scale_fill_viridis_b</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">alpha =</span> .<span class="dv">5</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) <span class="sc">+</span></span>
+<span id="cb2-11"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Polynomial logit"</span>) <span class="sc">+</span></span>
+<span id="cb2-12"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">1.5</span>, <span class="st">"cm"</span>))</span>
+<span id="cb2-13"><a></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb2-14"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb2-15"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts_lda<span class="sc">$</span>x), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
+<span id="cb2-16"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb2-17"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb2-18"><a></a>  <span class="fu">scale_fill_viridis_b</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">alpha =</span> .<span class="dv">5</span>, <span class="at">name =</span> <span class="fu">bquote</span>(delta[<span class="dv">1</span>] <span class="sc">-</span> delta[<span class="dv">0</span>])) <span class="sc">+</span></span>
+<span id="cb2-19"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Polynomial lda"</span>) <span class="sc">+</span></span>
+<span id="cb2-20"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="fl">1.5</span>, <span class="st">"cm"</span>))</span>
+<span id="cb2-21"><a></a><span class="fu">plot_grid</span>(g0, g1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="17-nonlinear-classifiers_files/figure-revealjs/plot-d1-1.svg" class="r-stretch quarto-figure-center"><p>A linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions.</p>
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/plot-d1-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>A linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions.</p>
 </section>
 <section id="trees-reforestation" class="slide level2">
 <h2>Trees (reforestation)</h2>
@@ -498,7 +499,7 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center" data-r.options="{&quot;width&quot;:50}">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">names</span>(bakeoff)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">names</span>(bakeoff)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "winners"                  
  [2] "series"                   
@@ -519,31 +520,31 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>smalltree <span class="ot">&lt;-</span> <span class="fu">tree</span>(</span>
-<span id="cb5-2"><a href="#cb5-2"></a>  winners <span class="sc">~</span> technical_median <span class="sc">+</span> percent_star,</span>
-<span id="cb5-3"><a href="#cb5-3"></a>  <span class="at">data =</span> bakeoff</span>
-<span id="cb5-4"><a href="#cb5-4"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>smalltree <span class="ot">&lt;-</span> <span class="fu">tree</span>(</span>
+<span id="cb5-2"><a></a>  winners <span class="sc">~</span> technical_median <span class="sc">+</span> percent_star,</span>
+<span id="cb5-3"><a></a>  <span class="at">data =</span> bakeoff</span>
+<span id="cb5-4"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">0</span>) <span class="sc">+</span> .<span class="dv">1</span>)</span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="fu">plot</span>(bakeoff<span class="sc">$</span>technical_median, bakeoff<span class="sc">$</span>percent_star,</span>
-<span id="cb6-3"><a href="#cb6-3"></a>  <span class="at">pch =</span> <span class="fu">c</span>(<span class="st">"-"</span>, <span class="st">"+"</span>)[bakeoff<span class="sc">$</span>winners <span class="sc">+</span> <span class="dv">1</span>], <span class="at">cex =</span> <span class="dv">2</span>, <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">las =</span> <span class="dv">1</span>,</span>
-<span id="cb6-4"><a href="#cb6-4"></a>  <span class="at">ylab =</span> <span class="st">"% star baker"</span>, <span class="at">xlab =</span> <span class="st">"times above median in technical"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5"></a>  <span class="at">col =</span> orange, <span class="at">cex.axis =</span> <span class="dv">2</span>, <span class="at">cex.lab =</span> <span class="dv">2</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>)</span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="fu">partition.tree</span>(smalltree,</span>
-<span id="cb6-8"><a href="#cb6-8"></a>  <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> blue,</span>
-<span id="cb6-9"><a href="#cb6-9"></a>  <span class="at">ordvars =</span> <span class="fu">c</span>(<span class="st">"technical_median"</span>, <span class="st">"percent_star"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">0</span>) <span class="sc">+</span> .<span class="dv">1</span>)</span>
+<span id="cb6-2"><a></a><span class="fu">plot</span>(bakeoff<span class="sc">$</span>technical_median, bakeoff<span class="sc">$</span>percent_star,</span>
+<span id="cb6-3"><a></a>  <span class="at">pch =</span> <span class="fu">c</span>(<span class="st">"-"</span>, <span class="st">"+"</span>)[bakeoff<span class="sc">$</span>winners <span class="sc">+</span> <span class="dv">1</span>], <span class="at">cex =</span> <span class="dv">2</span>, <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">las =</span> <span class="dv">1</span>,</span>
+<span id="cb6-4"><a></a>  <span class="at">ylab =</span> <span class="st">"% star baker"</span>, <span class="at">xlab =</span> <span class="st">"times above median in technical"</span>,</span>
+<span id="cb6-5"><a></a>  <span class="at">col =</span> orange, <span class="at">cex.axis =</span> <span class="dv">2</span>, <span class="at">cex.lab =</span> <span class="dv">2</span></span>
+<span id="cb6-6"><a></a>)</span>
+<span id="cb6-7"><a></a><span class="fu">partition.tree</span>(smalltree,</span>
+<span id="cb6-8"><a></a>  <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> blue,</span>
+<span id="cb6-9"><a></a>  <span class="at">ordvars =</span> <span class="fu">c</span>(<span class="st">"technical_median"</span>, <span class="st">"percent_star"</span>)</span>
+<span id="cb6-10"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/plot-partition-1.svg"></p>
+<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/plot-partition-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -593,7 +594,7 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <section id="how-do-we-measure-quality-of-fit" class="slide level2">
 <h2>How do we measure quality of fit?</h2>
 <p>Let <span class="math inline">\(p_{mk}\)</span> be the proportion of training observations in the <span class="math inline">\(m^{th}\)</span> region that are from the <span class="math inline">\(k^{th}\)</span> class.</p>
-<table>
+<table class="caption-top">
 <colgroup>
 <col style="width: 50%">
 <col style="width: 50%">
@@ -651,56 +652,56 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <li>We saw <span class="math inline">\(k\)</span>-nearest neighbors in the last module.</li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">library</span>(class)</span>
-<span id="cb7-2"><a href="#cb7-2"></a>knn3 <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr, dat1<span class="sc">$</span>y, <span class="at">k =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">library</span>(class)</span>
+<span id="cb7-2"><a></a>knn3 <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr, dat1<span class="sc">$</span>y, <span class="at">k =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>gr<span class="sc">$</span>nn03 <span class="ot">&lt;-</span> knn3</span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> knn3), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc), <span class="at">alpha =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, blue), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">theme</span>(</span>
-<span id="cb8-9"><a href="#cb8-9"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb8-10"><a href="#cb8-10"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
-<span id="cb8-11"><a href="#cb8-11"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>gr<span class="sc">$</span>nn03 <span class="ot">&lt;-</span> knn3</span>
+<span id="cb8-2"><a></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb8-3"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb8-4"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> knn3), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc), <span class="at">alpha =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb8-6"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb8-7"><a></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, blue), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
+<span id="cb8-8"><a></a>  <span class="fu">theme</span>(</span>
+<span id="cb8-9"><a></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb8-10"><a></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
+<span id="cb8-11"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="choosing-k-is-very-important" class="slide level2">
 <h2>Choosing <span class="math inline">\(k\)</span> is very important</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
-<span id="cb9-2"><a href="#cb9-2"></a>ks <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>)</span>
-<span id="cb9-3"><a href="#cb9-3"></a>nn <span class="ot">&lt;-</span> <span class="fu">map</span>(ks, <span class="sc">~</span> <span class="fu">as_tibble</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, .x)) <span class="sc">|&gt;</span> </span>
-<span id="cb9-4"><a href="#cb9-4"></a>  <span class="fu">set_names</span>(<span class="fu">sprintf</span>(<span class="st">"k = %02s"</span>, .x))) <span class="sc">|&gt;</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">list_cbind</span>() <span class="sc">|&gt;</span></span>
-<span id="cb9-6"><a href="#cb9-6"></a>  <span class="fu">bind_cols</span>(gr)</span>
-<span id="cb9-7"><a href="#cb9-7"></a>pg <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(nn, <span class="fu">starts_with</span>(<span class="st">"k ="</span>), <span class="at">names_to =</span> <span class="st">"k"</span>, <span class="at">values_to =</span> <span class="st">"knn"</span>)</span>
-<span id="cb9-8"><a href="#cb9-8"></a></span>
-<span id="cb9-9"><a href="#cb9-9"></a><span class="fu">ggplot</span>(pg, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb9-10"><a href="#cb9-10"></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> knn), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
-<span id="cb9-11"><a href="#cb9-11"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> k) <span class="sc">+</span></span>
-<span id="cb9-12"><a href="#cb9-12"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
-<span id="cb9-13"><a href="#cb9-13"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> dat1, <span class="at">mapping =</span> <span class="fu">aes</span>(x1, x2, <span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb9-14"><a href="#cb9-14"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">18</span>) <span class="sc">+</span></span>
-<span id="cb9-15"><a href="#cb9-15"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb9-16"><a href="#cb9-16"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb9-17"><a href="#cb9-17"></a>  <span class="fu">theme</span>(</span>
-<span id="cb9-18"><a href="#cb9-18"></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb9-19"><a href="#cb9-19"></a>    <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="dv">3</span>, <span class="st">"cm"</span>)</span>
-<span id="cb9-20"><a href="#cb9-20"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb9-2"><a></a>ks <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>)</span>
+<span id="cb9-3"><a></a>nn <span class="ot">&lt;-</span> <span class="fu">map</span>(ks, <span class="sc">~</span> <span class="fu">as_tibble</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, .x)) <span class="sc">|&gt;</span> </span>
+<span id="cb9-4"><a></a>  <span class="fu">set_names</span>(<span class="fu">sprintf</span>(<span class="st">"k = %02s"</span>, .x))) <span class="sc">|&gt;</span></span>
+<span id="cb9-5"><a></a>  <span class="fu">list_cbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-6"><a></a>  <span class="fu">bind_cols</span>(gr)</span>
+<span id="cb9-7"><a></a>pg <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(nn, <span class="fu">starts_with</span>(<span class="st">"k ="</span>), <span class="at">names_to =</span> <span class="st">"k"</span>, <span class="at">values_to =</span> <span class="st">"knn"</span>)</span>
+<span id="cb9-8"><a></a></span>
+<span id="cb9-9"><a></a><span class="fu">ggplot</span>(pg, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb9-10"><a></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> knn), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb9-11"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> k) <span class="sc">+</span></span>
+<span id="cb9-12"><a></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
+<span id="cb9-13"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> dat1, <span class="at">mapping =</span> <span class="fu">aes</span>(x1, x2, <span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb9-14"><a></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">18</span>) <span class="sc">+</span></span>
+<span id="cb9-15"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb9-16"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb9-17"><a></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-18"><a></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb9-19"><a></a>    <span class="at">legend.key.height =</span> <span class="fu">unit</span>(<span class="dv">3</span>, <span class="st">"cm"</span>)</span>
+<span id="cb9-20"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="r-stretch quarto-figure-center"><ul>
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"><ul>
 <li><p>How should we choose <span class="math inline">\(k\)</span>?</p></li>
 <li><p>Scaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.</p></li>
 <li><p>If there are ties, break randomly. So even <span class="math inline">\(k\)</span> is strange.</p></li>
@@ -709,66 +710,66 @@ Pr(Y = 0 \given X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\fr
 <section id="knn.cv-leave-one-out" class="slide level2">
 <h2><code>knn.cv()</code> (leave one out)</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>kmax <span class="ot">&lt;-</span> <span class="dv">20</span></span>
-<span id="cb10-2"><a href="#cb10-2"></a>err <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>kmax, <span class="sc">~</span> <span class="fu">mean</span>(<span class="fu">knn.cv</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> .x) <span class="sc">!=</span> dat1<span class="sc">$</span>y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>kmax <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb10-2"><a></a>err <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>kmax, <span class="sc">~</span> <span class="fu">mean</span>(<span class="fu">knn.cv</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> .x) <span class="sc">!=</span> dat1<span class="sc">$</span>y))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="r-stretch quarto-figure-center"><p>I would use the <em>largest</em> (odd) <code>k</code> that is close to the minimum.<br>
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>I would use the <em>largest</em> (odd) <code>k</code> that is close to the minimum.<br>
 This produces simpler, smoother, decision boundaries.</p>
 </section>
 <section id="alternative-using-deviance-loss-i-think-this-is-right" class="slide level2">
 <h2>Alternative (using deviance loss, I think this is right)</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>dev <span class="ot">&lt;-</span> <span class="cf">function</span>(y, prob, <span class="at">prob_min =</span> <span class="fl">1e-5</span>) {</span>
-<span id="cb11-2"><a href="#cb11-2"></a>  y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(y)) <span class="sc">-</span> <span class="dv">1</span> <span class="co"># 0/1 valued</span></span>
-<span id="cb11-3"><a href="#cb11-3"></a>  m <span class="ot">&lt;-</span> <span class="fu">mean</span>(y)</span>
-<span id="cb11-4"><a href="#cb11-4"></a>  prob_max <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> prob_min</span>
-<span id="cb11-5"><a href="#cb11-5"></a>  prob <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(prob, prob_min), prob_max)</span>
-<span id="cb11-6"><a href="#cb11-6"></a>  lp <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> prob) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(prob)</span>
-<span id="cb11-7"><a href="#cb11-7"></a>  ly <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> m) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(m)</span>
-<span id="cb11-8"><a href="#cb11-8"></a>  <span class="dv">2</span> <span class="sc">*</span> (ly <span class="sc">-</span> lp)</span>
-<span id="cb11-9"><a href="#cb11-9"></a>}</span>
-<span id="cb11-10"><a href="#cb11-10"></a>knn.cv_probs <span class="ot">&lt;-</span> <span class="cf">function</span>(train, cl, <span class="at">k =</span> <span class="dv">1</span>) {</span>
-<span id="cb11-11"><a href="#cb11-11"></a>  o <span class="ot">&lt;-</span> <span class="fu">knn.cv</span>(train, cl, <span class="at">k =</span> k, <span class="at">prob =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb11-12"><a href="#cb11-12"></a>  p <span class="ot">&lt;-</span> <span class="fu">attr</span>(o, <span class="st">"prob"</span>)</span>
-<span id="cb11-13"><a href="#cb11-13"></a>  o <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(o)) <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb11-14"><a href="#cb11-14"></a>  p[o <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> p[o <span class="sc">==</span> <span class="dv">0</span>]</span>
-<span id="cb11-15"><a href="#cb11-15"></a>  p</span>
-<span id="cb11-16"><a href="#cb11-16"></a>}</span>
-<span id="cb11-17"><a href="#cb11-17"></a>dev_err <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>kmax, <span class="sc">~</span> <span class="fu">mean</span>(<span class="fu">dev</span>(dat1<span class="sc">$</span>y, <span class="fu">knn.cv_probs</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> .x))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a>dev <span class="ot">&lt;-</span> <span class="cf">function</span>(y, prob, <span class="at">prob_min =</span> <span class="fl">1e-5</span>) {</span>
+<span id="cb11-2"><a></a>  y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(y)) <span class="sc">-</span> <span class="dv">1</span> <span class="co"># 0/1 valued</span></span>
+<span id="cb11-3"><a></a>  m <span class="ot">&lt;-</span> <span class="fu">mean</span>(y)</span>
+<span id="cb11-4"><a></a>  prob_max <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> prob_min</span>
+<span id="cb11-5"><a></a>  prob <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(prob, prob_min), prob_max)</span>
+<span id="cb11-6"><a></a>  lp <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> prob) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(prob)</span>
+<span id="cb11-7"><a></a>  ly <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> y) <span class="sc">*</span> <span class="fu">log</span>(<span class="dv">1</span> <span class="sc">-</span> m) <span class="sc">+</span> y <span class="sc">*</span> <span class="fu">log</span>(m)</span>
+<span id="cb11-8"><a></a>  <span class="dv">2</span> <span class="sc">*</span> (ly <span class="sc">-</span> lp)</span>
+<span id="cb11-9"><a></a>}</span>
+<span id="cb11-10"><a></a>knn.cv_probs <span class="ot">&lt;-</span> <span class="cf">function</span>(train, cl, <span class="at">k =</span> <span class="dv">1</span>) {</span>
+<span id="cb11-11"><a></a>  o <span class="ot">&lt;-</span> <span class="fu">knn.cv</span>(train, cl, <span class="at">k =</span> k, <span class="at">prob =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-12"><a></a>  p <span class="ot">&lt;-</span> <span class="fu">attr</span>(o, <span class="st">"prob"</span>)</span>
+<span id="cb11-13"><a></a>  o <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(o)) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb11-14"><a></a>  p[o <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> p[o <span class="sc">==</span> <span class="dv">0</span>]</span>
+<span id="cb11-15"><a></a>  p</span>
+<span id="cb11-16"><a></a>}</span>
+<span id="cb11-17"><a></a>dev_err <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>kmax, <span class="sc">~</span> <span class="fu">mean</span>(<span class="fu">dev</span>(dat1<span class="sc">$</span>y, <span class="fu">knn.cv_probs</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> .x))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 
-<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-8-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-8-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="final-version" class="slide level2">
 <h2>Final version</h2>
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>kopt <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">which</span>(err <span class="sc">==</span> <span class="fu">min</span>(err)))</span>
-<span id="cb12-2"><a href="#cb12-2"></a>kopt <span class="ot">&lt;-</span> kopt <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (kopt <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb12-3"><a href="#cb12-3"></a>gr<span class="sc">$</span>opt <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt)</span>
-<span id="cb12-4"><a href="#cb12-4"></a>tt <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt), dat1<span class="sc">$</span>y, <span class="at">dnn =</span> <span class="fu">c</span>(<span class="st">"predicted"</span>, <span class="st">"truth"</span>))</span>
-<span id="cb12-5"><a href="#cb12-5"></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb12-6"><a href="#cb12-6"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb12-7"><a href="#cb12-7"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb12-8"><a href="#cb12-8"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> gr, <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> opt), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
-<span id="cb12-9"><a href="#cb12-9"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> y), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb12-10"><a href="#cb12-10"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb12-11"><a href="#cb12-11"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
-<span id="cb12-12"><a href="#cb12-12"></a>  <span class="fu">theme</span>(</span>
-<span id="cb12-13"><a href="#cb12-13"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb12-14"><a href="#cb12-14"></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
-<span id="cb12-15"><a href="#cb12-15"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>kopt <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fu">which</span>(err <span class="sc">==</span> <span class="fu">min</span>(err)))</span>
+<span id="cb12-2"><a></a>kopt <span class="ot">&lt;-</span> kopt <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (kopt <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb12-3"><a></a>gr<span class="sc">$</span>opt <span class="ot">&lt;-</span> <span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], gr[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt)</span>
+<span id="cb12-4"><a></a>tt <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">knn</span>(dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1[, <span class="sc">-</span><span class="dv">1</span>], dat1<span class="sc">$</span>y, <span class="at">k =</span> kopt), dat1<span class="sc">$</span>y, <span class="at">dnn =</span> <span class="fu">c</span>(<span class="st">"predicted"</span>, <span class="st">"truth"</span>))</span>
+<span id="cb12-5"><a></a><span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb12-6"><a></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
+<span id="cb12-7"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb12-8"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> gr, <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> opt), <span class="at">alpha =</span> .<span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb12-9"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> y), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb12-11"><a></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(orange, green), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>)) <span class="sc">+</span></span>
+<span id="cb12-12"><a></a>  <span class="fu">theme</span>(</span>
+<span id="cb12-13"><a></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>, <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb12-14"><a></a>    <span class="at">legend.key.width =</span> <span class="fu">unit</span>(<span class="dv">2</span>, <span class="st">"cm"</span>)</span>
+<span id="cb12-15"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-9-1.svg"></p>
+<p><img data-src="17-nonlinear-classifiers_files/figure-revealjs/unnamed-chunk-9-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -796,8 +797,10 @@ predicted  1  2
 <p><span class="secondary">Module 4</span></p>
 <p><span class="secondary">boosting, bagging, random forests, and neural nets</span></p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -827,7 +830,6 @@ predicted  1  2
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -1127,10 +1129,34 @@ predicted  1  2
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -1140,8 +1166,17 @@ predicted  1  2
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1155,7 +1190,11 @@ predicted  1  2
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1195,22 +1234,6 @@ predicted  1  2
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     

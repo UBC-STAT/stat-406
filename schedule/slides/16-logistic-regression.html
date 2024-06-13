@@ -8,10 +8,10 @@
 <link href="../../site_libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="../../site_libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.3.450">
+  <meta name="generator" content="quarto-1.4.555">
 
   <meta name="author" content="Daniel J. McDonald">
-  <title>UBC Stat406 2023W – logistic-regression</title>
+  <title>UBC Stat406 2023W</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -31,7 +31,7 @@
     }
     /* CSS for syntax highlighting */
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -224,7 +224,8 @@
   }
 
   .callout.callout-titled .callout-body > .callout-content > :last-child {
-    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 
   .callout.callout-titled .callout-icon::before {
@@ -393,7 +394,7 @@
     <div class="slides">
 
 
-<section id="meta-lecture" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
+<section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>16 Logistic regression</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Daniel J. McDonald</span></p>
@@ -456,7 +457,7 @@ Pr(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\e
 <p><span class="math display">\[Pr(Y = 1 \given X=x) = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\]</span></p>
 <ul>
 <li><p>There are lots of ways to map <span class="math inline">\(\R \mapsto [0,1]\)</span>.</p></li>
-<li><p>The “logistic” function <span class="math inline">\(z\mapsto (1 + \exp(-z))^{-1} = \exp(z) / (1+\exp(z)) =:h(z)\)</span> is nice.</p></li>
+<li><p>The “logistic” function <span class="math inline">\(z\mapsto (1 + \exp(-z))^{-1} =  \exp(z) / (1+\exp(z)) =:h(z)\)</span> is nice.</p></li>
 <li><p>It’s symmetric: <span class="math inline">\(1 - h(z) = h(-z)\)</span></p></li>
 <li><p>Has a nice derivative: <span class="math inline">\(h'(z) = \frac{\exp(z)}{(1 + \exp(z))^2} = h(z)(1-h(z))\)</span>.</p></li>
 <li><p>It’s the inverse of the “log-odds” (logit): <span class="math inline">\(\log(p / (1-p))\)</span>.</p></li>
@@ -471,13 +472,13 @@ Pr(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\e
 <section id="logistic-regression-is-also-easy-in-r" class="slide level2">
 <h2>Logistic regression is also easy in R</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>logistic <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>logistic <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Or we can use lasso or ridge regression or a GAM as before</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>lasso_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>ridge_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3"></a>gam_logit <span class="ot">&lt;-</span> <span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(x), <span class="at">data =</span> dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>lasso_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb2-2"><a></a>ridge_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb2-3"><a></a>gam_logit <span class="ot">&lt;-</span> <span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(x), <span class="at">data =</span> dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 <aside><div>
@@ -486,9 +487,9 @@ Pr(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\e
 <section id="baby-example-continued-from-last-time" class="slide level2">
 <h2>Baby example (continued from last time)</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>))</span>
-<span id="cb3-2"><a href="#cb3-2"></a>logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat1 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">-</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="fu">summary</span>(logit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>))</span>
+<span id="cb3-2"><a></a>logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat1 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">-</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb3-3"><a></a><span class="fu">summary</span>(logit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -516,22 +517,22 @@ Number of Fisher Scoring iterations: 6</code></pre>
 <section id="visualizing-the-classification-boundary" class="slide level2">
 <h2>Visualizing the classification boundary</h2>
 <div class="cell" data-layout-align="center">
-<details>
+<details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), </span>
-<span id="cb5-2"><a href="#cb5-2"></a>                  <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
-<span id="cb5-3"><a href="#cb5-3"></a>pts <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit, gr)</span>
-<span id="cb5-4"><a href="#cb5-4"></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
-<span id="cb5-7"><a href="#cb5-7"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a>  <span class="fu">scale_fill_steps2</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) </span>
-<span id="cb5-10"><a href="#cb5-10"></a>g0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), </span>
+<span id="cb5-2"><a></a>                  <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
+<span id="cb5-3"><a></a>pts <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit, gr)</span>
+<span id="cb5-4"><a></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb5-5"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
+<span id="cb5-7"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb5-8"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb5-9"><a></a>  <span class="fu">scale_fill_steps2</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) </span>
+<span id="cb5-10"><a></a>g0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="16-logistic-regression_files/figure-revealjs/plot-d1-1.svg" class="r-stretch quarto-figure-center"></section>
+<img data-src="16-logistic-regression_files/figure-revealjs/plot-d1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="calculation" class="slide level2">
 <h2>Calculation</h2>
 <p>While the <code>R</code> formula for logistic regression is straightforward, it’s not as easy to compute as OLS or LDA or QDA.</p>
@@ -562,25 +563,25 @@ Number of Fisher Scoring iterations: 6</code></pre>
 <h2>IRWLS for logistic regression (skip for now)</h2>
 <p>(This is preparation for Neural Networks.)</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>logit_irwls <span class="ot">&lt;-</span> <span class="cf">function</span>(y, x, <span class="at">maxit =</span> <span class="dv">100</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
-<span id="cb6-3"><a href="#cb6-3"></a>  beta <span class="ot">&lt;-</span> <span class="fu">double</span>(p) <span class="co"># initialize coefficients</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a>  beta0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb6-5"><a href="#cb6-5"></a>  conv <span class="ot">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># hasn't converged</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>  iter <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="co"># first iteration</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a>  <span class="cf">while</span> (<span class="sc">!</span>conv <span class="sc">&amp;&amp;</span> (iter <span class="sc">&lt;</span> maxit)) { <span class="co"># check loops</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a>    iter <span class="ot">&lt;-</span> iter <span class="sc">+</span> <span class="dv">1</span> <span class="co"># update first thing (so as not to forget)</span></span>
-<span id="cb6-9"><a href="#cb6-9"></a>    eta <span class="ot">&lt;-</span> beta0 <span class="sc">+</span> x <span class="sc">%*%</span> beta</span>
-<span id="cb6-10"><a href="#cb6-10"></a>    mu <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>eta))</span>
-<span id="cb6-11"><a href="#cb6-11"></a>    gp <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (mu <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> mu)) <span class="co"># inverse of derivative of logistic</span></span>
-<span id="cb6-12"><a href="#cb6-12"></a>    z <span class="ot">&lt;-</span> eta <span class="sc">+</span> (y <span class="sc">-</span> mu) <span class="sc">*</span> gp <span class="co"># effective transformed response</span></span>
-<span id="cb6-13"><a href="#cb6-13"></a>    beta_new <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">lm</span>(z <span class="sc">~</span> x, <span class="at">weights =</span> <span class="dv">1</span> <span class="sc">/</span> gp)) <span class="co"># do Weighted Least Squares</span></span>
-<span id="cb6-14"><a href="#cb6-14"></a>    conv <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(<span class="fu">c</span>(beta0, beta) <span class="sc">-</span> betaNew)) <span class="sc">&lt;</span> tol <span class="co"># check if the betas are "moving"</span></span>
-<span id="cb6-15"><a href="#cb6-15"></a>    beta0 <span class="ot">&lt;-</span> betaNew[<span class="dv">1</span>] <span class="co"># update betas</span></span>
-<span id="cb6-16"><a href="#cb6-16"></a>    beta <span class="ot">&lt;-</span> betaNew[<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb6-17"><a href="#cb6-17"></a>  }</span>
-<span id="cb6-18"><a href="#cb6-18"></a>  <span class="fu">return</span>(<span class="fu">c</span>(beta0, beta))</span>
-<span id="cb6-19"><a href="#cb6-19"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>logit_irwls <span class="ot">&lt;-</span> <span class="cf">function</span>(y, x, <span class="at">maxit =</span> <span class="dv">100</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
+<span id="cb6-2"><a></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
+<span id="cb6-3"><a></a>  beta <span class="ot">&lt;-</span> <span class="fu">double</span>(p) <span class="co"># initialize coefficients</span></span>
+<span id="cb6-4"><a></a>  beta0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb6-5"><a></a>  conv <span class="ot">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># hasn't converged</span></span>
+<span id="cb6-6"><a></a>  iter <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="co"># first iteration</span></span>
+<span id="cb6-7"><a></a>  <span class="cf">while</span> (<span class="sc">!</span>conv <span class="sc">&amp;&amp;</span> (iter <span class="sc">&lt;</span> maxit)) { <span class="co"># check loops</span></span>
+<span id="cb6-8"><a></a>    iter <span class="ot">&lt;-</span> iter <span class="sc">+</span> <span class="dv">1</span> <span class="co"># update first thing (so as not to forget)</span></span>
+<span id="cb6-9"><a></a>    eta <span class="ot">&lt;-</span> beta0 <span class="sc">+</span> x <span class="sc">%*%</span> beta</span>
+<span id="cb6-10"><a></a>    mu <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>eta))</span>
+<span id="cb6-11"><a></a>    gp <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (mu <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> mu)) <span class="co"># inverse of derivative of logistic</span></span>
+<span id="cb6-12"><a></a>    z <span class="ot">&lt;-</span> eta <span class="sc">+</span> (y <span class="sc">-</span> mu) <span class="sc">*</span> gp <span class="co"># effective transformed response</span></span>
+<span id="cb6-13"><a></a>    beta_new <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">lm</span>(z <span class="sc">~</span> x, <span class="at">weights =</span> <span class="dv">1</span> <span class="sc">/</span> gp)) <span class="co"># do Weighted Least Squares</span></span>
+<span id="cb6-14"><a></a>    conv <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(<span class="fu">c</span>(beta0, beta) <span class="sc">-</span> betaNew)) <span class="sc">&lt;</span> tol <span class="co"># check if the betas are "moving"</span></span>
+<span id="cb6-15"><a></a>    beta0 <span class="ot">&lt;-</span> betaNew[<span class="dv">1</span>] <span class="co"># update betas</span></span>
+<span id="cb6-16"><a></a>    beta <span class="ot">&lt;-</span> betaNew[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb6-17"><a></a>  }</span>
+<span id="cb6-18"><a></a>  <span class="fu">return</span>(<span class="fu">c</span>(beta0, beta))</span>
+<span id="cb6-19"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="comparing-lda-and-logistic-regression" class="slide level2">
@@ -645,8 +646,10 @@ Number of Fisher Scoring iterations: 6</code></pre>
 <h1>Next time:</h1>
 <p>Nonlinear classifiers</p>
 
+<div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 <p>UBC Stat 406 - 2023</p>
+</div>
 </div>
 </section>
     </div>
@@ -676,7 +679,6 @@ Number of Fisher Scoring iterations: 6</code></pre>
       Reveal.initialize({
 'controlsAuto': true,
 'previewLinksAuto': false,
-'smaller': false,
 'pdfSeparateFragments': false,
 'autoAnimateEasing': "ease",
 'autoAnimateDuration': 1,
@@ -976,10 +978,34 @@ Number of Fisher Scoring iterations: 6</code></pre>
         // clear code selection
         e.clearSelection();
       });
-      function tippyHover(el, contentFn) {
+        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+        var mailtoRegex = new RegExp(/^mailto:/);
+          var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+        var isInternal = (href) => {
+            return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+        }
+        // Inspect non-navigation links and adorn them if external
+     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+        for (var i=0; i<links.length; i++) {
+          const link = links[i];
+          if (!isInternal(link.href)) {
+            // undo the damage that might have been done by quarto-nav.js in the case of
+            // links that we want to consider external
+            if (link.dataset.originalHref !== undefined) {
+              link.href = link.dataset.originalHref;
+            }
+              // target, if specified
+              link.setAttribute("target", "_blank");
+              if (link.getAttribute("rel") === null) {
+                link.setAttribute("rel", "noopener");
+              }
+              // default icon
+              link.classList.add("external");
+          }
+        }
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
         const config = {
           allowHTML: true,
-          content: contentFn,
           maxWidth: 500,
           delay: 100,
           arrow: false,
@@ -989,8 +1015,17 @@ Number of Fisher Scoring iterations: 6</code></pre>
           interactive: true,
           interactiveBorder: 10,
           theme: 'light-border',
-          placement: 'bottom-start'
+          placement: 'bottom-start',
         };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
           config['offset'] = [0,0];
           config['maxWidth'] = 700;
         window.tippy(el, config); 
@@ -1004,7 +1039,11 @@ Number of Fisher Scoring iterations: 6</code></pre>
           try { href = new URL(href).hash; } catch {}
           const id = href.replace(/^#\/?/, "");
           const note = window.document.getElementById(id);
-          return note.innerHTML;
+          if (note) {
+            return note.innerHTML;
+          } else {
+            return "";
+          }
         });
       }
       const findCites = (el) => {
@@ -1044,22 +1083,6 @@ Number of Fisher Scoring iterations: 6</code></pre>
           });
         }
       }
-        var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-          var filterRegex = new RegExp("https:\/\/github\.com\/UBC-STAT\/stat-406");
-        var isInternal = (href) => {
-            return filterRegex.test(href) || localhostRegex.test(href);
-        }
-        // Inspect non-navigation links and adorn them if external
-     	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
-        for (var i=0; i<links.length; i++) {
-          const link = links[i];
-          if (!isInternal(link.href)) {
-              // target, if specified
-              link.setAttribute("target", "_blank");
-              // default icon
-              link.classList.add("external");
-          }
-        }
     });
     </script>
     
