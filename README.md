@@ -1,4 +1,4 @@
-# Stat 406 Winter I 2023
+# Stat 406 Winter I 2024
 
 This repository generates the website.
 
