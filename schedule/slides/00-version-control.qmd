@@ -64,6 +64,26 @@ Slack help from MDS [features](https://ubc-mds.github.io/resources_pages/slack/)
 
 # Git and GitHub
 
+------
+
+*But I already know how to use git/Github...*
+
+Are you sure?
+
+* Have you used git/Github in a professional team context?
+* Do you follow a proper pull request workflow?
+* Do you know what files to track and not to track?
+* Can you get yourself unstuck from common problems?
+
+. . .
+
+<br>
+
+*Yes. I really know how to use git/Github.*
+
+Then pull out your laptop and read my ["How To Be a Git Wizard"](https://geoffpleiss.com/git_wizard.pdf) slides. \
+I guarantee (with 99% confidence) that you will learn a new command.
+
 ## Why version control?
 
 
@@ -210,10 +230,14 @@ Definitely not
 
 Any file that [YOU]{.secondary} edit should be tracked \
 Any file that's [computer generated]{.secondary} should PROBABLY NOT be tracked
+
+[However, in this course you will track rendered PDFs of your homeworks/labs.
+ This makes it easier for the graders.]{.small}
 :::
 
-. . .
 
+
+## What should be tracked?
 
 A file called `.gitignore` tells `git` files or types to never track
 
@@ -233,10 +257,6 @@ A file called `.gitignore` tells `git` files or types to never track
 *.so
 *.DS_Store
 ```
-
-## What should be tracked?
-
-<br>
 
 Shortcut to track everything (use carefully):
 
@@ -292,15 +312,6 @@ to the same branch. Then "re-request review".
     1. See Chapter 6 if you have install problems.
     1. See Chapter 9 for credential caching (avoid typing a password all the time)
     1. See Chapter 13 if RStudio can't find `git`
-    
-## If you know all this already...
-
-<br>
-
-:::center
-Check out my ["How To Be a Git Wizard"](https://geoffpleiss.com/git_wizard.pdf) slides to take your git game to the next level. \
-I guarantee (with 99% confidence) that you will learn an amazing new command.
-:::
    
 <!--
 ## The `main/develop/branch` workflow
@@ -336,11 +347,14 @@ I and many DS/CS/Stat faculty use this workflow with my lab.
     1. Actions: On push / PR / other GitHub does something on their server (builds a website, runs tests on code)
     1. PR templates: Little admonitions when you open a PR
     1. Branch protection: prevent you from doing stuff
-    
-* In this course, we protect `main` so that you can't push there
+
+
+## Guardrails
+
+* Real-world repos often protect `main` so that you can't push there
 
 ::: {.callout-warning}
-If you try to push to `main`, it will give an error like
+You'd see an error like this:
 ```{{bash}}
 remote: error: GH006: Protected branch update failed for refs/heads/main.
 ```
@@ -348,13 +362,28 @@ remote: error: GH006: Protected branch update failed for refs/heads/main.
 The fix is: make a new branch, then push that.
 :::
 
----
+. . .
 
-* I also use a PR template. It gives you some instructions that you should follow
+* Unfortunately, we can't set up those protections for this course.
+  Github recently put these protections behind a paywall :(
+  
+* So now it's your responsibility. Please don't push to `main`!
+
+## Guardrails
+
+:::flex
+:::w-40
+* We have a PR template on the homework and lab repos. It gives you some instructions that you should follow
 
 
 ::: {.callout-important}
 Read the PR template!!
+:::
+:::
+
+:::w-60
+![](gfx/pr_template.png){fig-align="center" fig-alt="PR Template"}
+:::
 :::
 
 ## Operations in Rstudio 
@@ -577,30 +606,40 @@ git checkout otherbranch -- README.md
 
 ## Recovering from things
 
-1. Accidentally did work on main, Tried to Push but got refused
+1. Accidentally did work on main (locally), but didn't push to Github
 ```{{bash}}
-# make a new branch with everything, but stay on main
-git branch newbranch
-# find out where to go to
-git log
-# undo everything after ace2193
-git reset --hard ace2193
-git checkout newbranch
+git branch newbranch  # make a new branch with everything, but stay on main
+git fetch && git reset --hard origin/main  # undo everything up to the last commit on Github's main branch
+git checkout newbranch  # switch to new branch
 ```
 
-2. Made a branch, did lots of work, realized it's trash, and you want to burn it
+2. Accidentally did work on main (locally), and pushed to Github\
+[(PLEASE PLEASE PLEASE don't do this, but if you do...)]{.small}
+```{{bash}}
+git branch newbranch  # make a new branch with everything, but stay on main
+# NOTE: we can't use reset, because the commits are already published!
+#   You can't delete commits from Github once they've been pushed.
+#   We instead have to create and push a series of "reverse" commits
+#   that undo the commits we pushed, and then push those undo commits
+git fetch && git revert origin/main..HEAD  # note the different command here!
+git push origin main
+# Now we can go to the new branch (without the undo commits)
+git checkout newbranch  # Switch to new branch
+```
+
+## Recovering from things
+
+3. Made a branch, did lots of work, realized it's trash, and you want to burn it
 ```{{bash}}
 git checkout main
-git branch -d badbranch
+git branch -D badbranch
 ```
 
-3. Anything more complicated, either post to Slack or LMGTFY
+4. Anything more complicated, post to Slack or come to office hours
 
-
-
-4. In the Lab next week, you'll practice 
-    * Doing it right.
-    * Recovering from some mistakes.
+5. In the Lab next week, you'll practice 
+  * Doing it right.
+  * Recovering from some mistakes.
     
 
 # Example of setting up labs
