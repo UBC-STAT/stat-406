@@ -347,14 +347,11 @@ I and many DS/CS/Stat faculty use this workflow with my lab.
     1. Actions: On push / PR / other GitHub does something on their server (builds a website, runs tests on code)
     1. PR templates: Little admonitions when you open a PR
     1. Branch protection: prevent you from doing stuff
-
-
-## Guardrails
-
-* Real-world repos often protect `main` so that you can't push there
+    
+* In this course, we protect `main` so that you can't push there
 
 ::: {.callout-warning}
-You'd see an error like this:
+If you try to push to `main`, it will give an error like
 ```{{bash}}
 remote: error: GH006: Protected branch update failed for refs/heads/main.
 ```
@@ -362,14 +359,7 @@ remote: error: GH006: Protected branch update failed for refs/heads/main.
 The fix is: make a new branch, then push that.
 :::
 
-. . .
-
-* Unfortunately, we can't set up those protections for this course.
-  Github recently put these protections behind a paywall :(
-  
-* So now it's your responsibility. Please don't push to `main`!
-
-## Guardrails
+---
 
 :::flex
 :::w-40
@@ -606,40 +596,28 @@ git checkout otherbranch -- README.md
 
 ## Recovering from things
 
-1. Accidentally did work on main (locally), but didn't push to Github
+1. Accidentally did work on main, Tried to Push but got refused
 ```{{bash}}
-git branch newbranch  # make a new branch with everything, but stay on main
-git fetch && git reset --hard origin/main  # undo everything up to the last commit on Github's main branch
-git checkout newbranch  # switch to new branch
+# make a new branch with everything, but stay on main
+git branch newbranch
+# undo everything that hasn't been pushed to main
+git fetch && git reset --hard origin/main
+git checkout newbranch
 ```
 
-2. Accidentally did work on main (locally), and pushed to Github\
-[(PLEASE PLEASE PLEASE don't do this, but if you do...)]{.small}
-```{{bash}}
-git branch newbranch  # make a new branch with everything, but stay on main
-# NOTE: we can't use reset, because the commits are already published!
-#   You can't delete commits from Github once they've been pushed.
-#   We instead have to create and push a series of "reverse" commits
-#   that undo the commits we pushed, and then push those undo commits
-git fetch && git revert origin/main..HEAD  # note the different command here!
-git push origin main
-# Now we can go to the new branch (without the undo commits)
-git checkout newbranch  # Switch to new branch
-```
-
-## Recovering from things
-
-3. Made a branch, did lots of work, realized it's trash, and you want to burn it
+2. Made a branch, did lots of work, realized it's trash, and you want to burn it
 ```{{bash}}
 git checkout main
-git branch -D badbranch
+git branch -d badbranch
 ```
 
-4. Anything more complicated, post to Slack or come to office hours
+3. Anything more complicated, either post to Slack or LMGTFY
 
-5. In the Lab next week, you'll practice 
-  * Doing it right.
-  * Recovering from some mistakes.
+
+
+4. In the Lab next week, you'll practice 
+    * Doing it right.
+    * Recovering from some mistakes.
     
 
 # Example of setting up labs
