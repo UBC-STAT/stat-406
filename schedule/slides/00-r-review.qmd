@@ -22,8 +22,6 @@ Things to note
 1. Getting help
 1. Environment, Git
 
-
-
 ## Simple stuff
 
 :::: {.columns}
@@ -725,16 +723,29 @@ To be sure, prefix it like `dplyr::select()`.
 
 ## A useful data frame
 
+<!--
+Old code that breaks if you don't have an API key; replaced
+this with just a covid.csv file in the data/ folder
+Keeping this block here though so that later instructors can see
+where the data came from
 ```{r}
 library(epidatr)
-covid <- covidcast(
+covid <- pub_covidcast(
   source = "jhu-csse",
   signals = "confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop",
   time_type = "day",
   geo_type = "state",
   time_values = epirange(20220801, 20220821),
   geo_values = "ca,wa") |>
-  fetch() |>
+  select(geo_value, time_value, signal, value)
+
+covid
+```
+-->
+
+```{r message=FALSE}
+library(tidyverse)
+covid <- read_csv("data/covid.csv") |>
   select(geo_value, time_value, signal, value)
 
 covid
