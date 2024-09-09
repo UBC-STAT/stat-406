@@ -398,7 +398,7 @@
 <h2>00 R, Rmarkdown, code, and <code>{tidyverse}</code>: <br> A whirlwind tour</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 11 September 2023</p>
+<p>Last modified – 09 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -418,6 +418,15 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\snorm}[1]{\lVert #1 \rVert}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section>
@@ -1203,7 +1212,7 @@ Coefficients:
 <span id="cb100-11"><a></a>  )</span>
 <span id="cb100-12"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 6.469568e-29</code></pre>
+<pre><code>[1] 1.991017e-29</code></pre>
 </div>
 </div>
 </div><div class="column" style="width:50%;">
@@ -1219,7 +1228,7 @@ Coefficients:
 <span id="cb102-9"><a></a>  <span class="fu">sum</span>() <span class="sc">|&gt;</span></span>
 <span id="cb102-10"><a></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 6.469568e-29</code></pre>
+<pre><code>[1] 1.991017e-29</code></pre>
 </div>
 </div>
 </div></div>
@@ -1307,19 +1316,31 @@ Coefficients:
 </section>
 <section id="a-useful-data-frame" class="slide level2">
 <h2>A useful data frame</h2>
+<!--
+Old code that breaks if you don't have an API key; replaced
+this with just a covid.csv file in the data/ folder
+Keeping this block here though so that later instructors can see
+where the data came from
+```
+library(epidatr)
+covid <- pub_covidcast(
+  source = "jhu-csse",
+  signals = "confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop",
+  time_type = "day",
+  geo_type = "state",
+  time_values = epirange(20220801, 20220821),
+  geo_values = "ca,wa") |>
+  select(geo_value, time_value, signal, value)
+
+covid
+```
+-->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a></a><span class="fu">library</span>(epidatr)</span>
-<span id="cb109-2"><a></a>covid <span class="ot">&lt;-</span> <span class="fu">covidcast</span>(</span>
-<span id="cb109-3"><a></a>  <span class="at">source =</span> <span class="st">"jhu-csse"</span>,</span>
-<span id="cb109-4"><a></a>  <span class="at">signals =</span> <span class="st">"confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop"</span>,</span>
-<span id="cb109-5"><a></a>  <span class="at">time_type =</span> <span class="st">"day"</span>,</span>
-<span id="cb109-6"><a></a>  <span class="at">geo_type =</span> <span class="st">"state"</span>,</span>
-<span id="cb109-7"><a></a>  <span class="at">time_values =</span> <span class="fu">epirange</span>(<span class="dv">20220801</span>, <span class="dv">20220821</span>),</span>
-<span id="cb109-8"><a></a>  <span class="at">geo_values =</span> <span class="st">"ca,wa"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb109-9"><a></a>  <span class="fu">fetch</span>() <span class="sc">|&gt;</span></span>
-<span id="cb109-10"><a></a>  <span class="fu">select</span>(geo_value, time_value, signal, value)</span>
-<span id="cb109-11"><a></a></span>
-<span id="cb109-12"><a></a>covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb109-2"><a></a>covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/covid.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb109-3"><a></a>  <span class="fu">select</span>(geo_value, time_value, signal, value)</span>
+<span id="cb109-4"><a></a></span>
+<span id="cb109-5"><a></a>covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 84 × 4
    geo_value time_value signal                        value
