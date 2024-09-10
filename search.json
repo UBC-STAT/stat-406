@@ -7,6 +7,13 @@
     "text": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
+    "objectID": "schedule/slides/00-r-review.html#housekeeping",
+    "href": "schedule/slides/00-r-review.html#housekeeping",
+    "title": "UBC Stat406 2024W",
+    "section": "Housekeeping",
+    "text": "Housekeeping\n\nIntroduction\nMy office hours will be in ESB3174 after class today only\n\nI’m trying to book this room for future OHs\n\nReminder: fill in Quiz 0 if you haven’t already!\nYour labs are due at 23:00 on the night of the lab"
+  },
+  {
     "objectID": "schedule/slides/00-r-review.html#tour-of-rstudio",
     "href": "schedule/slides/00-r-review.html#tour-of-rstudio",
     "title": "UBC Stat406 2024W",
@@ -14,18 +21,25 @@
     "text": "Tour of Rstudio\nThings to note\n\nConsole\nTerminal\nScripts, .Rmd, Knit\nFiles, Projects\nGetting help\nEnvironment, Git"
   },
   {
-    "objectID": "schedule/slides/00-r-review.html#simple-stuff",
-    "href": "schedule/slides/00-r-review.html#simple-stuff",
+    "objectID": "schedule/slides/00-r-review.html#r-and-the-tidyverse",
+    "href": "schedule/slides/00-r-review.html#r-and-the-tidyverse",
     "title": "UBC Stat406 2024W",
-    "section": "Simple stuff",
-    "text": "Simple stuff\n\n\nVectors:\n\nx &lt;- c(1, 3, 4)\nx[1]\n\n[1] 1\n\nx[-1]\n\n[1] 3 4\n\nrev(x)\n\n[1] 4 3 1\n\nc(x, x)\n\n[1] 1 3 4 1 3 4\n\n\n\n\n\nMatrices:\n\nx &lt;- matrix(1:25, nrow = 5, ncol = 5)\nx[1,]\n\n[1]  1  6 11 16 21\n\nx[,-1]\n\n     [,1] [,2] [,3] [,4]\n[1,]    6   11   16   21\n[2,]    7   12   17   22\n[3,]    8   13   18   23\n[4,]    9   14   19   24\n[5,]   10   15   20   25\n\nx[c(1,3),  2:3]\n\n     [,1] [,2]\n[1,]    6   11\n[2,]    8   13"
+    "section": "R and the {tidyverse}",
+    "text": "R and the {tidyverse}\n\n\n\n\nToday is going to be a whirlwind tour of R.\nIf you are new to R: read the first 4 chapters of Data Science: A First Introduction.\nIt’s available for free at https://datasciencebook.ca. It covers:\n\nData loading from .csv, Excel, database, and web sources\nData saving to .csv files\nData wrangling with tidyverse functions\nPlotting with ggplot"
   },
   {
-    "objectID": "schedule/slides/00-r-review.html#simple-stuff-1",
-    "href": "schedule/slides/00-r-review.html#simple-stuff-1",
+    "objectID": "schedule/slides/00-r-review.html#basic-data-structures",
+    "href": "schedule/slides/00-r-review.html#basic-data-structures",
     "title": "UBC Stat406 2024W",
-    "section": "Simple stuff",
-    "text": "Simple stuff\n\n\nLists\n\n(l &lt;- list(\n  a = letters[1:2], \n  b = 1:4, \n  c = list(a = 1)))\n\n$a\n[1] \"a\" \"b\"\n\n$b\n[1] 1 2 3 4\n\n$c\n$c$a\n[1] 1\n\nl$a\n\n[1] \"a\" \"b\"\n\nl$c$a\n\n[1] 1\n\nl[\"b\"] # compare to l[[\"b\"]] == l$b\n\n$b\n[1] 1 2 3 4\n\n\n\n\nData frames\n\n(dat &lt;- data.frame(\n  z = 1:5, \n  b = 6:10, \n  c = letters[1:5]))\n\n  z  b c\n1 1  6 a\n2 2  7 b\n3 3  8 c\n4 4  9 d\n5 5 10 e\n\nclass(dat)\n\n[1] \"data.frame\"\n\ndat$b\n\n[1]  6  7  8  9 10\n\ndat[1,]\n\n  z b c\n1 1 6 a\n\n\n\n\nData frames are sort-of lists and sort-of matrices"
+    "section": "Basic data structures",
+    "text": "Basic data structures\n\n\nVectors:\n\nx &lt;- c(1, 3, 4)\nx[1]\n\n[1] 1\n\nx[-1]\n\n[1] 3 4\n\nrev(x)\n\n[1] 4 3 1\n\nc(x, x)\n\n[1] 1 3 4 1 3 4\n\n\n\n\n\nMatrices:\n\nx &lt;- matrix(1:25, nrow = 5, ncol = 5)\nx[1,]\n\n[1]  1  6 11 16 21\n\nx[,-1]\n\n     [,1] [,2] [,3] [,4]\n[1,]    6   11   16   21\n[2,]    7   12   17   22\n[3,]    8   13   18   23\n[4,]    9   14   19   24\n[5,]   10   15   20   25\n\nx[c(1,3),  2:3]\n\n     [,1] [,2]\n[1,]    6   11\n[2,]    8   13\n\n\n\nAll elements of a vector/matrix must be of the same type"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#basic-data-structures-1",
+    "href": "schedule/slides/00-r-review.html#basic-data-structures-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Basic data structures",
+    "text": "Basic data structures\n\n\nLists\n\n(l &lt;- list(\n  a = letters[1:2], \n  b = 1:4, \n  c = list(a = 1)))\n\n$a\n[1] \"a\" \"b\"\n\n$b\n[1] 1 2 3 4\n\n$c\n$c$a\n[1] 1\n\nl$a\n\n[1] \"a\" \"b\"\n\nl$c$a\n\n[1] 1\n\nl[\"b\"] # compare to l[[\"b\"]] == l$b\n\n$b\n[1] 1 2 3 4\n\n\n\n\nData frames\n\n(dat &lt;- data.frame(\n  z = 1:5, \n  b = 6:10, \n  c = letters[1:5]))\n\n  z  b c\n1 1  6 a\n2 2  7 b\n3 3  8 c\n4 4  9 d\n5 5 10 e\n\nclass(dat)\n\n[1] \"data.frame\"\n\ndat$b\n\n[1]  6  7  8  9 10\n\ndat[1,]\n\n  z b c\n1 1 6 a\n\n\n\n\nLists can have multiple element types; data frames are lists of vectors"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#tibbles",
@@ -35,11 +49,18 @@
     "text": "Tibbles\nThese are {tidyverse} data frames\n\n(dat2 &lt;- tibble(z = 1:5, b = z + 5, c = letters[z]))\n\n# A tibble: 5 × 3\n      z     b c    \n  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;\n1     1     6 a    \n2     2     7 b    \n3     3     8 c    \n4     4     9 d    \n5     5    10 e    \n\nclass(dat2)\n\n[1] \"tbl_df\"     \"tbl\"        \"data.frame\"\n\n\nWe’ll return to classes in a moment. A tbl_df is a “subclass” of data.frame.\nAnything that data.frame can do, tbl_df can do (better).\nFor instance, the printing is more informative.\nAlso, you can construct one by referencing previously constructed columns."
   },
   {
-    "objectID": "schedule/slides/00-r-review.html#understanding-signatures",
-    "href": "schedule/slides/00-r-review.html#understanding-signatures",
+    "objectID": "schedule/slides/00-r-review.html#functions-in-r",
+    "href": "schedule/slides/00-r-review.html#functions-in-r",
     "title": "UBC Stat406 2024W",
-    "section": "Understanding signatures",
-    "text": "Understanding signatures\n\n\nCode\nsig &lt;- sig::sig\n\n\n\nsig(lm)\n\nfn &lt;- function(formula, data, subset, weights, na.action, method = \"qr\", model\n  = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts =\n  NULL, offset, ...)\n\nsig(`+`)\n\nfn &lt;- function(e1, e2)\n\nsig(dplyr::filter)\n\nfn &lt;- function(.data, ..., .by = NULL, .preserve = FALSE)\n\nsig(stats::filter)\n\nfn &lt;- function(x, filter, method = c(\"convolution\", \"recursive\"), sides = 2,\n  circular = FALSE, init = NULL)\n\nsig(rnorm)\n\nfn &lt;- function(n, mean = 0, sd = 1)"
+    "section": "Functions in R",
+    "text": "Functions in R\nA function is a mapping from inputs to outputs, and is defined with the function keyword.\nThe function’s body is wrapped in curly braces, and its output is given by the return keyword (or the last evaluated statement)\n\nf &lt;- function(x, y){\n  x+y \n}\n\nf(3,5)\n\n[1] 8\n\n\n\nf &lt;- function(x, y){\n  return(x+y)\n}\n\nf(3,5)\n\n[1] 8"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#function-signatures",
+    "href": "schedule/slides/00-r-review.html#function-signatures",
+    "title": "UBC Stat406 2024W",
+    "section": "Function Signatures",
+    "text": "Function Signatures\n\n\nCode\nsig &lt;- sig::sig\n\n\n\nsig(lm)\n\nfn &lt;- function(formula, data, subset, weights, na.action, method = \"qr\", model\n  = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts =\n  NULL, offset, ...)\n\nsig(`+`)\n\nfn &lt;- function(e1, e2)\n\nsig(dplyr::filter)\n\nfn &lt;- function(.data, ..., .by = NULL, .preserve = FALSE)\n\nsig(stats::filter)\n\nfn &lt;- function(x, filter, method = c(\"convolution\", \"recursive\"), sides = 2,\n  circular = FALSE, init = NULL)\n\nsig(rnorm)\n\nfn &lt;- function(n, mean = 0, sd = 1)"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#these-are-all-the-same",
@@ -49,18 +70,18 @@
     "text": "These are all the same\n\nset.seed(12345)\nrnorm(3)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(n = 3, mean = 0)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(3, 0, 1)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(sd = 1, n = 3, mean = 0)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\n\n\nFunctions can have default values.\nYou may, but don’t have to, name the arguments\nIf you name them, you can pass them out of order (but you shouldn’t)."
   },
   {
-    "objectID": "schedule/slides/00-r-review.html#write-lots-of-functions.-i-cant-emphasize-this-enough.",
-    "href": "schedule/slides/00-r-review.html#write-lots-of-functions.-i-cant-emphasize-this-enough.",
-    "title": "UBC Stat406 2024W",
-    "section": "Write lots of functions. I can’t emphasize this enough.",
-    "text": "Write lots of functions. I can’t emphasize this enough.\n\n\n\nf &lt;- function(arg1, arg2, arg3 = 12, ...) {\n  stuff &lt;- arg1 * arg3\n  stuff2 &lt;- stuff + arg2\n  plot(arg1, stuff2, ...)\n  return(stuff2)\n}\nx &lt;- rnorm(100)\n\n\n\n\ny1 &lt;- f(x, 3, 15, col = 4, pch = 19)\n\n\n\n\n\n\n\nstr(y1)\n\n num [1:100] -3.8 12.09 -24.27 12.45 -1.14 ..."
-  },
-  {
     "objectID": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
     "href": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
     "title": "UBC Stat406 2024W",
-    "section": "Outputs vs. Side effects",
-    "text": "Outputs vs. Side effects\n\n\n\nSide effects are things a function does, outputs can be assigned to variables\nA good example is the hist function\nYou have probably only seen the side effect which is to plot the histogram\n\n\nmy_histogram &lt;- hist(rnorm(1000))\n\n\n\n\n\n\n\n\n\n\n\nstr(my_histogram)\n\nList of 6\n $ breaks  : num [1:14] -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 ...\n $ counts  : int [1:13] 4 21 41 89 142 200 193 170 74 38 ...\n $ density : num [1:13] 0.008 0.042 0.082 0.178 0.284 0.4 0.386 0.34 0.148 0.076 ...\n $ mids    : num [1:13] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25 0.25 0.75 1.25 1.75 ...\n $ xname   : chr \"rnorm(1000)\"\n $ equidist: logi TRUE\n - attr(*, \"class\")= chr \"histogram\"\n\nclass(my_histogram)\n\n[1] \"histogram\""
+    "section": "Outputs vs. Side Effects",
+    "text": "Outputs vs. Side Effects\n\n\n\nf &lt;- function(arg1, arg2, arg3 = 12, ...) {\n  stuff &lt;- arg1 * arg3\n  stuff2 &lt;- stuff + arg2\n  plot(arg1, stuff2, ...)\n  return(stuff2)\n}\nx &lt;- rnorm(100)\n\n\n\n\ny1 &lt;- f(x, 3, 15, col = 4, pch = 19)\n\n\n\n\n\n\n\nstr(y1)\n\n num [1:100] -3.8 12.09 -24.27 12.45 -1.14 ..."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#outputs-vs.-side-effects-1",
+    "href": "schedule/slides/00-r-review.html#outputs-vs.-side-effects-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Outputs vs. Side Effects",
+    "text": "Outputs vs. Side Effects\n\n\n\nSide effects are things a function changes in global scope\nOutputs can be assigned to variables\nA good example is the hist function\nYou have probably only seen the side effect which is to plot the histogram\n\n\nmy_histogram &lt;- hist(rnorm(1000))\n\n\n\n\n\n\n\n\n\n\n\nstr(my_histogram)\n\nList of 6\n $ breaks  : num [1:14] -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 ...\n $ counts  : int [1:13] 4 21 41 89 142 200 193 170 74 38 ...\n $ density : num [1:13] 0.008 0.042 0.082 0.178 0.284 0.4 0.386 0.34 0.148 0.076 ...\n $ mids    : num [1:13] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25 0.25 0.75 1.25 1.75 ...\n $ xname   : chr \"rnorm(1000)\"\n $ equidist: logi TRUE\n - attr(*, \"class\")= chr \"histogram\"\n\nclass(my_histogram)\n\n[1] \"histogram\""
   },
   {
     "objectID": "schedule/slides/00-r-review.html#when-writing-functions-program-defensively-ensure-behaviour",
@@ -70,11 +91,11 @@
     "text": "When writing functions, program defensively, ensure behaviour\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  x + 1\n}\n  \nincrementer(2)\n\n[1] 3\n\nincrementer(1:4)\n\n[1] 2 3 4 5\n\nincrementer(\"a\")\n\nError in x + 1: non-numeric argument to binary operator\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  stopifnot(is.numeric(x))\n  return(x + 1)\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): is.numeric(x) is not TRUE\n\n\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + 1\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): `x` must be numeric\n\nincrementer(2, -3) ## oops!\n\n[1] 3\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + inc_by\n}\nincrementer(2, -3)\n\n[1] -1"
   },
   {
-    "objectID": "schedule/slides/00-r-review.html#how-to-keep-track",
-    "href": "schedule/slides/00-r-review.html#how-to-keep-track",
+    "objectID": "schedule/slides/00-r-review.html#unit-testing",
+    "href": "schedule/slides/00-r-review.html#unit-testing",
     "title": "UBC Stat406 2024W",
-    "section": "How to keep track",
-    "text": "How to keep track\n\n\n\nlibrary(testthat)\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  if (!is.numeric(inc_by)) {\n    stop(\"`inc_by` must be numeric\")\n  }\n  x + inc_by\n}\nexpect_error(incrementer(\"a\"))\nexpect_equal(incrementer(1:3), 2:4)\nexpect_equal(incrementer(2, -3), -1)\nexpect_error(incrementer(1, \"b\"))\nexpect_identical(incrementer(1:3), 2:4)\n\nError: incrementer(1:3) not identical to 2:4.\nObjects equal but not identical\n\n\n\n\n\nis.integer(2:4)\n\n[1] TRUE\n\nis.integer(incrementer(1:3))\n\n[1] FALSE\n\nexpect_identical(incrementer(1:3, 1L), 2:4)\n\n\n\n\n\n\n\n\n\n\nImportant\n\n\nIf you copy something, write a function.\nValidate your arguments.\nTo ensure proper functionality, write tests to check if inputs result in predicted outputs."
+    "section": "Unit Testing",
+    "text": "Unit Testing\nWhen you write functions, test them!\nUse testthat: check a few usual values and corner cases\n\n\n\nlibrary(testthat)\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  if (!is.numeric(inc_by)) {\n    stop(\"`inc_by` must be numeric\")\n  }\n  x + inc_by\n}\nexpect_error(incrementer(\"a\"))\nexpect_equal(incrementer(1:3), 2:4)\nexpect_equal(incrementer(2, -3), -1)\nexpect_error(incrementer(1, \"b\"))\nexpect_identical(incrementer(1:3), 2:4)\n\nError: incrementer(1:3) not identical to 2:4.\nObjects equal but not identical\n\n\n\n\n\nis.integer(2:4)\n\n[1] TRUE\n\nis.integer(incrementer(1:3))\n\n[1] FALSE\n\nexpect_identical(incrementer(1:3, 1L), 2:4)\n\n\n\n\n\n\n\n\n\n\nImportant\n\n\nIf you copy something, write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#classes",
@@ -102,7 +123,7 @@
     "href": "schedule/slides/00-r-review.html#wherefore-methods",
     "title": "UBC Stat406 2024W",
     "section": "Wherefore methods?",
-    "text": "Wherefore methods?\n\nThe advantage is that you don’t have to learn a totally new syntax to grab residuals or plot things\nYou just use residuals(mdl) whether mdl has class lm could have been done two centuries ago, or a Batrachian Emphasis Machine which won’t be invented for another five years.\nThe one draw-back is the help pages for the generic methods tend to be pretty vague\nCompare ?summary with ?summary.lm."
+    "text": "Wherefore methods?\n\nThe advantage is that you don’t have to learn a totally new syntax to grab residuals or plot things\nYou just use residuals(mdl) whether mdl has class lm or any other class you expect to have residuals\nThe one draw-back is the help pages for the generic methods tend to be pretty vague\nCompare ?summary with ?summary.lm."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#different-environments",
@@ -151,21 +172,28 @@
     "href": "schedule/slides/00-r-review.html#section-3",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "Adding browser()\n\nOnly useful with your own functions.\nOpen the script with the function, and add browser() to the code somewhere\nThen call your function.\nThe execution will Stop where you added browser() and you’ll have access to the local environment to play around"
+    "text": "Adding browser()\n(known as a breakpoint in any other language)\n\nOnly useful with your own functions.\nOpen the script with the function, and add browser() to the code somewhere\nThen call your function.\nThe execution will Stop where you added browser() and you’ll have access to the local environment to play around"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#reproducible-examples",
     "href": "schedule/slides/00-r-review.html#reproducible-examples",
     "title": "UBC Stat406 2024W",
     "section": "Reproducible examples",
-    "text": "Reproducible examples\n\n\n\n\n\n\nQuestion I get on Slack that I hate:\n\n\n“I ran the code like you had on Slide 39, but it didn’t work.”\n\n\n\n\nIf you want to ask me why the code doesn’t work, you need to show me what’s wrong.\n\n\n\n\n\n\n\nDon’t just paste a screenshot!\n\n\nUnless you get lucky, I won’t be able to figure it out from that. And we’ll both get frustrated.\n\n\n\nWhat you need is a Reproducible Example or reprex.\n\nThis is a small chunk of code that\n\nruns in it’s own environment\nand produces the error."
+    "text": "Reproducible examples\n\n\n\n\n\n\nQuestion I frequently get:\n\n\n“I ran this code, but it didn’t work.”\n\n\n\n\nIf you want to ask me why the code doesn’t work, you need to show me what’s wrong.\n\n\n\n\n\n\n\nDon’t just paste a screenshot!\n\n\nUnless you get lucky, I won’t be able to figure it out from that. And we’ll both get frustrated.\n\n\n\nWhat you need is a Reproducible Example or reprex.\n\nThis is a small chunk of code that\n\nruns in it’s own environment\nand produces the error."
   },
   {
     "objectID": "schedule/slides/00-r-review.html#reproducible-examples-how-it-works",
     "href": "schedule/slides/00-r-review.html#reproducible-examples-how-it-works",
     "title": "UBC Stat406 2024W",
     "section": "Reproducible examples, How it works",
-    "text": "Reproducible examples, How it works\n\nOpen a new .R script.\nPaste your buggy code in the file (no need to save)\nEdit your code to make sure it’s “enough to produce the error” and nothing more. (By rerunning the code a few times.)\nCopy your code.\nCall reprex::reprex(venue = \"r\") from the console. This will run your code in a new environment and show the result in the Viewer tab. Does it create the error you expect?\nIf it creates other errors, that may be the problem. You may fix the bug on your own!\nIf it doesn’t have errors, then your global environment is Farblunget.\nThe Output is now on your clipboard. Go to Slack and paste it in a message. Then press Cmd+Shift+Enter (on Mac) or Ctrl+Shift+Enter (Windows/Linux). Under Type, select R.\nSend the message, perhaps with more description and an SOS emoji.\n\n\n\n\n\n\n\nNote\n\n\nBecause Reprex runs in it’s own environment, it doesn’t have access to any of the libraries you loaded or the stuff in your global environment. You’ll have to load these things in the script."
+    "text": "Reproducible examples, How it works\n\nOpen a new .R script.\nPaste your buggy code in the file (no need to save)\nEdit your code to make sure it’s “enough to produce the error” and nothing more. (By rerunning the code a few times.)\nCopy your code (so that it’s on the clipboard)\nCall reprex::reprex(venue = \"r\") from the console. This will run your code in a new environment and show the result in the Viewer tab. Does it create the error you expect?\nIf it creates other errors, that may be the problem. You may fix the bug on your own!\nIf it doesn’t have errors, then your global environment is Farblunget.\nThe Output is now on your clipboard. Go to Slack and paste it in a message. Then press Cmd+Shift+Enter (on Mac) or Ctrl+Shift+Enter (Windows/Linux). Under Type, select R.\nSend the message, perhaps with more description and an SOS emoji.\n\n\n\n\n\n\n\nNote\n\n\nBecause Reprex runs in it’s own environment, it doesn’t have access to any of the libraries you loaded or the stuff in your global environment. You’ll have to load these things in the script."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#r-pitfalls",
+    "href": "schedule/slides/00-r-review.html#r-pitfalls",
+    "title": "UBC Stat406 2024W",
+    "section": "R Pitfalls",
+    "text": "R Pitfalls\n\nR is very permissive, and this leads to frequent silent errors\n\nnonstandard evaluation of function arguments\nallows dots in names (even though they mean something syntactically!)\nallows accessing attributes that don’t exist\npromotion of ints to floats, floats to strings 😱\n\nLots of unusual design decisions\n\nmany assignment operators (-&gt; &lt;- -&gt;&gt; &lt;&lt;- =)\nmany accessors (a$b is a[[\"b\"]] but not a[\"b\"])\nlacking basic data types (e.g., hash maps)\n\nClasses are informal\n\ncan do crazy things like class(x) &lt;- \"a weird new class!\"\n\nRscript executable treats code differently than the R REPL"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#tidyverse-is-huge",
@@ -173,6 +201,13 @@
     "title": "UBC Stat406 2024W",
     "section": "{tidyverse} is huge",
     "text": "{tidyverse} is huge\nCore tidyverse is nearly 30 different R packages, but we’re going to just talk about a few of them.\nFalls roughly into a few categories:\n\nConvenience functions: {magrittr} and many many others.\nData processing: {dplyr} and many others.\nGraphing: {ggplot2} and some others like {scales}.\nUtilities\n\n\n\nWe’re going to talk quickly about some of it, but ignore much of 2.\nThere’s a lot that’s great about these packages, especially ease of data processing.\nBut it doesn’t always jive with base R (it’s almost a separate proglang at this point)."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#when-in-doubt",
+    "href": "schedule/slides/00-r-review.html#when-in-doubt",
+    "title": "UBC Stat406 2024W",
+    "section": "When in doubt…",
+    "text": "When in doubt…\n\n\n\n\nRead the first 4 chapters (especially 3 and 4!)"
   },
   {
     "objectID": "schedule/slides/00-r-review.html#piping",
