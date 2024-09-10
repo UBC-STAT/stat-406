@@ -362,7 +362,7 @@ expect_identical(incrementer(1:3, 1L), 2:4)
 . . .
 
 ::: callout-important
-If you copy something, write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.
+Don't copy code; write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.
 :::
 
 
@@ -423,7 +423,7 @@ sloop::s3_dispatch(print(mdl))
 ```
 
 
-## R-Geeky But Important
+## Generic Methods
 
 There are [lots]{.secondary} of generic functions in `R`
 
@@ -462,6 +462,8 @@ to be pretty vague
 
 
 ## Different environments
+
+(known as *scope* in other languages) 
 
 * These are often tricky, but are very common.
 
@@ -577,9 +579,7 @@ The reason is almost always that the chunks refer to objects in the Environment 
     * Did you never Knit it? Why not?
     * Call `rstudioapi::restartSession()`, then run the Chunks 1-by-1
     
-##
-    
-Adding `browser()`
+## Adding `browser()`
 
 (known as a *breakpoint* in any other language)
 
@@ -644,25 +644,27 @@ Because Reprex runs in it's own environment, it doesn't have access to any of th
 ## R Pitfalls
 
 - R is *very permissive*, and this leads to frequent *silent errors*
-    - nonstandard evaluation of function arguments
+    - nonstandard evaluation of arguments, data masking
     - allows dots in names (even though they mean something syntactically!)
     - allows accessing attributes that don't exist
     - promotion of ints to floats, floats to strings 😱
 - Lots of unusual design decisions
-    - many assignment operators (`->` `<-` `->>` `<<-` `=`)
+    - many assignment operators (`->`, `<-`, `->>`, `<<-`, `=`)
     - many accessors (`a$b` is `a[["b"]]` but not `a["b"]`)
     - lacking basic data types (e.g., hash maps)
-- Classes are informal
-    - can do crazy things like `class(x) <- "a weird new class!"`
+    - informal classes (`class(x) <- "a weird new class!"`)
+    - tonnes of functions/data/objects in the global namespace
 - Rscript executable treats code *differently than the R REPL*
 
 # Understanding `{tidyverse}`
 
 ## `{tidyverse}` is huge
 
-Core tidyverse is nearly 30 different R packages, but we're going to just talk about a few of them.
+Core `tidyverse` is ~30 different packages, but we're going to just talk about a few.
 
-Falls roughly into a few categories:
+Load all of them by calling `library(tidyverse)`
+
+Packages fall roughly into a few categories:
 
 1. [Convenience functions:]{.secondary} `{magrittr}` and many many others.
 1. [Data processing:]{.secondary} `{dplyr}` and many others.
@@ -693,6 +695,8 @@ But it doesn't always jive with base `R` (it's almost a separate proglang at thi
 
 Read the first 4 chapters (especially 3 and 4!)
 
+[https://datasciencebook.ca](https://datasciencebook.ca)
+
 :::
 
 ::::
@@ -707,14 +711,18 @@ but is now in base R (>=4.1.0) as `|>`.
 
 Note: there are other pipes in `{magrittr}` (e.g. `%$%` and `%T%`) but I've never used them.
 
-I've used the old version for so long, that it's hard for me to adopt the new one.
-
 The point of the pipe is to [logically sequence nested operations]{.secondary}
+
+The pipe *passes the left hand side as the first argument of the right hand side*
 
 ## Example
 
 :::: {.columns}
 ::: {.column width="50%"}
+
+```{r}
+select(filter(mtcars, cyl == 6), mpg)
+```
 
 ```{r}
 mse1 <- print(
@@ -737,7 +745,10 @@ mse1 <- print(
 ::: {.column width="50%"}
 
 ```{r}
-#| code-line-numbers: "|5-6"
+mtcars |> filter(cyl == 6) |> select(mpg)
+```
+
+```{r}
 mse2 <- tib |>
   mutate(
     x3 = x1^2, 
@@ -758,7 +769,6 @@ mse2 <- tib |>
 It may seem like we should push this all the way
 
 ```{r}
-#| code-line-numbers: "|9-10"
 tib |>
   mutate(
     x3 = x1^2, 
@@ -771,11 +781,19 @@ tib |>
   mse3
 ```
 
-This works, but it's really annoying.
+This technically works...but at a minimum it makes it hard to extend pipe sequences.
+
+. . .
+
+::: callout-note
+**Opinion zone:** It's also just weird. Don't encourage the R devs.
+:::
+
+
 
 ## A new one...
 
-Just last week, I learned
+R loves weird pipes. Just stick to `|>`, it results in clear code.
 
 ```{r}
 library(magrittr)
@@ -808,9 +826,9 @@ Majorly useful operations:
 1. `summarise()`
 
 ::: {.callout-note}
-`filter()` and `select()` are functions in Base R. 
+`filter()` and `select()` are functions in Base R.
 
-Sometimes you get 🐞 because it called the wrong version. 
+Sometimes you get 🐞 because it called the wrong version.
 
 To be sure, prefix it like `dplyr::select()`.
 :::
@@ -836,6 +854,8 @@ covid <- pub_covidcast(
 covid
 ```
 -->
+
+7-day rolling avg COVID case/death counts for CA and WA from Aug 1-21, 2022 from Johns Hopkins
 
 ```{r message=FALSE}
 library(tidyverse)
