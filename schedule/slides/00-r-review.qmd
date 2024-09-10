@@ -7,6 +7,14 @@ metadata-files:
 
 {{< include _titleslide.qmd >}}
 
+## Housekeeping
+
+1. Introduction
+1. My office hours will be in ESB3174 after class **today only**
+    - I'm trying to book this room for future OHs
+1. Reminder: fill in Quiz 0 if you haven't already!
+1. Your labs are due at 23:00 on the night of the lab
+
 
 # The basics
 
@@ -22,7 +30,34 @@ Things to note
 1. Getting help
 1. Environment, Git
 
-## Simple stuff
+## R and the `{tidyverse}`
+
+:::: {.columns}
+::: {.column width="35%"}
+
+![](https://datasciencebook.ca/img/frontmatter/ds-a-first-intro-cover.jpg)
+
+:::
+
+::: {.column width="65%"}
+
+Today is going to be a *whirlwind tour* of R.
+
+If you are new to R: read the first 4 chapters of [*Data Science: A First Introduction*](https://datasciencebook.ca).
+
+It's available for free at `https://datasciencebook.ca`. It covers:
+
+- Data loading from `.csv`, Excel, database, and web sources
+- Data saving to `.csv` files
+- Data wrangling with `tidyverse` functions
+- Plotting with `ggplot`
+
+:::
+
+::::
+
+
+## Basic data structures
 
 :::: {.columns}
 ::: {.column width="45%"}
@@ -53,8 +88,9 @@ x[c(1,3),  2:3]
 :::
 ::::
 
+[All elements of a vector/matrix must be of the same type]{.secondary}
 
-## Simple stuff
+## Basic data structures
 
 ::: flex
 ::: w-50
@@ -88,7 +124,7 @@ dat[1,]
 :::
 :::
 
-[Data frames are sort-of lists and sort-of matrices]{.secondary}
+[Lists can have multiple element types; data frames are lists of vectors]{.secondary}
 
 
 ## Tibbles
@@ -112,9 +148,32 @@ Also, you can construct one by referencing previously constructed columns.
 
 # Functions
 
+## Functions in R
+
+A function is a mapping from inputs to outputs, and is defined with the `function` keyword. 
+
+The function's body is wrapped in curly braces, and its output is given by the `return` keyword (or the last evaluated statement)
 
 
-## Understanding signatures
+```{r}
+f <- function(x, y){
+  x+y 
+}
+
+f(3,5)
+```
+
+```{r}
+f <- function(x, y){
+  return(x+y)
+}
+
+f(3,5)
+```
+
+
+
+## Function Signatures
 
 ```{r}
 #| code-fold: true
@@ -148,7 +207,9 @@ rnorm(sd = 1, n = 3, mean = 0)
 * If you name them, you can pass them out of order (but you shouldn't).
 
 
-## Write lots of functions. I can't emphasize this enough.
+# Write lots of functions.
+
+## Outputs vs. Side Effects
 
 ::: flex
 
@@ -175,12 +236,12 @@ str(y1)
 :::
 :::
 
-
-## Outputs vs. Side effects
+## Outputs vs. Side Effects
 
 ::: flex
 ::: w-50
-* Side effects are things a function does, outputs can be assigned to variables
+* Side effects are things a function changes in global scope
+* Outputs can be assigned to variables
 * A good example is the `hist` function
 * You have probably only seen the side effect which is to plot the histogram
 
@@ -257,7 +318,11 @@ incrementer(2, -3)
 :::
 
 
-## How to keep track
+## Unit Testing
+
+When you write functions, *test them!*
+
+Use `testthat`: check a few usual values and **corner cases**
 
 ::: flex
 ::: w-50
@@ -297,11 +362,7 @@ expect_identical(incrementer(1:3, 1L), 2:4)
 . . .
 
 ::: callout-important
-If you copy something, write a function.
-
-Validate your arguments.
-
-To ensure proper functionality, write tests to check if inputs result in predicted outputs.
+If you copy something, write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.
 :::
 
 
@@ -387,9 +448,8 @@ For this reason, `R` programmers try to avoid `.` in names of functions or objec
 * The advantage is that you don't have to learn a totally
 new syntax to grab residuals or plot things
 
-* You just use `residuals(mdl)` whether `mdl` has class `lm`
-could have been done two centuries ago, or a Batrachian Emphasis Machine
-which won't be invented for another five years.  
+* You just use `residuals(mdl)` whether `mdl` has class `lm` or any other class
+you expect to have residuals
 
 * The one draw-back is the help pages for the generic methods tend
 to be pretty vague
@@ -521,6 +581,8 @@ The reason is almost always that the chunks refer to objects in the Environment 
     
 Adding `browser()`
 
+(known as a *breakpoint* in any other language)
+
 * Only useful with your own functions.
 * Open the script with the function, and add `browser()` to the code somewhere
 * Then call your function.
@@ -530,9 +592,9 @@ Adding `browser()`
 ## Reproducible examples
 
 ::: {.callout-tip}
-## Question I get on Slack that I hate:
+## Question I frequently get:
 
-"I ran the code like you had on Slide 39, but it didn't work."
+"I ran this code, but it didn't work."
 :::
 
 * If you want to ask me why the code doesn't work, you need to show me what's wrong.
@@ -562,7 +624,7 @@ The best way to do this is with the `{reprex}` package.
 
 1. Edit your code to make sure it's "enough to produce the error" and nothing more. (By rerunning the code a few times.)
 
-1. Copy your code.
+1. Copy your code (so that it's on the clipboard)
 
 1. Call `reprex::reprex(venue = "r")` from the console. This will run your code in a new environment and show the result in the Viewer tab. Does it create the error you expect?
 
@@ -579,8 +641,22 @@ Because Reprex runs in it's own environment, it doesn't have access to any of th
 :::
 
 
-# Understanding `{tidyverse}`
+## R Pitfalls
 
+- R is *very permissive*, and this leads to frequent *silent errors*
+    - nonstandard evaluation of function arguments
+    - allows dots in names (even though they mean something syntactically!)
+    - allows accessing attributes that don't exist
+    - promotion of ints to floats, floats to strings 😱
+- Lots of unusual design decisions
+    - many assignment operators (`->` `<-` `->>` `<<-` `=`)
+    - many accessors (`a$b` is `a[["b"]]` but not `a["b"]`)
+    - lacking basic data types (e.g., hash maps)
+- Classes are informal
+    - can do crazy things like `class(x) <- "a weird new class!"`
+- Rscript executable treats code *differently than the R REPL*
+
+# Understanding `{tidyverse}`
 
 ## `{tidyverse}` is huge
 
@@ -603,6 +679,24 @@ We're going to talk quickly about some of it, but ignore much of 2.
 There's a lot that's great about these packages, especially ease of data processing.
 
 But it doesn't always jive with base `R` (it's almost a separate proglang at this point).
+
+## When in doubt...
+
+:::: {.columns}
+::: {.column width="35%"}
+
+![](https://datasciencebook.ca/img/frontmatter/ds-a-first-intro-cover.jpg)
+
+:::
+
+::: {.column width="65%"}
+
+Read the first 4 chapters (especially 3 and 4!)
+
+:::
+
+::::
+
 
 
 ## Piping
@@ -1003,3 +1097,4 @@ ggplot(
     values = c(blue, orange)) +
   theme(legend.position = "bottom")
 ```
+
