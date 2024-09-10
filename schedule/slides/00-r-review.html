@@ -910,7 +910,7 @@ Objects equal but not identical</code></pre>
 <p><strong>Important</strong></p>
 </div>
 <div class="callout-content">
-<p>If you copy something, write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.</p>
+<p>Don’t copy code; write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.</p>
 </div>
 </div>
 </div>
@@ -989,8 +989,8 @@ Coefficients:
 </div>
 </div>
 </section>
-<section id="r-geeky-but-important" class="slide level2">
-<h2>R-Geeky But Important</h2>
+<section id="generic-methods" class="slide level2">
+<h2>Generic Methods</h2>
 <p>There are <span class="secondary">lots</span> of generic functions in <code>R</code></p>
 <p>Common ones are <code>print()</code>, <code>summary()</code>, and <code>plot()</code>.</p>
 <p>Also, lots of important statistical modelling concepts: <code>residuals()</code> <code>coef()</code></p>
@@ -1017,6 +1017,7 @@ Coefficients:
 </section>
 <section id="different-environments" class="slide level2">
 <h2>Different environments</h2>
+<p>(known as <em>scope</em> in other languages)</p>
 <ul>
 <li><p>These are often tricky, but are very common.</p></li>
 <li><p>Most programming languages have this concept in one way or another.</p></li>
@@ -1143,9 +1144,8 @@ Coefficients:
 </ul></li>
 </ul>
 </section>
-<section id="section-3" class="slide level2">
-<h2></h2>
-<p>Adding <code>browser()</code></p>
+<section id="adding-browser" class="slide level2">
+<h2>Adding <code>browser()</code></h2>
 <p>(known as a <em>breakpoint</em> in any other language)</p>
 <ul>
 <li>Only useful with your own functions.</li>
@@ -1195,7 +1195,7 @@ Coefficients:
 </ul>
 </section></section>
 <section>
-<section id="section-4" class="title-slide slide level1 center">
+<section id="section-3" class="title-slide slide level1 center">
 <h1></h1>
 <p>The best way to do this is with the <code>{reprex}</code> package.</p>
 </section>
@@ -1231,20 +1231,18 @@ Coefficients:
 <ul>
 <li>R is <em>very permissive</em>, and this leads to frequent <em>silent errors</em>
 <ul>
-<li>nonstandard evaluation of function arguments</li>
+<li>nonstandard evaluation of arguments, data masking</li>
 <li>allows dots in names (even though they mean something syntactically!)</li>
 <li>allows accessing attributes that don’t exist</li>
 <li>promotion of ints to floats, floats to strings 😱</li>
 </ul></li>
 <li>Lots of unusual design decisions
 <ul>
-<li>many assignment operators (<code>-&gt;</code> <code>&lt;-</code> <code>-&gt;&gt;</code> <code>&lt;&lt;-</code> <code>=</code>)</li>
+<li>many assignment operators (<code>-&gt;</code>, <code>&lt;-</code>, <code>-&gt;&gt;</code>, <code>&lt;&lt;-</code>, <code>=</code>)</li>
 <li>many accessors (<code>a$b</code> is <code>a[["b"]]</code> but not <code>a["b"]</code>)</li>
 <li>lacking basic data types (e.g., hash maps)</li>
-</ul></li>
-<li>Classes are informal
-<ul>
-<li>can do crazy things like <code>class(x) &lt;- "a weird new class!"</code></li>
+<li>informal classes (<code>class(x) &lt;- "a weird new class!"</code>)</li>
+<li>tonnes of functions/data/objects in the global namespace</li>
 </ul></li>
 <li>Rscript executable treats code <em>differently than the R REPL</em></li>
 </ul>
@@ -1256,8 +1254,9 @@ Coefficients:
 </section>
 <section id="tidyverse-is-huge" class="slide level2">
 <h2><code>{tidyverse}</code> is huge</h2>
-<p>Core tidyverse is nearly 30 different R packages, but we’re going to just talk about a few of them.</p>
-<p>Falls roughly into a few categories:</p>
+<p>Core <code>tidyverse</code> is ~30 different packages, but we’re going to just talk about a few.</p>
+<p>Load all of them by calling <code>library(tidyverse)</code></p>
+<p>Packages fall roughly into a few categories:</p>
 <ol type="1">
 <li><span class="secondary">Convenience functions:</span> <code>{magrittr}</code> and many many others.</li>
 <li><span class="secondary">Data processing:</span> <code>{dplyr}</code> and many others.</li>
@@ -1278,6 +1277,7 @@ Coefficients:
 <p><img data-src="https://datasciencebook.ca/img/frontmatter/ds-a-first-intro-cover.jpg"></p>
 </div><div class="column" style="width:65%;">
 <p>Read the first 4 chapters (especially 3 and 4!)</p>
+<p><a href="https://datasciencebook.ca">https://datasciencebook.ca</a></p>
 </div></div>
 </section>
 <section id="piping" class="slide level2">
@@ -1285,73 +1285,114 @@ Coefficients:
 <p>This was introduced by <code>{magrittr}</code> as <code>%&gt;%</code>,</p>
 <p>but is now in base R (&gt;=4.1.0) as <code>|&gt;</code>.</p>
 <p>Note: there are other pipes in <code>{magrittr}</code> (e.g.&nbsp;<code>%$%</code> and <code>%T%</code>) but I’ve never used them.</p>
-<p>I’ve used the old version for so long, that it’s hard for me to adopt the new one.</p>
 <p>The point of the pipe is to <span class="secondary">logically sequence nested operations</span></p>
+<p>The pipe <em>passes the left hand side as the first argument of the right hand side</em></p>
 </section>
 <section id="example" class="slide level2">
 <h2>Example</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a></a>mse1 <span class="ot">&lt;-</span> <span class="fu">print</span>(</span>
-<span id="cb104-2"><a></a>  <span class="fu">sum</span>(</span>
-<span id="cb104-3"><a></a>    <span class="fu">residuals</span>(</span>
-<span id="cb104-4"><a></a>      <span class="fu">lm</span>(y<span class="sc">~</span>., <span class="at">data =</span> <span class="fu">mutate</span>(</span>
-<span id="cb104-5"><a></a>        tib, </span>
-<span id="cb104-6"><a></a>        <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb104-7"><a></a>        <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb104-8"><a></a>      )</span>
-<span id="cb104-9"><a></a>      )</span>
-<span id="cb104-10"><a></a>    )<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb104-11"><a></a>  )</span>
-<span id="cb104-12"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a></a><span class="fu">select</span>(<span class="fu">filter</span>(mtcars, cyl <span class="sc">==</span> <span class="dv">6</span>), mpg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                mpg
+Mazda RX4      21.0
+Mazda RX4 Wag  21.0
+Hornet 4 Drive 21.4
+Valiant        18.1
+Merc 280       19.2
+Merc 280C      17.8
+Ferrari Dino   19.7</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a></a>mse1 <span class="ot">&lt;-</span> <span class="fu">print</span>(</span>
+<span id="cb106-2"><a></a>  <span class="fu">sum</span>(</span>
+<span id="cb106-3"><a></a>    <span class="fu">residuals</span>(</span>
+<span id="cb106-4"><a></a>      <span class="fu">lm</span>(y<span class="sc">~</span>., <span class="at">data =</span> <span class="fu">mutate</span>(</span>
+<span id="cb106-5"><a></a>        tib, </span>
+<span id="cb106-6"><a></a>        <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>,</span>
+<span id="cb106-7"><a></a>        <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb106-8"><a></a>      )</span>
+<span id="cb106-9"><a></a>      )</span>
+<span id="cb106-10"><a></a>    )<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb106-11"><a></a>  )</span>
+<span id="cb106-12"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.991017e-29</code></pre>
 </div>
 </div>
 </div><div class="column" style="width:50%;">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb106" data-code-line-numbers="|5-6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a></a>mse2 <span class="ot">&lt;-</span> tib <span class="sc">|&gt;</span></span>
-<span id="cb106-2"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb106-3"><a></a>    <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>, </span>
-<span id="cb106-4"><a></a>    <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb106-5"><a></a>  ) <span class="sc">%&gt;%</span> <span class="co"># base pipe only goes to first arg</span></span>
-<span id="cb106-6"><a></a>  <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> .) <span class="sc">|&gt;</span> <span class="co"># note the use of `.`</span></span>
-<span id="cb106-7"><a></a>  <span class="fu">residuals</span>() <span class="sc">|&gt;</span></span>
-<span id="cb106-8"><a></a>  magrittr<span class="sc">::</span><span class="fu">raise_to_power</span>(<span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="co"># same as `^`(2)</span></span>
-<span id="cb106-9"><a></a>  <span class="fu">sum</span>() <span class="sc">|&gt;</span></span>
-<span id="cb106-10"><a></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a></a>mtcars <span class="sc">|&gt;</span> <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">6</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(mpg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                mpg
+Mazda RX4      21.0
+Mazda RX4 Wag  21.0
+Hornet 4 Drive 21.4
+Valiant        18.1
+Merc 280       19.2
+Merc 280C      17.8
+Ferrari Dino   19.7</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a></a>mse2 <span class="ot">&lt;-</span> tib <span class="sc">|&gt;</span></span>
+<span id="cb110-2"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb110-3"><a></a>    <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>, </span>
+<span id="cb110-4"><a></a>    <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb110-5"><a></a>  ) <span class="sc">%&gt;%</span> <span class="co"># base pipe only goes to first arg</span></span>
+<span id="cb110-6"><a></a>  <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> .) <span class="sc">|&gt;</span> <span class="co"># note the use of `.`</span></span>
+<span id="cb110-7"><a></a>  <span class="fu">residuals</span>() <span class="sc">|&gt;</span></span>
+<span id="cb110-8"><a></a>  magrittr<span class="sc">::</span><span class="fu">raise_to_power</span>(<span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="co"># same as `^`(2)</span></span>
+<span id="cb110-9"><a></a>  <span class="fu">sum</span>() <span class="sc">|&gt;</span></span>
+<span id="cb110-10"><a></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.991017e-29</code></pre>
 </div>
 </div>
 </div></div>
 </section>
-<section id="section-5" class="slide level2">
+<section id="section-4" class="slide level2">
 <h2></h2>
 <p>It may seem like we should push this all the way</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb108" data-code-line-numbers="|9-10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a></a>tib <span class="sc">|&gt;</span></span>
-<span id="cb108-2"><a></a>  <span class="fu">mutate</span>(</span>
-<span id="cb108-3"><a></a>    <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>, </span>
-<span id="cb108-4"><a></a>    <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb108-5"><a></a>  ) <span class="sc">%&gt;%</span> <span class="co"># base pipe only goes to first arg</span></span>
-<span id="cb108-6"><a></a>  <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> .) <span class="sc">|&gt;</span> <span class="co"># note the use of `.`</span></span>
-<span id="cb108-7"><a></a>  <span class="fu">residuals</span>() <span class="sc">|&gt;</span></span>
-<span id="cb108-8"><a></a>  magrittr<span class="sc">::</span><span class="fu">raise_to_power</span>(<span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="co"># same as `^`(2)</span></span>
-<span id="cb108-9"><a></a>  <span class="fu">sum</span>() <span class="ot">-&gt;</span></span>
-<span id="cb108-10"><a></a>  mse3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a></a>tib <span class="sc">|&gt;</span></span>
+<span id="cb112-2"><a></a>  <span class="fu">mutate</span>(</span>
+<span id="cb112-3"><a></a>    <span class="at">x3 =</span> x1<span class="sc">^</span><span class="dv">2</span>, </span>
+<span id="cb112-4"><a></a>    <span class="at">x4 =</span> <span class="fu">log</span>(x2 <span class="sc">+</span> <span class="fu">abs</span>(<span class="fu">min</span>(x2)) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb112-5"><a></a>  ) <span class="sc">%&gt;%</span> <span class="co"># base pipe only goes to first arg</span></span>
+<span id="cb112-6"><a></a>  <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> .) <span class="sc">|&gt;</span> <span class="co"># note the use of `.`</span></span>
+<span id="cb112-7"><a></a>  <span class="fu">residuals</span>() <span class="sc">|&gt;</span></span>
+<span id="cb112-8"><a></a>  magrittr<span class="sc">::</span><span class="fu">raise_to_power</span>(<span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="co"># same as `^`(2)</span></span>
+<span id="cb112-9"><a></a>  <span class="fu">sum</span>() <span class="ot">-&gt;</span></span>
+<span id="cb112-10"><a></a>  mse3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This works, but it’s really annoying.</p>
+<p>This technically works…but at a minimum it makes it hard to extend pipe sequences.</p>
+<div class="fragment">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<p><strong>Opinion zone:</strong> It’s also just weird. Don’t encourage the R devs.</p>
+</div>
+</div>
+</div>
+</div>
 </section>
 <section id="a-new-one" class="slide level2">
 <h2>A new one…</h2>
-<p>Just last week, I learned</p>
+<p>R loves weird pipes. Just stick to <code>|&gt;</code>, it results in clear code.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb109-2"><a></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">z =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>)</span>
-<span id="cb109-3"><a></a>tib <span class="ot">&lt;-</span> tib <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">b =</span> x <span class="sc">+</span> z)</span>
-<span id="cb109-4"><a></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb113-2"><a></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">z =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>)</span>
+<span id="cb113-3"><a></a>tib <span class="ot">&lt;-</span> tib <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">b =</span> x <span class="sc">+</span> z)</span>
+<span id="cb113-4"><a></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 3
       x     z     b
@@ -1362,10 +1403,10 @@ Coefficients:
 4     4     9    13
 5     5    10    15</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a></a><span class="co"># start over</span></span>
-<span id="cb111-2"><a></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">z =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>)</span>
-<span id="cb111-3"><a></a>tib <span class="sc">%&lt;&gt;%</span> <span class="fu">mutate</span>(<span class="at">b =</span> x <span class="sc">+</span> z)</span>
-<span id="cb111-4"><a></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a></a><span class="co"># start over</span></span>
+<span id="cb115-2"><a></a>tib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="at">z =</span> <span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>)</span>
+<span id="cb115-3"><a></a>tib <span class="sc">%&lt;&gt;%</span> <span class="fu">mutate</span>(<span class="at">b =</span> x <span class="sc">+</span> z)</span>
+<span id="cb115-4"><a></a>tib</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 3
       x     z     b
@@ -1429,12 +1470,13 @@ covid <- pub_covidcast(
 covid
 ```
 -->
+<p>7-day rolling avg COVID case/death counts for CA and WA from Aug 1-21, 2022 from Johns Hopkins</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb113-2"><a></a>covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/covid.csv"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb113-3"><a></a>  <span class="fu">select</span>(geo_value, time_value, signal, value)</span>
-<span id="cb113-4"><a></a></span>
-<span id="cb113-5"><a></a>covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb117-2"><a></a>covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/covid.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb117-3"><a></a>  <span class="fu">select</span>(geo_value, time_value, signal, value)</span>
+<span id="cb117-4"><a></a></span>
+<span id="cb117-5"><a></a>covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 84 × 4
    geo_value time_value signal                        value
@@ -1457,21 +1499,21 @@ covid
 <h2>Examples</h2>
 <p>Rename the <code>signal</code> to something short.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a></a>covid <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
-<span id="cb115-2"><a></a>  <span class="fu">mutate</span>(<span class="at">signal =</span> <span class="fu">case_when</span>(</span>
-<span id="cb115-3"><a></a>    <span class="fu">str_starts</span>(signal, <span class="st">"confirmed"</span>) <span class="sc">~</span> <span class="st">"case_rate"</span>, </span>
-<span id="cb115-4"><a></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"death_rate"</span></span>
-<span id="cb115-5"><a></a>  ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a></a>covid <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
+<span id="cb119-2"><a></a>  <span class="fu">mutate</span>(<span class="at">signal =</span> <span class="fu">case_when</span>(</span>
+<span id="cb119-3"><a></a>    <span class="fu">str_starts</span>(signal, <span class="st">"confirmed"</span>) <span class="sc">~</span> <span class="st">"case_rate"</span>, </span>
+<span id="cb119-4"><a></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"death_rate"</span></span>
+<span id="cb119-5"><a></a>  ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Sort by <code>time_value</code> then <code>geo_value</code></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a></a>covid <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> <span class="fu">arrange</span>(time_value, geo_value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a></a>covid <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> <span class="fu">arrange</span>(time_value, geo_value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Calculate grouped medians</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a></a>covid <span class="sc">|&gt;</span> </span>
-<span id="cb117-2"><a></a>  <span class="fu">group_by</span>(geo_value, signal) <span class="sc">|&gt;</span></span>
-<span id="cb117-3"><a></a>  <span class="fu">summarise</span>(<span class="at">med =</span> <span class="fu">median</span>(value), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a></a>covid <span class="sc">|&gt;</span> </span>
+<span id="cb121-2"><a></a>  <span class="fu">group_by</span>(geo_value, signal) <span class="sc">|&gt;</span></span>
+<span id="cb121-3"><a></a>  <span class="fu">summarise</span>(<span class="at">med =</span> <span class="fu">median</span>(value), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 3
   geo_value signal        med
@@ -1487,20 +1529,20 @@ covid
 <h2>Examples</h2>
 <p>Split the data into two tibbles by signal</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a></a>cases <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
-<span id="cb119-2"><a></a>  <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb119-3"><a></a>  <span class="fu">rename</span>(<span class="at">case_rate =</span> value) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>signal)</span>
-<span id="cb119-4"><a></a>deaths <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
-<span id="cb119-5"><a></a>  <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"death_rate"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb119-6"><a></a>  <span class="fu">rename</span>(<span class="at">death_rate =</span> value) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>signal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a></a>cases <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
+<span id="cb123-2"><a></a>  <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb123-3"><a></a>  <span class="fu">rename</span>(<span class="at">case_rate =</span> value) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>signal)</span>
+<span id="cb123-4"><a></a>deaths <span class="ot">&lt;-</span> covid <span class="sc">|&gt;</span> </span>
+<span id="cb123-5"><a></a>  <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"death_rate"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb123-6"><a></a>  <span class="fu">rename</span>(<span class="at">death_rate =</span> value) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>signal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Join them together</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a></a>joined <span class="ot">&lt;-</span> <span class="fu">full_join</span>(cases, deaths, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"geo_value"</span>, <span class="st">"time_value"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a></a>joined <span class="ot">&lt;-</span> <span class="fu">full_join</span>(cases, deaths, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"geo_value"</span>, <span class="st">"time_value"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Do the same thing by pivoting</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb121"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb121-1"><a></a>covid <span class="sc">|&gt;</span> <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> signal, <span class="at">values_from =</span> value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a></a>covid <span class="sc">|&gt;</span> <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> signal, <span class="at">values_from =</span> value)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 42 × 4
    geo_value time_value case_rate death_rate
@@ -1532,7 +1574,7 @@ covid
 <p>I’ll give a very fast overview of some confusing bits.</p>
 </section></section>
 <section>
-<section id="section-6" class="title-slide slide level1 center">
+<section id="section-5" class="title-slide slide level1 center">
 <h1></h1>
 <p>I suggest exploring</p>
 <p>🔗 <a href="https://djnavarro.net/slides-starting-ggplot/">This slide deck</a></p>
@@ -1542,22 +1584,22 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb123-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> </span>
-<span id="cb123-3"><a></a>    <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>)</span>
-<span id="cb123-4"><a></a>) <span class="sc">+</span></span>
-<span id="cb123-5"><a></a>  <span class="fu">geom_point</span>(</span>
-<span id="cb123-6"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
-<span id="cb123-7"><a></a>      <span class="at">x =</span> time_value,</span>
-<span id="cb123-8"><a></a>      <span class="at">y =</span> value</span>
-<span id="cb123-9"><a></a>    )</span>
-<span id="cb123-10"><a></a>  ) <span class="sc">+</span> </span>
-<span id="cb123-11"><a></a>  <span class="fu">geom_smooth</span>( </span>
-<span id="cb123-12"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>( </span>
-<span id="cb123-13"><a></a>      <span class="at">x =</span> time_value, </span>
-<span id="cb123-14"><a></a>      <span class="at">y =</span> value </span>
-<span id="cb123-15"><a></a>    ) </span>
-<span id="cb123-16"><a></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb127-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> </span>
+<span id="cb127-3"><a></a>    <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>)</span>
+<span id="cb127-4"><a></a>) <span class="sc">+</span></span>
+<span id="cb127-5"><a></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb127-6"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb127-7"><a></a>      <span class="at">x =</span> time_value,</span>
+<span id="cb127-8"><a></a>      <span class="at">y =</span> value</span>
+<span id="cb127-9"><a></a>    )</span>
+<span id="cb127-10"><a></a>  ) <span class="sc">+</span> </span>
+<span id="cb127-11"><a></a>  <span class="fu">geom_smooth</span>( </span>
+<span id="cb127-12"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>( </span>
+<span id="cb127-13"><a></a>      <span class="at">x =</span> time_value, </span>
+<span id="cb127-14"><a></a>      <span class="at">y =</span> value </span>
+<span id="cb127-15"><a></a>    ) </span>
+<span id="cb127-16"><a></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1592,25 +1634,25 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb124-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>)</span>
-<span id="cb124-3"><a></a>) <span class="sc">+</span></span>
-<span id="cb124-4"><a></a>  <span class="fu">geom_point</span>(</span>
-<span id="cb124-5"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
-<span id="cb124-6"><a></a>      <span class="at">x =</span> time_value,</span>
-<span id="cb124-7"><a></a>      <span class="at">y =</span> value,</span>
-<span id="cb124-8"><a></a>      <span class="at">colour =</span> geo_value</span>
-<span id="cb124-9"><a></a>    )</span>
-<span id="cb124-10"><a></a>  ) <span class="sc">+</span> </span>
-<span id="cb124-11"><a></a>  <span class="fu">geom_smooth</span>( </span>
-<span id="cb124-12"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>( </span>
-<span id="cb124-13"><a></a>      <span class="at">x =</span> time_value, </span>
-<span id="cb124-14"><a></a>      <span class="at">y =</span> value,</span>
-<span id="cb124-15"><a></a>      <span class="at">colour =</span> geo_value</span>
-<span id="cb124-16"><a></a>    ),</span>
-<span id="cb124-17"><a></a>    <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb124-18"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span></span>
-<span id="cb124-19"><a></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb128-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>)</span>
+<span id="cb128-3"><a></a>) <span class="sc">+</span></span>
+<span id="cb128-4"><a></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb128-5"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb128-6"><a></a>      <span class="at">x =</span> time_value,</span>
+<span id="cb128-7"><a></a>      <span class="at">y =</span> value,</span>
+<span id="cb128-8"><a></a>      <span class="at">colour =</span> geo_value</span>
+<span id="cb128-9"><a></a>    )</span>
+<span id="cb128-10"><a></a>  ) <span class="sc">+</span> </span>
+<span id="cb128-11"><a></a>  <span class="fu">geom_smooth</span>( </span>
+<span id="cb128-12"><a></a>    <span class="at">mapping =</span> <span class="fu">aes</span>( </span>
+<span id="cb128-13"><a></a>      <span class="at">x =</span> time_value, </span>
+<span id="cb128-14"><a></a>      <span class="at">y =</span> value,</span>
+<span id="cb128-15"><a></a>      <span class="at">colour =</span> geo_value</span>
+<span id="cb128-16"><a></a>    ),</span>
+<span id="cb128-17"><a></a>    <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb128-18"><a></a>    <span class="at">method =</span> <span class="st">"lm"</span></span>
+<span id="cb128-19"><a></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1643,16 +1685,16 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb125-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>),</span>
-<span id="cb125-3"><a></a>  <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
-<span id="cb125-4"><a></a>    <span class="at">x =</span> time_value,</span>
-<span id="cb125-5"><a></a>    <span class="at">y =</span> value,</span>
-<span id="cb125-6"><a></a>    <span class="at">colour =</span> geo_value</span>
-<span id="cb125-7"><a></a>  )</span>
-<span id="cb125-8"><a></a>) <span class="sc">+</span></span>
-<span id="cb125-9"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb125-10"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb129-2"><a></a>  <span class="at">data =</span> covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>),</span>
+<span id="cb129-3"><a></a>  <span class="at">mapping =</span> <span class="fu">aes</span>(</span>
+<span id="cb129-4"><a></a>    <span class="at">x =</span> time_value,</span>
+<span id="cb129-5"><a></a>    <span class="at">y =</span> value,</span>
+<span id="cb129-6"><a></a>    <span class="at">colour =</span> geo_value</span>
+<span id="cb129-7"><a></a>  )</span>
+<span id="cb129-8"><a></a>) <span class="sc">+</span></span>
+<span id="cb129-9"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb129-10"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1680,12 +1722,12 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb126-2"><a></a>  covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>),</span>
-<span id="cb126-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
-<span id="cb126-4"><a></a>) <span class="sc">+</span></span>
-<span id="cb126-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb126-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb130-2"><a></a>  covid <span class="sc">|&gt;</span> <span class="fu">filter</span>(signal <span class="sc">==</span> <span class="st">"case_rate"</span>),</span>
+<span id="cb130-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
+<span id="cb130-4"><a></a>) <span class="sc">+</span></span>
+<span id="cb130-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb130-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1715,17 +1757,17 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb127-2"><a></a>  covid, </span>
-<span id="cb127-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
-<span id="cb127-4"><a></a>) <span class="sc">+</span></span>
-<span id="cb127-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb127-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
-<span id="cb127-7"><a></a>  <span class="fu">facet_grid</span>(signal <span class="sc">~</span> geo_value) <span class="sc">+</span></span>
-<span id="cb127-8"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb127-9"><a></a>    <span class="at">name =</span> <span class="cn">NULL</span>, </span>
-<span id="cb127-10"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange)) <span class="sc">+</span></span>
-<span id="cb127-11"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb131-2"><a></a>  covid, </span>
+<span id="cb131-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
+<span id="cb131-4"><a></a>) <span class="sc">+</span></span>
+<span id="cb131-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb131-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
+<span id="cb131-7"><a></a>  <span class="fu">facet_grid</span>(signal <span class="sc">~</span> geo_value) <span class="sc">+</span></span>
+<span id="cb131-8"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb131-9"><a></a>    <span class="at">name =</span> <span class="cn">NULL</span>, </span>
+<span id="cb131-10"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange)) <span class="sc">+</span></span>
+<span id="cb131-11"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1758,17 +1800,17 @@ covid
 
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a></a><span class="fu">ggplot</span>(</span>
-<span id="cb128-2"><a></a>  covid, </span>
-<span id="cb128-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
-<span id="cb128-4"><a></a>) <span class="sc">+</span></span>
-<span id="cb128-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb128-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
-<span id="cb128-7"><a></a>  <span class="fu">facet_grid</span>(signal <span class="sc">~</span> geo_value, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb128-8"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb128-9"><a></a>    <span class="at">name =</span> <span class="cn">NULL</span>, </span>
-<span id="cb128-10"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange)) <span class="sc">+</span></span>
-<span id="cb128-11"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a></a><span class="fu">ggplot</span>(</span>
+<span id="cb132-2"><a></a>  covid, </span>
+<span id="cb132-3"><a></a>  <span class="fu">aes</span>(time_value, value, <span class="at">colour =</span> geo_value)</span>
+<span id="cb132-4"><a></a>) <span class="sc">+</span></span>
+<span id="cb132-5"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb132-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
+<span id="cb132-7"><a></a>  <span class="fu">facet_grid</span>(signal <span class="sc">~</span> geo_value, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb132-8"><a></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb132-9"><a></a>    <span class="at">name =</span> <span class="cn">NULL</span>, </span>
+<span id="cb132-10"><a></a>    <span class="at">values =</span> <span class="fu">c</span>(blue, orange)) <span class="sc">+</span></span>
+<span id="cb132-11"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
