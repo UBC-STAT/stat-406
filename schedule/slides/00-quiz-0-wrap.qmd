@@ -10,37 +10,22 @@ metadata-files:
 
 ## Why this class?
 
-* Most say requirements.
-* Interest in ML/Stat learning
-* Expressions of love/affection for Stats/CS/ML
-* Enjoyment of past similar classes
-
-## Why this class?
-
-More idiosyncratic:
-
-::: incremental
-
-- "Professor received Phd from CMU, must be an awesome  researcher."
-- "Learn strategies."
-- (paraphrase) "Course structure with less weight on exam helps with anxiety"
-- (paraphrase) "I love coding in R and want more of it"
-- "Emmmmmmmmmmmmmmmm, to learn some skills from Machine Learning and finish my minor🙃."
-- "destiny"
-- "challenges from ChatGPT"
-- "I thought Daniel Mcdonald is a cool prof..."
-- "I have heard this is the most useful stat course in UBC."
-
-:::
+- "This is a required course"
+- "Heard it's fun!"
+- "I want to graduate"
+- "8am!" (/s)
+- "I want to learn a lot about ML."
+- "I want to dig deeper after taking 306."
+- "I want to get... more comfortable with R."
+- "At first it was because everyone I knew was taking it."
+- "Practical skills in preperation for future careers"
 
 
 ## Syllabus Q
 
 ```{r load-quiz, include=FALSE}
-quiz <- read_rds(here::here(
-  "..", "..", "..", "WinterT1-2023", "gh-class-management", "lab0",
-  "lab0-anon.rds"
-))
+library(tidyverse)
+quiz <- tibble(read.csv("canvas_quiz0.csv"))
 ```
 
 ```{r}
@@ -48,8 +33,8 @@ quiz <- read_rds(here::here(
 #| fig-height: 6
 #| fig-width: 12
 quiz |> 
-  ggplot(aes(str_wrap(syllabus, 20))) + 
-  geom_bar(fill = blue) + 
+  ggplot(aes(str_wrap(syllabus_fact, 20))) + 
+  geom_bar(fill = "blue") + 
   scale_y_continuous(expand = expansion(c(0,0.05))) +
   xlab("") 
 ```
@@ -62,14 +47,13 @@ quiz |>
 #| fig-height: 6
 #| fig-width: 12
 quiz |> 
-  ggplot(aes(str_wrap(r_coding, 20))) + 
-  geom_bar(fill = blue) + 
+  ggplot(aes(str_wrap(r_experience, 20))) + 
+  geom_bar(fill = "blue") + 
   scale_y_continuous(expand = expansion(c(0, 0.05))) +
   xlab("")
 ```
 
----
-
+<!--
 ## Matrix inversion
 
 ```{r}
@@ -97,31 +81,23 @@ solve(crossprod(X), crossprod(X, y))
 #| error: true
 X \ y # this is Matlab
 ```
+---
+-->
 
-
-## Pets and plans
+## Plans
 
 ```{r}
 #| echo: false
 #| fig-height: 6
 #| fig-width: 12
 library(cowplot)
-p1 <- quiz %>%
-  ggplot(aes(str_wrap(pets, 30))) +
-  geom_bar(fill = blue) +
-  coord_flip() +
-  scale_y_continuous(expand = expansion(c(0, 0.05))) +
-  xlab("")
-p2 <- quiz %>%
-  ggplot(aes(str_wrap(plans, 20))) +
-  geom_bar(fill = orange) +
-  coord_flip() +
-  scale_y_continuous(expand = expansion(c(0, 0.05))) +
-  xlab("")
-plot_grid(p1, p2)
-```
 
----
+quiz %>%
+  ggplot(aes(str_wrap(graduation_plans, 20))) +
+  geom_bar(fill = "orange") +
+  scale_y_continuous(expand = expansion(c(0, 0.05))) +
+  xlab("")
+```
 
 ## Grade predictions
 
@@ -130,43 +106,15 @@ plot_grid(p1, p2)
 #| fig-height: 4
 #| fig-width: 12
 quiz |>
-  ggplot(aes(grade)) +
+  ggplot(aes(predicted_grade)) +
   geom_histogram(
-    fill = orange, colour = "black", 
+    fill = "orange", colour = "black", 
     breaks = c(0, 50, 54, 59, 63, 67, 71, 75, 79, 84, 89, 101)
   ) +
   scale_y_continuous(expand = expansion(c(0, 0.05)))
 ```
 
-* `r sum(quiz$grade == 100)` people say 100%
-* `r sum(quiz$grade == 90)` say 90%
-* `r sum(quiz$grade == 85)` say 85%
-* `r sum(quiz$grade == 80)` say 80%
-* Lots of clumping
-
-
-. . .
-
-1 said 35, and 1 said 50. Woof!
-
-## Prediction accuracy (last year)
-
-```{r}
-#| echo: false
-acc <- read_rds(here::here(
-  "..", "..", "..", "WinterT1-2022", "final-grades",
-  "prediction-accuracy.rds"
-)) |>
-  rename(predicted = pfg, actual = fg)
-
-ggplot(acc, aes(predicted, actual)) +
-  geom_point(colour = orange) +
-  geom_abline(slope = 1, intercept = 0) +
-  coord_equal(xlim = c(0, 100), ylim = c(0, 100))
-```
-
-## Prediction accuracy (last year)
-
-```{r}
-summary(lm(actual ~ predicted - 1, data = acc))
-```
+* `r sum(quiz$predicted_grade == 100)` people say 100%
+* `r sum(quiz$predicted_grade == 90)` say 90%
+* `r sum(quiz$predicted_grade == 85)` say 85%
+* `r sum(quiz$predicted_grade == 80)` say 80%
