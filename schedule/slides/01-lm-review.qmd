@@ -18,9 +18,10 @@ $$
 
 ::: {.incremental}
 
-1. What is the mean of $y_i$?
+1. What variables are fixed, what are parameters, and what are random?
 2. What is the distribution of $\epsilon_i$?
-3. What is the notation $\mathbf{X}$ or $\mathbf{y}$?
+3. What is the mean of $y_i$?
+4. What is the notation $\mathbf{X}$ or $\mathbf{y}$?
 
 :::
 
@@ -35,12 +36,12 @@ How would I **create** data from this model (draw a sample)?
 
 . . .
 
-Set up parameters
+Set up constants
 
 ```{r sampling, eval=FALSE}
-p <- 3
-n <- 100
-sigma <- 2
+p <- 3  # number of covariates
+n <- 100  # number of data points
+sigma <- 2  # stddev of \epsilon
 ```
 
 . . .
@@ -66,23 +67,23 @@ Y <- cbind(1, X) %*% beta + epsilon # epsilon is random, so this is
 
 ## Method 2. OLS
 
-I want to find an estimator $\widehat\beta$ that makes small errors on my data.
-
-I measure errors with the difference between predictions $\mathbf{X}\widehat\beta$ and the responses $\mathbf{y}$.
 
 ::: flex
 
 ::: w-50
 
-Don't care if the differences are positive or negative
+- I want to find an estimator $\widehat\beta$ that makes small errors on my data.
+- I measure errors with the squared difference between predictions $\mathbf{X}\widehat\beta$ and the responses $\mathbf{y}$.
+- (Don't care if the differences are positive or negative)
 
+<!--
 $$\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.$$
-
 
 This is hard to minimize (what is the derivative of $|\cdot|$?)
 
+-->
 
-$$\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.$$
+$$\mathrm{Error} = \sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.$$
 
 :::
 
@@ -93,7 +94,10 @@ $$\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.$$
 :::
 :::
 
+. . .
 
+[Why squared errors? $( y_i - x_i^\top \widehat\beta )^2$ \
+Why not absolute errors $\left\lvert y_i - x_i^\top \widehat\beta \right\rvert$?]{.secondary}
 
 ## Method 2. OLS solution
 
@@ -124,6 +128,7 @@ We differentiate and set to zero
 &= \frac{2}{n}\sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
 0 &\equiv \sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
 &\Rightarrow \sum_{i=1}^n x_i x_i^\top \beta = \sum_{i=1}^n x_i y_i\\
+\\
 &\Rightarrow \beta = \left(\sum_{i=1}^n x_i x_i^\top\right)^{-1}\sum_{i=1}^n x_i y_i
 \end{aligned}
 
@@ -150,18 +155,27 @@ AKA, the SSE.
 Method 2 didn't use anything about the distribution of $\epsilon$.
 
 But if we know that $\epsilon$ has a normal distribution, we can write down the joint distribution
-of $\mathbf{y}=(y_1,\ldots,y_n)^\top$:
+of $\mathbf{y}=(y_1,\ldots,y_n)^\top = \mathbf{X}\beta + (\epsilon_1, \ldots, \epsilon_n)^\top$:
+
+
+$$
+\epsilon_i = \left( y_i - x_i^\top \beta \right) \sim \mathcal{N}(0, \sigma^2)
+$$
+
+. . .
+
+So the probability density of $Y = \mathbf y$ is...
 
 
 \begin{aligned}
-f_Y(\mathbf{y} ; \beta) &= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
-  &= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
+f_Y(\mathbf{y} ; \beta) &= \prod_{i=1}^n f_{y_i ; \beta}(y_i) \\
+  &= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right) \\
   &= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
 \end{aligned}
 
 
 
-## Method 3: maximum likelihood
+## The likelihood function
 
 $$
 f_Y(\mathbf{y} ; \beta) = \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
@@ -175,7 +189,7 @@ In probability courses, we think of $f_Y$ as a function of $\mathbf{y}$ with $\b
 
 
 
-## Turn it around...
+## The likelihood function
 
 ...instead, think of it as a function of $\beta$.
 
@@ -185,36 +199,41 @@ Given some data, we can [evaluate]{.secondary} the likelihood for any value of $
 
 It won't integrate to 1 over $\beta$.
 
-But it is "convex", 
+But we can maximize it with respect to $\beta$.
 
-meaning we can maximize it (the second derivative wrt $\beta$ is everywhere negative).
-
-
+<!--
+(the second derivative wrt $\beta$ is everywhere negative).
+-->
 
 ## So let's maximize {.smaller}
 
-The derivative of this thing is kind of ugly.
+The derivative of $\mathcal L(\beta)$ is ugly...
 
-But if we're trying to maximize over $\beta$, we can take an increasing transformation without changing anything.
+$$
+\frac{\partial}{\partial \beta} \left[ \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right) \right] = \text{😔}
+$$
 
-I choose $\log_e$.
+I claim we can maximize $\mathcal L(\beta)$ over $\beta$ by instead maximizing the simpler function $\ell(\beta) = \log \mathcal L(\beta)$. (Why?)
 
+. . .
 
-\begin{aligned}
-\mathcal{L}(\beta) &= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)\\
-\ell(\beta) &=-\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2
-\end{aligned}
+$$
+\hat\beta = \argmax_\beta \ell(\beta) = \argmax_\beta \left[ -\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2 \right]
+$$
 
+. . .
 
-But we can ignore constants, so this gives
+We can also throw out the constants. (Why?)
 
+. . .
 
-$$\widehat\beta = \argmax_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2$$
+So...
+
+$$\widehat\beta = \argmax_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2 = \argmin_\beta \sum_{i=1}^n (y_i-x_i^\top \beta)^2$$
 
 
 The same as before!
 
 
-# Next time...
-
-Recall how to do this in `R`
+# Demo
+(Not in real time)
