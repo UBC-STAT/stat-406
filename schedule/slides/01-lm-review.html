@@ -398,7 +398,7 @@
 <h2>01 Linear model review</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 10 December 2023</p>
+<p>Last modified – 11 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -437,8 +437,9 @@ y_i = x_i^\top \beta + \epsilon_i.
 \]</span></p>
 <div>
 <ol type="1">
-<li class="fragment">What is the mean of <span class="math inline">\(y_i\)</span>?</li>
+<li class="fragment">What variables are fixed, what are parameters, and what are random?</li>
 <li class="fragment">What is the distribution of <span class="math inline">\(\epsilon_i\)</span>?</li>
+<li class="fragment">What is the mean of <span class="math inline">\(y_i\)</span>?</li>
 <li class="fragment">What is the notation <span class="math inline">\(\mathbf{X}\)</span> or <span class="math inline">\(\mathbf{y}\)</span>?</li>
 </ol>
 </div>
@@ -450,11 +451,11 @@ y_i = x_i^\top \beta + \epsilon_i.
 \]</span></p>
 <p>How would I <strong>create</strong> data from this model (draw a sample)?</p>
 <div class="fragment">
-<p>Set up parameters</p>
+<p>Set up constants</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>p <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb1-2"><a></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb1-3"><a></a>sigma <span class="ot">&lt;-</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>p <span class="ot">&lt;-</span> <span class="dv">3</span>  <span class="co"># number of covariates</span></span>
+<span id="cb1-2"><a></a>n <span class="ot">&lt;-</span> <span class="dv">100</span>  <span class="co"># number of data points</span></span>
+<span id="cb1-3"><a></a>sigma <span class="ot">&lt;-</span> <span class="dv">2</span>  <span class="co"># stddev of \epsilon</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div class="fragment">
@@ -479,18 +480,28 @@ y_i = x_i^\top \beta + \epsilon_i.
 </section>
 <section id="method-2.-ols" class="slide level2">
 <h2>Method 2. OLS</h2>
-<p>I want to find an estimator <span class="math inline">\(\widehat\beta\)</span> that makes small errors on my data.</p>
-<p>I measure errors with the difference between predictions <span class="math inline">\(\mathbf{X}\widehat\beta\)</span> and the responses <span class="math inline">\(\mathbf{y}\)</span>.</p>
 <div class="flex">
 <div class="w-50">
-<p>Don’t care if the differences are positive or negative</p>
-<p><span class="math display">\[\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.\]</span></p>
-<p>This is hard to minimize (what is the derivative of <span class="math inline">\(|\cdot|\)</span>?)</p>
-<p><span class="math display">\[\sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.\]</span></p>
+<ul>
+<li>I want to find an estimator <span class="math inline">\(\widehat\beta\)</span> that makes small errors on my data.</li>
+<li>I measure errors with the squared difference between predictions <span class="math inline">\(\mathbf{X}\widehat\beta\)</span> and the responses <span class="math inline">\(\mathbf{y}\)</span>.</li>
+<li>(Don’t care if the differences are positive or negative)</li>
+</ul>
+<!--
+$$\sum_{i=1}^n \left\lvert y_i - x_i^\top \widehat\beta \right\rvert.$$
+
+This is hard to minimize (what is the derivative of $|\cdot|$?)
+
+-->
+<p><span class="math display">\[\mathrm{Error} = \sum_{i=1}^n ( y_i - x_i^\top \widehat\beta )^2.\]</span></p>
 </div>
 <div class="w-50">
 <p><img data-src="gfx/islr3_4.png" style="width:70.0%"></p>
 </div>
+</div>
+<div class="fragment">
+<p><span class="secondary">Why squared errors? <span class="math inline">\(( y_i - x_i^\top \widehat\beta )^2\)</span><br>
+Why not absolute errors <span class="math inline">\(\left\lvert y_i - x_i^\top \widehat\beta \right\rvert\)</span>?</span></p>
 </div>
 </section>
 <section id="method-2.-ols-solution" class="slide level2">
@@ -517,6 +528,7 @@ y_i = x_i^\top \beta + \epsilon_i.
 &amp;= \frac{2}{n}\sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
 0 &amp;\equiv \sum_{i=1}^n x_i x_i^\top \beta - x_i y_i\\
 &amp;\Rightarrow \sum_{i=1}^n x_i x_i^\top \beta = \sum_{i=1}^n x_i y_i\\
+\\
 &amp;\Rightarrow \beta = \left(\sum_{i=1}^n x_i x_i^\top\right)^{-1}\sum_{i=1}^n x_i y_i
 \end{aligned}\]</span>
 </section>
@@ -530,15 +542,21 @@ y_i = x_i^\top \beta + \epsilon_i.
 <section id="method-3-maximum-likelihood" class="slide level2">
 <h2>Method 3: maximum likelihood</h2>
 <p>Method 2 didn’t use anything about the distribution of <span class="math inline">\(\epsilon\)</span>.</p>
-<p>But if we know that <span class="math inline">\(\epsilon\)</span> has a normal distribution, we can write down the joint distribution of <span class="math inline">\(\mathbf{y}=(y_1,\ldots,y_n)^\top\)</span>:</p>
+<p>But if we know that <span class="math inline">\(\epsilon\)</span> has a normal distribution, we can write down the joint distribution of <span class="math inline">\(\mathbf{y}=(y_1,\ldots,y_n)^\top = \mathbf{X}\beta + (\epsilon_1, \ldots, \epsilon_n)^\top\)</span>:</p>
+<p><span class="math display">\[
+\epsilon_i = \left( y_i - x_i^\top \beta \right) \sim \mathcal{N}(0, \sigma^2)
+\]</span></p>
+<div class="fragment">
+<p>So the probability density of <span class="math inline">\(Y = \mathbf y\)</span> is…</p>
 <span class="math display">\[\begin{aligned}
-f_Y(\mathbf{y} ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i)\\
-  &amp;= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right)\\
+f_Y(\mathbf{y} ; \beta) &amp;= \prod_{i=1}^n f_{y_i ; \beta}(y_i) \\
+  &amp;= \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{1}{2\sigma^2} (y_i-x_i^\top \beta)^2\right) \\
   &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
 \end{aligned}\]</span>
+</div>
 </section>
-<section id="method-3-maximum-likelihood-1" class="slide level2">
-<h2>Method 3: maximum likelihood</h2>
+<section id="the-likelihood-function" class="slide level2">
+<h2>The likelihood function</h2>
 <p><span class="math display">\[
 f_Y(\mathbf{y} ; \beta) = \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)
 \]</span></p>
@@ -549,31 +567,41 @@ f_Y(\mathbf{y} ; \beta) = \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-
 <li>etc.</li>
 </ol>
 </section>
-<section id="turn-it-around" class="slide level2">
-<h2>Turn it around…</h2>
+<section id="the-likelihood-function-1" class="slide level2">
+<h2>The likelihood function</h2>
 <p>…instead, think of it as a function of <span class="math inline">\(\beta\)</span>.</p>
 <p>We call this “the likelihood” of beta: <span class="math inline">\(\mathcal{L}(\beta)\)</span>.</p>
 <p>Given some data, we can <span class="secondary">evaluate</span> the likelihood for any value of <span class="math inline">\(\beta\)</span> (assuming <span class="math inline">\(\sigma\)</span> is known).</p>
 <p>It won’t integrate to 1 over <span class="math inline">\(\beta\)</span>.</p>
-<p>But it is “convex”,</p>
-<p>meaning we can maximize it (the second derivative wrt <span class="math inline">\(\beta\)</span> is everywhere negative).</p>
+<p>But we can maximize it with respect to <span class="math inline">\(\beta\)</span>.</p>
+<!--
+(the second derivative wrt $\beta$ is everywhere negative).
+-->
 </section>
 <section id="so-lets-maximize" class="slide level2 smaller">
 <h2>So let’s maximize</h2>
-<p>The derivative of this thing is kind of ugly.</p>
-<p>But if we’re trying to maximize over <span class="math inline">\(\beta\)</span>, we can take an increasing transformation without changing anything.</p>
-<p>I choose <span class="math inline">\(\log_e\)</span>.</p>
-<span class="math display">\[\begin{aligned}
-\mathcal{L}(\beta) &amp;= \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right)\\
-\ell(\beta) &amp;=-\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2
-\end{aligned}\]</span>
-<p>But we can ignore constants, so this gives</p>
-<p><span class="math display">\[\widehat\beta = \argmax_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2\]</span></p>
+<p>The derivative of <span class="math inline">\(\mathcal L(\beta)\)</span> is ugly…</p>
+<p><span class="math display">\[
+\frac{\partial}{\partial \beta} \left[ \left( \frac{1}{2\pi\sigma^2}\right)^{n/2} \exp\left(-\frac{1}{2\sigma^2}\sum_{i=1}^n (y_i-x_i^\top \beta)^2\right) \right] = \text{😔}
+\]</span></p>
+<p>I claim we can maximize <span class="math inline">\(\mathcal L(\beta)\)</span> over <span class="math inline">\(\beta\)</span> by instead maximizing the simpler function <span class="math inline">\(\ell(\beta) = \log \mathcal L(\beta)\)</span>. (Why?)</p>
+<div class="fragment">
+<p><span class="math display">\[
+\hat\beta = \argmax_\beta \ell(\beta) = \argmax_\beta \left[ -\frac{n}{2}\log (2\pi\sigma^2) -\frac{1}{2\sigma^2} \sum_{i=1}^n (y_i-x_i^\top \beta)^2 \right]
+\]</span></p>
+</div>
+<div class="fragment">
+<p>We can also throw out the constants. (Why?)</p>
+</div>
+<div class="fragment">
+<p>So…</p>
+<p><span class="math display">\[\widehat\beta = \argmax_\beta -\sum_{i=1}^n (y_i-x_i^\top \beta)^2 = \argmin_\beta \sum_{i=1}^n (y_i-x_i^\top \beta)^2\]</span></p>
 <p>The same as before!</p>
+</div>
 </section>
-<section id="next-time" class="title-slide slide level1 center">
-<h1>Next time…</h1>
-<p>Recall how to do this in <code>R</code></p>
+<section id="demo" class="title-slide slide level1 center">
+<h1>Demo</h1>
+<p>(Not in real time)</p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
