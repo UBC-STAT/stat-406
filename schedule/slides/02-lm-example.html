@@ -398,7 +398,7 @@
 <h2>02 Linear model example</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 10 December 2023</p>
+<p>Last modified – 13 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -491,9 +491,9 @@
 <div class="fragment">
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">set.seed</span>(<span class="dv">20220914</span>)</span>
-<span id="cb3-2"><a></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ]</span>
-<span id="cb3-3"><a></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
-<span id="cb3-4"><a></a>mob <span class="ot">&lt;-</span> mob <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>Name, <span class="sc">-</span>ID, <span class="sc">-</span>State)</span>
+<span id="cb3-2"><a></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ] <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a></a>    <span class="fu">select</span>(<span class="sc">-</span>Name, <span class="sc">-</span>ID, <span class="sc">-</span>State)</span>
+<span id="cb3-4"><a></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mob)</span>
 <span id="cb3-5"><a></a>set <span class="ot">&lt;-</span> <span class="fu">sample.int</span>(n, <span class="fu">floor</span>(n <span class="sc">*</span> .<span class="dv">75</span>), <span class="cn">FALSE</span>)</span>
 <span id="cb3-6"><a></a>train <span class="ot">&lt;-</span> mob[set, ]</span>
 <span id="cb3-7"><a></a>test <span class="ot">&lt;-</span> mob[<span class="fu">setdiff</span>(<span class="dv">1</span><span class="sc">:</span>n, set), ]</span>
@@ -516,6 +516,7 @@
 </section>
 <section id="results" class="slide level2">
 <h2>Results</h2>
+<p>(dispatch happening here!)</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">summary</span>(full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -582,8 +583,19 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 <h2>Diagnostic plots</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb6-2"><a></a><span class="fu">plot</span>(full, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>stuff <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb6-2"><a></a>  <span class="at">residuals =</span> <span class="fu">residuals</span>(full),</span>
+<span id="cb6-3"><a></a>  <span class="at">fitted =</span> <span class="fu">fitted</span>(full),</span>
+<span id="cb6-4"><a></a>  <span class="at">stdresiduals =</span> <span class="fu">rstandard</span>(full)</span>
+<span id="cb6-5"><a></a>)</span>
+<span id="cb6-6"><a></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(fitted, residuals)) <span class="sc">+</span></span>
+<span id="cb6-7"><a></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb6-8"><a></a>  <span class="fu">geom_smooth</span>(</span>
+<span id="cb6-9"><a></a>    <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-10"><a></a>    <span class="at">colour =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb6-11"><a></a>    <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb6-12"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb6-13"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Residuals vs Fitted"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -595,7 +607,14 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div></div>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">plot</span>(full, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(<span class="at">sample =</span> stdresiduals)) <span class="sc">+</span></span>
+<span id="cb7-2"><a></a>  <span class="fu">geom_qq</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a></a>  <span class="fu">geom_qq_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a></a>  <span class="fu">labs</span>(</span>
+<span id="cb7-5"><a></a>    <span class="at">x =</span> <span class="st">"Theoretical quantiles"</span>,</span>
+<span id="cb7-6"><a></a>    <span class="at">y =</span> <span class="st">"Standardized residuals"</span>,</span>
+<span id="cb7-7"><a></a>    <span class="at">title =</span> <span class="st">"Normal Q-Q"</span></span>
+<span id="cb7-8"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -606,25 +625,11 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div></div>
 </section>
-<section id="section-1" class="slide level2">
-<h2></h2>
-<p>(Those were <code>plot</code> methods for objects of class <code>lm</code>)</p>
-<p>Same thing in <code>ggplot</code></p>
+<section id="can-also-just-use-dispatched-plot" class="slide level2">
+<h2>Can also just use dispatched <code>plot</code></h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>stuff <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb8-2"><a></a>  <span class="at">residuals =</span> <span class="fu">residuals</span>(full),</span>
-<span id="cb8-3"><a></a>  <span class="at">fitted =</span> <span class="fu">fitted</span>(full),</span>
-<span id="cb8-4"><a></a>  <span class="at">stdresiduals =</span> <span class="fu">rstandard</span>(full)</span>
-<span id="cb8-5"><a></a>)</span>
-<span id="cb8-6"><a></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(fitted, residuals)) <span class="sc">+</span></span>
-<span id="cb8-7"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"salmon"</span>) <span class="sc">+</span></span>
-<span id="cb8-8"><a></a>  <span class="fu">geom_smooth</span>(</span>
-<span id="cb8-9"><a></a>    <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb8-10"><a></a>    <span class="at">colour =</span> <span class="st">"steelblue"</span>,</span>
-<span id="cb8-11"><a></a>    <span class="at">linewidth =</span> <span class="dv">2</span></span>
-<span id="cb8-12"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb8-13"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"Residuals vs Fitted"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">plot</span>(full, <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -636,14 +641,7 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div></div>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a><span class="fu">ggplot</span>(stuff, <span class="fu">aes</span>(<span class="at">sample =</span> stdresiduals)) <span class="sc">+</span></span>
-<span id="cb9-2"><a></a>  <span class="fu">geom_qq</span>(<span class="at">colour =</span> <span class="st">"purple"</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-3"><a></a>  <span class="fu">geom_qq_line</span>(<span class="at">colour =</span> <span class="st">"peachpuff"</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-4"><a></a>  <span class="fu">labs</span>(</span>
-<span id="cb9-5"><a></a>    <span class="at">x =</span> <span class="st">"Theoretical quantiles"</span>,</span>
-<span id="cb9-6"><a></a>    <span class="at">y =</span> <span class="st">"Standardized residuals"</span>,</span>
-<span id="cb9-7"><a></a>    <span class="at">title =</span> <span class="st">"Normal Q-Q"</span></span>
-<span id="cb9-8"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a><span class="fu">plot</span>(full, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -663,20 +661,18 @@ F-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16</code></pre>
 <span id="cb10-4"><a></a>  <span class="at">data =</span> train</span>
 <span id="cb10-5"><a></a>)</span>
 <span id="cb10-6"><a></a></span>
-<span id="cb10-7"><a></a><span class="fu">summary</span>(reduced)<span class="sc">$</span>coefficients <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-7"><a></a><span class="fu">summary</span>(reduced)<span class="sc">$</span>coefficients </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 4
-   Estimate `Std. Error` `t value` `Pr(&gt;|t|)`
-      &lt;dbl&gt;        &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
-1  0.166        0.0178        9.36   1.83e-18
-2  0.0637       0.0149        4.27   2.62e- 5
-3 -0.109        0.0390       -2.79   5.64e- 3
-4  0.000500     0.000256      1.95   5.19e- 2
-5 -0.216        0.0820       -2.64   8.81e- 3
-6 -0.159        0.0202       -7.89   5.65e-14
-7 -0.389        0.172        -2.26   2.42e- 2
-8  0.0436       0.0105        4.16   4.08e- 5
-9 -0.286        0.0466       -6.15   2.44e- 9</code></pre>
+<pre><code>                    Estimate  Std. Error   t value     Pr(&gt;|t|)
+(Intercept)     0.1663344179 0.017769995  9.360409 1.829270e-18
+Commute         0.0637329409 0.014926382  4.269819 2.618234e-05
+Gini_99        -0.1086058241 0.038958986 -2.787696 5.642726e-03
+Test_scores     0.0004997645 0.000256038  1.951915 5.186618e-02
+HS_dropout     -0.2162067301 0.082003195 -2.636565 8.805228e-03
+Manufacturing  -0.1594229237 0.020215791 -7.886059 5.647668e-14
+Migration_in   -0.3891567027 0.171839168 -2.264657 2.423771e-02
+Religious       0.0435673365 0.010463920  4.163577 4.084854e-05
+Single_mothers -0.2864269552 0.046578928 -6.149282 2.444903e-09</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>reduced <span class="sc">|&gt;</span></span>
 <span id="cb12-2"><a></a>  broom<span class="sc">::</span><span class="fu">glance</span>() <span class="sc">|&gt;</span></span>
