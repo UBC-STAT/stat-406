@@ -54,9 +54,9 @@ $$E \left[ \biggl. \mbox{mobility} \, \biggr| \, \mbox{State}, \mbox{Urban},
 
 ```{r}
 set.seed(20220914)
-mob <- mobility[complete.cases(mobility), ]
+mob <- mobility[complete.cases(mobility), ] |>
+	select(-Name, -ID, -State)
 n <- nrow(mob)
-mob <- mob |> select(-Name, -ID, -State)
 set <- sample.int(n, floor(n * .75), FALSE)
 train <- mob[set, ]
 test <- mob[setdiff(1:n, set), ]
@@ -72,35 +72,13 @@ Why don't we include `Name` or `ID`?
 
 ## Results
 
+(dispatch happening here!)
+
 ```{r}
 summary(full)
 ```
 
-
 ## Diagnostic plots
-
-```{r}
-#| output-location: column
-#| fig-width: 8
-#| fig-height: 3.5
-par(mar = c(5, 3, 0, 0))
-plot(full, 1)
-```
-
-```{r}
-#| output-location: column
-#| fig-width: 8
-#| fig-height: 3.5
-plot(full, 2)
-```
-
-
-##
-
-(Those were `plot` methods for objects of class `lm`)
-
-
-Same thing in `ggplot`
 
 
 ```{r}
@@ -113,7 +91,7 @@ stuff <- tibble(
   stdresiduals = rstandard(full)
 )
 ggplot(stuff, aes(fitted, residuals)) +
-  geom_point(colour = "salmon") +
+  geom_point() +
   geom_smooth(
     se = FALSE,
     colour = "steelblue",
@@ -127,14 +105,31 @@ ggplot(stuff, aes(fitted, residuals)) +
 #| fig-width: 8
 #| fig-height: 3.5
 ggplot(stuff, aes(sample = stdresiduals)) +
-  geom_qq(colour = "purple", size = 2) +
-  geom_qq_line(colour = "peachpuff", linewidth = 2) +
+  geom_qq(size = 2) +
+  geom_qq_line(linewidth = 2, color = "steelblue") +
   labs(
     x = "Theoretical quantiles",
     y = "Standardized residuals",
     title = "Normal Q-Q"
   )
 ```
+
+## Can also just use dispatched `plot`
+
+```{r}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 3.5
+plot(full, 1)
+```
+
+```{r}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 3.5
+plot(full, 2)
+```
+
 
 
 ## Fit a reduced model
@@ -146,7 +141,7 @@ reduced <- lm(
   data = train
 )
 
-summary(reduced)$coefficients |> as_tibble()
+summary(reduced)$coefficients 
 
 reduced |>
   broom::glance() |>
