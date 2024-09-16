@@ -26,15 +26,15 @@ We need to be specific about what we mean when we say _bias_.
 
 Bias is neither good nor bad in and of itself.
 
-A very simple example: let $Z_1,\ \ldots,\ Z_n \sim N(\mu, 1)$.
-  - We don't know $\mu$, so we try to use the data (the $Z_i$'s) to estimate it.
+A very simple example: let $Y_1,\ \ldots,\ Y_n \sim N(\mu, 1)$.
+  - We don't know $\mu$, so we try to use the data (the $Y_i$'s) to estimate it.
   
   - I propose 3 estimators: 
       1. $\widehat{\mu}_1 = 12$, 
   
-      2. $\widehat{\mu}_2=Z_6$, 
+      2. $\widehat{\mu}_2=Y_6$, 
   
-      3. $\widehat{\mu}_3=\overline{Z}$.
+      3. $\widehat{\mu}_3=\overline{Y}$.
   
   - The [bias]{.secondary} (by definition) of my estimator is $E[\widehat{\mu_i}]-\mu$.
   
@@ -95,15 +95,20 @@ $$
 
 . . .
   
-We can minimize this in $a$ to get the best possible prediction risk for an estimator of the form $\widehat Y_a$: 
+We can minimize this to get the best possible prediction risk for an estimator of the form $\widehat Y_a$: 
   
 $$
-\argmin_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)
+\argmin_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)\qquad
+\min_{a} R_n(\widehat Y_a) = 1+\left(\frac{\mu^2}{n\mu^2 + 1} \right).
 $$
 
 . . .
 
-What happens if $\mu \ll 1$?
+Is this less than or greater than the risk we saw for $\bar Y$?
+
+. . . 
+
+Am I cheating here?
   
 ##
   
@@ -166,31 +171,7 @@ For this $a =$ `r round(aopt(mu,n),2)` and $n=5$
 2. $R_5(\overline{Y}_5)=$ `r 1 / n + sig^2`
 
 
-
-## Prediction risk
-
-(Now using generic prediction function $f$)
-
-$$
-R_n(f) = \Expect{(Y - f(X))^2}
-$$
-  
-Why should we care about $R_n(f)$? 
-
-
-👍 Measures predictive accuracy on average.
-
-👍 How much confidence should you have in $f$'s predictions.
-
-👍 Compare with other predictors: $R_n(f)$ vs $R_n(g)$
-
-🤮 _This is hard:_  Don't know the distribution of the data (if I knew the truth, this would be easy)
-
-  
-
 ## Bias-variance decomposition
-
-
 
 $$R_n(\widehat{Y}_a)=(a - 1)^2\mu^2 + \frac{a^2}{n} + 1$$
 
@@ -242,7 +223,8 @@ R_n(\hat{Y})
 
 ::: callout-important
 ::: bigger
-Implication: prediction risk is proportional to estimation risk.  However, defining estimation risk requires stronger assumptions.
+Implication: prediction risk is estimation risk plus something you can't control.
+However, defining estimation risk requires stronger assumptions (not always just estimating a parameter).
 :::
 :::
 
