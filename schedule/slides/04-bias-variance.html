@@ -398,7 +398,7 @@
 <h2>04 Bias and variance</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 18 September 2023</p>
+<p>Last modified – 16 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -418,6 +418,15 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\snorm}[1]{\lVert #1 \rVert}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="section-1" class="slide level2" data-background-color="#e98a15">
@@ -433,13 +442,13 @@
 <h2>Component 3, the Bias</h2>
 <p>We need to be specific about what we mean when we say <em>bias</em>.</p>
 <p>Bias is neither good nor bad in and of itself.</p>
-<p>A very simple example: let <span class="math inline">\(Z_1,\ \ldots,\ Z_n \sim N(\mu, 1)\)</span>. - We don’t know <span class="math inline">\(\mu\)</span>, so we try to use the data (the <span class="math inline">\(Z_i\)</span>’s) to estimate it.</p>
+<p>A very simple example: let <span class="math inline">\(Y_1,\ \ldots,\ Y_n \sim N(\mu, 1)\)</span>. - We don’t know <span class="math inline">\(\mu\)</span>, so we try to use the data (the <span class="math inline">\(Y_i\)</span>’s) to estimate it.</p>
 <ul>
 <li>I propose 3 estimators:
 <ol type="1">
 <li><p><span class="math inline">\(\widehat{\mu}_1 = 12\)</span>,</p></li>
-<li><p><span class="math inline">\(\widehat{\mu}_2=Z_6\)</span>,</p></li>
-<li><p><span class="math inline">\(\widehat{\mu}_3=\overline{Z}\)</span>.</p></li>
+<li><p><span class="math inline">\(\widehat{\mu}_2=Y_6\)</span>,</p></li>
+<li><p><span class="math inline">\(\widehat{\mu}_3=\overline{Y}\)</span>.</p></li>
 </ol></li>
 <li>The <span class="secondary">bias</span> (by definition) of my estimator is <span class="math inline">\(E[\widehat{\mu_i}]-\mu\)</span>.</li>
 </ul>
@@ -481,13 +490,17 @@ R_n(\widehat Y_a) = \Expect{(\widehat Y_a-Y)^2} = (1 - a)^2\mu^2 +
 \frac{a^2}{n} +1
 \]</span></p>
 <div class="fragment">
-<p>We can minimize this in <span class="math inline">\(a\)</span> to get the best possible prediction risk for an estimator of the form <span class="math inline">\(\widehat Y_a\)</span>:</p>
+<p>We can minimize this to get the best possible prediction risk for an estimator of the form <span class="math inline">\(\widehat Y_a\)</span>:</p>
 <p><span class="math display">\[
-\argmin_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)
+\argmin_{a} R_n(\widehat Y_a) = \left(\frac{\mu^2}{\mu^2 + 1/n} \right)\qquad
+\min_{a} R_n(\widehat Y_a) = 1+\left(\frac{\mu^2}{n\mu^2 + 1} \right).
 \]</span></p>
 </div>
 <div class="fragment">
-<p>What happens if <span class="math inline">\(\mu \ll 1\)</span>?</p>
+<p>Is this less than or greater than the risk we saw for <span class="math inline">\(\bar Y\)</span>?</p>
+</div>
+<div class="fragment">
+<p>Am I cheating here?</p>
 </div>
 </section>
 <section id="section-2" class="slide level2">
@@ -530,18 +543,6 @@ R_n(\widehat Y_a) = (a - 1)^2\mu^2 +  \frac{a^2}{n} + \sigma^2
 <li><p><span class="math inline">\(R_5(\overline{Y}_5)=\)</span> 1.2</p></li>
 </ol>
 </div>
-</section>
-<section id="prediction-risk" class="slide level2">
-<h2>Prediction risk</h2>
-<p>(Now using generic prediction function <span class="math inline">\(f\)</span>)</p>
-<p><span class="math display">\[
-R_n(f) = \Expect{(Y - f(X))^2}
-\]</span></p>
-<p>Why should we care about <span class="math inline">\(R_n(f)\)</span>?</p>
-<p>👍 Measures predictive accuracy on average.</p>
-<p>👍 How much confidence should you have in <span class="math inline">\(f\)</span>’s predictions.</p>
-<p>👍 Compare with other predictors: <span class="math inline">\(R_n(f)\)</span> vs <span class="math inline">\(R_n(g)\)</span></p>
-<p>🤮 <em>This is hard:</em> Don’t know the distribution of the data (if I knew the truth, this would be easy)</p>
 </section>
 <section id="bias-variance-decomposition" class="slide level2">
 <h2>Bias-variance decomposition</h2>
@@ -592,7 +593,7 @@ R_n(\hat{Y})
 </div>
 <div class="callout-content">
 <div class="bigger">
-<p>Implication: prediction risk is proportional to estimation risk. However, defining estimation risk requires stronger assumptions.</p>
+<p>Implication: prediction risk is estimation risk plus something you can’t control. However, defining estimation risk requires stronger assumptions (not always just estimating a parameter).</p>
 </div>
 </div>
 </div>
