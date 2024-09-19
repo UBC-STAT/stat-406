@@ -1873,42 +1873,63 @@
     "href": "schedule/slides/06-information-criteria.html#section",
     "title": "UBC Stat406 2024W",
     "section": "06 Information criteria",
-    "text": "06 Information criteria\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 26 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "06 Information criteria\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 18 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#loo-cv",
+    "href": "schedule/slides/06-information-criteria.html#loo-cv",
+    "title": "UBC Stat406 2024W",
+    "section": "LOO-CV",
+    "text": "LOO-CV\n\nTrain \\(\\hat f\\) on all but one data point, estimate \\(R_n(\\hat f)\\) on the left-out point.\nRepeat this process for all \\(n\\) data points\nRequires training \\(n\\) models 🤮\n\nA magic formula for some models\nFor certain “nice” models of the form \\(\\widehat{y}_i = \\boldsymbol h_i(\\mathbf{X})^\\top \\mathbf{y}\\) (for some vector \\(h_i\\)), we get a closed form expression.\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-[\\boldsymbol h_i(x_i)]_{i})^2}.\\]\n\nNumerator is the squared residual (loss) for training point \\(i\\).\nDenominator weights each residual by some factor (more on that in a bit…)"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#loo-cv-1",
+    "href": "schedule/slides/06-information-criteria.html#loo-cv-1",
+    "title": "UBC Stat406 2024W",
+    "section": "LOO-CV",
+    "text": "LOO-CV\n\\[\n\\text{When } \\widehat{y}_i = \\boldsymbol h_i(\\mathbf{X})^\\top \\mathbf{y},\n\\qquad\n\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-[\\boldsymbol h_i(x_i)]_{i})^2}\n\\]\nCollecting all the terms into matrices and vectors\n\n\\(\\hat{\\mathbf y} = \\begin{bmatrix} \\hat y_1 & \\cdots & \\hat y_n \\end{bmatrix}^\\top \\in \\mathbb R^{n}\\)\n\\({\\mathbf y} = \\begin{bmatrix} y_1 & \\cdots & y_n \\end{bmatrix}^\\top \\in \\mathbb R^{n}\\)\n\\(\\mathbf H = \\begin{bmatrix} \\mathbf h_1(\\boldsymbol x_1) & \\cdots & \\mathbf h_n(\\mathbf x_n) \\end{bmatrix}^\\top \\in \\mathbb R^{n \\times n}\\)\n\nWe have\n\\[\n\\hat{\\mathbf y} = \\mathbf H \\mathbf y,\n\\qquad\n\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#what-happens-when-we-cant-use-the-magic-formula",
+    "href": "schedule/slides/06-information-criteria.html#what-happens-when-we-cant-use-the-magic-formula",
+    "title": "UBC Stat406 2024W",
+    "section": "What happens when we can’t use the magic formula?",
+    "text": "What happens when we can’t use the magic formula?\n(And can we get a better intuition about what’s going on?)\n\\[\n\\hat{\\mathbf y} = \\mathbf H \\mathbf y,\n\\qquad\n\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2}\n\\]\nWhat do we know about \\(h_{ii}\\)?\nWriting out the \\(\\mathbf H\\) matrix for ordinary least squares (OLS) regression… \\[ \\hat Y = X \\hat \\beta, \\qquad \\beta = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf y \\]\n\nThis implies that \\(\\mathbf H = \\mathbf X (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top\\)\n\n\nThe diagonals \\(h_{ii}\\) are called hat values.\n\\(\\mathbf H\\) has lots of nice properties.\n\nThe most important (for us) is that \\(\\tr{\\mathbf H} = p\\). (Why?)"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#generalized-cv",
     "href": "schedule/slides/06-information-criteria.html#generalized-cv",
     "title": "UBC Stat406 2024W",
     "section": "Generalized CV",
-    "text": "Generalized CV\nLast time we saw a nice trick, that works some of the time (OLS, Ridge regression,…)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\n\\(\\widehat{\\y} = \\widehat{f}(\\mathbf{X}) = \\mathbf{H}\\mathbf{y}\\) for some matrix \\(\\mathbf{H}\\).\nA technical thing.\n\n\\[\\newcommand{\\H}{\\mathbf{H}}\\]"
-  },
-  {
-    "objectID": "schedule/slides/06-information-criteria.html#this-is-another-nice-trick.",
-    "href": "schedule/slides/06-information-criteria.html#this-is-another-nice-trick.",
-    "title": "UBC Stat406 2024W",
-    "section": "This is another nice trick.",
-    "text": "This is another nice trick.\nIdea: replace \\(h_{ii}\\) with \\(\\frac{1}{n}\\sum_{i=1}^n h_{ii} = \\frac{1}{n}\\textrm{tr}(\\mathbf{H})\\)\nLet’s call \\(\\textrm{tr}(\\mathbf{H})\\) the degrees-of-freedom (or just df)\n\\[\\textrm{GCV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-\\textrm{df}/n)^2} = \\frac{\\textrm{MSE}}{(1-\\textrm{df}/n)^2}\\]\nWhere does this stuff come from?"
-  },
-  {
-    "objectID": "schedule/slides/06-information-criteria.html#what-are-hatvalues",
-    "href": "schedule/slides/06-information-criteria.html#what-are-hatvalues",
-    "title": "UBC Stat406 2024W",
-    "section": "What are hatvalues?",
-    "text": "What are hatvalues?\n\ncv_nice &lt;- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)\n\nIn OLS, \\(\\widehat{\\y} = \\X\\widehat{\\beta} = \\X(\\X^\\top \\X)^{-1}\\X^\\top \\y\\)\nWe often call \\(\\mathbf{H} = \\X(\\X^\\top \\X)^{-1}\\X^\\top\\) the Hat matrix, because it puts the hat on \\(\\y\\)\nGCV uses \\(\\textrm{tr}(\\mathbf{H})\\).\nFor lm(), this is just p, the number of predictors (Why?)\nThis is one way of understanding the name degrees-of-freedom"
+    "text": "Generalized CV\n\\[\\textrm{GCV} = \\frac{\\textrm{MSE}}{(1-\\textrm{df}/n)^2}\\]\nWe can use this formula for models that aren’t of the form \\(\\widehat{y}_i = \\boldsymbol h_i(\\mathbf{X})^\\top \\mathbf{y}\\).\n(Assuming we have some model-specific formula for estimating \\(\\textrm{df}\\).)\n\nObservations\n\nGCV &gt; training error (Why?)\nWhat happens as \\(n\\) increases?\nWhat happens as \\(\\text{df}\\) (\\(p\\) in our OLS model) increases?"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation",
     "href": "schedule/slides/06-information-criteria.html#alternative-interpretation",
     "title": "UBC Stat406 2024W",
     "section": "Alternative interpretation:",
-    "text": "Alternative interpretation:\nSuppose, \\(Y_i\\) is independent from some distribution with mean \\(\\mu_i\\) and variance \\(\\sigma^2\\)\n(remember: in the linear model \\(\\Expect{Y_i} = x_i^\\top \\beta = \\mu_i\\) )\nLet \\(\\widehat{\\mathbf{Y}}\\) be an estimator of \\(\\mu\\) (all \\(i=1,\\ldots,n\\) elements of the vector).\n\n\\[\\begin{aligned}\n& \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
+    "text": "Alternative interpretation:\nLet’s go back to our linear model \\(\\mathbf{Y} = \\mathbf{X}\\beta + \\epsilon\\), with \\(\\epsilon \\sim \\mathcal N(0, \\sigma^2)\\).\n(Define \\(\\boldsymbol \\mu = \\Expect{\\boldsymbol Y \\mid \\boldsymbol X} = \\boldsymbol X \\beta\\) )\nLet \\(\\widehat{\\mathbf{Y}}\\) be the estimator of \\(\\boldsymbol \\mu\\) we get from OLS. What is the risk of \\(\\widehat{\\mathbf{Y}}\\)?\n\n\\[\\begin{aligned}\n& R_n(\\widehat{\\mathbf{Y}}) = \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} \\\\\n&= \\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-Y_i + Y_i -\\mu_i)^2}\\\\\n&= \\frac{1}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)^2} + \\frac{1}{n}\\Expect{\\sum (Y_i-\\mu_i)^2} + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)}\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} + \\sigma^2 + \\frac{2}{n}\\Expect{\\sum (\\widehat Y_i-Y_i)(Y_i-\\mu_i)} = \\cdots =\\\\\n&= \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\n\\end{aligned}\\]"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation-1",
     "href": "schedule/slides/06-information-criteria.html#alternative-interpretation-1",
     "title": "UBC Stat406 2024W",
     "section": "Alternative interpretation:",
-    "text": "Alternative interpretation:\n\\[\\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} = \\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2} - \\sigma^2 + \\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}\\]\nNow, if \\(\\widehat{\\mathbf{Y}} = \\H \\mathbf{Y}\\) for some matrix \\(\\H\\),\n\\(\\sum\\Cov{Y_i}{\\widehat Y_i} = \\Expect{\\mathbf{Y}^\\top \\H \\mathbf{Y}} = \\sigma^2 \\textrm{tr}(\\H)\\)\nThis gives Mallow’s \\(C_p\\) aka Stein’s Unbiased Risk Estimator:\n\\(MSE + 2\\hat{\\sigma}^2\\textrm{df}/n\\)\n\n\n\n\n\n\nImportant\n\n\nUnfortunately, df may be difficult or impossible to calculate for complicated prediction methods. But one can often estimate it well. This idea is beyond the level of this course."
+    "text": "Alternative interpretation:\n\\[\\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} =\n\\underbrace{\\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2}}_{(1)} -\n\\underbrace{\\sigma^2}_{(2)} +\n\\underbrace{\\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}}_{(3)}\n\\]\n\n\nTraining MSE\nObservational noise / irreducible error (recall \\(\\eps \\sim \\mathcal{N}(0, \\sigma^2)\\)).\n???"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#alternative-interpretation-2",
+    "href": "schedule/slides/06-information-criteria.html#alternative-interpretation-2",
+    "title": "UBC Stat406 2024W",
+    "section": "Alternative interpretation:",
+    "text": "Alternative interpretation:\n\\[\\Expect{\\frac{1}{n}\\sum (\\widehat Y_i-\\mu_i)^2} =\n\\underbrace{\\frac{1}{n}\\sum \\Expect{(\\widehat Y_i-Y_i)^2}}_{\\text{training error}} -\n\\underbrace{\\sigma^2}_{\\text{irr. error}} +\n\\underbrace{\\frac{2}{n}\\sum\\Cov{Y_i}{\\widehat Y_i}}_{\\text{???}}\n\\]\nRecall that \\(\\widehat{\\mathbf{Y}} = \\mathbf H \\mathbf{Y}\\) for some matrix \\(\\mathbf H\\),\n\\(\\sum\\Cov{Y_i}{\\widehat Y_i} = \\Expect{\\mathbf{Y}^\\top \\mathbf H \\mathbf{Y}} = \\sigma^2 \\textrm{tr}(\\mathbf H)\\)\nThis gives Mallow’s \\(C_p\\) aka Stein’s Unbiased Risk Estimator:\n\\[ C_p = \\text{MSE} + 2\\hat{\\sigma}^2 \\: \\textrm{df}/n \\]"
+  },
+  {
+    "objectID": "schedule/slides/06-information-criteria.html#mallows-c_p",
+    "href": "schedule/slides/06-information-criteria.html#mallows-c_p",
+    "title": "UBC Stat406 2024W",
+    "section": "Mallow’s \\(C_p\\)",
+    "text": "Mallow’s \\(C_p\\)\n\\[ C_p = \\text{MSE} + 2\\hat{\\sigma}^2 \\: \\textrm{df}/n \\] (We derived it for the OLS model, but again it can be generalized to other models.)\n\n\n\n\n\n\nImportant\n\n\nUnfortunately, \\(\\text{df}\\) may be difficult or impossible to calculate for complicated prediction methods. But one can often estimate it well. This idea is beyond the level of this course.\n\n\n\nObservations\n\n\\(C_p\\) &gt; training error\nWhat happens as \\(n\\) increases?\nWhat happens as \\(\\text{df}\\) (\\(p\\) in our OLS model) increases?\nWhat happens as the irreducible noise increase?"
   },
   {
     "objectID": "schedule/slides/06-information-criteria.html#aic-and-bic",
@@ -3867,85 +3888,141 @@
     "objectID": "schedule/slides/05-estimating-test-mse.html#section",
     "href": "schedule/slides/05-estimating-test-mse.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "05 Estimating test MSE",
-    "text": "05 Estimating test MSE\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 18 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\]"
+    "section": "05 Estimating (Test) Risk",
+    "text": "05 Estimating (Test) Risk\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 18 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-prediction-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#estimating-prediction-risk",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#last-time",
+    "href": "schedule/slides/05-estimating-test-mse.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "Estimating prediction risk",
-    "text": "Estimating prediction risk\nLast time, we saw\n\\(R_n(\\widehat{f}) = E[(Y-\\widehat{f}(X))^2]\\)\nprediction risk = \\(\\textrm{bias}^2\\) + variance + irreducible error\nWe argued that we want procedures that produce \\(\\widehat{f}\\) with small \\(R_n\\).\n\nHow do we estimate \\(R_n\\)?"
+    "section": "Last time",
+    "text": "Last time\n\nWhat is a model (formal definition)?\nEvaluating models (risk/loss functions)\nDecomposing risk (bias, variance, irreducible error)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
+    "href": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
+    "title": "UBC Stat406 2024W",
+    "section": "What is a model?",
+    "text": "What is a model?\nA model is a set of distributions that explain data \\(\\{ Z = (X, Y) \\}\\), i.e.\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\n(Why do we have to specify that \\(f\\) is smooth? Why can’t it be any function?)\n\n\n\nGoal of learning\nChoose the \\(P \\in \\mathcal P\\) that makes the “best” predictions on new \\(X, Y\\) pairs.\n(Next slide: how do we formalize “best”?)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
+    "href": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
+    "title": "UBC Stat406 2024W",
+    "section": "How do we evaluate models?",
+    "text": "How do we evaluate models?\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\n\nSpecify how a \\(P \\in \\mathcal P\\) makes predictions on new inputs \\(\\hat Y\\).\n(E.g.: \\(\\hat Y = f(X)\\) for \\(P = \\mathcal N(f(X), \\sigma^2)\\).)\nIntroduce a loss function \\(\\ell(Y, \\hat{Y})\\) (a datapoint-level function).\n(E.g.: \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\))\nDefine the risk of \\(P \\in \\mathcal P\\) as the expected loss (a population-level function):\n(R_n(P) = E[(Y, Y)] = E[(Y - f(X))^2])\nThe best model is the one that minimizes the risk.\n(\\(P^* = \\argmin_{P \\in \\mathcal P} R_n(P)\\))"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#decomposing-risk",
+    "href": "schedule/slides/05-estimating-test-mse.html#decomposing-risk",
+    "title": "UBC Stat406 2024W",
+    "section": "Decomposing risk",
+    "text": "Decomposing risk\nWhen \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\), the prediction risk of \\(\\hat f(X)\\) decomposes into two factors:\n\\[\nR_n(\\hat f) \\quad = \\quad \\underbrace{E\\left[ \\: \\left( E[Y\\mid X] -\\hat f(X) \\right)^2 \\right]}_{(1)} \\quad - \\quad \\underbrace{E\\left[ \\: \\left( \\hat f(X) - Y\\right)^2 \\right]}_{(2)}\n\\]\n\n\nEstimation error\nIrreducible error (or “noise”)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
+    "href": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
+    "title": "UBC Stat406 2024W",
+    "section": "Sources of bias and variance",
+    "text": "Sources of bias and variance\nWhat conditions give rise to a high bias estimator?\n\n\nNot enough covariates (small \\(p\\))\nModel is too simple\nModel is misspecified (doesn’t accurately represent the data generating process)\nBad training algorithm\n\n\nWhat conditions give rise to a high variance estimator?\n\n\nNot enough training samples (small \\(n\\))\nModel is too complicated[^1]\nLots of irreducible noise in training data (if my model has power to fit noise, it will)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
     "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
     "title": "UBC Stat406 2024W",
     "section": "Don’t use training error",
-    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nImportant\n\n\nTraining error is a bad estimator for \\(R_n(\\widehat{f})\\).\n\n\n\nSo we should never use it."
+    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nTip\n\n\nWe also call \\(\\hat R_n(\\hat f)\\) the empirical risk.\n\n\n\n\n\\(\\hat R_n(\\hat f)\\) is a bad estimator for \\(R_n(\\widehat{f})\\).\nSo we should never use it."
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#these-all-have-the-same-r2-and-training-error",
-    "href": "schedule/slides/05-estimating-test-mse.html#these-all-have-the-same-r2-and-training-error",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
+    "href": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
     "title": "UBC Stat406 2024W",
-    "section": "These all have the same \\(R^2\\) and Training Error",
-    "text": "These all have the same \\(R^2\\) and Training Error\n\n\n\n\nCode\nans &lt;- anscombe |&gt;\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), \n               names_pattern = \"(.)(.)\")\nggplot(ans, aes(x, y)) + \n  geom_point(colour = orange, size = 3) + \n  geom_smooth(method = \"lm\", se = FALSE, color = blue, linewidth = 2) +\n  facet_wrap(~set, labeller = label_both)\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
+    "section": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?",
+    "text": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?\n\n\nIt doesn’t say anything about predictions on new data.\n(It’s a measure of how well the model fits a fixed set of training data.)\nIt can be made arbitrarily small by making your model more complex."
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#adding-junk-predictors-increases-r2-and-decreases-training-error",
-    "href": "schedule/slides/05-estimating-test-mse.html#adding-junk-predictors-increases-r2-and-decreases-training-error",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
+    "href": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
     "title": "UBC Stat406 2024W",
-    "section": "Adding “junk” predictors increases \\(R^2\\) and decreases Training Error",
-    "text": "Adding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}\n\n\n\nCode\nmap(q, regress_on_junk) |&gt; \n  list_rbind() |&gt;\n  mutate(q = q) |&gt;\n  pivot_longer(-q) |&gt;\n  ggplot(aes(q, value, colour = name)) +\n  geom_line(linewidth = 2) + xlab(\"train_error\") +\n  scale_colour_manual(values = c(blue, orange), guide = \"none\") +\n  facet_wrap(~ name, scales = \"free_y\")"
+    "section": "1. It doesn’t say anything about predictions on new data.",
+    "text": "1. It doesn’t say anything about predictions on new data.\nThese all have the same \\(R^2\\) and Training Error\n\n\n\n\nCode\nans &lt;- anscombe |&gt;\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), \n               names_pattern = \"(.)(.)\")\nggplot(ans, aes(x, y)) + \n  geom_point(colour = orange, size = 3) + \n  geom_smooth(method = \"lm\", se = FALSE, color = blue, linewidth = 2) +\n  facet_wrap(~set, labeller = label_both)\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
+    "href": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
+    "title": "UBC Stat406 2024W",
+    "section": "2. It can be made arbitrarily small by making your model more complex.",
+    "text": "2. It can be made arbitrarily small by making your model more complex.\nAdding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}\n\n\n\nCode\nmap(q, regress_on_junk) |&gt; \n  list_rbind() |&gt;\n  mutate(q = q) |&gt;\n  pivot_longer(-q) |&gt;\n  ggplot(aes(q, value, colour = name)) +\n  geom_line(linewidth = 2) + xlab(\"train_error\") +\n  scale_colour_manual(values = c(blue, orange), guide = \"none\") +\n  facet_wrap(~ name, scales = \"free_y\")"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
     "href": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
     "title": "UBC Stat406 2024W",
     "section": "Other things you can’t use",
-    "text": "Other things you can’t use\nYou should not use anova\nor the \\(p\\)-values from the lm output for this purpose.\n\nThese things are to determine whether those parameters are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.\n\nNot the same as “are they useful for prediction = do they help me get smaller \\(R_n\\)?”"
+    "text": "Other things you can’t use\nYou should not use anova\nor the \\(p\\)-values from the lm output for this purpose.\n\n\nThese things are to determine whether those parameters are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.\n\nIn other words, they are useful for inference problems.\nThis is not the same as being useful for prediction problems (i.e. how to get small \\(R_n\\))."
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-of-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-of-risk",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
+    "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
     "title": "UBC Stat406 2024W",
-    "section": "Risk of Risk",
-    "text": "Risk of Risk\nWhile it’s crummy, Training Error is an estimator of \\(R_n(\\hat{f})\\)\nRecall, \\(R_n(\\hat{f})\\) is a parameter (a property of the data distribution)\nSo we can ask “is \\(\\widehat{R}(\\hat{f})\\) a good estimator for \\(R_n(\\hat{f})\\)?”\nBoth are just numbers, so perhaps a good way to measure is\n\\[\nE[(R_n - \\widehat{R})^2]\n= \\cdots\n= (R_n - E[\\widehat{R}])^2 + \\Var{\\widehat{R}}\n\\]\nChoices you make determine how good this is.\nWe can try to balance it’s bias and variance…"
+    "section": "Don’t use training error: the formal argument",
+    "text": "Don’t use training error: the formal argument\nOur training error \\(\\hat R_n(\\hat f)\\) is an estimator of \\(R_n(\\hat f)\\).\nSo we can ask “is \\(\\widehat{R}(\\hat{f})\\) a good estimator for \\(R_n(\\hat{f})\\)?”"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#held-out-sets",
-    "href": "schedule/slides/05-estimating-test-mse.html#held-out-sets",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk",
     "title": "UBC Stat406 2024W",
-    "section": "Held out sets",
-    "text": "Held out sets\nOne option is to have a separate “held out” or “validation set”.\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has some bias because we only used some of the data"
+    "section": "The risk of risk",
+    "text": "The risk of risk\nLet’s measure the risk of our empirical risk estimator:\n\n\n\n\n\n\n\n\n\\[E[(R_n(\\hat f) - \\hat R_n(\\hat f))^2]\\] (What is the expectation with respect to?)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk-1",
+    "title": "UBC Stat406 2024W",
+    "section": "The risk of risk",
+    "text": "The risk of risk\n\\[E[(R_n(\\hat f) - \\hat R_n(\\hat f))^2]\\]\n\n\\(R_n(\\hat f)\\) only depends on training data (since \\(\\hat f\\) is derived from training data)\n\\(\\hat R_n(\\hat f)\\) also only depends on training data\nSo the expectation is with respect to our training dataset\n\n\nAs before, we can decompose our risk-risk into bias and variance\n\\[\nE[(R_n - \\hat R)^2] = \\underbrace{E[( R_n - E[\\hat R_n])^2]}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n",
+    "href": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n",
+    "title": "UBC Stat406 2024W",
+    "section": "Formalizing why \\(\\hat R_n\\) is a bad estimator of \\(R_n\\)",
+    "text": "Formalizing why \\(\\hat R_n\\) is a bad estimator of \\(R_n\\)\nRecall that \\(\\hat R_n(\\hat f)\\) is estimated from the training data \\(\\{ (X_i, Y_i) \\}_{i=1}^n\\).\nConsider an alternative estimator built from \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) that was not part of the training set. \\[\\tilde R_m = {\\textstyle \\frac{1}{m} \\sum_{j=1}^m} \\ell(Y_j, \\hat Y_j(X_j)),\n\\]\nWhich has higher bias, \\(\\hat R_n\\) or \\(\\tilde R_m\\)?\n\n\n\\(\\tilde R_m\\) has zero bias.\n\n(X_j, Y_j) are i.i.d. samples from the population\n\n\\(\\tilde R_n\\) is very biased.\n\n(X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose \\(\\hat f\\)\nUsing them to both choose \\(\\hat f\\) and estimate \\(R_n\\) is “double dipping.”"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
+    "href": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
+    "title": "UBC Stat406 2024W",
+    "section": "Holdout sets",
+    "text": "Holdout sets\nOne option is to have a separate “holdout” or “validation” dataset.\n\n\n\n\n\n\nTip\n\n\nThis option follows the logic on the previous slide.\nIf we randomly “hold out” \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) from the training set, then we can use this data to get an (nearly) unbiased estimator of \\(R_n\\). \\[\nR_n(\\hat f) \\approx \\tilde R_m \\triangleq {\\textstyle{\\frac 1 m \\sum_{j=1}^m \\ell ( Y_j - \\hat Y_j(X_j))}}\n\\]\n\n\n\n\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has a little bias (because we aren’t estimating \\(\\hat f\\) from all of the training data)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#aside",
     "href": "schedule/slides/05-estimating-test-mse.html#aside",
     "title": "UBC Stat406 2024W",
     "section": "Aside",
-    "text": "Aside\nIn my experience, CS has particular definitions of “training”, “validation”, and “test” data.\nI think these are not quite the same as in Statistics.\n\nTest data - Hypothetical data you don’t get to see, ever. Infinite amounts drawn from the population.\n\nExpected test error or Risk is an expected value over this distribution. It’s not a sum over some data kept aside.\n\nSometimes I’ll give you “test data”. You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.\nTraining data - This is data that you get to touch.\nValidation set - Often, we need to choose models. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.\n\nWhen and how you split your training data can be very important."
+    "text": "Aside\nIn my experience, CS has particular definitions of “training”, “validation”, and “test” data.\nI think these are not quite the same as in Statistics.\n\nTest data - Hypothetical data you don’t get to see, ever. Infinite amounts drawn from the population.\n\nExpected test error or Risk is an expected value over this distribution. It’s not a sum over some data kept aside.\n\nSometimes I’ll give you “test data”. You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.\nTraining data - This is “holdout” data that you get to touch.\nValidation set - Often, we need to choose models. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.\n\nWhen and how you split your training data can be very important."
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#intuition-for-cv",
-    "href": "schedule/slides/05-estimating-test-mse.html#intuition-for-cv",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#cross-validation",
+    "href": "schedule/slides/05-estimating-test-mse.html#cross-validation",
     "title": "UBC Stat406 2024W",
-    "section": "Intuition for CV",
-    "text": "Intuition for CV\nOne reason that \\(\\widehat{R}_n(\\widehat{f})\\) is bad is that we are using the same data to pick \\(\\widehat{f}\\) AND to estimate \\(R_n\\).\n“Validation set” fixes this, but holds out a particular, fixed block of data we pretend mimics the “test data”\n\nWhat if we set aside one observation, say the first one \\((y_1, x_1)\\).\nWe estimate \\(\\widehat{f}^{(1)}\\) without using the first observation.\nThen we test our prediction:\n\\[\\widetilde{R}_1(\\widehat{f}^{(1)}) = (y_1 -\\widehat{f}^{(1)}(x_1))^2.\\]\n(why the notation \\(\\widetilde{R}_1\\)? Because we’re estimating the risk with 1 observation. )"
+    "section": "Cross Validation",
+    "text": "Cross Validation\n\nOur validation error \\(\\tilde{R}_m(\\widehat{f})\\) is a random estimator.\n(The split we use to divide our data into training versus validation is random.)\n\n\nA random estimator has variance. We can reduce this variance by averageing over multiple splits."
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#keep-going",
-    "href": "schedule/slides/05-estimating-test-mse.html#keep-going",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#cross-validation-example",
+    "href": "schedule/slides/05-estimating-test-mse.html#cross-validation-example",
     "title": "UBC Stat406 2024W",
-    "section": "Keep going",
-    "text": "Keep going\nBut that was only one data point \\((y_1, x_1)\\). Why stop there?\nDo the same with \\((y_2, x_2)\\)! Get an estimate \\(\\widehat{f}^{(2)}\\) without using it, then\n\\[\\widetilde{R}_1(\\widehat{f}^{(2)}) = (y_2 -\\widehat{f}^{(2)}(x_2))^2.\\]\nWe can keep doing this until we try it for every data point.\nAnd then average them! (Averages are good)\n\\[\\mbox{LOO-CV} = \\frac{1}{n}\\sum_{i=1}^n \\widetilde{R}_1(\\widehat{f}^{(i)}) = \\frac{1}{n}\\sum_{i=1}^n\n(y_i - \\widehat{f}^{(i)}(x_i))^2\\]\n\nThis is leave-one-out cross validation"
+    "section": "Cross Validation Example",
+    "text": "Cross Validation Example\nWhat if we set aside one observation, say the first one \\((y_1, x_1)\\):\n\nWe estimate \\(\\widehat{f}^{(1)}\\) without using the first observation.\nWe estimate \\(\\widetilde{R}_1(\\widehat{f}^{(1)})\\) using the held-out first observation.\n\n\\[\\widetilde{R}_1(\\widehat{f}^{(1)}) = (y_1 -\\widehat{f}^{(1)}(x_1))^2.\\] (Why the notation \\(\\widetilde{R}_1\\)? Because we’re estimating the risk with 1 observation. )"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#problems-with-loo-cv",
     "href": "schedule/slides/05-estimating-test-mse.html#problems-with-loo-cv",
     "title": "UBC Stat406 2024W",
     "section": "Problems with LOO-CV",
-    "text": "Problems with LOO-CV\n🤮 Each held out set is small \\((n=1)\\). Therefore, the variance of the Squared Error of each prediction is high.\n🤮 The training sets overlap. This is bad.\n\nUsually, averaging reduces variance: \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\sum_{i=1}^n \\Var{X_i} = \\frac{1}{n}\\Var{X_1}.\\)\nBut only if the variables are independent. If not, then \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\Var{ \\sum_{i=1}^n X_i} = \\frac{1}{n}\\Var{X_1} + \\frac{1}{n^2}\\sum_{i\\neq j} \\Cov{X_i}{X_j}.\\)\nSince the training sets overlap a lot, that covariance can be pretty big.\n\n🤮 We have to estimate this model \\(n\\) times.\n🎉 Bias is low because we used almost all the data to fit the model: \\(E[\\mbox{LOO-CV}] = R_{n-1}\\)"
+    "text": "Problems with LOO-CV\n\n🤮 The training sets overlap. This is bad.\n\nUsually, averaging reduces variance: \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\sum_{i=1}^n \\Var{X_i} = \\frac{1}{n}\\Var{X_1}.\\)\nBut only if the variables are independent. If not, then \\(\\Var{\\overline{X}} = \\frac{1}{n^2}\\Var{ \\sum_{i=1}^n X_i} = \\frac{1}{n}\\Var{X_1} + \\frac{1}{n^2}\\sum_{i\\neq j} \\Cov{X_i}{X_j}.\\)\nSince the training sets overlap a lot, that covariance can be pretty big.\n\n🤮 We have to estimate this model \\(n\\) times.\n🎉 Bias is low because we used almost all the data to fit the model: \\(E[\\mbox{LOO-CV}] = R_{n-1}\\)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
@@ -3966,21 +4043,14 @@
     "href": "schedule/slides/05-estimating-test-mse.html#code",
     "title": "UBC Stat406 2024W",
     "section": "Code",
-    "text": "Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.9532271"
+    "text": "Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.8928686"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#trick",
     "href": "schedule/slides/05-estimating-test-mse.html#trick",
     "title": "UBC Stat406 2024W",
     "section": "Trick",
-    "text": "Trick\nFor a certain “nice” models, one can show\n(after pages of tedious algebra which I wouldn’t wish on my worst enemy, but might, in a fit of rage assign as homework to belligerent students)\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-h_{ii})^2} = \\frac{1}{n} \\sum_{i=1}^n \\frac{\\widehat{e}_i^2}{(1-h_{ii})^2}.\\]\n\nThis trick means that you only have to fit the model once rather than \\(n\\) times!\nYou still have to calculate this for each model!\n\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#trick-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#trick-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Trick",
-    "text": "Trick\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )\n\n“Nice” requires:\n\n\\(\\widehat{y}_i = h_i(\\mathbf{X})^\\top \\mathbf{y}\\) for some vector \\(h_i\\)\n\\(e^{(i)} = \\frac{\\widehat{e}_i}{(1-h_{ii})}\\)"
+    "text": "Trick\nFor certain “nice” models of the form \\[\\widehat{y}_i = h_i(\\mathbf{X})^\\top \\mathbf{y}\\] for some vector \\(h_i\\), one can show\n\\[\\mbox{LOO-CV} = \\frac{1}{n} \\sum_{i=1}^n \\frac{(y_i -\\widehat{y}_i)^2}{(1-[\\boldsymbol h_i(x_i)]_{i})^2}.\\] (Proof: tedious algebra which I wouldn’t wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.)\n\n\nThis trick means that you only have to fit the model once rather than \\(n\\) times!\n\n\ncv_nice &lt;- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )"
   },
   {
     "objectID": "schedule/slides/28-hclust.html#section",

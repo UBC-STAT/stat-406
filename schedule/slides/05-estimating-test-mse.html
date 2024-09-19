@@ -395,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>05 Estimating test MSE</h2>
+<h2>05 Estimating (Test) Risk</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 18 September 2023</p>
+<p>Last modified – 18 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -418,57 +418,228 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\snorm}[1]{\lVert #1 \rVert}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="estimating-prediction-risk" class="slide level2">
-<h2>Estimating prediction risk</h2>
-<p>Last time, we saw</p>
-<p><span class="math inline">\(R_n(\widehat{f}) = E[(Y-\widehat{f}(X))^2]\)</span></p>
-<p>prediction risk = <span class="math inline">\(\textrm{bias}^2\)</span> + variance + irreducible error</p>
-<p>We argued that we want procedures that produce <span class="math inline">\(\widehat{f}\)</span> with small <span class="math inline">\(R_n\)</span>.</p>
-<blockquote>
-<p>How do we estimate <span class="math inline">\(R_n\)</span>?</p>
-</blockquote>
+<section id="last-time" class="slide level2">
+<h2>Last time</h2>
+<ol type="1">
+<li>What is a model (formal definition)?</li>
+<li>Evaluating models (risk/loss functions)</li>
+<li>Decomposing risk (bias, variance, irreducible error)</li>
+</ol>
+</section>
+<section id="what-is-a-model" class="slide level2">
+<h2>What is a model?</h2>
+<p>A model is a set of distributions that explain data <span class="math inline">\(\{ Z = (X, Y) \}\)</span>, i.e.</p>
+<p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
+<div class="fragment">
+<p><span class="secondary">(Why do we have to specify that <span class="math inline">\(f\)</span> is smooth? Why can’t it be any function?)</span><br>
+</p>
+</div>
+<div class="fragment">
+<h3 id="goal-of-learning">Goal of learning</h3>
+<p>Choose the <span class="math inline">\(P \in \mathcal P\)</span> that makes the “best” predictions on new <span class="math inline">\(X, Y\)</span> pairs.</p>
+<p><span class="secondary">(Next slide: how do we formalize “best”?)</span></p>
+</div>
+</section>
+<section id="how-do-we-evaluate-models" class="slide level2">
+<h2>How do we evaluate models?</h2>
+<p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
+<div>
+<ol type="1">
+<li class="fragment"><p>Specify how a <span class="math inline">\(P \in \mathcal P\)</span> makes <strong>predictions</strong> on new inputs <span class="math inline">\(\hat Y\)</span>.<br>
+<span class="secondary">(E.g.: <span class="math inline">\(\hat Y = f(X)\)</span> for <span class="math inline">\(P = \mathcal N(f(X), \sigma^2)\)</span>.)</span></p></li>
+<li class="fragment"><p>Introduce a <strong>loss</strong> function <span class="math inline">\(\ell(Y, \hat{Y})\)</span> (a datapoint-level function).<br>
+<span class="secondary">(E.g.: <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>)</span></p></li>
+<li class="fragment"><p>Define the <strong>risk</strong> of <span class="math inline">\(P \in \mathcal P\)</span> as the expected loss (a population-level function):<br>
+<span class="secondary">(R_n(P) = E[(Y, Y)] = E[(Y - f(X))^2])</span></p></li>
+<li class="fragment"><p>The <strong>best</strong> model is the one that minimizes the risk.<br>
+<span class="secondary">(<span class="math inline">\(P^* = \argmin_{P \in \mathcal P} R_n(P)\)</span>)</span></p></li>
+</ol>
+</div>
+</section>
+<section class="slide level2">
+
+<p>Last time: when <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>, we showed that the <strong>regression function</strong> is the best model:</p>
+<div class="fragment">
+<p><span class="math display">\[
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} R_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+\]</span></p>
+</div>
+<div class="fragment">
+<p><span class="secondary">Are we done? Have we solved learning?</span></p>
+</div>
+<div class="fragment">
+<p>No! We don’t know what <span class="math inline">\(E[Y \mid X]\)</span> is! We have to <em>estimate it from data!</em></p>
+<p><span class="math display">\[
+\hat f(X) \approx E[Y \mid X]
+\]</span></p>
+<p>(We’ll discuss various methods for producing <span class="math inline">\(\hat f(X)\)</span> estimators throughout this course.)</p>
+</div>
+</section>
+<section id="decomposing-risk" class="slide level2">
+<h2>Decomposing risk</h2>
+<p>When <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>, the prediction risk of <span class="math inline">\(\hat f(X)\)</span> decomposes into two factors:</p>
+<p><span class="math display">\[
+R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{(1)} \quad - \quad \underbrace{E\left[ \: \left( \hat f(X) - Y\right)^2 \right]}_{(2)}
+\]</span></p>
+<div>
+<ol type="1">
+<li class="fragment"><strong>Estimation error</strong></li>
+<li class="fragment"><strong>Irreducible error</strong> (or “noise”)</li>
+</ol>
+</div>
+</section>
+<section class="slide level2">
+
+<p>The <strong>estimation error term</strong> further reduces into two components:</p>
+<span class="math display">\[\begin{aligned}
+\underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &amp;= \quad \underbrace{\left( E[Y\mid X] - E \left[\hat f(X)\right] \right)^2}_{(A)} \quad \\
+&amp;+ \quad \underbrace{E\left[ \: \left( E \left[\hat f(X)\right] -\hat f(X) \right)^2 \right]}_{(B)}
+\end{aligned}\]</span>
+<div>
+<ol type="A">
+<li class="fragment"><strong>Bias</strong>^2</li>
+<li class="fragment"><strong>Variance</strong></li>
+</ol>
+</div>
+<div class="fragment">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>Analogous decompositions hold for other loss/risk functions.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="slide level2">
+
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>cols <span class="ot">=</span> <span class="fu">c</span>(blue, red, green, orange)</span>
+<span id="cb1-2"><a></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">ann =</span> <span class="cn">FALSE</span>, <span class="at">xaxt =</span> <span class="st">"n"</span>, <span class="at">yaxt =</span> <span class="st">"n"</span>, </span>
+<span id="cb1-3"><a></a>    <span class="at">family =</span> <span class="st">"serif"</span>, <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">oma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">0</span>))</span>
+<span id="cb1-4"><a></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-5"><a></a>mv <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="sc">-</span>.<span class="dv">5</span>, <span class="sc">-</span>.<span class="dv">5</span>, <span class="sc">-</span>.<span class="dv">5</span>, <span class="sc">-</span>.<span class="dv">5</span>), <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-6"><a></a>va <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">02</span>, .<span class="dv">02</span>, .<span class="dv">1</span>, .<span class="dv">1</span>, .<span class="dv">02</span>, .<span class="dv">02</span>, .<span class="dv">1</span>, .<span class="dv">1</span>), <span class="dv">4</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-7"><a></a></span>
+<span id="cb1-8"><a></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) {</span>
+<span id="cb1-9"><a></a>  <span class="fu">plot</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="dv">42</span>, </span>
+<span id="cb1-10"><a></a>       <span class="at">col =</span> blue, <span class="at">ann =</span> <span class="cn">FALSE</span>, <span class="at">pty =</span> <span class="st">"s"</span>)</span>
+<span id="cb1-11"><a></a>  <span class="fu">points</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="dv">30</span>, <span class="at">col =</span> <span class="st">"white"</span>)</span>
+<span id="cb1-12"><a></a>  <span class="fu">points</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="dv">18</span>, <span class="at">col =</span> green)</span>
+<span id="cb1-13"><a></a>  <span class="fu">points</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="dv">6</span>, <span class="at">col =</span> orange)</span>
+<span id="cb1-14"><a></a>  <span class="fu">points</span>(<span class="fu">rmvnorm</span>(<span class="dv">20</span>, <span class="at">mean =</span> mv[i, ], <span class="at">sigma =</span> <span class="fu">diag</span>(va[i, ])), <span class="at">cex =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">19</span>)</span>
+<span id="cb1-15"><a></a>  <span class="cf">switch</span>(i,</span>
+<span id="cb1-16"><a></a>    <span class="st">"1"</span> <span class="ot">=</span> {</span>
+<span id="cb1-17"><a></a>      <span class="fu">mtext</span>(<span class="st">"low variance"</span>, <span class="dv">3</span>, <span class="at">cex =</span> <span class="dv">2</span>)</span>
+<span id="cb1-18"><a></a>      <span class="fu">mtext</span>(<span class="st">"low bias"</span>, <span class="dv">2</span>, <span class="at">cex =</span> <span class="dv">2</span>)</span>
+<span id="cb1-19"><a></a>    },</span>
+<span id="cb1-20"><a></a>    <span class="st">"2"</span> <span class="ot">=</span> <span class="fu">mtext</span>(<span class="st">"high variance"</span>, <span class="dv">3</span>, <span class="at">cex =</span> <span class="dv">2</span>),</span>
+<span id="cb1-21"><a></a>    <span class="st">"3"</span> <span class="ot">=</span> <span class="fu">mtext</span>(<span class="st">"high bias"</span>, <span class="dv">2</span>, <span class="at">cex =</span> <span class="dv">2</span>)</span>
+<span id="cb1-22"><a></a>  )</span>
+<span id="cb1-23"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="sources-of-bias-and-variance" class="slide level2">
+<h2>Sources of bias and variance</h2>
+<h3 id="what-conditions-give-rise-to-a-high-bias-estimator">What conditions give rise to a high bias estimator?</h3>
+<div class="fragment">
+<ul>
+<li>Not enough covariates (small <span class="math inline">\(p\)</span>)</li>
+<li>Model is too simple</li>
+<li>Model is <em>misspecified</em> (doesn’t accurately represent the data generating process)</li>
+<li>Bad training algorithm</li>
+</ul>
+</div>
+<h3 id="what-conditions-give-rise-to-a-high-variance-estimator">What conditions give rise to a high variance estimator?</h3>
+<div class="fragment">
+<ul>
+<li>Not enough training samples (small <span class="math inline">\(n\)</span>)</li>
+<li>Model is too complicated[^1]</li>
+<li>Lots of irreducible noise in training data (if my model has power to fit noise, it will)</li>
+</ul>
+</div>
+</section>
+<section>
+<section id="how-do-we-estimate-r_n" class="title-slide slide level1 center">
+<h1>How do we estimate <span class="math inline">\(R_n\)</span>?</h1>
+<p><br>
+So far, <span class="math inline">\(R_n\)</span> has been a theoretical construct.<br>
+We can never know the true <span class="math inline">\(R_n\)</span> for a given <span class="math inline">\(\hat f\)</span>. We also have to estimate it from data.</p>
 </section>
 <section id="dont-use-training-error" class="slide level2">
 <h2>Don’t use training error</h2>
 <p>The training error in regression is</p>
 <p><span class="math display">\[\widehat{R}_n(\widehat{f}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{f}(x_i))^2\]</span></p>
 <p>Here, the <span class="math inline">\(n\)</span> is doubly used (annoying, but simple): <span class="math inline">\(n\)</span> observations to create <span class="math inline">\(\widehat{f}\)</span> and <span class="math inline">\(n\)</span> terms in the sum.</p>
-<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout callout-tip callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>Important</strong></p>
+<p><strong>Tip</strong></p>
 </div>
 <div class="callout-content">
-<p>Training error is a bad estimator for <span class="math inline">\(R_n(\widehat{f})\)</span>.</p>
+<p>We also call <span class="math inline">\(\hat R_n(\hat f)\)</span> the <strong>empirical risk</strong>.</p>
 </div>
 </div>
 </div>
-<p>So we should <span class="secondary"><strong>never</strong></span> use it.</p>
+<div class="fragment">
+<p><span class="math inline">\(\hat R_n(\hat f)\)</span> is a bad estimator for <span class="math inline">\(R_n(\widehat{f})\)</span>.<br>
+So we should <span class="secondary"><strong>never</strong></span> use it.</p>
+</div>
 </section>
-<section id="these-all-have-the-same-r2-and-training-error" class="slide level2">
-<h2>These all have the same <span class="math inline">\(R^2\)</span> and Training Error</h2>
+<section id="why-is-hat-r_n-a-bad-estimator-of-r_n" class="slide level2">
+<h2>Why is <span class="math inline">\(\hat R_n\)</span> a bad estimator of <span class="math inline">\(R_n\)</span>?</h2>
+<div class="fragment">
+<ol type="1">
+<li><p>It doesn’t say anything about predictions on new data.<br>
+<span class="secondary">(It’s a measure of how well the model fits a <strong>fixed set</strong> of training data.)</span></p></li>
+<li><p>It can be made <strong>arbitrarily small</strong> by making your model more complex.</p></li>
+</ol>
+</div>
+</section>
+<section id="it-doesnt-say-anything-about-predictions-on-new-data." class="slide level2">
+<h2>1. It doesn’t say anything about predictions on new data.</h2>
+<p>These all have the same <span class="math inline">\(R^2\)</span> and Training Error</p>
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>ans <span class="ot">&lt;-</span> anscombe <span class="sc">|&gt;</span></span>
-<span id="cb1-2"><a></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"set"</span>), </span>
-<span id="cb1-3"><a></a>               <span class="at">names_pattern =</span> <span class="st">"(.)(.)"</span>)</span>
-<span id="cb1-4"><a></a><span class="fu">ggplot</span>(ans, <span class="fu">aes</span>(x, y)) <span class="sc">+</span> </span>
-<span id="cb1-5"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> orange, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span> </span>
-<span id="cb1-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> blue, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb1-7"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>set, <span class="at">labeller =</span> label_both)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>ans <span class="ot">&lt;-</span> anscombe <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a></a>  <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"set"</span>), </span>
+<span id="cb2-3"><a></a>               <span class="at">names_pattern =</span> <span class="st">"(.)(.)"</span>)</span>
+<span id="cb2-4"><a></a><span class="fu">ggplot</span>(ans, <span class="fu">aes</span>(x, y)) <span class="sc">+</span> </span>
+<span id="cb2-5"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> orange, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span> </span>
+<span id="cb2-6"><a></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> blue, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-7"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>set, <span class="at">labeller =</span> label_both)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center"></p>
+<p><img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -476,20 +647,20 @@
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>ans <span class="sc">%&gt;%</span> </span>
-<span id="cb2-2"><a></a>  <span class="fu">group_by</span>(set) <span class="sc">|&gt;</span> </span>
-<span id="cb2-3"><a></a>  <span class="fu">summarise</span>(</span>
-<span id="cb2-4"><a></a>    <span class="at">R2 =</span> <span class="fu">summary</span>(<span class="fu">lm</span>(y <span class="sc">~</span> x))<span class="sc">$</span>r.sq, </span>
-<span id="cb2-5"><a></a>    <span class="at">train_error =</span> <span class="fu">mean</span>((y <span class="sc">-</span> <span class="fu">predict</span>(<span class="fu">lm</span>(y <span class="sc">~</span> x)))<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb2-6"><a></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-7"><a></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>ans <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a></a>  <span class="fu">group_by</span>(set) <span class="sc">|&gt;</span> </span>
+<span id="cb3-3"><a></a>  <span class="fu">summarise</span>(</span>
+<span id="cb3-4"><a></a>    <span class="at">R2 =</span> <span class="fu">summary</span>(<span class="fu">lm</span>(y <span class="sc">~</span> x))<span class="sc">$</span>r.sq, </span>
+<span id="cb3-5"><a></a>    <span class="at">train_error =</span> <span class="fu">mean</span>((y <span class="sc">-</span> <span class="fu">predict</span>(<span class="fu">lm</span>(y <span class="sc">~</span> x)))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb3-6"><a></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<table class="caption-top" data-quarto-postprocess="true">
+<table class="caption-top">
 <thead>
 <tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th">set</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">R2</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">train_error</th>
+<th style="text-align: left;">set</th>
+<th style="text-align: right;">R2</th>
+<th style="text-align: right;">train_error</th>
 </tr>
 </thead>
 <tbody>
@@ -515,79 +686,138 @@
 </tr>
 </tbody>
 </table>
-
-
 </div>
 </div>
 </div>
 </div>
 </section>
-<section id="adding-junk-predictors-increases-r2-and-decreases-training-error" class="slide level2">
-<h2>Adding “junk” predictors increases <span class="math inline">\(R^2\)</span> and decreases Training Error</h2>
+<section id="it-can-be-made-arbitrarily-small-by-making-your-model-more-complex." class="slide level2">
+<h2>2. It can be made <strong>arbitrarily small</strong> by making your model more complex.</h2>
+<p>Adding “junk” predictors increases <span class="math inline">\(R^2\)</span> and decreases Training Error</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb3-2"><a></a>p <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb3-3"><a></a>q <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">30</span></span>
-<span id="cb3-4"><a></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> (p <span class="sc">+</span> <span class="fu">max</span>(q))), <span class="at">nrow =</span> n)</span>
-<span id="cb3-5"><a></a>y <span class="ot">&lt;-</span> x[, <span class="dv">1</span><span class="sc">:</span>p] <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">1</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">10</span>)</span>
-<span id="cb3-6"><a></a></span>
-<span id="cb3-7"><a></a>regress_on_junk <span class="ot">&lt;-</span> <span class="cf">function</span>(q) {</span>
-<span id="cb3-8"><a></a>  x <span class="ot">&lt;-</span> x[, <span class="dv">1</span><span class="sc">:</span>(p <span class="sc">+</span> q)]</span>
-<span id="cb3-9"><a></a>  mod <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
-<span id="cb3-10"><a></a>  <span class="fu">tibble</span>(<span class="at">R2 =</span> <span class="fu">summary</span>(mod)<span class="sc">$</span>r.sq,  <span class="at">train_error =</span> <span class="fu">mean</span>((y <span class="sc">-</span> <span class="fu">predict</span>(mod))<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb3-11"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb4-2"><a></a>p <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb4-3"><a></a>q <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">30</span></span>
+<span id="cb4-4"><a></a>x <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rnorm</span>(n <span class="sc">*</span> (p <span class="sc">+</span> <span class="fu">max</span>(q))), <span class="at">nrow =</span> n)</span>
+<span id="cb4-5"><a></a>y <span class="ot">&lt;-</span> x[, <span class="dv">1</span><span class="sc">:</span>p] <span class="sc">%*%</span> <span class="fu">c</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">1</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">10</span>)</span>
+<span id="cb4-6"><a></a></span>
+<span id="cb4-7"><a></a>regress_on_junk <span class="ot">&lt;-</span> <span class="cf">function</span>(q) {</span>
+<span id="cb4-8"><a></a>  x <span class="ot">&lt;-</span> x[, <span class="dv">1</span><span class="sc">:</span>(p <span class="sc">+</span> q)]</span>
+<span id="cb4-9"><a></a>  mod <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> x)</span>
+<span id="cb4-10"><a></a>  <span class="fu">tibble</span>(<span class="at">R2 =</span> <span class="fu">summary</span>(mod)<span class="sc">$</span>r.sq,  <span class="at">train_error =</span> <span class="fu">mean</span>((y <span class="sc">-</span> <span class="fu">predict</span>(mod))<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb4-11"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">map</span>(q, regress_on_junk) <span class="sc">|&gt;</span> </span>
-<span id="cb4-2"><a></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a></a>  <span class="fu">mutate</span>(<span class="at">q =</span> q) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>q) <span class="sc">|&gt;</span></span>
-<span id="cb4-5"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(q, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
-<span id="cb4-6"><a></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"train_error"</span>) <span class="sc">+</span></span>
-<span id="cb4-7"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb4-8"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">map</span>(q, regress_on_junk) <span class="sc">|&gt;</span> </span>
+<span id="cb5-2"><a></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a></a>  <span class="fu">mutate</span>(<span class="at">q =</span> q) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>q) <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(q, value, <span class="at">colour =</span> name)) <span class="sc">+</span></span>
+<span id="cb5-6"><a></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="st">"train_error"</span>) <span class="sc">+</span></span>
+<span id="cb5-7"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb5-8"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="other-things-you-cant-use" class="slide level2">
 <h2>Other things you can’t use</h2>
 <p>You should not use <code>anova</code></p>
 <p>or the <span class="math inline">\(p\)</span>-values from the <code>lm</code> output for this purpose.</p>
+<div class="fragment">
 <blockquote>
 <p>These things are to determine whether those <em>parameters</em> are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.</p>
 </blockquote>
-<p>Not the same as <em>“are they useful for prediction = do they help me get smaller <span class="math inline">\(R_n\)</span>?”</em></p>
+<p>In other words, they are useful for <em>inference problems</em>.</p>
+<p>This is not the same as being useful for <em>prediction problems</em> (i.e.&nbsp;how to get small <span class="math inline">\(R_n\)</span>).</p>
+</div>
 </section>
-<section id="risk-of-risk" class="slide level2">
-<h2>Risk of Risk</h2>
-<p>While it’s crummy, Training Error is an <span class="secondary">estimator</span> of <span class="math inline">\(R_n(\hat{f})\)</span></p>
-<p>Recall, <span class="math inline">\(R_n(\hat{f})\)</span> is a <em>parameter</em> (a property of the data distribution)</p>
-<p>So we can ask “is <span class="math inline">\(\widehat{R}(\hat{f})\)</span> a good estimator for <span class="math inline">\(R_n(\hat{f})\)</span>?”</p>
-<p>Both are just numbers, so perhaps a good way to measure is</p>
+<section id="dont-use-training-error-the-formal-argument" class="slide level2">
+<h2>Don’t use training error: the formal argument</h2>
+<p>Our training error <span class="math inline">\(\hat R_n(\hat f)\)</span> is an <strong>estimator</strong> of <span class="math inline">\(R_n(\hat f)\)</span>.<br>
+So we can ask “is <span class="math inline">\(\widehat{R}(\hat{f})\)</span> a good estimator for <span class="math inline">\(R_n(\hat{f})\)</span>?”</p>
+</section>
+<section id="the-risk-of-risk" class="slide level2">
+<h2>The risk of risk</h2>
+<p>Let’s measure the <strong>risk</strong> of our empirical risk estimator:</p>
+<div class="flex">
+<div class="w-50">
+<p><img data-src="https://images.squarespace-cdn.com/content/v1/59a53195ff7c50210a2c6b8b/1510207623511-BT2MBPENJOJXZNE0SCSQ/inceptius-meme-generator-we-have-to-go-deeper-014848.jpg" alt="meme"></p>
+</div>
+<div class="w-50">
+<p><img data-src="https://i.imgflip.com/93xy4g.jpg" alt="meme" width="380"></p>
+</div>
+</div>
+<p><span class="math display">\[E[(R_n(\hat f) - \hat R_n(\hat f))^2]\]</span> <span class="secondary">(What is the expectation with respect to?)</span></p>
+</section>
+<section id="the-risk-of-risk-1" class="slide level2">
+<h2>The risk of risk</h2>
+<p><span class="math display">\[E[(R_n(\hat f) - \hat R_n(\hat f))^2]\]</span></p>
+<ul>
+<li><span class="math inline">\(R_n(\hat f)\)</span> only depends on training data (since <span class="math inline">\(\hat f\)</span> is derived from training data)</li>
+<li><span class="math inline">\(\hat R_n(\hat f)\)</span> also only depends on training data</li>
+<li>So the expectation is with respect to our training dataset</li>
+</ul>
+<div class="fragment">
+<p>As before, we can decompose our risk-risk into <strong>bias</strong> and <strong>variance</strong></p>
 <p><span class="math display">\[
-E[(R_n - \widehat{R})^2]
-= \cdots
-= (R_n - E[\widehat{R}])^2 + \Var{\widehat{R}}
+E[(R_n - \hat R)^2] = \underbrace{E[( R_n - E[\hat R_n])^2]}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
 \]</span></p>
-<p>Choices you make determine how good this is.</p>
-<p>We can try to balance it’s bias and variance…</p>
+</div>
 </section>
+<section id="formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n" class="slide level2">
+<h2>Formalizing why <span class="math inline">\(\hat R_n\)</span> is a bad estimator of <span class="math inline">\(R_n\)</span></h2>
+<p>Recall that <span class="math inline">\(\hat R_n(\hat f)\)</span> is estimated from the training data <span class="math inline">\(\{ (X_i, Y_i) \}_{i=1}^n\)</span>.</p>
+<p>Consider an alternative estimator built from <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> that was not part of the training set. <span class="math display">\[\tilde R_m = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat Y_j(X_j)),
+\]</span></p>
+<h3 id="which-has-higher-bias-hat-r_n-or-tilde-r_m">Which has higher bias, <span class="math inline">\(\hat R_n\)</span> or <span class="math inline">\(\tilde R_m\)</span>?</h3>
+<div class="fragment">
+<ul>
+<li><span class="math inline">\(\tilde R_m\)</span> has <em>zero</em> bias.
+<ul>
+<li>(X_j, Y_j) are i.i.d. samples from the population</li>
+</ul></li>
+<li><span class="math inline">\(\tilde R_n\)</span> is <em>very</em> biased.
+<ul>
+<li>(X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose <span class="math inline">\(\hat f\)</span></li>
+<li>Using them to both choose <span class="math inline">\(\hat f\)</span> and estimate <span class="math inline">\(R_n\)</span> is “double dipping.”</li>
+</ul></li>
+</ul>
+</div>
+</section></section>
 <section>
-<section id="things-you-can-use." class="title-slide slide level1 center">
-<h1>Things you can use.</h1>
+<section id="how-to-properly-estimate-r_n" class="title-slide slide level1 center">
+<h1>How to properly estimate <span class="math inline">\(R_n\)</span></h1>
 
 </section>
-<section id="held-out-sets" class="slide level2">
-<h2>Held out sets</h2>
-<p>One option is to have a separate “held out” or “validation set”.</p>
+<section id="holdout-sets" class="slide level2">
+<h2>Holdout sets</h2>
+<p>One option is to have a separate “holdout” or “validation” dataset.</p>
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>This option follows the logic on the previous slide.<br>
+If we randomly “hold out” <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> from the training set, then we can use this data to get an (nearly) unbiased estimator of <span class="math inline">\(R_n\)</span>. <span class="math display">\[
+R_n(\hat f) \approx \tilde R_m \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
+\]</span></p>
+</div>
+</div>
+</div>
+<div class="fragment">
 <p>👍 Estimates the test error</p>
 <p>👍 Fast computationally</p>
 <p>🤮 Estimate is random</p>
 <p>🤮 Estimate has high variance (depends on 1 choice of split)</p>
-<p>🤮 Estimate has some bias because we only used some of the data</p>
+<p>🤮 Estimate has a little bias (because we aren’t estimating <span class="math inline">\(\hat f\)</span> from all of the training data)</p>
+</div>
 </section>
 <section id="aside" class="slide level2" data-background-color="#97D4E9">
 <h2>Aside</h2>
@@ -599,39 +829,49 @@ E[(R_n - \widehat{R})^2]
 <li><em>Expected test error</em> or <em>Risk</em> is an expected value over this distribution. It’s <em>not</em> a sum over some data kept aside.</li>
 </ul></li>
 <li>Sometimes I’ll give you “test data”. You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.</li>
-<li><span class="secondary">Training data</span> - This is data that you get to touch.</li>
+<li><span class="secondary">Training data</span> - This is “holdout” data that you get to touch.</li>
 <li><span class="secondary">Validation set</span> - Often, we need to <em>choose models</em>. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.</li>
 </ul>
 <p>When and how you split your training data can be very important.</p>
 </section>
-<section id="intuition-for-cv" class="slide level2">
-<h2>Intuition for CV</h2>
-<p>One reason that <span class="math inline">\(\widehat{R}_n(\widehat{f})\)</span> is bad is that we are using the same data to pick <span class="math inline">\(\widehat{f}\)</span> <strong>AND</strong> to estimate <span class="math inline">\(R_n\)</span>.</p>
-<p>“Validation set” fixes this, but holds out a particular, fixed block of data we pretend mimics the “test data”</p>
+<section id="cross-validation" class="slide level2">
+<h2>Cross Validation</h2>
+<!--
+One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
+
+"Validation set" fixes this, but holds out a particular, fixed block of data we pretend mimics the "test data"
+-->
+<p>Our validation error <span class="math inline">\(\tilde{R}_m(\widehat{f})\)</span> is a random estimator.<br>
+<span class="secondary">(The split we use to divide our data into training versus validation is random.)</span></p>
 <div class="fragment">
-<p>What if we set aside one observation, say the first one <span class="math inline">\((y_1, x_1)\)</span>.</p>
-<p>We estimate <span class="math inline">\(\widehat{f}^{(1)}\)</span> without using the first observation.</p>
-<p>Then we test our prediction:</p>
-<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.\]</span></p>
-<p>(why the notation <span class="math inline">\(\widetilde{R}_1\)</span>? Because we’re estimating the risk with 1 observation. )</p>
+<p><br>
+A random estimator has <em>variance</em>. We can reduce this variance by averageing over multiple splits.</p>
 </div>
 </section>
-<section id="keep-going" class="slide level2">
-<h2>Keep going</h2>
+<section id="cross-validation-example" class="slide level2">
+<h2>Cross Validation Example</h2>
+<p>What if we set aside one observation, say the first one <span class="math inline">\((y_1, x_1)\)</span>:</p>
+<ul>
+<li>We estimate <span class="math inline">\(\widehat{f}^{(1)}\)</span> without using the first observation.</li>
+<li>We estimate <span class="math inline">\(\widetilde{R}_1(\widehat{f}^{(1)})\)</span> using the held-out first observation.</li>
+</ul>
+<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.\]</span> <span class="secondary">(Why the notation <span class="math inline">\(\widetilde{R}_1\)</span>? Because we’re estimating the risk with 1 observation. )</span></p>
+</section>
+<section class="slide level2">
+
 <p>But that was only one data point <span class="math inline">\((y_1, x_1)\)</span>. Why stop there?</p>
-<p>Do the same with <span class="math inline">\((y_2, x_2)\)</span>! Get an estimate <span class="math inline">\(\widehat{f}^{(2)}\)</span> without using it, then</p>
-<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.\]</span></p>
-<p>We can keep doing this until we try it for every data point.</p>
-<p>And then average them! (Averages are good)</p>
-<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n
-(y_i - \widehat{f}^{(i)}(x_i))^2\]</span></p>
+<p>Do the same with <span class="math inline">\((y_2, x_2)\)</span>!</p>
+<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.\]</span> We can keep doing this until we try it for every data point.</p>
 <div class="fragment">
-<p>This is <span class="secondary"><strong>leave-one-out cross validation</strong></span></p>
+<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n
+(y_i - \widehat{f}^{(i)}(x_i))^2\]</span> This is <span class="secondary"><strong>leave-one-out cross validation</strong></span></p>
 </div>
 </section>
 <section id="problems-with-loo-cv" class="slide level2">
 <h2>Problems with LOO-CV</h2>
-<p>🤮 Each held out set is small <span class="math inline">\((n=1)\)</span>. Therefore, the variance of the Squared Error of each prediction is high.</p>
+<!--
+🤮 Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
+-->
 <p>🤮 The training sets overlap. This is bad.</p>
 <ul>
 <li>Usually, averaging reduces variance: <span class="math inline">\(\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.\)</span></li>
@@ -670,79 +910,68 @@ E[(R_n - \widehat{R})^2]
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb5-2"><a></a><span class="fu">plot</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">10</span>), <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">yaxt =</span> <span class="st">"n"</span>, <span class="at">xaxt =</span> <span class="st">"n"</span>)</span>
-<span id="cb5-3"><a></a><span class="fu">rect</span>(<span class="dv">0</span>, .<span class="dv">1</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dv">10</span>, .<span class="dv">9</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">col =</span> blue, <span class="at">density =</span> <span class="dv">10</span>)</span>
-<span id="cb5-4"><a></a><span class="fu">rect</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">9</span>), <span class="fu">rev</span>(.<span class="dv">1</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">10</span>), </span>
-<span id="cb5-5"><a></a>     <span class="fu">rev</span>(.<span class="dv">9</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)), <span class="at">col =</span> red, <span class="at">density =</span> <span class="dv">10</span>)</span>
-<span id="cb5-6"><a></a><span class="fu">points</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>), <span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">/</span> <span class="dv">4</span>, <span class="at">pch =</span> <span class="dv">19</span>)</span>
-<span id="cb5-7"><a></a><span class="fu">text</span>(.<span class="dv">5</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">9</span>), .<span class="dv">5</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"K"</span>), <span class="at">cex =</span> <span class="dv">3</span>, </span>
-<span id="cb5-8"><a></a>     <span class="at">col =</span> red)</span>
-<span id="cb5-9"><a></a><span class="fu">text</span>(<span class="dv">6</span>, <span class="fl">4.5</span>, <span class="st">"Training data"</span>, <span class="at">cex =</span> <span class="dv">3</span>, <span class="at">col =</span> blue)</span>
-<span id="cb5-10"><a></a><span class="fu">text</span>(<span class="dv">2</span>, <span class="fl">1.5</span>, <span class="st">"Validation data"</span>, <span class="at">cex =</span> <span class="dv">3</span>, <span class="at">col =</span> red)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb6-2"><a></a><span class="fu">plot</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">10</span>), <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">yaxt =</span> <span class="st">"n"</span>, <span class="at">xaxt =</span> <span class="st">"n"</span>)</span>
+<span id="cb6-3"><a></a><span class="fu">rect</span>(<span class="dv">0</span>, .<span class="dv">1</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="dv">10</span>, .<span class="dv">9</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>), <span class="at">col =</span> blue, <span class="at">density =</span> <span class="dv">10</span>)</span>
+<span id="cb6-4"><a></a><span class="fu">rect</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">9</span>), <span class="fu">rev</span>(.<span class="dv">1</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">10</span>), </span>
+<span id="cb6-5"><a></a>     <span class="fu">rev</span>(.<span class="dv">9</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)), <span class="at">col =</span> red, <span class="at">density =</span> <span class="dv">10</span>)</span>
+<span id="cb6-6"><a></a><span class="fu">points</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">5</span>), <span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">/</span> <span class="dv">4</span>, <span class="at">pch =</span> <span class="dv">19</span>)</span>
+<span id="cb6-7"><a></a><span class="fu">text</span>(.<span class="dv">5</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">9</span>), .<span class="dv">5</span> <span class="sc">+</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"K"</span>), <span class="at">cex =</span> <span class="dv">3</span>, </span>
+<span id="cb6-8"><a></a>     <span class="at">col =</span> red)</span>
+<span id="cb6-9"><a></a><span class="fu">text</span>(<span class="dv">6</span>, <span class="fl">4.5</span>, <span class="st">"Training data"</span>, <span class="at">cex =</span> <span class="dv">3</span>, <span class="at">col =</span> blue)</span>
+<span id="cb6-10"><a></a><span class="fu">text</span>(<span class="dv">2</span>, <span class="fl">1.5</span>, <span class="st">"Validation data"</span>, <span class="at">cex =</span> <span class="dv">3</span>, <span class="at">col =</span> red)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="code" class="slide level2">
 <h2>Code</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6" data-code-line-numbers="11-13|14-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a><span class="co">#' @param data The full data set</span></span>
-<span id="cb6-2"><a></a><span class="co">#' @param estimator Function. Has 1 argument (some data) and fits a model. </span></span>
-<span id="cb6-3"><a></a><span class="co">#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions</span></span>
-<span id="cb6-4"><a></a><span class="co">#' @param error_fun Function. Has one arg: the test data, with fits added.</span></span>
-<span id="cb6-5"><a></a><span class="co">#' @param kfolds Integer. The number of folds.</span></span>
-<span id="cb6-6"><a></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
-<span id="cb6-7"><a></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
-<span id="cb6-8"><a></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>kfolds, <span class="at">length.out =</span> n))</span>
-<span id="cb6-9"><a></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
-<span id="cb6-10"><a></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
-<span id="cb6-11"><a></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
-<span id="cb6-12"><a></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
-<span id="cb6-13"><a></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
-<span id="cb6-14"><a></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
-<span id="cb6-15"><a></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
-<span id="cb6-16"><a></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
-<span id="cb6-17"><a></a>  }</span>
-<span id="cb6-18"><a></a>  <span class="fu">mean</span>(errors)</span>
-<span id="cb6-19"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="11-13|14-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="co">#' @param data The full data set</span></span>
+<span id="cb7-2"><a></a><span class="co">#' @param estimator Function. Has 1 argument (some data) and fits a model. </span></span>
+<span id="cb7-3"><a></a><span class="co">#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions</span></span>
+<span id="cb7-4"><a></a><span class="co">#' @param error_fun Function. Has one arg: the test data, with fits added.</span></span>
+<span id="cb7-5"><a></a><span class="co">#' @param kfolds Integer. The number of folds.</span></span>
+<span id="cb7-6"><a></a>kfold_cv <span class="ot">&lt;-</span> <span class="cf">function</span>(data, estimator, predictor, error_fun, <span class="at">kfolds =</span> <span class="dv">5</span>) {</span>
+<span id="cb7-7"><a></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(data)</span>
+<span id="cb7-8"><a></a>  fold_labels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>kfolds, <span class="at">length.out =</span> n))</span>
+<span id="cb7-9"><a></a>  errors <span class="ot">&lt;-</span> <span class="fu">double</span>(kfolds)</span>
+<span id="cb7-10"><a></a>  <span class="cf">for</span> (fold <span class="cf">in</span> <span class="fu">seq_len</span>(kfolds)) {</span>
+<span id="cb7-11"><a></a>    test_rows <span class="ot">&lt;-</span> fold_labels <span class="sc">==</span> fold</span>
+<span id="cb7-12"><a></a>    train <span class="ot">&lt;-</span> data[<span class="sc">!</span>test_rows, ]</span>
+<span id="cb7-13"><a></a>    test <span class="ot">&lt;-</span> data[test_rows, ]</span>
+<span id="cb7-14"><a></a>    current_model <span class="ot">&lt;-</span> <span class="fu">estimator</span>(train)</span>
+<span id="cb7-15"><a></a>    test<span class="sc">$</span>.preds <span class="ot">&lt;-</span> <span class="fu">predictor</span>(current_model, test)</span>
+<span id="cb7-16"><a></a>    errors[fold] <span class="ot">&lt;-</span> <span class="fu">error_fun</span>(test)</span>
+<span id="cb7-17"><a></a>  }</span>
+<span id="cb7-18"><a></a>  <span class="fu">mean</span>(errors)</span>
+<span id="cb7-19"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="fragment">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7" data-code-line-numbers="2-4|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>somedata <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">z =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>))</span>
-<span id="cb7-2"><a></a>est <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset) <span class="fu">lm</span>(z <span class="sc">~</span> ., <span class="at">data =</span> dataset)</span>
-<span id="cb7-3"><a></a>pred <span class="ot">&lt;-</span> <span class="cf">function</span>(mod, dataset) <span class="fu">predict</span>(mod, <span class="at">newdata =</span> dataset)</span>
-<span id="cb7-4"><a></a>error_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(testdata) <span class="fu">mutate</span>(testdata, <span class="at">errs =</span> (z <span class="sc">-</span> .preds)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(errs) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
-<span id="cb7-5"><a></a><span class="fu">kfold_cv</span>(somedata, est, pred, error_fun, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8" data-code-line-numbers="2-4|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>somedata <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">z =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x1 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>), <span class="at">x2 =</span> <span class="fu">rnorm</span>(<span class="dv">100</span>))</span>
+<span id="cb8-2"><a></a>est <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset) <span class="fu">lm</span>(z <span class="sc">~</span> ., <span class="at">data =</span> dataset)</span>
+<span id="cb8-3"><a></a>pred <span class="ot">&lt;-</span> <span class="cf">function</span>(mod, dataset) <span class="fu">predict</span>(mod, <span class="at">newdata =</span> dataset)</span>
+<span id="cb8-4"><a></a>error_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(testdata) <span class="fu">mutate</span>(testdata, <span class="at">errs =</span> (z <span class="sc">-</span> .preds)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(errs) <span class="sc">|&gt;</span> <span class="fu">mean</span>()</span>
+<span id="cb8-5"><a></a><span class="fu">kfold_cv</span>(somedata, est, pred, error_fun, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.9532271</code></pre>
+<pre><code>[1] 0.8928686</code></pre>
 </div>
 </div>
 </div>
 </section>
 <section id="trick" class="slide level2">
 <h2>Trick</h2>
-<p><strong>For a certain “nice” models</strong>, one can show</p>
-<p>(after pages of tedious algebra which I wouldn’t wish on my worst enemy, but might, in a fit of rage assign as homework to belligerent students)</p>
-<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.\]</span></p>
+<p><strong>For certain “nice” models</strong> of the form <span class="math display">\[\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}\]</span> for some vector <span class="math inline">\(h_i\)</span>, one can show</p>
+<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.\]</span> (Proof: tedious algebra which I wouldn’t wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.)</p>
+<div class="fragment">
 <ul>
-<li><p>This trick means that you only have to fit the model once rather than <span class="math inline">\(n\)</span> times!</p></li>
-<li><p>You still have to calculate this for each model!</p></li>
+<li>This trick means that you only have to fit the model once rather than <span class="math inline">\(n\)</span> times!</li>
 </ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>( (<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="trick-1" class="slide level2">
-<h2>Trick</h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>( (<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>“Nice” requires:</p>
-<ol type="1">
-<li><span class="math inline">\(\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}\)</span> for some vector <span class="math inline">\(h_i\)</span></li>
-<li><span class="math inline">\(e^{(i)} = \frac{\widehat{e}_i}{(1-h_{ii})}\)</span></li>
-</ol>
+</div>
 </section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
