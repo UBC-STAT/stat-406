@@ -1,5 +1,5 @@
 ---
-lecture: "05 Estimating test MSE"
+lecture: "05 Estimating (Test) Risk"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -8,20 +8,166 @@ metadata-files:
 {{< include _titleslide.qmd >}}
 
 
-## Estimating prediction risk
+## Last time
 
-Last time, we saw
+1. What is a model (formal definition)?
+1. Evaluating models (risk/loss functions)
+1. Decomposing risk (bias, variance, irreducible error)
 
-$R_n(\widehat{f}) = E[(Y-\widehat{f}(X))^2]$
+## What is a model?
+
+A model is a set of distributions that explain data $\{ Z = (X, Y) \}$, i.e.
+
+$$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
+
+. . .
+
+[(Why do we have to specify that $f$ is smooth? Why can't it be any function?)]{.secondary} \
+
+. . .
+
+### Goal of learning
+
+Choose the $P \in \mathcal P$ that makes the "best" predictions on new $X, Y$ pairs.
+
+[(Next slide: how do we formalize "best"?)]{.secondary}
 
 
-prediction risk  =  $\textrm{bias}^2$  +  variance  +  irreducible error 
+## How do we evaluate models?
+
+$$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
+
+::: {.incremental}
+1. Specify how a $P \in \mathcal P$ makes **predictions** on new inputs $\hat Y$. \
+[(E.g.: $\hat Y = f(X)$ for $P = \mathcal N(f(X), \sigma^2)$.)]{.secondary}
+
+2. Introduce a **loss** function $\ell(Y, \hat{Y})$ (a datapoint-level function). \
+[(E.g.: $\ell(Y, \hat Y) = (Y - \hat Y)^2$)]{.secondary}
+
+3. Define the **risk** of $P \in \mathcal P$ as the expected loss (a population-level function): \
+[(R_n(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2])]{.secondary}
+
+4. The **best** model is the one that minimizes the risk. \
+[($P^* = \argmin_{P \in \mathcal P} R_n(P)$)]{.secondary}
+:::
 
 
-We argued that we want procedures that produce $\widehat{f}$ with small $R_n$.
+---
+
+Last time: when $\ell(Y, \hat Y) = (Y - \hat Y)^2$, we showed that the **regression function** is the best model:
+
+. . .
+
+$$
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} R_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+$$
+
+. . .
+
+[Are we done? Have we solved learning?]{.secondary}
+
+. . .
+
+No! We don't know what $E[Y \mid X]$ is! We have to *estimate it from data!*
+
+$$
+\hat f(X) \approx E[Y \mid X]
+$$
+
+(We'll discuss various methods for producing $\hat f(X)$ estimators throughout this course.)
 
 
-> How do we estimate $R_n$?
+## Decomposing risk
+
+When $\ell(Y, \hat Y) = (Y - \hat Y)^2$, the prediction risk of $\hat f(X)$ decomposes into two factors:
+
+$$
+R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{(1)} \quad - \quad \underbrace{E\left[ \: \left( \hat f(X) - Y\right)^2 \right]}_{(2)}
+$$
+
+::: {.incremental}
+1. **Estimation error**
+2. **Irreducible error** (or "noise")
+:::
+
+---
+
+The **estimation error term** further reduces into two components:
+
+\begin{aligned}
+\underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &= \quad \underbrace{\left( E[Y\mid X] - E \left[\hat f(X)\right] \right)^2}_{(A)} \quad \\
+&+ \quad \underbrace{E\left[ \: \left( E \left[\hat f(X)\right] -\hat f(X) \right)^2 \right]}_{(B)}
+\end{aligned}
+
+::: {.incremental}
+A.  **Bias**^2
+B.  **Variance**
+:::
+
+. . .
+
+::: callout-tip
+Analogous decompositions hold for other loss/risk functions.
+:::
+
+---
+
+```{r}
+#| fig-height: 6
+#| fig-width: 8
+#| code-fold: true
+cols = c(blue, red, green, orange)
+par(mfrow = c(2, 2), bty = "n", ann = FALSE, xaxt = "n", yaxt = "n", 
+    family = "serif", mar = c(0, 0, 0, 0), oma = c(0, 2, 2, 0))
+library(mvtnorm)
+mv <- matrix(c(0, 0, 0, 0, -.5, -.5, -.5, -.5), 4, byrow = TRUE)
+va <- matrix(c(.02, .02, .1, .1, .02, .02, .1, .1), 4, byrow = TRUE)
+
+for (i in 1:4) {
+  plot(0, 0, ylim = c(-2, 2), xlim = c(-2, 2), pch = 19, cex = 42, 
+       col = blue, ann = FALSE, pty = "s")
+  points(0, 0, pch = 19, cex = 30, col = "white")
+  points(0, 0, pch = 19, cex = 18, col = green)
+  points(0, 0, pch = 19, cex = 6, col = orange)
+  points(rmvnorm(20, mean = mv[i, ], sigma = diag(va[i, ])), cex = 1, pch = 19)
+  switch(i,
+    "1" = {
+      mtext("low variance", 3, cex = 2)
+      mtext("low bias", 2, cex = 2)
+    },
+    "2" = mtext("high variance", 3, cex = 2),
+    "3" = mtext("high bias", 2, cex = 2)
+  )
+}
+```
+
+
+## Sources of bias and variance
+
+### What conditions give rise to a high bias estimator?
+
+::: fragment
+- Not enough covariates (small $p$)
+- Model is too simple
+- Model is _misspecified_ (doesn't accurately represent the data generating process)
+- Bad training algorithm
+:::
+
+### What conditions give rise to a high variance estimator?
+
+::: fragment
+- Not enough training samples (small $n$)
+- Model is too complicated[^1]
+- Lots of irreducible noise in training data (if my model has power to fit noise, it will)
+
+:::
+
+# How do we estimate $R_n$?
+
+\
+So far, $R_n$ has been a theoretical construct. \
+We can never know the true $R_n$ for a given $\hat f$.
+We also have to estimate it from data.
 
 
 
@@ -34,14 +180,29 @@ $$\widehat{R}_n(\widehat{f}) = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{f}(x_i))^2$$
 
 Here, the $n$ is doubly used (annoying, but simple): $n$ observations to create $\widehat{f}$ and $n$ terms in the sum.
 
-::: callout-important
-Training error is a bad estimator for $R_n(\widehat{f})$.
+::: callout-tip
+We also call $\hat R_n(\hat f)$ the **empirical risk**.
 :::
 
+. . .
 
+$\hat R_n(\hat f)$ is a bad estimator for $R_n(\widehat{f})$. \
 So we should [__never__]{.secondary} use it.
 
-## These all have the same $R^2$ and Training Error
+
+## Why is $\hat R_n$ a bad estimator of $R_n$?
+
+. . .
+
+1. It doesn't say anything about predictions on new data. \
+   [(It's a measure of how well the model fits a **fixed set** of training data.)]{.secondary}
+
+2. It can be made **arbitrarily small** by making your model more complex.
+
+
+## 1. It doesn't say anything about predictions on new data.
+
+These all have the same $R^2$ and Training Error
 
 
 ::: flex
@@ -76,7 +237,9 @@ ans %>%
 :::
 :::
 
-## Adding "junk" predictors increases $R^2$ and decreases Training Error
+## 2. It can be made **arbitrarily small** by making your model more complex.
+
+Adding "junk" predictors increases $R^2$ and decreases Training Error
 
 ```{r}
 n <- 100
@@ -111,38 +274,93 @@ You should not use `anova`
 
 or the $p$-values from the `lm` output for this purpose.
 
+. . .
+
 > These things are to determine whether those _parameters_ are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.
 
-Not the same as _"are they useful for prediction = do they help me get smaller $R_n$?"_
+In other words, they are useful for _inference problems_.
+
+This is not the same as being useful for _prediction problems_ (i.e. how to get small $R_n$).
 
 
+## Don't use training error: the formal argument
 
-## Risk of Risk
-
-While it's crummy, Training Error is an [estimator]{.secondary} of $R_n(\hat{f})$
-
-Recall, $R_n(\hat{f})$ is a _parameter_ (a property of the data distribution)
-
+Our training error $\hat R_n(\hat f)$ is an **estimator** of $R_n(\hat f)$. \
 So we can ask "is $\widehat{R}(\hat{f})$ a good estimator for $R_n(\hat{f})$?"
 
-Both are just numbers, so perhaps a good way to measure is
+## The risk of risk
+
+Let's measure the **risk** of our empirical risk estimator:
+
+::: flex
+
+::: w-50
+![](https://images.squarespace-cdn.com/content/v1/59a53195ff7c50210a2c6b8b/1510207623511-BT2MBPENJOJXZNE0SCSQ/inceptius-meme-generator-we-have-to-go-deeper-014848.jpg){fig-alt="meme"}
+:::
+
+::: w-50
+![](https://i.imgflip.com/93xy4g.jpg){fig-alt="meme" width="380px"}
+:::
+
+:::
+$$E[(R_n(\hat f) - \hat R_n(\hat f))^2]$$
+[(What is the expectation with respect to?)]{.secondary}
+
+
+## The risk of risk
+
+$$E[(R_n(\hat f) - \hat R_n(\hat f))^2]$$
+
+- $R_n(\hat f)$ only depends on training data (since $\hat f$ is derived from training data)
+- $\hat R_n(\hat f)$ also only depends on training data
+- So the expectation is with respect to our training dataset
+
+. . .
+
+As before, we can decompose our risk-risk into **bias** and **variance**
 
 $$
-E[(R_n - \widehat{R})^2] 
-= \cdots 
-= (R_n - E[\widehat{R}])^2 + \Var{\widehat{R}}
+E[(R_n - \hat R)^2] = \underbrace{E[( R_n - E[\hat R_n])^2]}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
 $$
 
-Choices you make determine how good this is.
+## Formalizing why $\hat R_n$ is a bad estimator of $R_n$
 
-We can try to balance it's bias and variance...
+Recall that $\hat R_n(\hat f)$ is estimated from the training data $\{ (X_i, Y_i) \}_{i=1}^n$.
 
-# Things you can use.
+Consider an alternative estimator built from $\{ (X_j, Y_j) \}_{j=1}^m$ that was not part of the training set.
+$$\tilde R_m = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat Y_j(X_j)),
+$$
+
+### Which has higher bias, $\hat R_n$ or $\tilde R_m$?
+
+::: fragment
+- $\tilde R_m$ has _zero_ bias.
+  - (X_j, Y_j) are i.i.d. samples from the population
+- $\tilde R_n$ is _very_ biased.
+  - (X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose $\hat f$
+  - Using them to both choose $\hat f$ and estimate $R_n$ is "double dipping."
+:::
 
 
-## Held out sets
 
-One option is to have a separate "held out" or "validation set".
+
+# How to properly estimate $R_n$
+
+
+## Holdout sets
+
+One option is to have a separate "holdout" or "validation" dataset.
+
+::: callout-tip
+This option follows the logic on the previous slide. \
+If we randomly "hold out" $\{ (X_j, Y_j) \}_{j=1}^m$ from the training set,
+then we can use this data to get an (nearly) unbiased estimator of $R_n$.
+$$
+R_n(\hat f) \approx \tilde R_m \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
+$$
+:::
+
+. . .
 
 
 👍 Estimates the test error
@@ -153,7 +371,7 @@ One option is to have a separate "held out" or "validation set".
 
 🤮 Estimate has high variance (depends on 1 choice of split)
 
-🤮 Estimate has some bias because we only used some of the data
+🤮 Estimate has a little bias (because we aren't estimating $\hat f$ from all of the training data)
 
 
 ## Aside {background-color="#97D4E9"}
@@ -165,60 +383,62 @@ I think these are not quite the same as in Statistics.
 * [Test data]{.secondary} - Hypothetical data you don't get to see, ever. Infinite amounts drawn from the population.
     * _Expected test error_ or _Risk_ is an expected value over this distribution. It's _not_ a sum over some data kept aside.
 * Sometimes I'll give you "test data". You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.
-* [Training data]{.secondary} - This is data that you get to touch.
+* [Training data]{.secondary} - This is "holdout" data that you get to touch.
 * [Validation set]{.secondary} - Often, we need to _choose models_. One way to do this is to split off some of your training data and pretend that it's like a "Test Set".
 
 When and how you split your training data can be very important. 
 
 
 
-## Intuition for CV
+## Cross Validation
 
-
+<!--
 One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
 
 "Validation set" fixes this, but holds out a particular, fixed block of data we pretend mimics the "test data"
+-->
+
+Our validation error $\tilde{R}_m(\widehat{f})$ is a random estimator.\
+[(The split we use to divide our data into training versus validation is random.)]{.secondary}
 
 . . .
 
-What if we set aside one observation, say the first one $(y_1, x_1)$.
+\
+A random estimator has _variance_.
+We can reduce this variance by averageing over multiple splits.
 
-We estimate $\widehat{f}^{(1)}$ without using the first observation.
 
-Then we test our prediction:
+## Cross Validation Example
+
+What if we set aside one observation, say the first one $(y_1, x_1)$:
+
+- We estimate $\widehat{f}^{(1)}$ without using the first observation.
+- We estimate $\widetilde{R}_1(\widehat{f}^{(1)})$ using the held-out first observation.
 
 $$\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.$$
-
-
-(why the notation $\widetilde{R}_1$? Because we're estimating the risk with 1 observation. )
+[(Why the notation $\widetilde{R}_1$? Because we're estimating the risk with 1 observation. )]{.secondary}
 
 ---
 
-## Keep going
-
 But that was only one data point $(y_1, x_1)$. Why stop there?
 
-Do the same with $(y_2, x_2)$! Get an estimate $\widehat{f}^{(2)}$ 
-without using it, then
+Do the same with $(y_2, x_2)$!
 
 $$\widetilde{R}_1(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.$$
-
 We can keep doing this until we try it for every data point.
-
-And then average them! (Averages are good)
-
-
-$$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n 
-(y_i - \widehat{f}^{(i)}(x_i))^2$$
 
 . . .
 
+$$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n 
+(y_i - \widehat{f}^{(i)}(x_i))^2$$
 This is [__leave-one-out cross validation__]{.secondary}
 
 
 ## Problems with LOO-CV
 
+<!--
 🤮 Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
+-->
 
 🤮 The training sets overlap. This is bad. 
 
@@ -326,32 +546,20 @@ kfold_cv(somedata, est, pred, error_fun, 5)
 
 ## Trick
 
-__For a certain "nice" models__, one can show 
+__For certain "nice" models__ of the form
+$$\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}$$
+for some vector $h_i$, one can show 
 
-(after pages of tedious algebra which I wouldn't wish on my worst enemy, but might, in a fit of rage assign as homework to belligerent students) 
+$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.$$
+(Proof: tedious algebra which I wouldn't wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.) 
 
-
-$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-h_{ii})^2}.$$
+. . .
 
 * This trick means that you only have to fit the model once rather than $n$ times!
 
-* You still have to calculate this for each model!
-
 ```{r}
 cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
 ```
-
-## Trick
-
-```{r}
-cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
-```
-
-
-"Nice" requires:
-
-1. $\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}$ for some vector $h_i$
-2. $e^{(i)} = \frac{\widehat{e}_i}{(1-h_{ii})}$
 
 
 # Next time...

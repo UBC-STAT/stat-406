@@ -8,6 +8,92 @@ metadata-files:
 {{< include _titleslide.qmd >}}
 
 
+## LOO-CV
+
+- Train $\hat f$ on all but one data point, estimate $R_n(\hat f)$ on the left-out point.
+- Repeat this process for all $n$ data points
+- Requires training $n$ models 🤮
+
+
+### A magic formula for some models
+
+__For certain "nice" models__ of the form $\widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y}$ (for some vector $h_i$), we get a closed form expression.
+
+$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.$$
+
+- Numerator is the _squared residual_ (loss) for training point $i$.
+- Denominator weights each residual by some factor (more on that in a bit...)
+
+
+## LOO-CV
+
+$$
+\text{When } \widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y},
+\qquad
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}
+$$
+
+Collecting all the terms into matrices and vectors
+
+- $\hat{\mathbf y} = \begin{bmatrix} \hat y_1 & \cdots & \hat y_n \end{bmatrix}^\top \in \mathbb R^{n}$
+- ${\mathbf y} = \begin{bmatrix} y_1 & \cdots & y_n \end{bmatrix}^\top \in \mathbb R^{n}$
+- $\mathbf H = \begin{bmatrix} \mathbf h_1(\boldsymbol x_1) & \cdots & \mathbf h_n(\mathbf x_n) \end{bmatrix}^\top \in \mathbb R^{n \times n}$
+
+We have
+
+$$
+\hat{\mathbf y} = \mathbf H \mathbf y,
+\qquad
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
+$$
+
+## What happens when we can't use the magic formula?
+(And can we get a better intuition about what's going on?)
+
+$$
+\hat{\mathbf y} = \mathbf H \mathbf y,
+\qquad
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
+$$
+
+### What do we know about $h_{ii}$?
+
+Writing out the $\mathbf H$ matrix for ordinary least squares (OLS) regression...
+$$ \hat Y = X \hat \beta, \qquad \beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y $$
+
+::: fragment
+This implies that $\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top$\
+
+- The diagonals $h_{ii}$ are called **hat values**.
+- $\mathbf H$ has lots of nice properties.\
+- The most important (for us) is that $\tr{\mathbf H} = p$. (Why?)
+:::
+
+---
+
+### Generalizing the magic formula
+
+Let's call $\tr{\mathbf H} = p$ the _degrees-of-freedom_ (or just _df_) of our OLS estimator.\
+[(Intuition: we have $p$ parameters to fit, or $p$ "degrees of freedom")]{.secondary}
+
+\
+**Idea:** in our LOO-CV formula, approximate each $h_{ii}$ with $\frac 1 n \sum_{i=1}^n h_{ii}$.\
+\
+Then...
+
+$$
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} \approx \frac{\text{MSE}}{(1-\text{df}/n)^2} \triangleq \text{GCV}
+$$
+
+. . .
+
+::: small
+- Replacing $h_{ii}$ with $\frac 1 n \sum_{i=1}^n h_{ii}$ gives us a common denominator which we can pull out of the sum.
+- Denominator: $1 - \frac 1 n \sum_{i=1}^n h_{ii} = 1 - \frac 1 n \tr{\mathbf H} = 1 - \frac p n = 1 - \frac{\text{df}}{n}$
+- We are left with the average of the numerators, which is the training set MSE.
+:::
+
+<!--
 ## Generalized CV
 
 Last time we saw a nice trick, that works some of the time (OLS, Ridge regression,...)
@@ -18,7 +104,6 @@ $$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{i
 2. A technical thing.
 
 $$\newcommand{\H}{\mathbf{H}}$$
-
 
 ## This is another nice trick.
 
@@ -47,22 +132,38 @@ GCV uses $\textrm{tr}(\mathbf{H})$.
 For `lm()`, this is just `p`, the number of predictors (Why?)
 
 This is one way of understanding the name _degrees-of-freedom_
+-->
 
+
+## Generalized CV
+
+$$\textrm{GCV} = \frac{\textrm{MSE}}{(1-\textrm{df}/n)^2}$$
+
+We can use this formula for models that aren't of the form $\widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y}$.\
+(Assuming we have some model-specific formula for estimating $\textrm{df}$.)
+
+. . .
+
+### Observations
+
+- GCV > training error (Why?)
+- What happens as $n$ increases?
+- What happens as $\text{df}$ ($p$ in our OLS model) increases?
 
 
 ## Alternative interpretation:
 
+Let's go back to our linear model $\mathbf{Y} = \mathbf{X}\beta + \epsilon$,
+with $\epsilon \sim \mathcal N(0, \sigma^2)$. \
+(Define $\boldsymbol \mu = \Expect{\boldsymbol Y \mid \boldsymbol X} = \boldsymbol X \beta$ )
 
-Suppose, $Y_i$ is independent from some distribution with mean $\mu_i$ and variance $\sigma^2$
-
-(remember: in the linear model $\Expect{Y_i} = x_i^\top \beta = \mu_i$ )
-
-Let $\widehat{\mathbf{Y}}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements of the vector).
+Let $\widehat{\mathbf{Y}}$ be the estimator of $\boldsymbol \mu$ we get from OLS.
+What is the risk of $\widehat{\mathbf{Y}}$?
 
 . . .
 
 \begin{aligned}
-& \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
+& R_n(\widehat{\mathbf{Y}}) = \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
 &= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
 &= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
 &= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)} = \cdots =\\
@@ -72,22 +173,51 @@ Let $\widehat{\mathbf{Y}}$ be an estimator of $\mu$ (all $i=1,\ldots,n$ elements
 
 ## Alternative interpretation:
 
-$$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} = \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}$$
+$$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
+\underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{(1)} -
+\underbrace{\sigma^2}_{(2)} +
+\underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{(3)}
+$$
 
-Now, if $\widehat{\mathbf{Y}} = \H \mathbf{Y}$ for some matrix $\H$,
+. . .
 
-$\sum\Cov{Y_i}{\widehat Y_i} = \Expect{\mathbf{Y}^\top \H \mathbf{Y}} = \sigma^2 \textrm{tr}(\H)$
+1. Training MSE
+2. Observational noise / irreducible error (recall $\eps \sim \mathcal{N}(0, \sigma^2)$).
+3. ???
+
+## Alternative interpretation:
+
+$$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
+\underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{\text{training error}} -
+\underbrace{\sigma^2}_{\text{irr. error}} +
+\underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{\text{???}}
+$$
+
+Recall that $\widehat{\mathbf{Y}} = \mathbf H \mathbf{Y}$ for some matrix $\mathbf H$,
+
+$\sum\Cov{Y_i}{\widehat Y_i} = \Expect{\mathbf{Y}^\top \mathbf H \mathbf{Y}} = \sigma^2 \textrm{tr}(\mathbf H)$
 
 
 This gives _Mallow's $C_p$_ aka _Stein's Unbiased Risk Estimator_:
 
-$MSE + 2\hat{\sigma}^2\textrm{df}/n$
+$$ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n $$
+
+## Mallow's $C_p$
+
+$$ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n $$
+(We derived it for the OLS model, but again it can be generalized to other models.)
 
 ::: callout-important
-Unfortunately, df may be difficult or impossible to calculate for complicated
+Unfortunately, $\text{df}$ may be difficult or impossible to calculate for complicated
 prediction methods. But one can often estimate it well. This idea is beyond
 the level of this course.
 :::
+
+### Observations
+- $C_p$ > training error
+- What happens as $n$ increases?
+- What happens as $\text{df}$ ($p$ in our OLS model) increases?
+- What happens as the irreducible noise increase?
 
 
 ## AIC and BIC
