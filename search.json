@@ -3888,8 +3888,8 @@
     "objectID": "schedule/slides/05-estimating-test-mse.html#section",
     "href": "schedule/slides/05-estimating-test-mse.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "05 Estimating (Test) Risk",
-    "text": "05 Estimating (Test) Risk\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 18 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "05 Estimating (Test) MSE",
+    "text": "05 Estimating (Test) MSE\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 19 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#last-time",
@@ -3903,35 +3903,42 @@
     "href": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
     "title": "UBC Stat406 2024W",
     "section": "What is a model?",
-    "text": "What is a model?\nA model is a set of distributions that explain data \\(\\{ Z = (X, Y) \\}\\), i.e.\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\n(Why do we have to specify that \\(f\\) is smooth? Why can’t it be any function?)\n\n\n\nGoal of learning\nChoose the \\(P \\in \\mathcal P\\) that makes the “best” predictions on new \\(X, Y\\) pairs.\n(Next slide: how do we formalize “best”?)"
+    "text": "What is a model?\nA model is a set of distributions that explain data \\(\\{ Z = (X, Y) \\}\\), i.e.\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n(Why do we have to specify that \\(f\\) is smooth? Why can’t it be any function?)\n\nGoal of learning\nChoose the \\(P \\in \\mathcal P\\) that makes the “best” predictions on new \\(X, Y\\) pairs.\n(Next slide: how do we formalize “best”?)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
     "href": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
     "title": "UBC Stat406 2024W",
     "section": "How do we evaluate models?",
-    "text": "How do we evaluate models?\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\n\nSpecify how a \\(P \\in \\mathcal P\\) makes predictions on new inputs \\(\\hat Y\\).\n(E.g.: \\(\\hat Y = f(X)\\) for \\(P = \\mathcal N(f(X), \\sigma^2)\\).)\nIntroduce a loss function \\(\\ell(Y, \\hat{Y})\\) (a datapoint-level function).\n(E.g.: \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\))\nDefine the risk of \\(P \\in \\mathcal P\\) as the expected loss (a population-level function):\n(R_n(P) = E[(Y, Y)] = E[(Y - f(X))^2])\nThe best model is the one that minimizes the risk.\n(\\(P^* = \\argmin_{P \\in \\mathcal P} R_n(P)\\))"
+    "text": "How do we evaluate models?\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\nSpecify how a \\(P \\in \\mathcal P\\) makes predictions on new inputs \\(\\hat Y\\).\n(E.g.: \\(\\hat Y = f(X)\\) for \\(P = \\mathcal N(f(X), \\sigma^2)\\).)\nIntroduce a loss function \\(\\ell(Y, \\hat{Y})\\) (a datapoint-level function).\n(E.g.: \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\))\nDefine the test error of \\(P \\in \\mathcal P\\) as the expected loss (a population-level function):\n(P) = E[(Y, Y)] = E[(Y - f(X))^2]\nThe best model is the one that minimizes the test error\n(\\(P^* = \\argmin_{P \\in \\mathcal P} R_n(P)\\))"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#decomposing-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#decomposing-risk",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
     "title": "UBC Stat406 2024W",
-    "section": "Decomposing risk",
-    "text": "Decomposing risk\nWhen \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\), the prediction risk of \\(\\hat f(X)\\) decomposes into two factors:\n\\[\nR_n(\\hat f) \\quad = \\quad \\underbrace{E\\left[ \\: \\left( E[Y\\mid X] -\\hat f(X) \\right)^2 \\right]}_{(1)} \\quad - \\quad \\underbrace{E\\left[ \\: \\left( \\hat f(X) - Y\\right)^2 \\right]}_{(2)}\n\\]\n\n\nEstimation error\nIrreducible error (or “noise”)"
+    "section": "Risk (Expected Test Error) and its Decomposition",
+    "text": "Risk (Expected Test Error) and its Decomposition\nOur estimator \\(\\hat f\\) is a random variable (it depends on training sample).\nSo let’s consider the risk (the expected test error):\n\\[\nR_n = E_{\\hat f} \\left[ \\text{Err.}(\\hat f) \\right] = E_{\\hat f, X, Y} \\left[ \\ell(Y, \\hat f(X)) \\right]\n\\]\n\n\n\n\n\n\n\nNote\n\n\nTest error is a metric for a fixed \\(\\hat f\\). It averages over all possible test points, but assumes a fixed training set.\nRisk averages over everything that is random: (1) the test data point sampled from our population, and (2) the training data that produces \\(\\hat f\\)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk (Expected Test Error) and its Decomposition",
+    "text": "Risk (Expected Test Error) and its Decomposition\nWhen \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\), the prediction risk of \\(\\hat f(X)\\) decomposes into two factors:\n\\[\nR_n \\quad = \\quad \\underbrace{E_{\\hat f, X, Y} \\left[ \\: \\left( E[Y\\mid X] - \\hat f(X) \\right)^2 \\right]}_{(1)} \\quad + \\quad \\underbrace{E_{X, Y} \\left[ \\: \\left( Y - E[Y\\mid X] \\right)^2 \\right]}_{(2)}\n\\]\n\n\nEstimation error (or “reducible error”)\nIrreducible error (or “noise”)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
     "href": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
     "title": "UBC Stat406 2024W",
     "section": "Sources of bias and variance",
-    "text": "Sources of bias and variance\nWhat conditions give rise to a high bias estimator?\n\n\nNot enough covariates (small \\(p\\))\nModel is too simple\nModel is misspecified (doesn’t accurately represent the data generating process)\nBad training algorithm\n\n\nWhat conditions give rise to a high variance estimator?\n\n\nNot enough training samples (small \\(n\\))\nModel is too complicated[^1]\nLots of irreducible noise in training data (if my model has power to fit noise, it will)"
+    "text": "Sources of bias and variance\nWhat conditions give rise to a high bias estimator?\n\n\nNot enough covariates (small \\(p\\))\nModel is too simple\nModel is misspecified (doesn’t accurately represent the data generating process)\nBad training algorithm\n\n\nWhat conditions give rise to a high variance estimator?\n\n\nNot enough training samples (small \\(n\\))\nModel is too complicated\nLots of irreducible noise in training data (if my model has power to fit noise, it will)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
     "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
     "title": "UBC Stat406 2024W",
     "section": "Don’t use training error",
-    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nTip\n\n\nWe also call \\(\\hat R_n(\\hat f)\\) the empirical risk.\n\n\n\n\n\\(\\hat R_n(\\hat f)\\) is a bad estimator for \\(R_n(\\widehat{f})\\).\nSo we should never use it."
+    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nTip\n\n\nWe also call \\(\\hat R_n(\\hat f)\\) the empirical risk.\n\n\n\n\n\\(\\hat R_n(\\hat f)\\) is a bad estimator for \\(R_n\\).\nSo we should never use it."
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
@@ -3966,35 +3973,49 @@
     "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
     "title": "UBC Stat406 2024W",
     "section": "Don’t use training error: the formal argument",
-    "text": "Don’t use training error: the formal argument\nOur training error \\(\\hat R_n(\\hat f)\\) is an estimator of \\(R_n(\\hat f)\\).\nSo we can ask “is \\(\\widehat{R}(\\hat{f})\\) a good estimator for \\(R_n(\\hat{f})\\)?”"
+    "text": "Don’t use training error: the formal argument\nOur training error \\(\\hat R_n(\\hat f)\\) is an estimator of \\(R_n\\).\nSo we can ask “is \\(\\widehat{R}_n(\\hat{f})\\) a good estimator for \\(R_n\\)?”"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
     "title": "UBC Stat406 2024W",
-    "section": "The risk of risk",
-    "text": "The risk of risk\nLet’s measure the risk of our empirical risk estimator:\n\n\n\n\n\n\n\n\n\\[E[(R_n(\\hat f) - \\hat R_n(\\hat f))^2]\\] (What is the expectation with respect to?)"
+    "section": "The error of our risk estimator",
+    "text": "The error of our risk estimator\nLet’s measure the error of our empirical risk estimator:\n\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\] (What is the expectation with respect to?)"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#the-risk-of-risk-1",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
     "title": "UBC Stat406 2024W",
-    "section": "The risk of risk",
-    "text": "The risk of risk\n\\[E[(R_n(\\hat f) - \\hat R_n(\\hat f))^2]\\]\n\n\\(R_n(\\hat f)\\) only depends on training data (since \\(\\hat f\\) is derived from training data)\n\\(\\hat R_n(\\hat f)\\) also only depends on training data\nSo the expectation is with respect to our training dataset\n\n\nAs before, we can decompose our risk-risk into bias and variance\n\\[\nE[(R_n - \\hat R)^2] = \\underbrace{E[( R_n - E[\\hat R_n])^2]}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]"
+    "section": "The error of our risk estimator",
+    "text": "The error of our risk estimator\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\]\n\n\\(R_n\\) is deterministic (we average over test data and training data)\n\\(\\hat R_n(\\hat f)\\) also only depends on training data\nSo the expectation is with respect to our training dataset\n\n\nAs before, we can decompose the error of our risk estimator into bias and variance\n\\[\nE[(R_n - \\hat R_n(\\hat f))^2] = \\underbrace{( R_n - E[\\hat R_n(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n(\\hat f) - E[\\hat R_n(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?"
   },
   {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n",
-    "href": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
     "title": "UBC Stat406 2024W",
-    "section": "Formalizing why \\(\\hat R_n\\) is a bad estimator of \\(R_n\\)",
-    "text": "Formalizing why \\(\\hat R_n\\) is a bad estimator of \\(R_n\\)\nRecall that \\(\\hat R_n(\\hat f)\\) is estimated from the training data \\(\\{ (X_i, Y_i) \\}_{i=1}^n\\).\nConsider an alternative estimator built from \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) that was not part of the training set. \\[\\tilde R_m = {\\textstyle \\frac{1}{m} \\sum_{j=1}^m} \\ell(Y_j, \\hat Y_j(X_j)),\n\\]\nWhich has higher bias, \\(\\hat R_n\\) or \\(\\tilde R_m\\)?\n\n\n\\(\\tilde R_m\\) has zero bias.\n\n(X_j, Y_j) are i.i.d. samples from the population\n\n\\(\\tilde R_n\\) is very biased.\n\n(X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose \\(\\hat f\\)\nUsing them to both choose \\(\\hat f\\) and estimate \\(R_n\\) is “double dipping.”"
+    "section": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?",
+    "text": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?\n\nAssume we have a very complex model capable of (nearly) fitting our training data\n\nI.e. \\(\\hat R_n(\\hat f) \\approx 0\\)\n\n\\(\\text{Bias} = ( R_n - E[\\hat R_n(\\hat f)])^2 \\approx ( R_n - 0 ) = R_n\\)\n(That’s the worst bias we could get! 😔)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
+    "href": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
+    "title": "UBC Stat406 2024W",
+    "section": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)",
+    "text": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)\nConsider an alternative estimator built from \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) that was not part of the training set. \\[\\tilde R_m(\\hat f) = {\\textstyle \\frac{1}{m} \\sum_{j=1}^m} \\ell(Y_j, \\hat f(X_j)),\n\\] The error of this estimator can also be decompsed into bias and variance \\[\nE[(R_n - \\tilde R_m(\\hat f))^2] = \\underbrace{( R_n - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E_{\\hat f,X_j,Y_j}[( \\tilde R_m(\\hat f) - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?",
+    "text": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?\n\\(\\tilde R_m(\\hat f)\\) has zero bias!\n\\[\n\\begin{aligned}\nE_{\\hat f,X_j,Y_j} \\left[ \\tilde R_m(\\hat f) \\right]\n&= E_{\\hat f,X_j,Y_j} \\left[ \\frac{1}{m} \\sum_{j=1}^m \\ell(Y_j, \\hat f(X_j)) \\right] \\\\\n&= \\frac{1}{m} \\sum_{j=1}^m E_{\\hat f,X_j,Y_j} \\left[ \\ell(Y_j, \\hat f(X_j)) \\right]\n= R_n\n\\end{aligned}\n\\]"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
     "href": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
     "title": "UBC Stat406 2024W",
     "section": "Holdout sets",
-    "text": "Holdout sets\nOne option is to have a separate “holdout” or “validation” dataset.\n\n\n\n\n\n\nTip\n\n\nThis option follows the logic on the previous slide.\nIf we randomly “hold out” \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) from the training set, then we can use this data to get an (nearly) unbiased estimator of \\(R_n\\). \\[\nR_n(\\hat f) \\approx \\tilde R_m \\triangleq {\\textstyle{\\frac 1 m \\sum_{j=1}^m \\ell ( Y_j - \\hat Y_j(X_j))}}\n\\]\n\n\n\n\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has a little bias (because we aren’t estimating \\(\\hat f\\) from all of the training data)"
+    "text": "Holdout sets\nOne option is to have a separate “holdout” or “validation” dataset.\n\n\n\n\n\n\nTip\n\n\nThis option follows the logic on the previous slide.\nIf we randomly “hold out” \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) from the training set, we can use this data to get an (nearly) unbiased estimator of \\(R_n\\). \\[\nR_n \\approx \\tilde R_m(\\hat f) \\triangleq {\\textstyle{\\frac 1 m \\sum_{j=1}^m \\ell ( Y_j - \\hat Y_j(X_j))}}\n\\]\n\n\n\n\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has a little bias (because we aren’t estimating \\(\\hat f\\) from all of the training data)"
   },
   {
     "objectID": "schedule/slides/05-estimating-test-mse.html#aside",

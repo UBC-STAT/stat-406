@@ -395,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>05 Estimating (Test) Risk</h2>
+<h2>05 Estimating (Test) MSE</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 18 September 2024</p>
+<p>Last modified – 19 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -441,41 +441,33 @@
 <h2>What is a model?</h2>
 <p>A model is a set of distributions that explain data <span class="math inline">\(\{ Z = (X, Y) \}\)</span>, i.e.</p>
 <p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
-<div class="fragment">
 <p><span class="secondary">(Why do we have to specify that <span class="math inline">\(f\)</span> is smooth? Why can’t it be any function?)</span><br>
 </p>
-</div>
-<div class="fragment">
 <h3 id="goal-of-learning">Goal of learning</h3>
 <p>Choose the <span class="math inline">\(P \in \mathcal P\)</span> that makes the “best” predictions on new <span class="math inline">\(X, Y\)</span> pairs.</p>
 <p><span class="secondary">(Next slide: how do we formalize “best”?)</span></p>
-</div>
 </section>
 <section id="how-do-we-evaluate-models" class="slide level2">
 <h2>How do we evaluate models?</h2>
 <p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
-<div>
 <ol type="1">
-<li class="fragment"><p>Specify how a <span class="math inline">\(P \in \mathcal P\)</span> makes <strong>predictions</strong> on new inputs <span class="math inline">\(\hat Y\)</span>.<br>
+<li><p>Specify how a <span class="math inline">\(P \in \mathcal P\)</span> makes <strong>predictions</strong> on new inputs <span class="math inline">\(\hat Y\)</span>.<br>
 <span class="secondary">(E.g.: <span class="math inline">\(\hat Y = f(X)\)</span> for <span class="math inline">\(P = \mathcal N(f(X), \sigma^2)\)</span>.)</span></p></li>
-<li class="fragment"><p>Introduce a <strong>loss</strong> function <span class="math inline">\(\ell(Y, \hat{Y})\)</span> (a datapoint-level function).<br>
+<li><p>Introduce a <strong>loss</strong> function <span class="math inline">\(\ell(Y, \hat{Y})\)</span> (a datapoint-level function).<br>
 <span class="secondary">(E.g.: <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>)</span></p></li>
-<li class="fragment"><p>Define the <strong>risk</strong> of <span class="math inline">\(P \in \mathcal P\)</span> as the expected loss (a population-level function):<br>
-<span class="secondary">(R_n(P) = E[(Y, Y)] = E[(Y - f(X))^2])</span></p></li>
-<li class="fragment"><p>The <strong>best</strong> model is the one that minimizes the risk.<br>
+<li><p>Define the <strong>test error</strong> of <span class="math inline">\(P \in \mathcal P\)</span> as the expected loss (a population-level function):<br>
+<span class="secondary">(P) = E[(Y, Y)] = E[(Y - f(X))^2]</span></p></li>
+<li><p>The <strong>best</strong> model is the one that minimizes the test error<br>
 <span class="secondary">(<span class="math inline">\(P^* = \argmin_{P \in \mathcal P} R_n(P)\)</span>)</span></p></li>
 </ol>
-</div>
 </section>
 <section class="slide level2">
 
 <p>Last time: when <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>, we showed that the <strong>regression function</strong> is the best model:</p>
 <div class="fragment">
 <p><span class="math display">\[
-\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} R_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} \text{Err}(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
 \]</span></p>
-</div>
-<div class="fragment">
 <p><span class="secondary">Are we done? Have we solved learning?</span></p>
 </div>
 <div class="fragment">
@@ -486,30 +478,56 @@
 <p>(We’ll discuss various methods for producing <span class="math inline">\(\hat f(X)\)</span> estimators throughout this course.)</p>
 </div>
 </section>
-<section id="decomposing-risk" class="slide level2">
-<h2>Decomposing risk</h2>
+<section id="risk-expected-test-error-and-its-decomposition" class="slide level2">
+<h2>Risk (Expected Test Error) and its Decomposition</h2>
+<p>Our estimator <span class="math inline">\(\hat f\)</span> is a random variable (it depends on training sample).<br>
+So let’s consider the <em>risk</em> (the <em>expected test error</em>):</p>
+<p><span class="math display">\[
+R_n = E_{\hat f} \left[ \text{Err.}(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
+\]</span></p>
+<div class="fragment">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<p>Test error is a metric for a fixed <span class="math inline">\(\hat f\)</span>. It averages over all possible test points, but assumes a fixed training set.</p>
+<p>Risk averages over <strong>everything</strong> that is random: (1) the test data point sampled from our population, and (2) the training data that produces <span class="math inline">\(\hat f\)</span></p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="risk-expected-test-error-and-its-decomposition-1" class="slide level2">
+<h2>Risk (Expected Test Error) and its Decomposition</h2>
 <p>When <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>, the prediction risk of <span class="math inline">\(\hat f(X)\)</span> decomposes into two factors:</p>
 <p><span class="math display">\[
-R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{(1)} \quad - \quad \underbrace{E\left[ \: \left( \hat f(X) - Y\right)^2 \right]}_{(2)}
+R_n \quad = \quad \underbrace{E_{\hat f, X, Y} \left[ \: \left( E[Y\mid X] - \hat f(X) \right)^2 \right]}_{(1)} \quad + \quad \underbrace{E_{X, Y} \left[ \: \left( Y - E[Y\mid X] \right)^2 \right]}_{(2)}
 \]</span></p>
-<div>
+<div class="fragment">
 <ol type="1">
-<li class="fragment"><strong>Estimation error</strong></li>
-<li class="fragment"><strong>Irreducible error</strong> (or “noise”)</li>
+<li><strong>Estimation error</strong> (or “reducible error”)</li>
+<li><strong>Irreducible error</strong> (or “noise”)</li>
 </ol>
 </div>
 </section>
 <section class="slide level2">
 
 <p>The <strong>estimation error term</strong> further reduces into two components:</p>
-<span class="math display">\[\begin{aligned}
-\underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &amp;= \quad \underbrace{\left( E[Y\mid X] - E \left[\hat f(X)\right] \right)^2}_{(A)} \quad \\
-&amp;+ \quad \underbrace{E\left[ \: \left( E \left[\hat f(X)\right] -\hat f(X) \right)^2 \right]}_{(B)}
-\end{aligned}\]</span>
-<div>
+<p><span class="math display">\[
+\begin{aligned}
+\underbrace{E_{\hat f, X, Y} \left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &amp;= \quad \underbrace{ E_{X, Y} \left[ \left( E[Y\mid X] - E \left[\hat f(X) \mid X\right] \right)^2 \right]}_{(A)} \quad \\
+&amp;+ \quad \underbrace{E_{\hat f, X} \left[ \: \left( E \left[\hat f(X) \mid X\right] -\hat f(X) \right)^2 \right]}_{(B)}
+\end{aligned}
+\]</span></p>
+<div class="fragment">
 <ol type="A">
-<li class="fragment"><strong>Bias</strong>^2</li>
-<li class="fragment"><strong>Variance</strong></li>
+<li><strong>Bias</strong>^2</li>
+<li><strong>Variance</strong></li>
 </ol>
 </div>
 <div class="fragment">
@@ -575,7 +593,7 @@ R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \r
 <div class="fragment">
 <ul>
 <li>Not enough training samples (small <span class="math inline">\(n\)</span>)</li>
-<li>Model is too complicated[^1]</li>
+<li>Model is too complicated</li>
 <li>Lots of irreducible noise in training data (if my model has power to fit noise, it will)</li>
 </ul>
 </div>
@@ -584,7 +602,7 @@ R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \r
 <section id="how-do-we-estimate-r_n" class="title-slide slide level1 center">
 <h1>How do we estimate <span class="math inline">\(R_n\)</span>?</h1>
 <p><br>
-So far, <span class="math inline">\(R_n\)</span> has been a theoretical construct.<br>
+<span class="math inline">\(R_n\)</span> is a theoretical construct.<br>
 We can never know the true <span class="math inline">\(R_n\)</span> for a given <span class="math inline">\(\hat f\)</span>. We also have to estimate it from data.</p>
 </section>
 <section id="dont-use-training-error" class="slide level2">
@@ -606,7 +624,7 @@ We can never know the true <span class="math inline">\(R_n\)</span> for a given 
 </div>
 </div>
 <div class="fragment">
-<p><span class="math inline">\(\hat R_n(\hat f)\)</span> is a bad estimator for <span class="math inline">\(R_n(\widehat{f})\)</span>.<br>
+<p><span class="math inline">\(\hat R_n(\hat f)\)</span> is a bad estimator for <span class="math inline">\(R_n\)</span>.<br>
 So we should <span class="secondary"><strong>never</strong></span> use it.</p>
 </div>
 </section>
@@ -621,7 +639,7 @@ So we should <span class="secondary"><strong>never</strong></span> use it.</p>
 </div>
 </section>
 <section id="it-doesnt-say-anything-about-predictions-on-new-data." class="slide level2">
-<h2>1. It doesn’t say anything about predictions on new data.</h2>
+<h2><span class="small">1. It doesn’t say anything about predictions on new data.</span></h2>
 <p>These all have the same <span class="math inline">\(R^2\)</span> and Training Error</p>
 <div class="flex">
 <div class="w-50">
@@ -736,56 +754,73 @@ So we should <span class="secondary"><strong>never</strong></span> use it.</p>
 </section>
 <section id="dont-use-training-error-the-formal-argument" class="slide level2">
 <h2>Don’t use training error: the formal argument</h2>
-<p>Our training error <span class="math inline">\(\hat R_n(\hat f)\)</span> is an <strong>estimator</strong> of <span class="math inline">\(R_n(\hat f)\)</span>.<br>
-So we can ask “is <span class="math inline">\(\widehat{R}(\hat{f})\)</span> a good estimator for <span class="math inline">\(R_n(\hat{f})\)</span>?”</p>
+<p>Our training error <span class="math inline">\(\hat R_n(\hat f)\)</span> is an <strong>estimator</strong> of <span class="math inline">\(R_n\)</span>.</p>
+<p>So we can ask “is <span class="math inline">\(\widehat{R}_n(\hat{f})\)</span> a good estimator for <span class="math inline">\(R_n\)</span>?”</p>
 </section>
-<section id="the-risk-of-risk" class="slide level2">
-<h2>The risk of risk</h2>
-<p>Let’s measure the <strong>risk</strong> of our empirical risk estimator:</p>
-<div class="flex">
-<div class="w-50">
-<p><img data-src="https://images.squarespace-cdn.com/content/v1/59a53195ff7c50210a2c6b8b/1510207623511-BT2MBPENJOJXZNE0SCSQ/inceptius-meme-generator-we-have-to-go-deeper-014848.jpg" alt="meme"></p>
-</div>
-<div class="w-50">
-<p><img data-src="https://i.imgflip.com/93xy4g.jpg" alt="meme" width="380"></p>
-</div>
-</div>
-<p><span class="math display">\[E[(R_n(\hat f) - \hat R_n(\hat f))^2]\]</span> <span class="secondary">(What is the expectation with respect to?)</span></p>
+<section id="the-error-of-our-risk-estimator" class="slide level2">
+<h2>The error of our risk estimator</h2>
+<p>Let’s measure the <strong>error</strong> of our empirical risk estimator:</p>
+<!--
+::: flex
+
+::: w-50
+![](https://images.squarespace-cdn.com/content/v1/59a53195ff7c50210a2c6b8b/1510207623511-BT2MBPENJOJXZNE0SCSQ/inceptius-meme-generator-we-have-to-go-deeper-014848.jpg){fig-alt="meme"}
+:::
+
+::: w-50
+![](https://i.imgflip.com/93xy4g.jpg){fig-alt="meme" width="380px"}
+:::
+
+:::
+-->
+<p><span class="math display">\[E[(R_n - \hat R_n(\hat f))^2]\]</span> <span class="secondary">(What is the expectation with respect to?)</span></p>
 </section>
-<section id="the-risk-of-risk-1" class="slide level2">
-<h2>The risk of risk</h2>
-<p><span class="math display">\[E[(R_n(\hat f) - \hat R_n(\hat f))^2]\]</span></p>
+<section id="the-error-of-our-risk-estimator-1" class="slide level2">
+<h2>The error of our risk estimator</h2>
+<p><span class="math display">\[E[(R_n - \hat R_n(\hat f))^2]\]</span></p>
 <ul>
-<li><span class="math inline">\(R_n(\hat f)\)</span> only depends on training data (since <span class="math inline">\(\hat f\)</span> is derived from training data)</li>
+<li><span class="math inline">\(R_n\)</span> is deterministic (we average over test data and training data)</li>
 <li><span class="math inline">\(\hat R_n(\hat f)\)</span> also only depends on training data</li>
 <li>So the expectation is with respect to our training dataset</li>
 </ul>
 <div class="fragment">
-<p>As before, we can decompose our risk-risk into <strong>bias</strong> and <strong>variance</strong></p>
+<p>As before, we can decompose the error of our risk estimator into <strong>bias</strong> and <strong>variance</strong></p>
 <p><span class="math display">\[
-E[(R_n - \hat R)^2] = \underbrace{E[( R_n - E[\hat R_n])^2]}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+E[(R_n - \hat R_n(\hat f))^2] = \underbrace{( R_n - E[\hat R_n(\hat f)])^2}_{\text{bias}} + \underbrace{E[( \hat R_n(\hat f) - E[\hat R_n(\hat f)])^2]}_{\text{variance}}
 \]</span></p>
+<h3 id="is-the-bias-of-hat-r_nhat-f-small-or-large-why">Is the bias of <span class="math inline">\(\hat R_n(\hat f)\)</span> small or large? Why?</h3>
 </div>
 </section>
-<section id="formalizing-why-hat-r_n-is-a-bad-estimator-of-r_n" class="slide level2">
-<h2>Formalizing why <span class="math inline">\(\hat R_n\)</span> is a bad estimator of <span class="math inline">\(R_n\)</span></h2>
-<p>Recall that <span class="math inline">\(\hat R_n(\hat f)\)</span> is estimated from the training data <span class="math inline">\(\{ (X_i, Y_i) \}_{i=1}^n\)</span>.</p>
-<p>Consider an alternative estimator built from <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> that was not part of the training set. <span class="math display">\[\tilde R_m = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat Y_j(X_j)),
-\]</span></p>
-<h3 id="which-has-higher-bias-hat-r_n-or-tilde-r_m">Which has higher bias, <span class="math inline">\(\hat R_n\)</span> or <span class="math inline">\(\tilde R_m\)</span>?</h3>
-<div class="fragment">
+<section id="is-the-bias-of-hat-r_nhat-f-small-or-large-why-1" class="slide level2">
+<h2>Is the bias of <span class="math inline">\(\hat R_n(\hat f)\)</span> small or large? Why?</h2>
 <ul>
-<li><span class="math inline">\(\tilde R_m\)</span> has <em>zero</em> bias.
+<li>Assume we have a very complex model capable of (nearly) fitting our training data
 <ul>
-<li>(X_j, Y_j) are i.i.d. samples from the population</li>
+<li>I.e. <span class="math inline">\(\hat R_n(\hat f) \approx 0\)</span></li>
 </ul></li>
-<li><span class="math inline">\(\tilde R_n\)</span> is <em>very</em> biased.
-<ul>
-<li>(X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose <span class="math inline">\(\hat f\)</span></li>
-<li>Using them to both choose <span class="math inline">\(\hat f\)</span> and estimate <span class="math inline">\(R_n\)</span> is “double dipping.”</li>
-</ul></li>
+<li><span class="math inline">\(\text{Bias} = ( R_n - E[\hat R_n(\hat f)])^2 \approx ( R_n - 0 ) = R_n\)</span></li>
+<li>(That’s the worst bias we could get! 😔)</li>
 </ul>
-</div>
+</section>
+<section id="formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n" class="slide level2">
+<h2>Formalizing why <span class="math inline">\(\hat R_n(\hat f)\)</span> is a bad estimator of <span class="math inline">\(R_n\)</span></h2>
+<p>Consider an alternative estimator built from <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> that was not part of the training set. <span class="math display">\[\tilde R_m(\hat f) = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat f(X_j)),
+\]</span> The error of this estimator can also be decompsed into <strong>bias</strong> and <strong>variance</strong> <span class="math display">\[
+E[(R_n - \tilde R_m(\hat f))^2] = \underbrace{( R_n - E_{\hat f,X_j,Y_j}[\tilde R_m(\hat f)])^2}_{\text{bias}} + \underbrace{E_{\hat f,X_j,Y_j}[( \tilde R_m(\hat f) - E_{\hat f,X_j,Y_j}[\tilde R_m(\hat f)])^2]}_{\text{variance}}
+\]</span></p>
+<h3 id="is-the-bias-of-tilde-r_mhat-f-small-or-large-why">Is the bias of <span class="math inline">\(\tilde R_m(\hat f)\)</span> small or large? Why?</h3>
+</section>
+<section id="is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1" class="slide level2">
+<h2>Is the bias of <span class="math inline">\(\tilde R_m(\hat f)\)</span> small or large? Why?</h2>
+<p><span class="math inline">\(\tilde R_m(\hat f)\)</span> has <em>zero</em> bias!</p>
+<p><span class="math display">\[
+\begin{aligned}
+E_{\hat f,X_j,Y_j} \left[ \tilde R_m(\hat f) \right]
+&amp;= E_{\hat f,X_j,Y_j} \left[ \frac{1}{m} \sum_{j=1}^m \ell(Y_j, \hat f(X_j)) \right] \\
+&amp;= \frac{1}{m} \sum_{j=1}^m E_{\hat f,X_j,Y_j} \left[ \ell(Y_j, \hat f(X_j)) \right]
+= R_n
+\end{aligned}
+\]</span></p>
 </section></section>
 <section>
 <section id="how-to-properly-estimate-r_n" class="title-slide slide level1 center">
@@ -805,8 +840,8 @@ E[(R_n - \hat R)^2] = \underbrace{E[( R_n - E[\hat R_n])^2]}_{\text{bias}} + \un
 </div>
 <div class="callout-content">
 <p>This option follows the logic on the previous slide.<br>
-If we randomly “hold out” <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> from the training set, then we can use this data to get an (nearly) unbiased estimator of <span class="math inline">\(R_n\)</span>. <span class="math display">\[
-R_n(\hat f) \approx \tilde R_m \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
+If we randomly “hold out” <span class="math inline">\(\{ (X_j, Y_j) \}_{j=1}^m\)</span> from the training set, we can use this data to get an (nearly) unbiased estimator of <span class="math inline">\(R_n\)</span>. <span class="math display">\[
+R_n \approx \tilde R_m(\hat f) \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
 \]</span></p>
 </div>
 </div>
