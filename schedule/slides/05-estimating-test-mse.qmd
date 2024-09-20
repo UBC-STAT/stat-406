@@ -1,5 +1,5 @@
 ---
-lecture: "05 Estimating (Test) Risk"
+lecture: "05 Estimating (Test) MSE"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -20,11 +20,9 @@ A model is a set of distributions that explain data $\{ Z = (X, Y) \}$, i.e.
 
 $$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
 
-. . .
 
 [(Why do we have to specify that $f$ is smooth? Why can't it be any function?)]{.secondary} \
 
-. . .
 
 ### Goal of learning
 
@@ -37,19 +35,17 @@ Choose the $P \in \mathcal P$ that makes the "best" predictions on new $X, Y$ pa
 
 $$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
 
-::: {.incremental}
 1. Specify how a $P \in \mathcal P$ makes **predictions** on new inputs $\hat Y$. \
 [(E.g.: $\hat Y = f(X)$ for $P = \mathcal N(f(X), \sigma^2)$.)]{.secondary}
 
 2. Introduce a **loss** function $\ell(Y, \hat{Y})$ (a datapoint-level function). \
 [(E.g.: $\ell(Y, \hat Y) = (Y - \hat Y)^2$)]{.secondary}
 
-3. Define the **risk** of $P \in \mathcal P$ as the expected loss (a population-level function): \
-[(R_n(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2])]{.secondary}
+3. Define the **test error** of $P \in \mathcal P$ as the expected loss (a population-level function): \
+[\text{Err}(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2]]{.secondary}
 
-4. The **best** model is the one that minimizes the risk. \
+4. The **best** model is the one that minimizes the test error \
 [($P^* = \argmin_{P \in \mathcal P} R_n(P)$)]{.secondary}
-:::
 
 
 ---
@@ -59,10 +55,8 @@ Last time: when $\ell(Y, \hat Y) = (Y - \hat Y)^2$, we showed that the **regress
 . . .
 
 $$
-\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} R_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} \text{Err}(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
 $$
-
-. . .
 
 [Are we done? Have we solved learning?]{.secondary}
 
@@ -77,32 +71,56 @@ $$
 (We'll discuss various methods for producing $\hat f(X)$ estimators throughout this course.)
 
 
-## Decomposing risk
+## Risk (Expected Test Error) and its Decomposition
+
+Our estimator $\hat f$ is a random variable (it depends on training sample).\
+So let's consider the _risk_ (the _expected test error_):
+
+$$
+R_n = E_{\hat f} \left[ \text{Err.}(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
+$$
+
+. . .
+
+::: callout-note
+Test error is a metric for a fixed $\hat f$.
+It averages over all possible test points, but assumes a fixed training set.
+
+Risk averages over **everything** that is random:
+(1) the test data point sampled from our population, and
+(2) the training data that produces $\hat f$
+:::
+
+
+## Risk (Expected Test Error) and its Decomposition
 
 When $\ell(Y, \hat Y) = (Y - \hat Y)^2$, the prediction risk of $\hat f(X)$ decomposes into two factors:
 
 $$
-R_n(\hat f) \quad = \quad \underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{(1)} \quad - \quad \underbrace{E\left[ \: \left( \hat f(X) - Y\right)^2 \right]}_{(2)}
+R_n \quad = \quad \underbrace{E_{\hat f, X, Y} \left[ \: \left( E[Y\mid X] - \hat f(X) \right)^2 \right]}_{(1)} \quad + \quad \underbrace{E_{X, Y} \left[ \: \left( Y - E[Y\mid X] \right)^2 \right]}_{(2)}
 $$
 
-::: {.incremental}
-1. **Estimation error**
+. . .
+
+1. **Estimation error** (or "reducible error")
 2. **Irreducible error** (or "noise")
-:::
 
 ---
 
 The **estimation error term** further reduces into two components:
 
+$$
 \begin{aligned}
-\underbrace{E\left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &= \quad \underbrace{\left( E[Y\mid X] - E \left[\hat f(X)\right] \right)^2}_{(A)} \quad \\
-&+ \quad \underbrace{E\left[ \: \left( E \left[\hat f(X)\right] -\hat f(X) \right)^2 \right]}_{(B)}
+\underbrace{E_{\hat f, X, Y} \left[ \: \left( E[Y\mid X] -\hat f(X) \right)^2 \right]}_{\text{Estimation error}} \quad &= \quad \underbrace{ E_{X, Y} \left[ \left( E[Y\mid X] - E \left[\hat f(X) \mid X\right] \right)^2 \right]}_{(A)} \quad \\
+&+ \quad \underbrace{E_{\hat f, X} \left[ \: \left( E \left[\hat f(X) \mid X\right] -\hat f(X) \right)^2 \right]}_{(B)}
 \end{aligned}
+$$
 
-::: {.incremental}
+. . .
+
 A.  **Bias**^2
 B.  **Variance**
-:::
+
 
 . . .
 
@@ -157,7 +175,7 @@ for (i in 1:4) {
 
 ::: fragment
 - Not enough training samples (small $n$)
-- Model is too complicated[^1]
+- Model is too complicated
 - Lots of irreducible noise in training data (if my model has power to fit noise, it will)
 
 :::
@@ -165,7 +183,7 @@ for (i in 1:4) {
 # How do we estimate $R_n$?
 
 \
-So far, $R_n$ has been a theoretical construct. \
+$R_n$ is a theoretical construct. \
 We can never know the true $R_n$ for a given $\hat f$.
 We also have to estimate it from data.
 
@@ -186,7 +204,7 @@ We also call $\hat R_n(\hat f)$ the **empirical risk**.
 
 . . .
 
-$\hat R_n(\hat f)$ is a bad estimator for $R_n(\widehat{f})$. \
+$\hat R_n(\hat f)$ is a bad estimator for $R_n$. \
 So we should [__never__]{.secondary} use it.
 
 
@@ -200,7 +218,7 @@ So we should [__never__]{.secondary} use it.
 2. It can be made **arbitrarily small** by making your model more complex.
 
 
-## 1. It doesn't say anything about predictions on new data.
+## [1. It doesn't say anything about predictions on new data.]{.small}
 
 These all have the same $R^2$ and Training Error
 
@@ -285,13 +303,15 @@ This is not the same as being useful for _prediction problems_ (i.e. how to get 
 
 ## Don't use training error: the formal argument
 
-Our training error $\hat R_n(\hat f)$ is an **estimator** of $R_n(\hat f)$. \
-So we can ask "is $\widehat{R}(\hat{f})$ a good estimator for $R_n(\hat{f})$?"
+Our training error $\hat R_n(\hat f)$ is an **estimator** of $R_n$.
 
-## The risk of risk
+So we can ask "is $\widehat{R}_n(\hat{f})$ a good estimator for $R_n$?"
 
-Let's measure the **risk** of our empirical risk estimator:
+## The error of our risk estimator
 
+Let's measure the **error** of our empirical risk estimator:
+
+<!--
 ::: flex
 
 ::: w-50
@@ -303,43 +323,61 @@ Let's measure the **risk** of our empirical risk estimator:
 :::
 
 :::
-$$E[(R_n(\hat f) - \hat R_n(\hat f))^2]$$
+-->
+$$E[(R_n - \hat R_n(\hat f))^2]$$
 [(What is the expectation with respect to?)]{.secondary}
 
 
-## The risk of risk
+## The error of our risk estimator
 
-$$E[(R_n(\hat f) - \hat R_n(\hat f))^2]$$
+$$E[(R_n - \hat R_n(\hat f))^2]$$
 
-- $R_n(\hat f)$ only depends on training data (since $\hat f$ is derived from training data)
+- $R_n$ is deterministic (we average over test data and training data)
 - $\hat R_n(\hat f)$ also only depends on training data
 - So the expectation is with respect to our training dataset
 
 . . .
 
-As before, we can decompose our risk-risk into **bias** and **variance**
+As before, we can decompose the error of our risk estimator into **bias** and **variance**
 
 $$
-E[(R_n - \hat R)^2] = \underbrace{E[( R_n - E[\hat R_n])^2]}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+E[(R_n - \hat R_n(\hat f))^2] = \underbrace{( R_n - E[\hat R_n(\hat f)])^2}_{\text{bias}} + \underbrace{E[( \hat R_n(\hat f) - E[\hat R_n(\hat f)])^2]}_{\text{variance}}
 $$
 
-## Formalizing why $\hat R_n$ is a bad estimator of $R_n$
+### Is the bias of $\hat R_n(\hat f)$ small or large? Why?
 
-Recall that $\hat R_n(\hat f)$ is estimated from the training data $\{ (X_i, Y_i) \}_{i=1}^n$.
+## Is the bias of $\hat R_n(\hat f)$ small or large? Why?
+
+- Assume we have a very complex model capable of (nearly) fitting our training data
+  - I.e. $\hat R_n(\hat f) \approx 0$
+- $\text{Bias} = ( R_n - E[\hat R_n(\hat f)])^2 \approx ( R_n - 0 ) = R_n$
+- (That's the worst bias we could get! 😔)
+
+
+## Formalizing why $\hat R_n(\hat f)$ is a bad estimator of $R_n$
 
 Consider an alternative estimator built from $\{ (X_j, Y_j) \}_{j=1}^m$ that was not part of the training set.
-$$\tilde R_m = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat Y_j(X_j)),
+$$\tilde R_m(\hat f) = {\textstyle \frac{1}{m} \sum_{j=1}^m} \ell(Y_j, \hat f(X_j)),
+$$
+The error of this estimator can also be decompsed into **bias** and **variance**
+$$
+E[(R_n - \tilde R_m(\hat f))^2] = \underbrace{( R_n - E_{\hat f,X_j,Y_j}[\tilde R_m(\hat f)])^2}_{\text{bias}} + \underbrace{E_{\hat f,X_j,Y_j}[( \tilde R_m(\hat f) - E_{\hat f,X_j,Y_j}[\tilde R_m(\hat f)])^2]}_{\text{variance}}
 $$
 
-### Which has higher bias, $\hat R_n$ or $\tilde R_m$?
+### Is the bias of $\tilde R_m(\hat f)$ small or large? Why?
 
-::: fragment
-- $\tilde R_m$ has _zero_ bias.
-  - (X_j, Y_j) are i.i.d. samples from the population
-- $\tilde R_n$ is _very_ biased.
-  - (X_i, Y_i) are i.i.d. samples from the population, but they are also used to choose $\hat f$
-  - Using them to both choose $\hat f$ and estimate $R_n$ is "double dipping."
-:::
+## Is the bias of $\tilde R_m(\hat f)$ small or large? Why?
+
+$\tilde R_m(\hat f)$ has _zero_ bias!
+
+$$
+\begin{aligned}
+E_{\hat f,X_j,Y_j} \left[ \tilde R_m(\hat f) \right]
+&= E_{\hat f,X_j,Y_j} \left[ \frac{1}{m} \sum_{j=1}^m \ell(Y_j, \hat f(X_j)) \right] \\
+&= \frac{1}{m} \sum_{j=1}^m E_{\hat f,X_j,Y_j} \left[ \ell(Y_j, \hat f(X_j)) \right]
+= R_n
+\end{aligned}
+$$
 
 
 
@@ -354,9 +392,9 @@ One option is to have a separate "holdout" or "validation" dataset.
 ::: callout-tip
 This option follows the logic on the previous slide. \
 If we randomly "hold out" $\{ (X_j, Y_j) \}_{j=1}^m$ from the training set,
-then we can use this data to get an (nearly) unbiased estimator of $R_n$.
+we can use this data to get an (nearly) unbiased estimator of $R_n$.
 $$
-R_n(\hat f) \approx \tilde R_m \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
+R_n \approx \tilde R_m(\hat f) \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \ell ( Y_j - \hat Y_j(X_j))}}
 $$
 :::
 
