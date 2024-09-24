@@ -42,7 +42,7 @@ By inspection $\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\
 
 For models where predictions are a **linear function** of the training responses\*,
 
-**LOO-CV has a closed-form expression!**
+**LOO-CV has a closed-form expression!** Just need to fit *once*:
 
 $$\mbox{LOO-CV} \,\, \hat R_n = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}.$$
 
@@ -234,9 +234,9 @@ These have a very similar flavor to $C_p$, but their genesis is different.
 
 Without going into too much detail, they look like
 
-$\textrm{AIC}/n = -2\textrm{loglikelihood}/n + 2\textrm{df}/n$
+$\textrm{AIC}/n = -2\textrm{log-likelihood}/n + 2\textrm{df}/n$
 
-$\textrm{BIC}/n = -2\textrm{loglikelihood}/n + 2\log(n)\textrm{df}/n$
+$\textrm{BIC}/n = -2\textrm{log-likelihood}/n + 2\log(n)\textrm{df}/n$
 
 . . .
 
@@ -265,46 +265,30 @@ Forms above are in [ESL] eq. (7.29) and (7.35). [ISLR] gives special cases in Se
 > Over-fitting means estimating a really complicated function when you don't have enough data.
 
 
-This is likely a [low-bias / high-variance]{.hand} situation.
+This is likely a **low-bias / high-variance** situation.
 
 
 > Under-fitting means estimating a really simple function when you have lots of data. 
 
 
-This is likely a [high-bias / low-variance]{.hand} situation.
+This is likely a **high-bias / low-variance** situation.
 
 Both of these outcomes are bad (they have high risk $=$ big $R_n$ ).
 
 The best way to avoid them is to use a reasonable estimate of _prediction risk_ to choose how complicated your model should be.
 
 
-## Recommendations
+## Commentary
 
-::: secondary
-When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV. 
-
-CV is usually easiest to make sense of and doesn't depend on other unknown parameters.
-
-But, it requires refitting the model.
-
-Also, it can be strange in cases with discrete predictors, time series, repeated measurements, graph structures, etc.
-:::
-
-
-
-## High-level intuition of these:
-
-* GCV tends to choose "dense" models.
-
-* Theory says AIC chooses the "best predicting model" asymptotically.
-
-* Theory says BIC should choose the "true model" asymptotically, tends to select fewer predictors.
-
-* In some special cases, AIC = Cp = SURE $\approx$ LOO-CV
-
-
-* As a technical point, CV (or validation set) is estimating error on 
-[new data]{.secondary}, unseen $(X_0, Y_0)$, while AIC / CP are estimating error on [new Y]{.secondary} at the observed $x_1,\ldots,x_n$. This is subtle.
+- When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV. 
+    - In some special cases, AIC = Cp = SURE $\approx$ LOO-CV
+- CV is generic, easy, and doesn't depend on unknowns.
+    - But requires refitting, and nontrivial for discrete predictors, time series, etc.
+- GCV tends to choose "dense" models.
+- Theory says AIC chooses "best predicting model" asymptotically.
+- Theory says BIC chooses "true model" asymptotically, tends to select fewer predictors.
+- Technical: CV (or validation set) is estimating error on 
+[new data]{.secondary}, unseen $(X_0, Y_0)$; AIC / CP are estimating error on [new Y]{.secondary} at the observed $x_1,\ldots,x_n$. This is subtle.
 
 ::: aside
 For more information: see [ESL] Chapter 7.
@@ -315,12 +299,12 @@ This material is more challenging than the level of this course, and is easily a
 
 # My recommendation: 
 
-[Use CV]{.hand .secondary}
+**Use CV.**
 
 
 ## A few more caveats
 
-It is often tempting to "just compare" risk estimates from vastly different models. 
+Tempting to "just compare" risk estimates from vastly different models. 
 
 For example, 
 
@@ -338,10 +322,6 @@ For example,
 1. Different likelihoods aren't comparable.
 
 1. Residuals / response variables on different scales aren't directly comparable.
-
-"Validation set" is easy, because you're always comparing to the "right" thing. But it has lots of drawbacks.
-
-
 
 # Next time ...
 
