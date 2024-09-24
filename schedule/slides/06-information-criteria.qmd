@@ -1,5 +1,5 @@
 ---
-lecture: "06 Information criteria"
+lecture: "06 Information Criteria"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -7,91 +7,95 @@ metadata-files:
 
 {{< include _titleslide.qmd >}}
 
-
 ## LOO-CV
 
-- Train $\hat f$ on all but one data point, estimate $R_n(\hat f)$ on the left-out point.
-- Repeat this process for all $n$ data points
-- Requires training $n$ models 🤮
+- Train $\hat f_1$ on all but data point 1, calculate $\tilde R_1 = \ell(Y_1, \hat f_1(X_1))$.
+- Do the same for each data point $i$, calculate $\tilde R_i$
+- Estimate $R_n \approx \hat R_n = \frac{1}{n}\sum_{i=1}^n \tilde R_i$
+
+Has low bias 🎉 and (probably) low variance 🎉 
+
+**Not often possible to use**: requires training $n$ models 🤮
+
+## LOO-CV: Math to the rescue!
+
+Consider models where predictions are a **linear function** of the training responses, i.e.,
+
+$$ \hat{\mathbf y} = {\mathbf H} {\mathbf y} $$
+
+where we collected terms into matrices and vectors (${\mathbf h_i}$ can be any functions):
+
+- $\hat{\mathbf y} = \begin{bmatrix} \hat Y_1 & \cdots & \hat Y_n \end{bmatrix}^\top \in \mathbb R^{n}$
+- ${\mathbf y} = \begin{bmatrix} Y_1 & \cdots & Y_n \end{bmatrix}^\top \in \mathbb R^{n}$
+- $\mathbf H = \begin{bmatrix} \mathbf h_1(X_1) & \cdots & \mathbf h_n(X_n) \end{bmatrix}^\top \in \mathbb R^{n \times n}$
+
+. . .
+
+For example, OLS:
+
+$$ \hat{\mathbf y} = {\mathbf X} \hat \beta, \qquad \hat\beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y $$
+
+By inspection $\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top$
 
 
-### A magic formula for some models
+## LOO-CV: Math to the rescue!
 
-__For certain "nice" models__ of the form $\widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y}$ (for some vector $h_i$), we get a closed form expression.
+For models where predictions are a **linear function** of the training responses\*,
 
-$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.$$
+**LOO-CV has a closed-form expression!**
+
+$$\mbox{LOO-CV} \,\, \hat R_n = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}.$$
 
 - Numerator is the _squared residual_ (loss) for training point $i$.
-- Denominator weights each residual by some factor (more on that in a bit...)
+- Denominator weights each residual by *diagonal of $H$* some factor 
+- $H_{ii}$ are *leverage/hat values*: tell you what happens when moving data point $i$ a bit
 
+\*: plus some technicalities 
 
-## LOO-CV
+. . .
 
-$$
-\text{When } \widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y},
-\qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}
-$$
+:::callout-tip
+Deriving this sucks. I wouldn't recommend doing it yourself. 
+:::
 
-Collecting all the terms into matrices and vectors
+## Computing the formula
 
-- $\hat{\mathbf y} = \begin{bmatrix} \hat y_1 & \cdots & \hat y_n \end{bmatrix}^\top \in \mathbb R^{n}$
-- ${\mathbf y} = \begin{bmatrix} y_1 & \cdots & y_n \end{bmatrix}^\top \in \mathbb R^{n}$
-- $\mathbf H = \begin{bmatrix} \mathbf h_1(\boldsymbol x_1) & \cdots & \mathbf h_n(\mathbf x_n) \end{bmatrix}^\top \in \mathbb R^{n \times n}$
+```{r}
+cv_nice <- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)
+```
 
-We have
+## What happens when we can't use the formula?
 
-$$
-\hat{\mathbf y} = \mathbf H \mathbf y,
-\qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
-$$
-
-## What happens when we can't use the magic formula?
 (And can we get a better intuition about what's going on?)
 
 $$
 \hat{\mathbf y} = \mathbf H \mathbf y,
 \qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}
 $$
 
-### What do we know about $h_{ii}$?
-
-Writing out the $\mathbf H$ matrix for ordinary least squares (OLS) regression...
+Let's look at OLS again...
 $$ \hat Y = X \hat \beta, \qquad \beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y $$
 
-::: fragment
-This implies that $\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top$\
+This implies that $\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top$
 
-- The diagonals $h_{ii}$ are called **hat values**.
-- $\mathbf H$ has lots of nice properties.\
-- The most important (for us) is that $\tr{\mathbf H} = p$. (Why?)
-:::
+- One really nice property of $\mathbf H$ is that $\tr{\mathbf H} = p$ (where $X_n \in \R^p$). [(Why?)]{.secondary}
 
----
-
-### Generalizing the magic formula
+## Generalizing the LOO-CV formula
 
 Let's call $\tr{\mathbf H} = p$ the _degrees-of-freedom_ (or just _df_) of our OLS estimator.\
 [(Intuition: we have $p$ parameters to fit, or $p$ "degrees of freedom")]{.secondary}
 
 \
-**Idea:** in our LOO-CV formula, approximate each $h_{ii}$ with $\frac 1 n \sum_{i=1}^n h_{ii}$.\
+**Idea:** in our LOO-CV formula, approximate each ${\mathbf H}_{ii}$ with the average $\frac 1 n \sum_{i=1}^n {\mathbf H}_{ii}$.\
 \
 Then...
 
 $$
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} \approx \frac{\text{MSE}}{(1-\text{df}/n)^2} \triangleq \text{GCV}
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-{\mathbf H}_{ii})^2} \approx \frac{\text{MSE}}{(1-\text{df}/n)^2} \triangleq \text{GCV}
 $$
 
-. . .
-
-::: small
-- Replacing $h_{ii}$ with $\frac 1 n \sum_{i=1}^n h_{ii}$ gives us a common denominator which we can pull out of the sum.
-- Denominator: $1 - \frac 1 n \sum_{i=1}^n h_{ii} = 1 - \frac 1 n \tr{\mathbf H} = 1 - \frac p n = 1 - \frac{\text{df}}{n}$
-- We are left with the average of the numerators, which is the training set MSE.
-:::
+GCV stands for **Generalized CV** estimate
 
 <!--
 ## Generalized CV
@@ -151,25 +155,31 @@ We can use this formula for models that aren't of the form $\widehat{y}_i = \bol
 - What happens as $\text{df}$ ($p$ in our OLS model) increases?
 
 
-## Alternative interpretation:
+## Mallows $C_p$
 
-Let's go back to our linear model $\mathbf{Y} = \mathbf{X}\beta + \epsilon$,
-with $\epsilon \sim \mathcal N(0, \sigma^2)$. \
-(Define $\boldsymbol \mu = \Expect{\boldsymbol Y \mid \boldsymbol X} = \boldsymbol X \beta$ )
+Let's see if we can generalize risk estimators from OLS ($Y \sim \mathcal{N}(X^T\beta, \sigma^2)$) in other ways. 
 
-Let $\widehat{\mathbf{Y}}$ be the estimator of $\boldsymbol \mu$ we get from OLS.
-What is the risk of $\widehat{\mathbf{Y}}$?
+Consider the *estimation risk* of estimating $\mu_i = X_i^T\beta$ with $\hat Y_i = X_i^T\hat\beta$: 
 
-. . .
+$$R_n = E\left[\frac{1}{n}\sum_{i=1}^n (\hat Y_i - \mu_i)^2\right]$$
+
+Using the usual decomposition tricks:
+
+$$
+R_n= \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} 
+= \underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{\text{train MSE}} -
+\underbrace{\sigma^2}_{\text{noise}} +
+\underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{\text{???}}
+$$
+
+<!--
 
 \begin{aligned}
-& R_n(\widehat{\mathbf{Y}}) = \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
 &= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
 &= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
 &= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)} = \cdots =\\
 &= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
 \end{aligned}
-
 
 ## Alternative interpretation:
 
@@ -181,15 +191,13 @@ $$
 
 . . .
 
-1. Training MSE
-2. Observational noise / irreducible error (recall $\eps \sim \mathcal{N}(0, \sigma^2)$).
-3. ???
+-->
 
-## Alternative interpretation:
+## Mallows $C_p$
 
 $$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
 \underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{\text{training error}} -
-\underbrace{\sigma^2}_{\text{irr. error}} +
+\underbrace{\sigma^2}_{\text{noise}} +
 \underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{\text{???}}
 $$
 
@@ -204,7 +212,7 @@ $$ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n $$
 
 ## Mallow's $C_p$
 
-$$ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n $$
+$$ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n$$
 (We derived it for the OLS model, but again it can be generalized to other models.)
 
 ::: callout-important

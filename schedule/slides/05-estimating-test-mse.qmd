@@ -1,5 +1,5 @@
 ---
-lecture: "05 Estimating (Test) MSE"
+lecture: "05 Estimating Risk and Test Error"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -18,7 +18,7 @@ metadata-files:
 
 A model is a set of distributions that explain data $\{ Z = (X, Y) \}$, i.e.
 
-$$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
+$$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' }f \}$$
 
 
 [(Why do we have to specify that $f$ is smooth? Why can't it be any function?)]{.secondary} \
@@ -35,17 +35,17 @@ Choose the $P \in \mathcal P$ that makes the "best" predictions on new $X, Y$ pa
 
 $$\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}$$
 
-1. Specify how a $P \in \mathcal P$ makes **predictions** on new inputs $\hat Y$. \
+1. Specify how a $P \in \mathcal P$ makes **predictions**  $\hat Y$ on new inputs $X$. \
 [(E.g.: $\hat Y = f(X)$ for $P = \mathcal N(f(X), \sigma^2)$.)]{.secondary}
 
 2. Introduce a **loss** function $\ell(Y, \hat{Y})$ (a datapoint-level function). \
 [(E.g.: $\ell(Y, \hat Y) = (Y - \hat Y)^2$)]{.secondary}
 
 3. Define the **test error** of $P \in \mathcal P$ as the expected loss (a population-level function): \
-[\text{Err}(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2]]{.secondary}
+[$T_n(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2]$]{.secondary}
 
 4. The **best** model is the one that minimizes the test error \
-[($P^* = \argmin_{P \in \mathcal P} R_n(P)$)]{.secondary}
+[($P^* = \argmin_{P \in \mathcal P} T_n(P)$)]{.secondary}
 
 
 ---
@@ -55,7 +55,7 @@ Last time: when $\ell(Y, \hat Y) = (Y - \hat Y)^2$, we showed that the **regress
 . . .
 
 $$
-\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} \text{Err}(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} T_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
 $$
 
 [Are we done? Have we solved learning?]{.secondary}
@@ -77,7 +77,7 @@ Our estimator $\hat f$ is a random variable (it depends on training sample).\
 So let's consider the _risk_ (the _expected test error_):
 
 $$
-R_n = E_{\hat f} \left[ \text{Err.}(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
+R_n = E_{\hat f} \left[ T_n(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
 $$
 
 . . .
@@ -380,8 +380,6 @@ E_{\hat f,X_j,Y_j} \left[ \tilde R_m(\hat f) \right]
 $$
 
 
-
-
 # How to properly estimate $R_n$
 
 
@@ -426,15 +424,239 @@ I think these are not quite the same as in Statistics.
 
 When and how you split your training data can be very important. 
 
+# Announcements Sept 24
+
+- Lab Section 03 on monday next week: it's a holiday. Your lab will be due Friday instead.
+- Everyone else's lab: same time as usual.
+
+# Review of Risk (Estimation)
+
+We fixed a bunch of subtle issues in the Sept 19 Risk Estimation slides.
+
+And I've noticed some related confusion in my office hours, so it's *review time*!
+
+. . . 
+
+::: callout-tip
+After this lecture, make sure to review the whole Risk Estimation slide deck to see all the fixed terminology/definitions/examples.
+:::
+
+## Risk vs. Test Error
+
+- **Risk** ($R_n$): expected error when the training data *have not yet been observed* **(random!)**
+    - depends on true data distribution, predictor
+
+- **Test Error** ($T_n$): expected error when the training data *have been observed* **(fixed!)**
+    - depends on true data distribution, predictor, training data 
+
+- $R_n = \E[T_n]$
+
+. . .
+
+- we mostly care about **risk** when *designing* a new predictor / estimator
+    - we want to know how well it will work on *future training and test data*
+- we mostly care about **test error** when we've *fit* a predictor / estimator
+    - we want to know how well it will work on *future test data*
+
+## An important clarification
+
+::: callout-important
+In previous lectures, we've used $R_n(\hat f)$ to denote risk. 
+
+Confusing: the $\hat \mu$ argument looks like a *trained predictor*, so $R_n(\hat f)$ looks like a function of *training data*. **Not true!**
+
+We will just avoid this confusion from now on and use $R_n$ for risk.
+:::
+
+## Risk vs. Test Error: Warmup in 1D
+
+- Model: $\mathcal{P} = \{ P: \quad Y \sim \mathcal N(\mu, 1), \quad \mu\in\R\}$, loss $\ell(y,\hat y) = (y-\hat y)^2$
+- Training Data: $Y_i\in\R$ from some unknown "true" $P_0 \in \mathcal{P}$ (i.e., "true" $\mu_0$)
+- Predictor: *function of training data* $\hat\mu : \R^n \to \R$
+    - e.g., scaled empirical average $\hat\mu(Y_{1:n}) = \alpha\frac{1}{n}\sum_{n=1}^N Y_n$ for $\alpha > 0$
+
+. . . 
+
+- **Risk** $R_n$: expected loss over *both* training and test data $R_n = E[\ell(Y,\hat\mu(Y_{1:n}))]$
+    - function of true dist $P_0$ and predictor *function* $\hat\mu(\cdot)$
+    - averages over randomness in training data
+
+. . . 
+
+- **Test Error** $T_n$: expected loss over *only* test data $T_n(\hat\mu) = E[\ell(Y,\hat\mu(Y_{1:n})) | Y_{1:n}]$
+    - function of true dist $P_0$, predictor *function* $\hat\mu(\cdot)$, **and training data**
+    - training data (and trained predictor) are known/fixed 
+
+## Risk vs. Test Error: Warmup in 1D
+
+- Model: $\mathcal{P} = \{ P: \quad Y \sim \mathcal N(\mu, 1), \quad \mu\in\R\}$, loss $\ell(y,\hat y) = (y-\hat y)^2$
+- Training Data: $Y_i\in\R$ from some unknown "true" $P_0 \in \mathcal{P}$ (i.e., "true" $\mu_0$)
+- Predictor: scaled empirical average $\hat\mu(Y_{1:n}) = \alpha \frac{1}{n}\sum_{i=1}^n Y_i$ for a fixed $\alpha > 0$
 
 
-## Cross Validation
+[(What can the risk and test error depend on?)]{.secondary}
+
+. . .
+
+$$ R_n = E[(Y - \hat\mu(Y_{1:n}))^2] = \underbrace{1}_{\text{irr.}} + \underbrace{\mu^2_0(\alpha-1)^2}_{\text{bias}^2}+\underbrace{\alpha^2/n}_{\text{variance}}$$
+
+. . .
+
+$$ T_n = E[(Y - \hat\mu(Y_{1:n}))^2 |Y_{1:n}] = 1 + \left(\mu_0 - \alpha \frac{1}{n}\sum_{i=1}^n Y_i\right)^2$$
+
+. . .
+
+- $R_n$ is a function of the true distribution ($\mu_0$) and predictor ($\alpha$); not training data!
+- $T_n$ is a function of $\mu_0$, $\alpha$ *and* training data 
+
+## Risk vs. Test Error: Regression
+
+- Model: $\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), 1), \quad f(x)=ax, \, \text{for } a\in\R \}$
+- Training Data: $X_i,Y_i\in\R$ pairs from some unknown "true" $P_0 \in \mathcal{P}$ ("true" $a_0$)
+- Predictor: a *function of the training data and a new test input* $\hat f : \R^n\times \R^{n} \times \R \to \R$
+    - e.g., the function $\hat f(X_{1:n},Y_{1:n},x) = \beta \frac{Y_2 - Y_1}{X_2 - X_1} x$ for $\beta > 0$
+
+. . .
+
+- **Risk** $R_n$: avg loss over *both* training and test data $R_n = E[\ell(Y, \hat f(X_{1:n}, Y_{1:n}, X))]$
+
+. . .
+
+- **Test Error** $T_n$: avg loss over *only* test data $T_n = E[\ell(Y, \hat f(Y_{1:n}, X_{1:n},X)) | Y_{1:n},X_{1:n}]$
+    - training data fixed/known
+
+## Risk vs. Test Error: Regression
+
+- Model: $\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), 1), \quad f(x)=ax, \, \text{for } a\in\R \}$ ("true" value $a_0$)
+- Predictor: the function $\hat f(X_{1:n}, Y_{1:n}, x) = \beta \frac{Y_2 - Y_1}{X_2 - X_1} x$
+
+[(What can the risk and test error depend on?)]{.secondary}
+
+. . .
+
+$$
+\begin{aligned}
+R_n = E[(Y - \hat f(X))^2] 
+%= E[(Y - a_0X)^2] + E[(a_0X - \hat f(X))^2]\\
+%&= 1 +  E\left[\left(a_0X - \beta\frac{Y_2 - Y_1}{X_2-X_1}X\right)^2\right]\\
+&= \text{annoying algebra...}\\
+% &= 1 +  E[X^2]E\left[\left(a_0 - \beta\frac{Y_2 - Y_1}{X_2-X_1}\right)^2\right]\\
+% &= 1 +  E[X^2]E\left[\left(a_0 - \beta\frac{a_0 X_2 + Z_2 - a_0 X_1 - Z_1}{X_2-X_1}\right)^2\right]\\
+&= \underbrace{1}_{\text{irr.}} +  \underbrace{a_0^2(1-\beta)^2E[X^2]}_{\text{bias}^2} + \underbrace{2\beta^2E\left[(X_2-X_1)^{-2}\right]E[X^2]}_{\text{variance}}.
+\end{aligned}
+$$
+
+. . .
+
+$$ T_n = E[(Y - \hat f(X))^2|X_{1:n},Y_{1:n}] = 1 +  E[X^2]\left(a_0 - \beta\frac{Y_2 - Y_1}{X_2-X_1}\right)^2 $$
+
+. . .
+
+- Risk $R_n$ depends only on $a_0, \beta$ and $X$-marginal distribution
+- Test error $T_n$ depends on training data too!
+
+## Estimating risk
+
+We can't compute $R_n$ in practice (we don't know the true data distribution)
+
+Can we estimate risk ($\hat R_n$) with data? How do we measure the quality of our estimate?
+
+. . .
+
+$$E[(R_n - \hat R_n)^2]$$
+[(What is the expectation with respect to?)]{.secondary}
+
+. . .
+
+- $R_n$ is just a fixed value (we already averaged over test data and training data)
+- $\hat R_n$ depends only on training data
+- So the expectation is with respect to our training dataset
+
+. . .
+
+As before, we can decompose the error of our risk estimator into **bias** and **variance**
+
+$$
+E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+$$
+
+## Estimating risk: empirical risk
+$$
+\text{Recall: }E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+$$
+
+- **Empirical risk:** just use the training loss $\hat R_n = \frac{1}{n}\sum_{i=1}^n \ell(Y_i, \hat f(X_i))$
+
+
+[(What is the bias and variance with a *really flexible model*?)]{.secondary}
+
+. . .
+
+- If our model is so flexible that it can nearly fit all data always, then $\hat R_n \approx 0$
+- $\text{Variance} = E[( \hat R_n - E[\hat R_n])^2] \approx E[(0 - 0)^2] = 0$ 
+- $\text{Bias}^2 = ( R_n - E[\hat R_n(\hat f)])^2 \approx ( R_n - 0 ) = R_n$
+
+. . .
+
+[(Is that good or bad?)]{.secondary}
+
+## Estimating risk: holdout sets
+$$
+\text{Recall: }E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+$$
+**Holdout:** train $\hat f$ with $n-m$ data, estimate with $m$ data:  $\hat R_n = \frac{1}{m}\sum_{j=1}^{m} \ell(Y_j, \hat f(X_j))$ 
+
+. . . 
+
+- bias [(increasing, decreasing, or either with $m$?)]{.secondary}
+$$
+\text{Bias}^2 = (R_n - R_{n-m})^2
+$$
+
+. . . 
+
+- variance [(increasing, decreasing, or either with $m$?)]{.secondary}
+
+$$
+\text{Variance}
+= \underbrace{\frac{1}{m}E[(\tilde \ell - E[\tilde\ell| \hat f])^2]}_{\text{estimation variance}}
++ \underbrace{E[(E[\tilde \ell| \hat f] - R_{n-m})^2]}_{\text{training variance}} \quad \text{where }\tilde \ell = \ell(Y_1, \hat f(X_1))
+$$
+
+<!-- 
+= \underbrace{E[(\hat R_n - E[\hat R_n | \hat f])^2]}_{\text{estimation variance}}  + \underbrace{E[(E[ \hat R_n | \hat f] - E[\hat R_n])^2]}_{\text{training variance}}
+-->
+
+## Estimating risk: leave-one-out cross-val. (LOO-CV)
+
+- **LOO-CV estimate:** $\hat R_n = \frac{1}{n} \sum_{i=1}^n \tilde R_i$, where:
+    - Remove the first observation and train ($\hat f_1$), estimate $\tilde R_1 = \ell(Y_1, \hat f_1(X_1))$
+    - Remove the second observation and train ($\hat f_2$), estimate $\tilde R_2 = \ell(Y_2, \hat f_2(X_2))$
+    - Wash, rinse, repeat...
+
+. . .
+
+[(Bias? Hint: if we train with $n-m$, we get $(R_n - R_{n-m})^2$...)]{.secondary}
+
+. . .
+
+- Bias is $(R_n - R_{n-1})^2$ -- quite small!
+- Variance is small too! Roughly: $E[( \hat R_n - E[\hat R_n])^2]\approx \frac{1}{n} E[(\tilde R_1 - R_{n-1})^2]$
+    - assumption: ignoring $\tilde R_j$, $\tilde R_k$ covariance for $j\neq k$
+    - reasonable if $n$ large enough that one data point doesn't influence $\hat f$ too much
+
+. . .
+
+- **major downside:**  have to train $n$ models (*super* expensive!)
+
+# Picking up from last time...
 
 <!--
+## Cross Validation
+
 One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
 
 "Validation set" fixes this, but holds out a particular, fixed block of data we pretend mimics the "test data"
--->
 
 Our validation error $\tilde{R}_m(\widehat{f})$ is a random estimator.\
 [(The split we use to divide our data into training versus validation is random.)]{.secondary}
@@ -471,12 +693,9 @@ $$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \
 (y_i - \widehat{f}^{(i)}(x_i))^2$$
 This is [__leave-one-out cross validation__]{.secondary}
 
-
 ## Problems with LOO-CV
 
-<!--
 🤮 Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
--->
 
 🤮 The training sets overlap. This is bad. 
 
@@ -488,44 +707,21 @@ This is [__leave-one-out cross validation__]{.secondary}
 
 🎉 Bias is low because we used almost all the data to fit the model: $E[\mbox{LOO-CV}] = R_{n-1}$ 
 
-  
+-->
+
 ## K-fold CV
 
-::: flex
-::: w-50
-To alleviate some of these problems, people usually use $K$-fold cross validation.
+$K$-fold cross validation finds a *decent* tradeoff between these options.
 
-The idea of $K$-fold is 
+The idea of $K$-fold CV is 
 
 1. Divide the data into $K$ groups. 
-1. Leave a group out and estimate with the rest.
+1. Leave one group out and train with the remaining $K-1$ groups.
 1. Test on the held-out group. Calculate an average risk over these $\sim n/K$ data.
 1. Repeat for all $K$ groups.
 1. Average the average risks.
 
-
-:::
-
-
-::: w-50
-🎉 Less overlap, smaller covariance.
-
-🎉 Larger hold-out sets, smaller variance.
-
-🎉 Less computations (only need to estimate $K$ times)
-
-🤮 LOO-CV is (nearly) unbiased for $R_n$
-
-🤮 K-fold CV is unbiased for $R_{n(1-1/K)}$
-
-The risk depends on how much data you use to estimate the model. $R_n$ depends on $n$.
-
-:::
-:::
-
-
-
-## A picture
+## K-fold CV: illustration
 
 ```{r}
 #| code-fold: true
@@ -543,8 +739,22 @@ text(6, 4.5, "Training data", cex = 3, col = blue)
 text(2, 1.5, "Validation data", cex = 3, col = red)
 ```
 
+## K-fold CV vs. LOO CV
 
-## Code
+- 🎉 Less costly than LOO CV (i.e., actually possible; only need to train $K$ times)
+- 💩 K-fold CV has higher sq. bias $(R_n - R_{n(1-1/K)})^2$ than LOO CV $(R_n - R_{n-1})^2$
+- a bit painful to compare variance...
+    - I hereby invoke the sacred incantation: "this exercise is left to the reader"
+
+The overall risk $R_n$ depends on $n$.
+
+:::callout-tip
+In practice, most people just default to using 5-fold or 10-fold. This is probably fine in most cases.
+:::
+
+
+
+## K-fold CV: Code
 
 
 ```{r}
@@ -582,6 +792,7 @@ kfold_cv(somedata, est, pred, error_fun, 5)
 ```
 
 
+<!--
 ## Trick
 
 __For certain "nice" models__ of the form
@@ -589,7 +800,9 @@ $$\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}$$
 for some vector $h_i$, one can show 
 
 $$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.$$
-(Proof: tedious algebra which I wouldn't wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.) 
+(Proof: tedious algebra. QED)
+
+which I wouldn't wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.) 
 
 . . .
 
@@ -599,7 +812,8 @@ $$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\bo
 cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
 ```
 
+-->
 
 # Next time...
 
-More tricks and what's up with the name "hatvalues"
+LOO tricks and "hatvalues"
