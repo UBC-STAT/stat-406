@@ -458,7 +458,7 @@
 <section id="loo-cv-math-to-the-rescue-1" class="slide level2">
 <h2>LOO-CV: Math to the rescue!</h2>
 <p>For models where predictions are a <strong>linear function</strong> of the training responses*,</p>
-<p><strong>LOO-CV has a closed-form expression!</strong></p>
+<p><strong>LOO-CV has a closed-form expression!</strong> Just need to fit <em>once</em>:</p>
 <p><span class="math display">\[\mbox{LOO-CV} \,\, \hat R_n = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}.\]</span></p>
 <ul>
 <li>Numerator is the <em>squared residual</em> (loss) for training point <span class="math inline">\(i\)</span>.</li>
@@ -651,8 +651,8 @@ $$
 <h2>AIC and BIC</h2>
 <p>These have a very similar flavor to <span class="math inline">\(C_p\)</span>, but their genesis is different.</p>
 <p>Without going into too much detail, they look like</p>
-<p><span class="math inline">\(\textrm{AIC}/n = -2\textrm{loglikelihood}/n + 2\textrm{df}/n\)</span></p>
-<p><span class="math inline">\(\textrm{BIC}/n = -2\textrm{loglikelihood}/n + 2\log(n)\textrm{df}/n\)</span></p>
+<p><span class="math inline">\(\textrm{AIC}/n = -2\textrm{log-likelihood}/n + 2\textrm{df}/n\)</span></p>
+<p><span class="math inline">\(\textrm{BIC}/n = -2\textrm{log-likelihood}/n + 2\log(n)\textrm{df}/n\)</span></p>
 <div class="fragment">
 <p>In the case of a linear model with Gaussian errors and <span class="math inline">\(p\)</span> predictors</p>
 <span class="math display">\[\begin{aligned}
@@ -683,31 +683,29 @@ $$
 <blockquote>
 <p>Over-fitting means estimating a really complicated function when you don’t have enough data.</p>
 </blockquote>
-<p>This is likely a <span class="hand">low-bias / high-variance</span> situation.</p>
+<p>This is likely a <strong>low-bias / high-variance</strong> situation.</p>
 <blockquote>
 <p>Under-fitting means estimating a really simple function when you have lots of data.</p>
 </blockquote>
-<p>This is likely a <span class="hand">high-bias / low-variance</span> situation.</p>
+<p>This is likely a <strong>high-bias / low-variance</strong> situation.</p>
 <p>Both of these outcomes are bad (they have high risk <span class="math inline">\(=\)</span> big <span class="math inline">\(R_n\)</span> ).</p>
 <p>The best way to avoid them is to use a reasonable estimate of <em>prediction risk</em> to choose how complicated your model should be.</p>
 </section>
-<section id="recommendations" class="slide level2">
-<h2>Recommendations</h2>
-<div class="secondary">
-<p>When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV.</p>
-<p>CV is usually easiest to make sense of and doesn’t depend on other unknown parameters.</p>
-<p>But, it requires refitting the model.</p>
-<p>Also, it can be strange in cases with discrete predictors, time series, repeated measurements, graph structures, etc.</p>
-</div>
-</section>
-<section id="high-level-intuition-of-these" class="slide level2">
-<h2>High-level intuition of these:</h2>
+<section id="commentary" class="slide level2">
+<h2>Commentary</h2>
 <ul>
-<li><p>GCV tends to choose “dense” models.</p></li>
-<li><p>Theory says AIC chooses the “best predicting model” asymptotically.</p></li>
-<li><p>Theory says BIC should choose the “true model” asymptotically, tends to select fewer predictors.</p></li>
-<li><p>In some special cases, AIC = Cp = SURE <span class="math inline">\(\approx\)</span> LOO-CV</p></li>
-<li><p>As a technical point, CV (or validation set) is estimating error on <span class="secondary">new data</span>, unseen <span class="math inline">\((X_0, Y_0)\)</span>, while AIC / CP are estimating error on <span class="secondary">new Y</span> at the observed <span class="math inline">\(x_1,\ldots,x_n\)</span>. This is subtle.</p></li>
+<li>When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV.
+<ul>
+<li>In some special cases, AIC = Cp = SURE <span class="math inline">\(\approx\)</span> LOO-CV</li>
+</ul></li>
+<li>CV is generic, easy, and doesn’t depend on unknowns.
+<ul>
+<li>But requires refitting, and nontrivial for discrete predictors, time series, etc.</li>
+</ul></li>
+<li>GCV tends to choose “dense” models.</li>
+<li>Theory says AIC chooses “best predicting model” asymptotically.</li>
+<li>Theory says BIC chooses “true model” asymptotically, tends to select fewer predictors.</li>
+<li>Technical: CV (or validation set) is estimating error on <span class="secondary">new data</span>, unseen <span class="math inline">\((X_0, Y_0)\)</span>; AIC / CP are estimating error on <span class="secondary">new Y</span> at the observed <span class="math inline">\(x_1,\ldots,x_n\)</span>. This is subtle.</li>
 </ul>
 
 <aside><div>
@@ -716,11 +714,11 @@ $$
 <section>
 <section id="my-recommendation" class="title-slide slide level1 center">
 <h1>My recommendation:</h1>
-<p><span class="hand secondary">Use CV</span></p>
+<p><strong>Use CV.</strong></p>
 </section>
 <section id="a-few-more-caveats" class="slide level2">
 <h2>A few more caveats</h2>
-<p>It is often tempting to “just compare” risk estimates from vastly different models.</p>
+<p>Tempting to “just compare” risk estimates from vastly different models.</p>
 <p>For example,</p>
 <ul>
 <li><p>different transformations of the predictors,</p></li>
@@ -733,7 +731,6 @@ $$
 <li><p>Different likelihoods aren’t comparable.</p></li>
 <li><p>Residuals / response variables on different scales aren’t directly comparable.</p></li>
 </ol>
-<p>“Validation set” is easy, because you’re always comparing to the “right” thing. But it has lots of drawbacks.</p>
 </section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time …</h1>
