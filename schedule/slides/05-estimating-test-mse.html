@@ -395,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>05 Estimating (Test) MSE</h2>
+<h2>05 Estimating Risk and Test Error</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 19 September 2024</p>
+<p>Last modified – 23 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -440,7 +440,7 @@
 <section id="what-is-a-model" class="slide level2">
 <h2>What is a model?</h2>
 <p>A model is a set of distributions that explain data <span class="math inline">\(\{ Z = (X, Y) \}\)</span>, i.e.</p>
-<p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
+<p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' }f \}\]</span></p>
 <p><span class="secondary">(Why do we have to specify that <span class="math inline">\(f\)</span> is smooth? Why can’t it be any function?)</span><br>
 </p>
 <h3 id="goal-of-learning">Goal of learning</h3>
@@ -451,14 +451,14 @@
 <h2>How do we evaluate models?</h2>
 <p><span class="math display">\[\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), \sigma^2) \quad \text{for some ``smooth'' f} \}\]</span></p>
 <ol type="1">
-<li><p>Specify how a <span class="math inline">\(P \in \mathcal P\)</span> makes <strong>predictions</strong> on new inputs <span class="math inline">\(\hat Y\)</span>.<br>
+<li><p>Specify how a <span class="math inline">\(P \in \mathcal P\)</span> makes <strong>predictions</strong> <span class="math inline">\(\hat Y\)</span> on new inputs <span class="math inline">\(X\)</span>.<br>
 <span class="secondary">(E.g.: <span class="math inline">\(\hat Y = f(X)\)</span> for <span class="math inline">\(P = \mathcal N(f(X), \sigma^2)\)</span>.)</span></p></li>
 <li><p>Introduce a <strong>loss</strong> function <span class="math inline">\(\ell(Y, \hat{Y})\)</span> (a datapoint-level function).<br>
 <span class="secondary">(E.g.: <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>)</span></p></li>
 <li><p>Define the <strong>test error</strong> of <span class="math inline">\(P \in \mathcal P\)</span> as the expected loss (a population-level function):<br>
-<span class="secondary">(P) = E[(Y, Y)] = E[(Y - f(X))^2]</span></p></li>
+<span class="secondary"><span class="math inline">\(T_n(P) = E[\ell(Y, \hat Y)] = E[(Y - f(X))^2]\)</span></span></p></li>
 <li><p>The <strong>best</strong> model is the one that minimizes the test error<br>
-<span class="secondary">(<span class="math inline">\(P^* = \argmin_{P \in \mathcal P} R_n(P)\)</span>)</span></p></li>
+<span class="secondary">(<span class="math inline">\(P^* = \argmin_{P \in \mathcal P} T_n(P)\)</span>)</span></p></li>
 </ol>
 </section>
 <section class="slide level2">
@@ -466,7 +466,7 @@
 <p>Last time: when <span class="math inline">\(\ell(Y, \hat Y) = (Y - \hat Y)^2\)</span>, we showed that the <strong>regression function</strong> is the best model:</p>
 <div class="fragment">
 <p><span class="math display">\[
-\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} \text{Err}(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
+\text{Regression function } \triangleq E[Y \mid X] = \argmin_{P \in \mathcal P} T_n(P) = \argmin_{P \in \mathcal P} E[\ell(Y, \hat Y)]
 \]</span></p>
 <p><span class="secondary">Are we done? Have we solved learning?</span></p>
 </div>
@@ -483,7 +483,7 @@
 <p>Our estimator <span class="math inline">\(\hat f\)</span> is a random variable (it depends on training sample).<br>
 So let’s consider the <em>risk</em> (the <em>expected test error</em>):</p>
 <p><span class="math display">\[
-R_n = E_{\hat f} \left[ \text{Err.}(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
+R_n = E_{\hat f} \left[ T_n(\hat f) \right] = E_{\hat f, X, Y} \left[ \ell(Y, \hat f(X)) \right]
 \]</span></p>
 <div class="fragment">
 <div class="callout callout-note callout-titled callout-style-default">
@@ -868,80 +868,355 @@ R_n \approx \tilde R_m(\hat f) \triangleq {\textstyle{\frac 1 m \sum_{j=1}^m \el
 <li><span class="secondary">Validation set</span> - Often, we need to <em>choose models</em>. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.</li>
 </ul>
 <p>When and how you split your training data can be very important.</p>
+</section></section>
+<section id="announcements-sept-24" class="title-slide slide level1 center">
+<h1>Announcements Sept 24</h1>
+<ul>
+<li>Lab Section 03 on monday next week: it’s a holiday. Your lab will be due Friday instead.</li>
+<li>Everyone else’s lab: same time as usual.</li>
+</ul>
 </section>
-<section id="cross-validation" class="slide level2">
-<h2>Cross Validation</h2>
+
+<section>
+<section id="review-of-risk-estimation" class="title-slide slide level1 center">
+<h1>Review of Risk (Estimation)</h1>
+<p>We fixed a bunch of subtle issues in the Sept 19 Risk Estimation slides.</p>
+<p>And I’ve noticed some related confusion in my office hours, so it’s <em>review time</em>!</p>
+<div class="fragment">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>After this lecture, make sure to review the whole Risk Estimation slide deck to see all the fixed terminology/definitions/examples.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="risk-vs.-test-error" class="slide level2">
+<h2>Risk vs.&nbsp;Test Error</h2>
+<ul>
+<li><strong>Risk</strong> (<span class="math inline">\(R_n\)</span>): expected error when the training data <em>have not yet been observed</em> <strong>(random!)</strong>
+<ul>
+<li>depends on true data distribution, predictor</li>
+</ul></li>
+<li><strong>Test Error</strong> (<span class="math inline">\(T_n\)</span>): expected error when the training data <em>have been observed</em> <strong>(fixed!)</strong>
+<ul>
+<li>depends on true data distribution, predictor, training data</li>
+</ul></li>
+<li><span class="math inline">\(R_n = \E[T_n]\)</span></li>
+</ul>
+<div class="fragment">
+<ul>
+<li>we mostly care about <strong>risk</strong> when <em>designing</em> a new predictor / estimator
+<ul>
+<li>we want to know how well it will work on <em>future training and test data</em></li>
+</ul></li>
+<li>we mostly care about <strong>test error</strong> when we’ve <em>fit</em> a predictor / estimator
+<ul>
+<li>we want to know how well it will work on <em>future test data</em></li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section id="an-important-clarification" class="slide level2">
+<h2>An important clarification</h2>
+<div class="callout callout-important callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Important</strong></p>
+</div>
+<div class="callout-content">
+<p>In previous lectures, we’ve used <span class="math inline">\(R_n(\hat f)\)</span> to denote risk.</p>
+<p>Confusing: the <span class="math inline">\(\hat \mu\)</span> argument looks like a <em>trained predictor</em>, so <span class="math inline">\(R_n(\hat f)\)</span> looks like a function of <em>training data</em>. <strong>Not true!</strong></p>
+<p>We will just avoid this confusion from now on and use <span class="math inline">\(R_n\)</span> for risk.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="risk-vs.-test-error-warmup-in-1d" class="slide level2">
+<h2>Risk vs.&nbsp;Test Error: Warmup in 1D</h2>
+<ul>
+<li>Model: <span class="math inline">\(\mathcal{P} = \{ P: \quad Y \sim \mathcal N(\mu, 1), \quad \mu\in\R\}\)</span>, loss <span class="math inline">\(\ell(y,\hat y) = (y-\hat y)^2\)</span></li>
+<li>Training Data: <span class="math inline">\(Y_i\in\R\)</span> from some unknown “true” <span class="math inline">\(P_0 \in \mathcal{P}\)</span> (i.e., “true” <span class="math inline">\(\mu_0\)</span>)</li>
+<li>Predictor: <em>function of training data</em> <span class="math inline">\(\hat\mu : \R^n \to \R\)</span>
+<ul>
+<li>e.g., scaled empirical average <span class="math inline">\(\hat\mu(Y_{1:n}) = \alpha\frac{1}{n}\sum_{n=1}^N Y_n\)</span> for <span class="math inline">\(\alpha &gt; 0\)</span></li>
+</ul></li>
+</ul>
+<div class="fragment">
+<ul>
+<li><strong>Risk</strong> <span class="math inline">\(R_n\)</span>: expected loss over <em>both</em> training and test data <span class="math inline">\(R_n = E[\ell(Y,\hat\mu(Y_{1:n}))]\)</span>
+<ul>
+<li>function of true dist <span class="math inline">\(P_0\)</span> and predictor <em>function</em> <span class="math inline">\(\hat\mu(\cdot)\)</span></li>
+<li>averages over randomness in training data</li>
+</ul></li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li><strong>Test Error</strong> <span class="math inline">\(T_n\)</span>: expected loss over <em>only</em> test data <span class="math inline">\(T_n(\hat\mu) = E[\ell(Y,\hat\mu(Y_{1:n})) | Y_{1:n}]\)</span>
+<ul>
+<li>function of true dist <span class="math inline">\(P_0\)</span>, predictor <em>function</em> <span class="math inline">\(\hat\mu(\cdot)\)</span>, <strong>and training data</strong></li>
+<li>training data (and trained predictor) are known/fixed</li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section id="risk-vs.-test-error-warmup-in-1d-1" class="slide level2">
+<h2>Risk vs.&nbsp;Test Error: Warmup in 1D</h2>
+<ul>
+<li>Model: <span class="math inline">\(\mathcal{P} = \{ P: \quad Y \sim \mathcal N(\mu, 1), \quad \mu\in\R\}\)</span>, loss <span class="math inline">\(\ell(y,\hat y) = (y-\hat y)^2\)</span></li>
+<li>Training Data: <span class="math inline">\(Y_i\in\R\)</span> from some unknown “true” <span class="math inline">\(P_0 \in \mathcal{P}\)</span> (i.e., “true” <span class="math inline">\(\mu_0\)</span>)</li>
+<li>Predictor: scaled empirical average <span class="math inline">\(\hat\mu(Y_{1:n}) = \alpha \frac{1}{n}\sum_{i=1}^n Y_i\)</span> for a fixed <span class="math inline">\(\alpha &gt; 0\)</span></li>
+</ul>
+<p><span class="secondary">(What can the risk and test error depend on?)</span></p>
+<div class="fragment">
+<p><span class="math display">\[ R_n = E[(Y - \hat\mu(Y_{1:n}))^2] = \underbrace{1}_{\text{irr.}} + \underbrace{\mu^2_0(\alpha-1)^2}_{\text{bias}^2}+\underbrace{\alpha^2/n}_{\text{variance}}\]</span></p>
+</div>
+<div class="fragment">
+<p><span class="math display">\[ T_n = E[(Y - \hat\mu(Y_{1:n}))^2 |Y_{1:n}] = 1 + \left(\mu_0 - \alpha \frac{1}{n}\sum_{i=1}^n Y_i\right)^2\]</span></p>
+</div>
+<div class="fragment">
+<ul>
+<li><span class="math inline">\(R_n\)</span> is a function of the true distribution (<span class="math inline">\(\mu_0\)</span>) and predictor (<span class="math inline">\(\alpha\)</span>); not training data!</li>
+<li><span class="math inline">\(T_n\)</span> is a function of <span class="math inline">\(\mu_0\)</span>, <span class="math inline">\(\alpha\)</span> <em>and</em> training data</li>
+</ul>
+</div>
+</section>
+<section id="risk-vs.-test-error-regression" class="slide level2">
+<h2>Risk vs.&nbsp;Test Error: Regression</h2>
+<ul>
+<li>Model: <span class="math inline">\(\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), 1), \quad f(x)=ax, \, \text{for } a\in\R \}\)</span></li>
+<li>Training Data: <span class="math inline">\(X_i,Y_i\in\R\)</span> pairs from some unknown “true” <span class="math inline">\(P_0 \in \mathcal{P}\)</span> (“true” <span class="math inline">\(a_0\)</span>)</li>
+<li>Predictor: a <em>function of the training data and a new test input</em> <span class="math inline">\(\hat f : \R^n\times \R^{n} \times \R \to \R\)</span>
+<ul>
+<li>e.g., the function <span class="math inline">\(\hat f(X_{1:n},Y_{1:n},x) = \beta \frac{Y_2 - Y_1}{X_2 - X_1} x\)</span> for <span class="math inline">\(\beta &gt; 0\)</span></li>
+</ul></li>
+</ul>
+<div class="fragment">
+<ul>
+<li><strong>Risk</strong> <span class="math inline">\(R_n\)</span>: avg loss over <em>both</em> training and test data <span class="math inline">\(R_n = E[\ell(Y, \hat f(X_{1:n}, Y_{1:n}, X))]\)</span></li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li><strong>Test Error</strong> <span class="math inline">\(T_n\)</span>: avg loss over <em>only</em> test data <span class="math inline">\(T_n = E[\ell(Y, \hat f(Y_{1:n}, X_{1:n},X)) | Y_{1:n},X_{1:n}]\)</span>
+<ul>
+<li>training data fixed/known</li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section id="risk-vs.-test-error-regression-1" class="slide level2">
+<h2>Risk vs.&nbsp;Test Error: Regression</h2>
+<ul>
+<li>Model: <span class="math inline">\(\mathcal{P} = \{ P: \quad Y \mid X \sim \mathcal N( f(X), 1), \quad f(x)=ax, \, \text{for } a\in\R \}\)</span> (“true” value <span class="math inline">\(a_0\)</span>)</li>
+<li>Predictor: the function <span class="math inline">\(\hat f(X_{1:n}, Y_{1:n}, x) = \beta \frac{Y_2 - Y_1}{X_2 - X_1} x\)</span></li>
+</ul>
+<p><span class="secondary">(What can the risk and test error depend on?)</span></p>
+<div class="fragment">
+<p><span class="math display">\[
+\begin{aligned}
+R_n = E[(Y - \hat f(X))^2]
+%= E[(Y - a_0X)^2] + E[(a_0X - \hat f(X))^2]\\
+%&amp;= 1 +  E\left[\left(a_0X - \beta\frac{Y_2 - Y_1}{X_2-X_1}X\right)^2\right]\\
+&amp;= \text{annoying algebra...}\\
+% &amp;= 1 +  E[X^2]E\left[\left(a_0 - \beta\frac{Y_2 - Y_1}{X_2-X_1}\right)^2\right]\\
+% &amp;= 1 +  E[X^2]E\left[\left(a_0 - \beta\frac{a_0 X_2 + Z_2 - a_0 X_1 - Z_1}{X_2-X_1}\right)^2\right]\\
+&amp;= \underbrace{1}_{\text{irr.}} +  \underbrace{a_0^2(1-\beta)^2E[X^2]}_{\text{bias}^2} + \underbrace{2\beta^2E\left[(X_2-X_1)^{-2}\right]E[X^2]}_{\text{variance}}.
+\end{aligned}
+\]</span></p>
+</div>
+<div class="fragment">
+<p><span class="math display">\[ T_n = E[(Y - \hat f(X))^2|X_{1:n},Y_{1:n}] = 1 +  E[X^2]\left(a_0 - \beta\frac{Y_2 - Y_1}{X_2-X_1}\right)^2 \]</span></p>
+</div>
+<div class="fragment">
+<ul>
+<li>Risk <span class="math inline">\(R_n\)</span> depends only on <span class="math inline">\(a_0, \beta\)</span> and <span class="math inline">\(X\)</span>-marginal distribution</li>
+<li>Test error <span class="math inline">\(T_n\)</span> depends on training data too!</li>
+</ul>
+</div>
+</section>
+<section id="estimating-risk" class="slide level2">
+<h2>Estimating risk</h2>
+<p>We can’t compute <span class="math inline">\(R_n\)</span> in practice (we don’t know the true data distribution)</p>
+<p>Can we estimate risk (<span class="math inline">\(\hat R_n\)</span>) with data? How do we measure the quality of our estimate?</p>
+<div class="fragment">
+<p><span class="math display">\[E[(R_n - \hat R_n)^2]\]</span> <span class="secondary">(What is the expectation with respect to?)</span></p>
+</div>
+<div class="fragment">
+<ul>
+<li><span class="math inline">\(R_n\)</span> is just a fixed value (we already averaged over test data and training data)</li>
+<li><span class="math inline">\(\hat R_n\)</span> depends only on training data</li>
+<li>So the expectation is with respect to our training dataset</li>
+</ul>
+</div>
+<div class="fragment">
+<p>As before, we can decompose the error of our risk estimator into <strong>bias</strong> and <strong>variance</strong></p>
+<p><span class="math display">\[
+E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+\]</span></p>
+</div>
+</section>
+<section id="estimating-risk-empirical-risk" class="slide level2">
+<h2>Estimating risk: empirical risk</h2>
+<p><span class="math display">\[
+\text{Recall: }E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+\]</span></p>
+<ul>
+<li><strong>Empirical risk:</strong> just use the training loss <span class="math inline">\(\hat R_n = \frac{1}{n}\sum_{i=1}^n \ell(Y_i, \hat f(X_i))\)</span></li>
+</ul>
+<p><span class="secondary">(What is the bias and variance with a <em>really flexible model</em>?)</span></p>
+<div class="fragment">
+<ul>
+<li>If our model is so flexible that it can nearly fit all data always, then <span class="math inline">\(\hat R_n \approx 0\)</span></li>
+<li><span class="math inline">\(\text{Variance} = E[( \hat R_n - E[\hat R_n])^2] \approx E[(0 - 0)^2] = 0\)</span></li>
+<li><span class="math inline">\(\text{Bias}^2 = ( R_n - E[\hat R_n(\hat f)])^2 \approx ( R_n - 0 ) = R_n\)</span></li>
+</ul>
+</div>
+<div class="fragment">
+<p><span class="secondary">(Is that good or bad?)</span></p>
+</div>
+</section>
+<section id="estimating-risk-holdout-sets" class="slide level2">
+<h2>Estimating risk: holdout sets</h2>
+<p><span class="math display">\[
+\text{Recall: }E[(R_n - \hat R_n)^2] = \underbrace{( R_n - E[\hat R_n])^2}_{\text{bias}} + \underbrace{E[( \hat R_n - E[\hat R_n])^2]}_{\text{variance}}
+\]</span> <strong>Holdout:</strong> train <span class="math inline">\(\hat f\)</span> with <span class="math inline">\(n-m\)</span> data, estimate with <span class="math inline">\(m\)</span> data: <span class="math inline">\(\hat R_n = \frac{1}{m}\sum_{j=1}^{m} \ell(Y_j, \hat f(X_j))\)</span></p>
+<div class="fragment">
+<ul>
+<li>bias <span class="secondary">(increasing, decreasing, or either with <span class="math inline">\(m\)</span>?)</span> <span class="math display">\[
+\text{Bias}^2 = (R_n - R_{n-m})^2
+\]</span></li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li>variance <span class="secondary">(increasing, decreasing, or either with <span class="math inline">\(m\)</span>?)</span></li>
+</ul>
+<p><span class="math display">\[
+\text{Variance}
+= \underbrace{\frac{1}{m}E[(\tilde \ell - E[\tilde\ell| \hat f])^2]}_{\text{estimation variance}}
++ \underbrace{E[(E[\tilde \ell| \hat f] - R_{n-m})^2]}_{\text{training variance}} \quad \text{where }\tilde \ell = \ell(Y_1, \hat f(X_1))
+\]</span></p>
+<!-- 
+= \underbrace{E[(\hat R_n - E[\hat R_n | \hat f])^2]}_{\text{estimation variance}}  + \underbrace{E[(E[ \hat R_n | \hat f] - E[\hat R_n])^2]}_{\text{training variance}}
+-->
+</div>
+</section>
+<section id="estimating-risk-leave-one-out-cross-val.-loo-cv" class="slide level2">
+<h2>Estimating risk: leave-one-out cross-val. (LOO-CV)</h2>
+<ul>
+<li><strong>LOO-CV estimate:</strong> <span class="math inline">\(\hat R_n = \frac{1}{n} \sum_{i=1}^n \tilde R_i\)</span>, where:
+<ul>
+<li>Remove the first observation and train (<span class="math inline">\(\hat f_1\)</span>), estimate <span class="math inline">\(\tilde R_1 = \ell(Y_1, \hat f_1(X_1))\)</span></li>
+<li>Remove the second observation and train (<span class="math inline">\(\hat f_2\)</span>), estimate <span class="math inline">\(\tilde R_2 = \ell(Y_2, \hat f_2(X_2))\)</span></li>
+<li>Wash, rinse, repeat…</li>
+</ul></li>
+</ul>
+<div class="fragment">
+<p><span class="secondary">(Bias? Hint: if we train with <span class="math inline">\(n-m\)</span>, we get <span class="math inline">\((R_n - R_{n-m})^2\)</span>…)</span></p>
+</div>
+<div class="fragment">
+<ul>
+<li>Bias is <span class="math inline">\((R_n - R_{n-1})^2\)</span> – quite small!</li>
+<li>Variance is small too! Roughly: <span class="math inline">\(E[( \hat R_n - E[\hat R_n])^2]\approx \frac{1}{n} E[(\tilde R_1 - R_{n-1})^2]\)</span>
+<ul>
+<li>assumption: ignoring <span class="math inline">\(\tilde R_j\)</span>, <span class="math inline">\(\tilde R_k\)</span> covariance for <span class="math inline">\(j\neq k\)</span></li>
+<li>reasonable if <span class="math inline">\(n\)</span> large enough that one data point doesn’t influence <span class="math inline">\(\hat f\)</span> too much</li>
+</ul></li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li><strong>major downside:</strong> have to train <span class="math inline">\(n\)</span> models (<em>super</em> expensive!)</li>
+</ul>
+</div>
+</section></section>
+<section>
+<section id="picking-up-from-last-time" class="title-slide slide level1 center">
+<h1>Picking up from last time…</h1>
 <!--
+## Cross Validation
+
 One reason that $\widehat{R}_n(\widehat{f})$ is bad is that we are using the same data to pick $\widehat{f}$ __AND__ to estimate $R_n$.
 
 "Validation set" fixes this, but holds out a particular, fixed block of data we pretend mimics the "test data"
--->
-<p>Our validation error <span class="math inline">\(\tilde{R}_m(\widehat{f})\)</span> is a random estimator.<br>
-<span class="secondary">(The split we use to divide our data into training versus validation is random.)</span></p>
-<div class="fragment">
-<p><br>
-A random estimator has <em>variance</em>. We can reduce this variance by averageing over multiple splits.</p>
-</div>
-</section>
-<section id="cross-validation-example" class="slide level2">
-<h2>Cross Validation Example</h2>
-<p>What if we set aside one observation, say the first one <span class="math inline">\((y_1, x_1)\)</span>:</p>
-<ul>
-<li>We estimate <span class="math inline">\(\widehat{f}^{(1)}\)</span> without using the first observation.</li>
-<li>We estimate <span class="math inline">\(\widetilde{R}_1(\widehat{f}^{(1)})\)</span> using the held-out first observation.</li>
-</ul>
-<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.\]</span> <span class="secondary">(Why the notation <span class="math inline">\(\widetilde{R}_1\)</span>? Because we’re estimating the risk with 1 observation. )</span></p>
-</section>
-<section class="slide level2">
 
-<p>But that was only one data point <span class="math inline">\((y_1, x_1)\)</span>. Why stop there?</p>
-<p>Do the same with <span class="math inline">\((y_2, x_2)\)</span>!</p>
-<p><span class="math display">\[\widetilde{R}_1(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.\]</span> We can keep doing this until we try it for every data point.</p>
-<div class="fragment">
-<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n
-(y_i - \widehat{f}^{(i)}(x_i))^2\]</span> This is <span class="secondary"><strong>leave-one-out cross validation</strong></span></p>
-</div>
-</section>
-<section id="problems-with-loo-cv" class="slide level2">
-<h2>Problems with LOO-CV</h2>
-<!--
+Our validation error $\tilde{R}_m(\widehat{f})$ is a random estimator.\
+[(The split we use to divide our data into training versus validation is random.)]{.secondary}
+
+. . .
+
+\
+A random estimator has _variance_.
+We can reduce this variance by averageing over multiple splits.
+
+
+## Cross Validation Example
+
+What if we set aside one observation, say the first one $(y_1, x_1)$:
+
+- We estimate $\widehat{f}^{(1)}$ without using the first observation.
+- We estimate $\widetilde{R}_1(\widehat{f}^{(1)})$ using the held-out first observation.
+
+$$\widetilde{R}_1(\widehat{f}^{(1)}) = (y_1 -\widehat{f}^{(1)}(x_1))^2.$$
+[(Why the notation $\widetilde{R}_1$? Because we're estimating the risk with 1 observation. )]{.secondary}
+
+---
+
+But that was only one data point $(y_1, x_1)$. Why stop there?
+
+Do the same with $(y_2, x_2)$!
+
+$$\widetilde{R}_1(\widehat{f}^{(2)}) = (y_2 -\widehat{f}^{(2)}(x_2))^2.$$
+We can keep doing this until we try it for every data point.
+
+. . .
+
+$$\mbox{LOO-CV} = \frac{1}{n}\sum_{i=1}^n \widetilde{R}_1(\widehat{f}^{(i)}) = \frac{1}{n}\sum_{i=1}^n 
+(y_i - \widehat{f}^{(i)}(x_i))^2$$
+This is [__leave-one-out cross validation__]{.secondary}
+
+## Problems with LOO-CV
+
 🤮 Each held out set is small $(n=1)$. Therefore, the variance of the Squared Error of each prediction is high.
+
+🤮 The training sets overlap. This is bad. 
+
+- Usually, averaging reduces variance: $\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.$
+- But only if the variables are independent. If not, then $\Var{\overline{X}} = \frac{1}{n^2}\Var{ \sum_{i=1}^n X_i} = \frac{1}{n}\Var{X_1} + \frac{1}{n^2}\sum_{i\neq j} \Cov{X_i}{X_j}.$
+- Since the training sets overlap a lot, that covariance can be pretty big.
+    
+🤮 We have to estimate this model $n$ times.
+
+🎉 Bias is low because we used almost all the data to fit the model: $E[\mbox{LOO-CV}] = R_{n-1}$ 
+
 -->
-<p>🤮 The training sets overlap. This is bad.</p>
-<ul>
-<li>Usually, averaging reduces variance: <span class="math inline">\(\Var{\overline{X}} = \frac{1}{n^2}\sum_{i=1}^n \Var{X_i} = \frac{1}{n}\Var{X_1}.\)</span></li>
-<li>But only if the variables are independent. If not, then <span class="math inline">\(\Var{\overline{X}} = \frac{1}{n^2}\Var{ \sum_{i=1}^n X_i} = \frac{1}{n}\Var{X_1} + \frac{1}{n^2}\sum_{i\neq j} \Cov{X_i}{X_j}.\)</span></li>
-<li>Since the training sets overlap a lot, that covariance can be pretty big.</li>
-</ul>
-<p>🤮 We have to estimate this model <span class="math inline">\(n\)</span> times.</p>
-<p>🎉 Bias is low because we used almost all the data to fit the model: <span class="math inline">\(E[\mbox{LOO-CV}] = R_{n-1}\)</span></p>
 </section>
 <section id="k-fold-cv" class="slide level2">
 <h2>K-fold CV</h2>
-<div class="flex">
-<div class="w-50">
-<p>To alleviate some of these problems, people usually use <span class="math inline">\(K\)</span>-fold cross validation.</p>
-<p>The idea of <span class="math inline">\(K\)</span>-fold is</p>
+<p><span class="math inline">\(K\)</span>-fold cross validation finds a <em>decent</em> tradeoff between these options.</p>
+<p>The idea of <span class="math inline">\(K\)</span>-fold CV is</p>
 <ol type="1">
 <li>Divide the data into <span class="math inline">\(K\)</span> groups.</li>
-<li>Leave a group out and estimate with the rest.</li>
+<li>Leave one group out and train with the remaining <span class="math inline">\(K-1\)</span> groups.</li>
 <li>Test on the held-out group. Calculate an average risk over these <span class="math inline">\(\sim n/K\)</span> data.</li>
 <li>Repeat for all <span class="math inline">\(K\)</span> groups.</li>
 <li>Average the average risks.</li>
 </ol>
-</div>
-<div class="w-50">
-<p>🎉 Less overlap, smaller covariance.</p>
-<p>🎉 Larger hold-out sets, smaller variance.</p>
-<p>🎉 Less computations (only need to estimate <span class="math inline">\(K\)</span> times)</p>
-<p>🤮 LOO-CV is (nearly) unbiased for <span class="math inline">\(R_n\)</span></p>
-<p>🤮 K-fold CV is unbiased for <span class="math inline">\(R_{n(1-1/K)}\)</span></p>
-<p>The risk depends on how much data you use to estimate the model. <span class="math inline">\(R_n\)</span> depends on <span class="math inline">\(n\)</span>.</p>
-</div>
-</div>
 </section>
-<section id="a-picture" class="slide level2">
-<h2>A picture</h2>
+<section id="k-fold-cv-illustration" class="slide level2">
+<h2>K-fold CV: illustration</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -959,8 +1234,33 @@ A random estimator has <em>variance</em>. We can reduce this variance by average
 
 </div>
 <img data-src="05-estimating-test-mse_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="code" class="slide level2">
-<h2>Code</h2>
+<section id="k-fold-cv-vs.-loo-cv" class="slide level2">
+<h2>K-fold CV vs.&nbsp;LOO CV</h2>
+<ul>
+<li>🎉 Less costly than LOO CV (i.e., actually possible; only need to train <span class="math inline">\(K\)</span> times)</li>
+<li>💩 K-fold CV has higher sq. bias <span class="math inline">\((R_n - R_{n(1-1/K)})^2\)</span> than LOO CV <span class="math inline">\((R_n - R_{n-1})^2\)</span></li>
+<li>a bit painful to compare variance…
+<ul>
+<li>I hereby invoke the sacred incantation: “this exercise is left to the reader”</li>
+</ul></li>
+</ul>
+<p>The overall risk <span class="math inline">\(R_n\)</span> depends on <span class="math inline">\(n\)</span>.</p>
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>In practice, most people just default to using 5-fold or 10-fold. This is probably fine in most cases.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="k-fold-cv-code" class="slide level2">
+<h2>K-fold CV: Code</h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb7" data-code-line-numbers="11-13|14-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="co">#' @param data The full data set</span></span>
 <span id="cb7-2"><a></a><span class="co">#' @param estimator Function. Has 1 argument (some data) and fits a model. </span></span>
@@ -993,24 +1293,41 @@ A random estimator has <em>variance</em>. We can reduce this variance by average
 <pre><code>[1] 0.8928686</code></pre>
 </div>
 </div>
-</div>
-</section>
-<section id="trick" class="slide level2">
-<h2>Trick</h2>
-<p><strong>For certain “nice” models</strong> of the form <span class="math display">\[\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}\]</span> for some vector <span class="math inline">\(h_i\)</span>, one can show</p>
-<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.\]</span> (Proof: tedious algebra which I wouldn’t wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.)</p>
-<div class="fragment">
-<ul>
-<li>This trick means that you only have to fit the model once rather than <span class="math inline">\(n\)</span> times!</li>
-</ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>( (<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<!--
+## Trick
+
+__For certain "nice" models__ of the form
+$$\widehat{y}_i = h_i(\mathbf{X})^\top \mathbf{y}$$
+for some vector $h_i$, one can show 
+
+$$\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.$$
+(Proof: tedious algebra. QED)
+
+which I wouldn't wish on my worst enemy, but might - in a fit of rage - assign as homework to belligerent students.) 
+
+. . .
+
+* This trick means that you only have to fit the model once rather than $n$ times!
+
+
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+cv_nice <- function(mdl) mean( (residuals(mdl) / (1 - hatvalues(mdl)))^2 )
+```
+:::
+
+
+
+
+-->
 </div>
 </section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
-<p>More tricks and what’s up with the name “hatvalues”</p>
+<p>LOO tricks and “hatvalues”</p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">

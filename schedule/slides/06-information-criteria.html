@@ -29,6 +29,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="../../site_libs/revealjs/dist/theme/quarto.css">
   <link rel="stylesheet" href="tachyons-minimal.css">
@@ -330,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>06 Information criteria</h2>
+<h2>06 Information Criteria</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 18 September 2024</p>
+<p>Last modified – 23 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -367,79 +432,88 @@
 <section id="loo-cv" class="slide level2">
 <h2>LOO-CV</h2>
 <ul>
-<li>Train <span class="math inline">\(\hat f\)</span> on all but one data point, estimate <span class="math inline">\(R_n(\hat f)\)</span> on the left-out point.</li>
-<li>Repeat this process for all <span class="math inline">\(n\)</span> data points</li>
-<li>Requires training <span class="math inline">\(n\)</span> models 🤮</li>
+<li>Train <span class="math inline">\(\hat f_1\)</span> on all but data point 1, calculate <span class="math inline">\(\tilde R_1 = \ell(Y_1, \hat f_1(X_1))\)</span>.</li>
+<li>Do the same for each data point <span class="math inline">\(i\)</span>, calculate <span class="math inline">\(\tilde R_i\)</span></li>
+<li>Estimate <span class="math inline">\(R_n \approx \hat R_n = \frac{1}{n}\sum_{i=1}^n \tilde R_i\)</span></li>
 </ul>
-<h3 id="a-magic-formula-for-some-models">A magic formula for some models</h3>
-<p><strong>For certain “nice” models</strong> of the form <span class="math inline">\(\widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y}\)</span> (for some vector <span class="math inline">\(h_i\)</span>), we get a closed form expression.</p>
-<p><span class="math display">\[\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}.\]</span></p>
+<p>Has low bias 🎉 and (probably) low variance 🎉</p>
+<p><strong>Not often possible to use</strong>: requires training <span class="math inline">\(n\)</span> models 🤮</p>
+</section>
+<section id="loo-cv-math-to-the-rescue" class="slide level2">
+<h2>LOO-CV: Math to the rescue!</h2>
+<p>Consider models where predictions are a <strong>linear function</strong> of the training responses, i.e.,</p>
+<p><span class="math display">\[ \hat{\mathbf y} = {\mathbf H} {\mathbf y} \]</span></p>
+<p>where we collected terms into matrices and vectors (<span class="math inline">\({\mathbf h_i}\)</span> can be any functions):</p>
+<ul>
+<li><span class="math inline">\(\hat{\mathbf y} = \begin{bmatrix} \hat Y_1 &amp; \cdots &amp; \hat Y_n \end{bmatrix}^\top \in \mathbb R^{n}\)</span></li>
+<li><span class="math inline">\({\mathbf y} = \begin{bmatrix} Y_1 &amp; \cdots &amp; Y_n \end{bmatrix}^\top \in \mathbb R^{n}\)</span></li>
+<li><span class="math inline">\(\mathbf H = \begin{bmatrix} \mathbf h_1(X_1) &amp; \cdots &amp; \mathbf h_n(X_n) \end{bmatrix}^\top \in \mathbb R^{n \times n}\)</span></li>
+</ul>
+<div class="fragment">
+<p>For example, OLS:</p>
+<p><span class="math display">\[ \hat{\mathbf y} = {\mathbf X} \hat \beta, \qquad \hat\beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y \]</span></p>
+<p>By inspection <span class="math inline">\(\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top\)</span></p>
+</div>
+</section>
+<section id="loo-cv-math-to-the-rescue-1" class="slide level2">
+<h2>LOO-CV: Math to the rescue!</h2>
+<p>For models where predictions are a <strong>linear function</strong> of the training responses*,</p>
+<p><strong>LOO-CV has a closed-form expression!</strong></p>
+<p><span class="math display">\[\mbox{LOO-CV} \,\, \hat R_n = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}.\]</span></p>
 <ul>
 <li>Numerator is the <em>squared residual</em> (loss) for training point <span class="math inline">\(i\)</span>.</li>
-<li>Denominator weights each residual by some factor (more on that in a bit…)</li>
+<li>Denominator weights each residual by <em>diagonal of <span class="math inline">\(H\)</span></em> some factor</li>
+<li><span class="math inline">\(H_{ii}\)</span> are <em>leverage/hat values</em>: tell you what happens when moving data point <span class="math inline">\(i\)</span> a bit</li>
 </ul>
+<p>*: plus some technicalities</p>
+<div class="fragment">
+<div class="callout callout-tip callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Tip</strong></p>
+</div>
+<div class="callout-content">
+<p>Deriving this sucks. I wouldn’t recommend doing it yourself.</p>
+</div>
+</div>
+</div>
+</div>
 </section>
-<section id="loo-cv-1" class="slide level2">
-<h2>LOO-CV</h2>
-<p><span class="math display">\[
-\text{When } \widehat{y}_i = \boldsymbol h_i(\mathbf{X})^\top \mathbf{y},
-\qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-[\boldsymbol h_i(x_i)]_{i})^2}
-\]</span></p>
-<p>Collecting all the terms into matrices and vectors</p>
-<ul>
-<li><span class="math inline">\(\hat{\mathbf y} = \begin{bmatrix} \hat y_1 &amp; \cdots &amp; \hat y_n \end{bmatrix}^\top \in \mathbb R^{n}\)</span></li>
-<li><span class="math inline">\({\mathbf y} = \begin{bmatrix} y_1 &amp; \cdots &amp; y_n \end{bmatrix}^\top \in \mathbb R^{n}\)</span></li>
-<li><span class="math inline">\(\mathbf H = \begin{bmatrix} \mathbf h_1(\boldsymbol x_1) &amp; \cdots &amp; \mathbf h_n(\mathbf x_n) \end{bmatrix}^\top \in \mathbb R^{n \times n}\)</span></li>
-</ul>
-<p>We have</p>
-<p><span class="math display">\[
-\hat{\mathbf y} = \mathbf H \mathbf y,
-\qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
-\]</span></p>
+<section id="computing-the-formula" class="slide level2">
+<h2>Computing the formula</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>cv_nice <span class="ot">&lt;-</span> <span class="cf">function</span>(mdl) <span class="fu">mean</span>((<span class="fu">residuals</span>(mdl) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">hatvalues</span>(mdl)))<span class="sc">^</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="what-happens-when-we-cant-use-the-magic-formula" class="slide level2">
-<h2>What happens when we can’t use the magic formula?</h2>
+<section id="what-happens-when-we-cant-use-the-formula" class="slide level2">
+<h2>What happens when we can’t use the formula?</h2>
 <p>(And can we get a better intuition about what’s going on?)</p>
 <p><span class="math display">\[
 \hat{\mathbf y} = \mathbf H \mathbf y,
 \qquad
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2}
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(Y_i -\widehat{Y}_i)^2}{(1-{\boldsymbol H}_{ii})^2}
 \]</span></p>
-<h3 id="what-do-we-know-about-h_ii">What do we know about <span class="math inline">\(h_{ii}\)</span>?</h3>
-<p>Writing out the <span class="math inline">\(\mathbf H\)</span> matrix for ordinary least squares (OLS) regression… <span class="math display">\[ \hat Y = X \hat \beta, \qquad \beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y \]</span></p>
-<div class="fragment">
-<p>This implies that <span class="math inline">\(\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top\)</span><br>
-</p>
+<p>Let’s look at OLS again… <span class="math display">\[ \hat Y = X \hat \beta, \qquad \beta = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf y \]</span></p>
+<p>This implies that <span class="math inline">\(\mathbf H = \mathbf X (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top\)</span></p>
 <ul>
-<li>The diagonals <span class="math inline">\(h_{ii}\)</span> are called <strong>hat values</strong>.</li>
-<li><span class="math inline">\(\mathbf H\)</span> has lots of nice properties.<br>
-</li>
-<li>The most important (for us) is that <span class="math inline">\(\tr{\mathbf H} = p\)</span>. (Why?)</li>
+<li>One really nice property of <span class="math inline">\(\mathbf H\)</span> is that <span class="math inline">\(\tr{\mathbf H} = p\)</span> (where <span class="math inline">\(X_n \in \R^p\)</span>). <span class="secondary">(Why?)</span></li>
 </ul>
-</div>
 </section>
-<section class="slide level2">
-
-<h3 id="generalizing-the-magic-formula">Generalizing the magic formula</h3>
+<section id="generalizing-the-loo-cv-formula" class="slide level2">
+<h2>Generalizing the LOO-CV formula</h2>
 <p>Let’s call <span class="math inline">\(\tr{\mathbf H} = p\)</span> the <em>degrees-of-freedom</em> (or just <em>df</em>) of our OLS estimator.<br>
 <span class="secondary">(Intuition: we have <span class="math inline">\(p\)</span> parameters to fit, or <span class="math inline">\(p\)</span> “degrees of freedom”)</span></p>
 <p><br>
-<strong>Idea:</strong> in our LOO-CV formula, approximate each <span class="math inline">\(h_{ii}\)</span> with <span class="math inline">\(\frac 1 n \sum_{i=1}^n h_{ii}\)</span>.<br>
+<strong>Idea:</strong> in our LOO-CV formula, approximate each <span class="math inline">\({\mathbf H}_{ii}\)</span> with the average <span class="math inline">\(\frac 1 n \sum_{i=1}^n {\mathbf H}_{ii}\)</span>.<br>
 <br>
 Then…</p>
 <p><span class="math display">\[
-\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-h_{ii})^2} \approx \frac{\text{MSE}}{(1-\text{df}/n)^2} \triangleq \text{GCV}
+\mbox{LOO-CV} = \frac{1}{n} \sum_{i=1}^n \frac{(y_i -\widehat{y}_i)^2}{(1-{\mathbf H}_{ii})^2} \approx \frac{\text{MSE}}{(1-\text{df}/n)^2} \triangleq \text{GCV}
 \]</span></p>
-<p>. . .</p>
-<div class="small">
-<ul>
-<li>Replacing <span class="math inline">\(h_{ii}\)</span> with <span class="math inline">\(\frac 1 n \sum_{i=1}^n h_{ii}\)</span> gives us a common denominator which we can pull out of the sum.</li>
-<li>Denominator: <span class="math inline">\(1 - \frac 1 n \sum_{i=1}^n h_{ii} = 1 - \frac 1 n \tr{\mathbf H} = 1 - \frac p n = 1 - \frac{\text{df}}{n}\)</span></li>
-<li>We are left with the average of the numerators, which is the training set MSE.</li>
-</ul>
-</div>
+<p>GCV stands for <strong>Generalized CV</strong> estimate</p>
 <!--
 ## Generalized CV
 
@@ -468,12 +542,14 @@ $$\textrm{GCV} = \frac{1}{n} \sum_{i=1}^n \frac{\widehat{e}_i^2}{(1-\textrm{df}/
 
 
 
+
 ::: {.cell layout-align="center"}
 
 ```{.r .cell-code}
 cv_nice <- function(mdl) mean((residuals(mdl) / (1 - hatvalues(mdl)))^2)
 ```
 :::
+
 
 
 
@@ -502,41 +578,44 @@ This is one way of understanding the name _degrees-of-freedom_
 </ul>
 </div>
 </section>
-<section id="alternative-interpretation" class="slide level2">
-<h2>Alternative interpretation:</h2>
-<p>Let’s go back to our linear model <span class="math inline">\(\mathbf{Y} = \mathbf{X}\beta + \epsilon\)</span>, with <span class="math inline">\(\epsilon \sim \mathcal N(0, \sigma^2)\)</span>.<br>
-(Define <span class="math inline">\(\boldsymbol \mu = \Expect{\boldsymbol Y \mid \boldsymbol X} = \boldsymbol X \beta\)</span> )</p>
-<p>Let <span class="math inline">\(\widehat{\mathbf{Y}}\)</span> be the estimator of <span class="math inline">\(\boldsymbol \mu\)</span> we get from OLS. What is the risk of <span class="math inline">\(\widehat{\mathbf{Y}}\)</span>?</p>
-<div class="fragment">
-<span class="math display">\[\begin{aligned}
-&amp; R_n(\widehat{\mathbf{Y}}) = \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} \\
-&amp;= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
-&amp;= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
-&amp;= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)} = \cdots =\\
-&amp;= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
-\end{aligned}\]</span>
-</div>
-</section>
-<section id="alternative-interpretation-1" class="slide level2">
-<h2>Alternative interpretation:</h2>
-<p><span class="math display">\[\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
+<section id="mallows-c_p" class="slide level2">
+<h2>Mallows <span class="math inline">\(C_p\)</span></h2>
+<p>Let’s see if we can generalize risk estimators from OLS (<span class="math inline">\(Y \sim \mathcal{N}(X^T\beta, \sigma^2)\)</span>) in other ways.</p>
+<p>Consider the <em>estimation risk</em> of estimating <span class="math inline">\(\mu_i = X_i^T\beta\)</span> with <span class="math inline">\(\hat Y_i = X_i^T\hat\beta\)</span>:</p>
+<p><span class="math display">\[R_n = E\left[\frac{1}{n}\sum_{i=1}^n (\hat Y_i - \mu_i)^2\right]\]</span></p>
+<p>Using the usual decomposition tricks:</p>
+<p><span class="math display">\[
+R_n= \Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2}
+= \underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{\text{train MSE}} -
+\underbrace{\sigma^2}_{\text{noise}} +
+\underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{\text{???}}
+\]</span></p>
+<!--
+
+\begin{aligned}
+&= \Expect{\frac{1}{n}\sum (\widehat Y_i-Y_i + Y_i -\mu_i)^2}\\
+&= \frac{1}{n}\Expect{\sum (\widehat Y_i-Y_i)^2} + \frac{1}{n}\Expect{\sum (Y_i-\mu_i)^2} + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)}\\
+&= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} + \sigma^2 + \frac{2}{n}\Expect{\sum (\widehat Y_i-Y_i)(Y_i-\mu_i)} = \cdots =\\
+&= \frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2} - \sigma^2 + \frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}
+\end{aligned}
+
+## Alternative interpretation:
+
+$$\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
 \underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{(1)} -
 \underbrace{\sigma^2}_{(2)} +
 \underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{(3)}
-\]</span></p>
-<div class="fragment">
-<ol type="1">
-<li>Training MSE</li>
-<li>Observational noise / irreducible error (recall <span class="math inline">\(\eps \sim \mathcal{N}(0, \sigma^2)\)</span>).</li>
-<li>???</li>
-</ol>
-</div>
+$$
+
+. . .
+
+-->
 </section>
-<section id="alternative-interpretation-2" class="slide level2">
-<h2>Alternative interpretation:</h2>
+<section id="mallows-c_p-1" class="slide level2">
+<h2>Mallows <span class="math inline">\(C_p\)</span></h2>
 <p><span class="math display">\[\Expect{\frac{1}{n}\sum (\widehat Y_i-\mu_i)^2} =
 \underbrace{\frac{1}{n}\sum \Expect{(\widehat Y_i-Y_i)^2}}_{\text{training error}} -
-\underbrace{\sigma^2}_{\text{irr. error}} +
+\underbrace{\sigma^2}_{\text{noise}} +
 \underbrace{\frac{2}{n}\sum\Cov{Y_i}{\widehat Y_i}}_{\text{???}}
 \]</span></p>
 <p>Recall that <span class="math inline">\(\widehat{\mathbf{Y}} = \mathbf H \mathbf{Y}\)</span> for some matrix <span class="math inline">\(\mathbf H\)</span>,</p>
@@ -544,9 +623,9 @@ This is one way of understanding the name _degrees-of-freedom_
 <p>This gives <em>Mallow’s <span class="math inline">\(C_p\)</span></em> aka <em>Stein’s Unbiased Risk Estimator</em>:</p>
 <p><span class="math display">\[ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n \]</span></p>
 </section>
-<section id="mallows-c_p" class="slide level2">
+<section id="mallows-c_p-2" class="slide level2">
 <h2>Mallow’s <span class="math inline">\(C_p\)</span></h2>
-<p><span class="math display">\[ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n \]</span> (We derived it for the OLS model, but again it can be generalized to other models.)</p>
+<p><span class="math display">\[ C_p = \text{MSE} + 2\hat{\sigma}^2 \: \textrm{df}/n\]</span> (We derived it for the OLS model, but again it can be generalized to other models.)</p>
 <div class="callout callout-important callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
