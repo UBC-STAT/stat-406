@@ -138,7 +138,6 @@ For `lm()`, this is just `p`, the number of predictors (Why?)
 This is one way of understanding the name _degrees-of-freedom_
 -->
 
-
 ## Generalized CV
 
 $$\textrm{GCV} = \frac{\textrm{MSE}}{(1-\textrm{df}/n)^2}$$
@@ -228,56 +227,199 @@ the level of this course.
 - What happens as the irreducible noise increase?
 
 
-## AIC and BIC
+
+
+
+
+
+# Last Day of Module 1
+(Risk, CV, Information Criteria, Model/Variable Selection)
+
+# HW 1 Due tonight (Sept 26) at 11pm
+
+## Where We've Been (and What We Have Left)
+
+::: flex
+::: w-50
+
+::: fragment
+1. Risk (and test error) of a predictor:
+    - $R_n = E[T_n]$
+    - $R_n = \text{Est. Risk + Irr. Noise}$
+    - $\text{Est. Risk} = \text{Bias}^2 + \text{Var}$
+    - Best model = lowest risk
+:::
+
+::: fragment
+2. Estimating risk with *holdout data*
+    - ~~Estimate risk with training error~~ (bad!)
+    - $k$-fold cross-validation (CV)
+    - Leave-one-out CV (LOO-CV)
+:::
+:::
+
+::: w-50
+
+::: fragment
+3. Estimating risk with *information criteria*
+    - Information criteria
+    - Mallows $C_p$
+    - AIC/BIC
+:::
+  
+::: fragment
+4. Using risk estimates for *model/variable selection*
+    - What is model selection?
+    - Practical algorithms for model/variable selection
+:::
+  
+:::
+:::
+  
+## Cross Validation
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+#| fig-width: 10
+par(mar = c(0, 0, 0, 0))
+plot(NA, NA, ylim = c(0, 5), xlim = c(0, 10), bty = "n", yaxt = "n", xaxt = "n")
+rect(0, .1 + c(0, 2, 3, 4), 10, .9 + c(0, 2, 3, 4), col = blue, density = 10)
+rect(c(0, 1, 2, 9), rev(.1 + c(0, 2, 3, 4)), c(1, 2, 3, 10), 
+     rev(.9 + c(0, 2, 3, 4)), col = red, density = 10)
+points(c(5, 5, 5), 1 + 1:3 / 4, pch = 19)
+text(.5 + c(0, 1, 2, 9), .5 + c(4, 3, 2, 0), c("1", "2", "3", "K"), cex = 3, 
+     col = red)
+text(6, 4.5, "Training data", cex = 3, col = blue)
+text(2, 1.5, "Validation data", cex = 3, col = red)
+```
+
+- Unbiased estimate of $R_{n(1-1/K)}$ (but biased estimate of $R_n$)
+- Requires training $K$ models
+
+## GCV and Mallow's $C_p$
+
+$$\textrm{GCV} = \frac{\textrm{MSE}}{(1-\textrm{df}/n)^2}$$
+[(a hacked version of the magic LOO-CV formula)]{.small}
+
+$$C_p = \mathrm{MSE} + 2 \hat{\sigma}^2 \textrm{df}/n$$
+[(closed-form derivation of risk for OLS model with fixed $X$s)]{.small}
+
+\
+
+- $\mathrm{MSE} = \frac 1 N \sum_{i=1}^N (y_i - \hat f(x_i))^2$ is the *training error*
+- $\mathrm{df}$ is the *degrees of freedom*
+- For OLS, $\mathrm{df} = p$ (number of predictors)
+
+## Akaike Information Criterion and Bayesian Information Criterion
 
 These have a very similar flavor to $C_p$, but their genesis is different.
 
-Without going into too much detail, they look like
+Without going into too much detail, they look like \
+
 
 $\textrm{AIC}/n = -2\textrm{log-likelihood}/n + 2\textrm{df}/n$
 
 $\textrm{BIC}/n = -2\textrm{log-likelihood}/n + 2\log(n)\textrm{df}/n$
 
-. . .
-
-In the case of a linear model with Gaussian errors and $p$ predictors
-
-\begin{aligned}
-\textrm{AIC}/n &= \log(2\pi) + \log(RSS/n) + 2(p+1)/n \\
-&\propto \log(RSS) + 2(p+1)/n
-\end{aligned}
-
-( $p+1$ because of the unknown variance, intercept included in $p$ or not)
+[What is log-likelihood?]{.secondary}
 
 . . .
+
+In the case of $Y = X \hat \beta + \epsilon$ with $\epsilon \sim \mathcal{N}(0, \hat \sigma^2)$...
+
+
+## AIC and BIC
+
+In the case of $Y = X \hat \beta + \epsilon$ with $\epsilon \sim \mathcal{N}(0, \hat \sigma^2)$
+
+$$ \text{log-likelihood} = -\frac{1}{2} \left( n\log(2\pi) + n\log(\hat \sigma^2) + \left(\textstyle \sum_{i=1}^n (Y_i - X\hat\beta)^2\right)/ \hat \sigma^2 \right) $$
+
+- [$\sum_{i=1}^n (Y_i - X\hat\beta)^2 = n(\textrm{MSE})$]{.small}
+- [$\hat \sigma^2 = \left(\textstyle \sum_{i=1}^n (Y_i - X\hat\beta)^2\right) / n = \textrm{MSE}$]{.small}
+
+So, after simplifying...
+
+$$\textrm{AIC}/n = \log(\textrm{MSE}) + 2 \textrm{df}/n + \mathrm{Const.}$$
+
+$$\textrm{BIC}/n = \log(\textrm{MSE}) + 2 \log(n) \textrm{df}/n + \mathrm{Const.}$$
 
 ::: callout-important
 Unfortunately, different books/software/notes define these differently. Even different R packages. This is __super annoying__. 
-
-Forms above are in [ESL] eq. (7.29) and (7.35). [ISLR] gives special cases in Section 6.1.3. Remember the generic form here.
 :::
 
+
+## Summary
+
+We have seen 5 risk estimators:
+
+0. ~~Training error, R^2, p-values~~
+1. k-fold CV / LOO-CV
+2. Generalized CV
+3. Mallows $C_p$
+4. Akaike Information Criterion (AIC)
+5. Bayesian Information Criterion (BIC)
+
+. . .
+
+### Geoff & Trevor's recommendation: 
+
+**Use CV.** (LOO-CV if you have a magic formula, k-fold otherwise.)
+
+[(So why did we just suffer through learning all those boring information criteria????)]{.secondary}
+
+
+## Information criteria help us reason about models statistically
+
+For regression models (with Gaussian noise), our information criteria are...
+$$
+\begin{align}
+\textrm{GCV} &= \textrm{MSE} / (1-\textrm{df}/n)^2 \\
+C_p &= \mathrm{MSE} + 2 \hat \sigma^2 \textrm{df}/n \\
+\textrm{AIC}/n &= \log(\textrm{MSE}) + 2 \textrm{df}/n + \mathrm{Const.} \\
+\textrm{BIC}/n &= \log(\textrm{MSE}) + 2 \log(n) \textrm{df}/n + \mathrm{Const.}
+\end{align}
+$$
+
+### What is similar about these criteria?
+
+### What is different?
 
 
 ## Over-fitting vs. Under-fitting
 
+All 4 information criteria become large (i.e. we have high risk) when either
 
-> Over-fitting means estimating a really complicated function when you don't have enough data.
+1. Training MSE is large
+2. The ratio of $\textrm{df}/n$ is large
+
+. . .
+
+### The two failure modes of models
+
+- **Over-fitting** means estimating a really complicated function when you don't have enough data.
+- **Under-fitting** means estimating a really simple function when you have lots of data.
+
+[For an overfit model, is MSE large or is $\textrm{df}/n$ large? What about for an underfit model?]{.secondary}
+
+[Are overfit models high-bias or high-variance? What about underfit models?]{.secondary}
 
 
-This is likely a **low-bias / high-variance** situation.
+## Over-fitting vs. Under-fitting
+
+- Overfitting = high variance = large $\textrm{df}/n$
+- Underfitting = high biase = large training $\textrm{MSE}$
+
+::: callout-tip
+We have a diagonstic for determining if we're high bias versus high variance!\
+Is training MSE large, or is $\textrm{df}/n$?
+:::
+
+The best way to avoid overfitting/underfitting is to use a reasonable estimate
+of _prediction risk_ to choose how complicated your model should be.
 
 
-> Under-fitting means estimating a really simple function when you have lots of data. 
-
-
-This is likely a **high-bias / low-variance** situation.
-
-Both of these outcomes are bad (they have high risk $=$ big $R_n$ ).
-
-The best way to avoid them is to use a reasonable estimate of _prediction risk_ to choose how complicated your model should be.
-
-
+<!--
 ## Commentary
 
 - When comparing models, choose one criterion: CV / AIC / BIC / Cp / GCV. 
@@ -300,7 +442,7 @@ This material is more challenging than the level of this course, and is easily a
 # My recommendation: 
 
 **Use CV.**
-
+-->
 
 ## A few more caveats
 
@@ -317,12 +459,14 @@ For example,
 
 [This is not always justified.]{.secondary}
 
-1. The "high-level intuition" is for "nested" models.
+1. We can compare "nested" models (i.e. where one model is a special case of another)
 
 1. Different likelihoods aren't comparable.
 
 1. Residuals / response variables on different scales aren't directly comparable.
 
+
+
 # Next time ...
 
-Greedy selection
+Using risk estimates for model selection.

@@ -1,5 +1,5 @@
 ---
-lecture: "07 Greedy selection"
+lecture: "07 practical model/variable selection"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -7,18 +7,20 @@ metadata-files:
 
 {{< include _titleslide.qmd >}}
 
-## Recap
+## Model Selection
 
-Model Selection means [select a family of distributions for your data]{.secondary}.
+Model Selection means [select the best distributions to describe your data]{.secondary}.\
+[(I.e. the model with the smallest risk $R_n$.)]{.small}
 
-Ideally, we'd do this by comparing the $R_n$ for one family with that for
-another.
+. . .
 
-We'd use whichever has smaller $R_n$.
+### The procedure
 
-But $R_n$ depends on the truth, so we estimate it with $\widehat{R}$.
+1. Generate a list of (comparable) candidate models ($\mathcal M = \{ \mathcal P_1, \mathcal P_2, \ldots \}$)
+2. Choose a procedure for estimating risk (e.g. $C_p$)
+3. Train each model and estimate its risk
+4. Choose the model with the lowest risk (e.g. $\argmin_{\mathcal P \in \mathcal M} C_p(\mathcal P)$)
 
-Then we use whichever has smaller $\widehat{R}$.
 
 ## Example
 
@@ -39,7 +41,11 @@ Model 3: `y ~ x2 + sin(x1 * x2)`
 
 . . .
 
-(What are the families for each of these?)
+[The models above are written in short hand. In full statistical glory...]{.secondary}
+
+$$
+\text{Model 1} = \left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} + \beta_2X^{(2)}), \: \sigma^2 \right) \quad \text{for some } \beta_0, \beta_1, \beta_2, \sigma \right\}
+$$
 
 
 ## Fit each model and estimate $R_n$
@@ -59,41 +65,37 @@ map(fits, ~ tibble(
 
 ## Model Selection vs. Variable Selection
 
-Model selection is very comprehensive
+Variable selection is a subset of model selection.
 
-You choose a full statistical model (probability distribution) that will be hypothesized to have generated the data.
+> Assume we have 2 predictors (`x1`, `x2`) and we're trying to choose which to include in a linear regressor:
+>
+> Model 1: `y ~ x1` [ (i.e. $\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} ), \: \sigma^2 \right) \right\}$) ]{.small} \
+> Model 2: `y ~ x2` [ (i.e. $\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1X^{(2)}), \: \sigma^2 \right)  \right\}$) ]{.small} \
+> Model 3: `y ~ x1 + x2` [ (i.e. $\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} + \beta_2X^{(2)}), \: \sigma^2 \right)  \right\}$) ]{.small}
 
-Variable selection is a subset of this. It means 
-
-> choosing which predictors to include in a predictive model
-
-Eliminating a predictor, means removing it from the model.
-
-Some [procedures]{.hand} automatically search predictors, and eliminate some.
-
-We call this variable selection. But the procedure is implicitly selecting a model
-as well.
+*Choosing which predictors to include is implicitly selecting a model.*
 
 . . .
 
-Making this all the more complicated, with lots of effort, we can map procedures/algorithms to larger classes of probability models, and analyze them.
+::: callout-note
+Note that $\mathrm{Model 1}, \mathrm{Model 2} \subset \mathrm{Model 3}$ \
+We say that these models are **nested**.
+:::
 
 ## Selecting variables / predictors with linear methods
 
 ::: flex
-::: w-50
+::: w-40
 
-Suppose we have a pile of predictors.
+Suppose we have a set of predictors.
 
 We estimate models with different subsets of predictors and use CV / Cp / AIC 
 / BIC to decide which is preferred.
 
-Sometimes you might have a few plausible subsets. Easy enough to choose with our criterion.
-
-Sometimes you might just have a bunch of predictors, then what do you do?
+How do we choose which variable subsets to consider?
 :::
 
-::: w-50
+::: w-60
 All subsets
 : estimate model based on every possible subset of size $|\mathcal{S}| \leq \min\{n, p\}$, use one with 
 lowest risk estimate
@@ -109,9 +111,12 @@ Hybrid
 :::
 :::
 
-# Note:
+. . .
 
-[Within each procedure, we're comparing _nested_ models.]{.secondary}
+::: callout-caution
+Within each procedure, we're comparing _nested_ models.
+This is important.
+:::
 
 
 ## Costs and benefits
@@ -121,6 +126,8 @@ All subsets
 : 👍 estimates each subset  
 💣 takes $2^p$ model fits when $p<n$. If $p=50$, this is about $10^{15}$ models. 
 
+. . .
+
 Forward selection
 : 👍 computationally feasible  
 💣 ignores some models, correlated predictors means bad performance
@@ -129,6 +136,8 @@ Backward selection
 : 👍 computationally feasible  
 💣 ignores some models, correlated predictors means bad performance  
 💣 doesn't work if $p>n$
+
+. . .
 
 Hybrid
 : 👍 visits more models than forward/backward  
@@ -278,35 +287,46 @@ tibble(
 <br><br><br><br>
 
 ::: r-stack
-[somehow, for this seed, everything is the same]{.secondary .large}
+[for this dataset, everything is the same]{.secondary .large}
 :::
 
-## Randomness and prediction error
+## What algorithm should you use in practice?
 
-All of that was for one data set.
+Each algorithm (forward selection, backward selection, etc.) produces a series of models. \
+For a given algorithm, we know how to choose amongst the models in a principled way (model selection!)
 
-Doesn't say which [procedure]{.secondary} is better [generally]{.secondary}.
+[How do we choose which algorithm to use?]{.secondary}
 
-If we want to know how they compare [generally]{.secondary}, we should repeat many times
-  
-  1. Generate training data
-  1. Estimate with different algorithms
-  1. Predict held-out set data
-  1. Examine prediction MSE (on held-out set)
-  
 . . .
 
-I'm not going to do all subsets, just the truth, forward selection, backward, and the full model
+### As a practicioner
 
-For forward/backward selection, I'll use Cp to choose the final size
+Determine how big your computational budget is, make an educated guess.
+
+### As a researcher
+
+We can systematically compare the different algorithms by simulating multiple data sets
+and comparing the prediction error of the models produced by each algorithm.
 
 
-#  ☠️☠️ Danger ☠️☠️
+## Comparing algorithms through simulation
 
-You cannot compare the Cp scores between forward selection and backward selection
-to decide which to use.
+::: callout-note
+- For each algorithm (forward selection, backward selection, all subsets), do:
+   - For $i \in [1, 100]$, do
+        1. Generate a samples of training data
+        1. Selected a model (e.g. based on $C_p$) generated by the algorithm
+        1. Make predictions on held-out set data
+        1. Examine prediction MSE (on held-out set)
 
-Why not?
+Compare the average MSE (across the 100 simulations) for each algorithm.
+:::
+
+. . .
+
+Why are we using held-out MSE to compare [forward selection vs. backward selection vs. all subsets]{.secondary}?
+Why not use $C_p$ of the selected model?
+
 
 
 
@@ -365,6 +385,7 @@ our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
   list_rbind(names_to = "sim")
 ```
 
+<!--
 ## What is "Oracle"
 
 ::: flex
@@ -376,7 +397,7 @@ our_sim <- map(1:50, ~ simulate_and_estimate_them_all(406)) |>
 ![](https://www.worldhistory.org/img/r/p/750x750/186.jpg.webp?v=1628028003)
 :::
 :::
-
+-->
 
 ## Results
 
