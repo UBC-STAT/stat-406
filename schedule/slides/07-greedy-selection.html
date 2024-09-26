@@ -395,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>07 Greedy selection</h2>
+<h2>07 practical model/variable selection</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 18 September 2023</p>
+<p>Last modified – 25 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -418,15 +418,30 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 \newcommand{\snorm}[1]{\lVert #1 \rVert}
+\newcommand{\tr}[1]{\mbox{tr}(#1)}
+\newcommand{\brt}{\widehat{\beta}^R_{s}}
+\newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
+\newcommand{\bls}{\widehat{\beta}_{ols}}
+\newcommand{\blt}{\widehat{\beta}^L_{s}}
+\newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="recap" class="slide level2">
-<h2>Recap</h2>
-<p>Model Selection means <span class="secondary">select a family of distributions for your data</span>.</p>
-<p>Ideally, we’d do this by comparing the <span class="math inline">\(R_n\)</span> for one family with that for another.</p>
-<p>We’d use whichever has smaller <span class="math inline">\(R_n\)</span>.</p>
-<p>But <span class="math inline">\(R_n\)</span> depends on the truth, so we estimate it with <span class="math inline">\(\widehat{R}\)</span>.</p>
-<p>Then we use whichever has smaller <span class="math inline">\(\widehat{R}\)</span>.</p>
+<section id="model-selection" class="slide level2">
+<h2>Model Selection</h2>
+<p>Model Selection means <span class="secondary">select the best distributions to describe your data</span>.<br>
+<span class="small">(I.e. the model with the smallest risk <span class="math inline">\(R_n\)</span>.)</span></p>
+<div class="fragment">
+<h3 id="the-procedure">The procedure</h3>
+<ol type="1">
+<li>Generate a list of (comparable) candidate models (<span class="math inline">\(\mathcal M = \{ \mathcal P_1, \mathcal P_2, \ldots \}\)</span>)</li>
+<li>Choose a procedure for estimating risk (e.g.&nbsp;<span class="math inline">\(C_p\)</span>)</li>
+<li>Train each model and estimate its risk</li>
+<li>Choose the model with the lowest risk (e.g.&nbsp;<span class="math inline">\(\argmin_{\mathcal P \in \mathcal M} C_p(\mathcal P)\)</span>)</li>
+</ol>
+</div>
 </section>
 <section id="example" class="slide level2">
 <h2>Example</h2>
@@ -442,7 +457,10 @@
 <p>Model 2: <code>y ~ x1 + x2 + x1*x2</code></p>
 <p>Model 3: <code>y ~ x2 + sin(x1 * x2)</code></p>
 <div class="fragment">
-<p>(What are the families for each of these?)</p>
+<p><span class="secondary">The models above are written in short hand. In full statistical glory…</span></p>
+<p><span class="math display">\[
+\text{Model 1} = \left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} + \beta_2X^{(2)}), \: \sigma^2 \right) \quad \text{for some } \beta_0, \beta_1, \beta_2, \sigma \right\}
+\]</span></p>
 </div>
 </section>
 <section id="fit-each-model-and-estimate-r_n" class="slide level2">
@@ -470,29 +488,40 @@
 </section>
 <section id="model-selection-vs.-variable-selection" class="slide level2">
 <h2>Model Selection vs.&nbsp;Variable Selection</h2>
-<p>Model selection is very comprehensive</p>
-<p>You choose a full statistical model (probability distribution) that will be hypothesized to have generated the data.</p>
-<p>Variable selection is a subset of this. It means</p>
+<p>Variable selection is a subset of model selection.</p>
 <blockquote>
-<p>choosing which predictors to include in a predictive model</p>
+<p>Assume we have 2 predictors (<code>x1</code>, <code>x2</code>) and we’re trying to choose which to include in a linear regressor:</p>
+<p>Model 1: <code>y ~ x1</code> <span class="small">(i.e.&nbsp;<span class="math inline">\(\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} ), \: \sigma^2 \right) \right\}\)</span>)</span><br>
+Model 2: <code>y ~ x2</code> <span class="small">(i.e.&nbsp;<span class="math inline">\(\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1X^{(2)}), \: \sigma^2 \right)  \right\}\)</span>)</span><br>
+Model 3: <code>y ~ x1 + x2</code> <span class="small">(i.e.&nbsp;<span class="math inline">\(\left\{ Y|X  \sim \mathcal N\left( \:( \beta_0 + \beta_1 X^{(1)} + \beta_2X^{(2)}), \: \sigma^2 \right)  \right\}\)</span>)</span></p>
 </blockquote>
-<p>Eliminating a predictor, means removing it from the model.</p>
-<p>Some <span class="hand">procedures</span> automatically search predictors, and eliminate some.</p>
-<p>We call this variable selection. But the procedure is implicitly selecting a model as well.</p>
+<p><em>Choosing which predictors to include is implicitly selecting a model.</em></p>
 <div class="fragment">
-<p>Making this all the more complicated, with lots of effort, we can map procedures/algorithms to larger classes of probability models, and analyze them.</p>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<p>Note that <span class="math inline">\(\mathrm{Model 1}, \mathrm{Model 2} \subset \mathrm{Model 3}\)</span><br>
+We say that these models are <strong>nested</strong>.</p>
+</div>
+</div>
+</div>
 </div>
 </section>
 <section id="selecting-variables-predictors-with-linear-methods" class="slide level2">
 <h2>Selecting variables / predictors with linear methods</h2>
 <div class="flex">
-<div class="w-50">
-<p>Suppose we have a pile of predictors.</p>
+<div class="w-40">
+<p>Suppose we have a set of predictors.</p>
 <p>We estimate models with different subsets of predictors and use CV / Cp / AIC / BIC to decide which is preferred.</p>
-<p>Sometimes you might have a few plausible subsets. Easy enough to choose with our criterion.</p>
-<p>Sometimes you might just have a bunch of predictors, then what do you do?</p>
+<p>How do we choose which variable subsets to consider?</p>
 </div>
-<div class="w-50">
+<div class="w-60">
 <dl>
 <dt>All subsets</dt>
 <dd>
@@ -513,11 +542,21 @@ combine forward and backward smartly
 </dl>
 </div>
 </div>
-</section>
-<section>
-<section id="note" class="title-slide slide level1 center">
-<h1>Note:</h1>
-<p><span class="secondary">Within each procedure, we’re comparing <em>nested</em> models.</span></p>
+<div class="fragment">
+<div class="callout callout-caution callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Caution</strong></p>
+</div>
+<div class="callout-content">
+<p>Within each procedure, we’re comparing <em>nested</em> models. This is important.</p>
+</div>
+</div>
+</div>
+</div>
 </section>
 <section id="costs-and-benefits" class="slide level2">
 <h2>Costs and benefits</h2>
@@ -527,6 +566,9 @@ combine forward and backward smartly
 👍 estimates each subset<br>
 💣 takes <span class="math inline">\(2^p\)</span> model fits when <span class="math inline">\(p&lt;n\)</span>. If <span class="math inline">\(p=50\)</span>, this is about <span class="math inline">\(10^{15}\)</span> models.
 </dd>
+</dl>
+<div class="fragment">
+<dl>
 <dt>Forward selection</dt>
 <dd>
 👍 computationally feasible<br>
@@ -538,12 +580,17 @@ combine forward and backward smartly
 💣 ignores some models, correlated predictors means bad performance<br>
 💣 doesn’t work if <span class="math inline">\(p&gt;n\)</span>
 </dd>
+</dl>
+</div>
+<div class="fragment">
+<dl>
 <dt>Hybrid</dt>
 <dd>
 👍 visits more models than forward/backward<br>
 💣 slower
 </dd>
 </dl>
+</div>
 </section>
 <section id="synthetic-example" class="slide level2">
 <h2>Synthetic example</h2>
@@ -809,30 +856,51 @@ Selection Algorithm: backward
 <h2></h2>
 <p><br><br><br><br></p>
 <div class="r-stack">
-<p><span class="secondary large">somehow, for this seed, everything is the same</span></p>
+<p><span class="secondary large">for this dataset, everything is the same</span></p>
 </div>
 </section>
-<section id="randomness-and-prediction-error" class="slide level2">
-<h2>Randomness and prediction error</h2>
-<p>All of that was for one data set.</p>
-<p>Doesn’t say which <span class="secondary">procedure</span> is better <span class="secondary">generally</span>.</p>
-<p>If we want to know how they compare <span class="secondary">generally</span>, we should repeat many times</p>
-<ol type="1">
-<li>Generate training data</li>
-<li>Estimate with different algorithms</li>
-<li>Predict held-out set data</li>
-<li>Examine prediction MSE (on held-out set)</li>
-</ol>
+<section id="what-algorithm-should-you-use-in-practice" class="slide level2">
+<h2>What algorithm should you use in practice?</h2>
+<p>Each algorithm (forward selection, backward selection, etc.) produces a series of models.<br>
+For a given algorithm, we know how to choose amongst the models in a principled way (model selection!)</p>
+<p><span class="secondary">How do we choose which algorithm to use?</span></p>
 <div class="fragment">
-<p>I’m not going to do all subsets, just the truth, forward selection, backward, and the full model</p>
-<p>For forward/backward selection, I’ll use Cp to choose the final size</p>
+<h3 id="as-a-practicioner">As a practicioner</h3>
+<p>Determine how big your computational budget is, make an educated guess.</p>
+<h3 id="as-a-researcher">As a researcher</h3>
+<p>We can systematically compare the different algorithms by simulating multiple data sets and comparing the prediction error of the models produced by each algorithm.</p>
 </div>
-</section></section>
-<section>
-<section id="danger" class="title-slide slide level1 center">
-<h1>☠️☠️ Danger ☠️☠️</h1>
-<p>You cannot compare the Cp scores between forward selection and backward selection to decide which to use.</p>
-<p>Why not?</p>
+</section>
+<section id="comparing-algorithms-through-simulation" class="slide level2">
+<h2>Comparing algorithms through simulation</h2>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Note</strong></p>
+</div>
+<div class="callout-content">
+<ul>
+<li>For each algorithm (forward selection, backward selection, all subsets), do:
+<ul>
+<li>For <span class="math inline">\(i \in [1, 100]\)</span>, do
+<ol type="1">
+<li>Generate a samples of training data</li>
+<li>Selected a model (e.g.&nbsp;based on <span class="math inline">\(C_p\)</span>) generated by the algorithm</li>
+<li>Make predictions on held-out set data</li>
+<li>Examine prediction MSE (on held-out set)</li>
+</ol></li>
+</ul></li>
+</ul>
+<p>Compare the average MSE (across the 100 simulations) for each algorithm.</p>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Why are we using held-out MSE to compare <span class="secondary">forward selection vs.&nbsp;backward selection vs.&nbsp;all subsets</span>? Why not use <span class="math inline">\(C_p\)</span> of the selected model?</p>
+</div>
 </section>
 <section id="code-for-simulation" class="slide level2">
 <h2>Code for simulation</h2>
@@ -886,17 +954,19 @@ Selection Algorithm: backward
 <span id="cb19-32"><a></a>our_sim <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>, <span class="sc">~</span> <span class="fu">simulate_and_estimate_them_all</span>(<span class="dv">406</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb19-33"><a></a>  <span class="fu">list_rbind</span>(<span class="at">names_to =</span> <span class="st">"sim"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="what-is-oracle" class="slide level2">
-<h2>What is “Oracle”</h2>
-<div class="flex">
-<div class="w-70">
-<p><a title="Helen Simonsson, CC BY-SA 3.0 <https://creativecommons.org/licenses/by-sa/3.0>, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Delfi_Apollons_tempel.jpg"><img width="800" alt="Delfi Apollons tempel" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Delfi_Apollons_tempel.jpg/512px-Delfi_Apollons_tempel.jpg"></a></p>
-</div>
-<div class="w-30">
-<p><img data-src="https://www.worldhistory.org/img/r/p/750x750/186.jpg.webp?v=1628028003"></p>
-</div>
-</div>
+<!--
+## What is "Oracle"
+
+::: flex
+::: w-70
+<a title="Helen Simonsson, CC BY-SA 3.0 &lt;https://creativecommons.org/licenses/by-sa/3.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:Delfi_Apollons_tempel.jpg"><img width="800" alt="Delfi Apollons tempel" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Delfi_Apollons_tempel.jpg/512px-Delfi_Apollons_tempel.jpg"></a>
+:::
+
+::: w-30
+![](https://www.worldhistory.org/img/r/p/750x750/186.jpg.webp?v=1628028003)
+:::
+:::
+-->
 </section>
 <section id="results" class="slide level2">
 <h2>Results</h2>
@@ -932,7 +1002,7 @@ Selection Algorithm: backward
 </div>
 </div>
 </div></div>
-</section></section>
+</section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p><span class="large">Module 2</span></p>
