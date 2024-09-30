@@ -10,26 +10,23 @@ metadata-files:
 
 ## Recap
 
-So far, we have emphasized __model selection__ as
+General idea:
 
-[Decide which predictors we would like to use in our linear model]{.hand}
+1. Pick a *model* (a family of distributions).
+1. Pick a *loss function* (measures how wrong predictions are).
+1. Design a *predictor/estimator* that minimizes the *prediction/estimation risk*.
 
-Or similarly:
+Risk includes [bias]{.secondary}, [variance]{.secondary}, and [irreducible error]{.secondary}.
 
-[Decide which of a few linear models to use]{.hand}
-
-To do this, we used a risk estimate, and chose the "model" with the lowest estimate
+So far, trade bias/variance via *variable selection* using a risk estimate.
 
 . . .
 
-Moving forward, we need to generalize this to
+**Today:** trade bias/variance via [*regularization*]{.secondary} 
 
-[Decide which of possibly infinite prediction functions]{.hand} $f\in\mathcal{F}$ [to use]{.hand}
+- use **all** predictors
+- shrink $\hat\beta$ towards 0 (increase bias, reduce variance)
 
-Thankfully, this isn't really any different. We still use those same risk estimates.
-
-
-[Remember:]{.secondary} We were choosing models that balance bias and variance (and hence have low prediction risk).
 
 $$
 \newcommand{\brt}{\widehat{\beta}^R_{s}}
@@ -41,6 +38,7 @@ $$
 
 
 
+<!--
 ## Regularization
 
 
@@ -53,49 +51,86 @@ $$
 * I mean [ALL]{.tertiary}.
 
 * But, make your estimates of $\beta$ "smaller"
+-->
+
+## OLS: bias and variance
+
+Minimize 
+
+$$\min_\beta \frac{1}{n}\sum_i (y_i - x_i^T\beta)^2 \quad \mbox{ subject to } \quad \beta \in \R^p$$
+
+. . .
+
+Can rewrite using matrix-vector notation:
+
+$$\min_\beta \frac{1}{n}\| \y - \X\beta\|_2^2\quad \mbox{ subject to } \quad \beta \in \R^p$$
+
+. . .
+
+Solve by setting derivative to 0: $\bls = (\X^\top\X)^{-1}\X^\top\y$
+
+- unbiased: $\E[\bls] = \E[\E[\bls \mid \X]] = \E[(\X^\top\X)^{-1}\X^\top\X\beta] = \beta$
+- variance: $\Var{\bls} =  \sigma^2(\X^\top \X)^{-1}$ ??
+
+## Singular Value Decomposition (SVD) {background-color="#97D4E9"}
+
+A rectangular $n \times p$ matrix $X$ has *singular value decomposition* $X = U D V^\top$
+
+- $U$ is $n\times n$,  *orthonormal*: $U^\top U = UU^\top = I$
+- $V$ is $p\times p$, *orthonormal*: $V^\top V = VV^\top = I$
+- $D$ is rectangular $n\times p$, *diagonal and nonnegative* (*singular values*)
+
+. . .
+
+e.g. $n = 4, p = 2$, singular values $d_1, d_2$:
+
+$$D = \left[\begin{array} dd_1 & 0 \\ 0 & d_2 \\ 0 & 0 \\ 0 & 0 \end{array}\right] \qquad D^\top D = \left[\begin{array} dd_1^2 & 0 \\ 0 & d_2^2\end{array}\right].$$
+
+. . .
+
+If $X$ has (almost) linearly dependent columns, some singular values in $D$ are (near) zero
+
+$X$ is *(nearly) rank-deficient* or *ill-conditioned*
+
+## The variance of OLS
+
+Let's use the SVD $X = UDV^T$ to examine the OLS variance $\Var{\bls} =  \sigma^2(\X^\top \X)^{-1}$:
 
 
+$$(\X^\top \X)^{-1} = (VD^\top U^\top UDV^\top)^{-1} = V (D^\top D)^{-1}V^\top =  V\left[\begin{array}dd_1^{-2} & 0 & 0\\ 0 & \ddots & 0 \\ 0 & 0 & d_p^{-2}\end{array}\right]V^\top$$ 
 
-## Brief aside on optimization {background-color="#97D4E9"}
+. . .
 
-* An optimization problem has 2 components:
+[Multicollinearity:]{.secondary} a linear combination of variables is nearly equal to another variable. 
 
-    1. The "Objective function": e.g. $\frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2$.
-    2. The "constraint": e.g. "fewer than 5 non-zero entries in $\beta$".
-    
-* A constrained minimization problem is written
+* so $\X$ is ill-conditioned
+* so some singular values $d_j\approx 0$
+* so $d^{-2}_j$ is large
+* so $\bls$ has large, unstable values; i.e., **large variance**
 
+## How to stop large, unstable values of $\widehat{\beta}$?
 
-$$\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)$$
-
-* $f(\beta)$ is the objective function
-* $C(\beta)$ is the constraint
-
-
-## Ridge regression (constrained version)
-
-One way to do this for regression is to solve (say):
+Idea: **constrain** the values of $\beta$ to be small. For $s > 0$:
 $$
-\minimize_\beta \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2
-\quad \st \sum_j \beta^2_j < s
+\minimize_\beta \underbrace{\frac{1}{n}\|\y - \X\beta\|_2^2}_{\text{objective function}} \quad \st \underbrace{\|\beta\|_2^2 < s}_{\text{constraint}}.
 $$
-for some $s>0$.
 
-* This is called "ridge regression".
-* Call the [minimizer]{.secondary} of this problem $\brt$
+Recall, for a vector $\beta \in \R^p$
+
+$\ell_2$-norm
+: $\|\beta\|_2 = \sqrt{\beta_1^2 + \beta_2^2 + \dots + \beta_p^2} = \left(\sum_{j=1}^p |\beta_j|^2\right)^{1/2}$
+(so $\|\beta\|_2^2 = \sum_j \beta_j^2$)
 
 . . .
 
 Compare this to ordinary least squares:
 
 $$
-\minimize_\beta \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 
-\quad \st \beta \in \R^p
+\minimize_\beta \underbrace{\frac{1}{n}\|\y-\X\beta\|_2^2}_{\text{same objective}} 
+\quad \st \underbrace{\beta \in \R^p}_{\textbf{no constraint}}
 $$
 
-
-
-## Geometry of ridge regression (contours)
+## Geometry of constrained regression (contours)
 
 ```{r plotting-functions}
 #| code-fold: true
@@ -159,71 +194,30 @@ ggplot(nb, aes(x, y)) +
   )
 ```
 
-## Brief aside on norms
-
-Recall, for a vector $z \in \R^p$
-
-
-$$\snorm{z}_2 = \sqrt{z_1^2 + z_2^2 + \cdots + z^2_p} = \sqrt{\sum_{j=1}^p z_j^2}$$
-
-
-So, 
-
-$$\snorm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.$$
-
-
-## Other norms we should remember:
-
-$\ell_q$-norm
-: $\left(\sum_{j=1}^p |z_j|^q\right)^{1/q}$
-
-$\ell_1$-norm (special case)
-: $\sum_{j=1}^p |z_j|$
-
-$\ell_0$-norm
-: $\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert$
-
-$\ell_\infty$-norm
-: $\max_{1\leq j \leq p} |z_j|$
-
-::: aside
-Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
-:::
-
-
 ## Ridge regression
 
 An equivalent way to write
 
-$$\brt = \argmin_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2$$
+$$\brt = \argmin_{\beta} \frac{1}{n}\|\y - \X\beta\|_2^2 \st  || \beta ||_2^2 \leq s$$
 
+is as a [*regularized*]{.secondary} (or *penalized*) optimization with *regularization weight* $\lambda$:
 
-is in the [Lagrangian]{.secondary} form
+$$\brl = \argmin_{ \beta} \frac{1}{n}\|\y-\X\beta\|_2^2 + \lambda || \beta ||_2^2.$$
 
-
-$$\brl = \argmin_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.$$
-
-
-
-
-For every $\lambda$ there is a unique $s$ (and vice versa) that makes 
-
-$$\brt = \brl$$
+For every $\lambda$ there is a unique $s$ (and vice versa) that makes $\brt = \brl$. We will work with $\lambda$.
 
 ## Ridge regression
 
-$\brt = \argmin_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2$
-
-$\brl = \argmin_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2$
+$$\brl = \argmin_{ \beta} \frac{1}{n}\|\y-\X\beta\|_2^2 + \lambda || \beta ||_2^2$$
 
 Observe:
 
-* $\lambda = 0$ (or $s = \infty$) makes $\brl = \bls$
-* Any $\lambda > 0$ (or $s <\infty$)  penalizes larger values of $\beta$, effectively shrinking them.
+* $\lambda = 0$ makes $\brl = \bls$
+* $\lambda \to\infty$ makes $\brl \to 0$
+* Any $0 < \lambda < \infty$ penalizes larger values of $\beta$, effectively shrinking them.
+* $\lambda$ is a **tuning parameter:** we need to pick it
 
-
-$\lambda$ and $s$ are known as [tuning parameters]{.secondary}
-
+<!--
 
 ## Visualizing ridge regression (2 coefficients)
 
@@ -311,6 +305,7 @@ gr |>
   geom_point(data = data.frame(b1 = b[1], b2 = b[2]), colour = orange, size = 4)
 ```
 
+-->
 
 ## Example data
 
@@ -330,47 +325,56 @@ Use `lpsa` as response.
 
 ## Ridge regression path
 
+We can look at coefficients as we vary $\lambda$ (a "path" or "coefficient trace")
 
 ```{r process-prostate, echo=TRUE, dev="svg", message=FALSE,warning=FALSE, fig.height = 4, fig.width=8, fig.align='center'}
 Y <- prostate$lpsa
 X <- model.matrix(~ ., data = prostate |> dplyr::select(-train, -lpsa))
 library(glmnet)
 ridge <- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
-```
-
-<br>
-
-::: flex
-::: w-60
-```{r}
-#| fig-width: 8
-#| fig-height: 6
 plot(ridge, xvar = "lambda", lwd = 3)
 ```
 
-:::
-::: w-35
+**Model selection:** choose some $\lambda$ (a vertical line on this plot)
 
-Model selection here: 
+## Ridge regression: closed-form
 
-* means [choose]{.secondary} some $\lambda$ 
-
-* A value of $\lambda$ is a vertical line.
-
-* This graphic is a "path" or "coefficient trace"
-
-* Coefficients for varying $\lambda$
-:::
-:::
-
-
-## Solving the minimization
-
-* One nice thing about ridge regression is that it has a closed-form solution (like OLS)
-
+Ridge regression has a closed-form solution like OLS (set the derivative in $\beta$ to 0):
 
 $$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$
 
+Compare to OLS:
+
+$$\bls = (\X^\top \X)^{-1}\X^\top \y$$
+
+* What does the $+\lambda I$ do?
+
+* What about bias and variance?
+
+* Is $\brl$ faster/slower/neither to compute? 
+
+* Is $\brl$ more/less numerically stable to compute?
+
+## Ridge regression: bias and variance
+
+Ridge regression has a closed-form solution like OLS (set the derivative in $\beta$ to 0):
+
+$$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$
+
+
+* bias: $\E[\brl | \X] = (\X^\top\X + \lambda I)^{-1}\X^\top \X\beta \neq \beta$
+
+* variance: $\Var{\brl \mid \X} = \sigma^2 (\X^\top\X + \lambda I)^{-1}\X^\top \X(\X^\top\X + \lambda I)^{-1}$
+
+. . .
+
+Using the SVD $\X = UDV^T$, $\Var{\brl \mid \X} = \sigma^2 VG V^\top$ where $G$ is diagonal with entries
+
+$$ g_j = \frac{d_j^2}{(d_j^2 + \lambda)^2} \qquad \left(\text{compare to OLS:} \quad g_j = \frac{1}{d_j^{2}} \right)$$
+
+Mitigates the issue of [multicollinearity]{.secondary} (ill-conditioned $\X$)!
+
+<!--
 * This is easy to calculate in `R` for any $\lambda$.
 
 * However, computations and interpretation are simplified if we examine the 
@@ -379,6 +383,7 @@ $$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$
 * Recall: any matrix has an SVD.
 
 * Here $\mathbf{D}$ is diagonal and $\mathbf{U}$ and $\mathbf{V}$ are orthonormal: $\mathbf{U}^\top\mathbf{U} = \mathbf{I}$.
+
 
 ## Solving the minization
 
@@ -430,14 +435,28 @@ Some comments:
 
 * Means huge variance: $\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top$
 
+-->
 
-## Ridge regression and ill-posed $\X$
+## Tuning the regularization weight $\lambda$
+
+Use **cross-validation** (it's built into `glmnet` if you use `cv.glmnet`!)
+
+`plot` shows mean CV estimate $\pm$ standard error
+
+Left line is minimum risk estimate; right is the largest $\lambda$ within 1$\sigma$
+
+```{r, fig.width=11,fig.align="center",dev="svg",fig.height=4}
+ridge <- cv.glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
+plot(ridge, main = "Ridge")
+```
+
+## Ridge regression: summary
 
 
-Ridge Regression fixes this problem by preventing the division by a near-zero number
+Ridge regression addresses [multicollinearity]{.secondary} by preventing division by near-zero numbers
 
 Conclusion
-: $(\X^{\top}\X)^{-1}$ can be really unstable, while $(\X^{\top}\X + \lambda \mathbf{I})^{-1}$ is not.
+: $\bls = (\X^{\top}\X)^{-1}\X^\top \y$ can be unstable, while $\brl=(\X^{\top}\X + \lambda \mathbf{I})^{-1}\X^\top\y$ is not.
 
 Aside
 : Engineering approach to solving linear systems is to always do this with small $\lambda$. The thinking is about the numerics rather than the statistics.
@@ -445,7 +464,7 @@ Aside
 ### Which $\lambda$ to use?
 
 Computational
-: Use CV and pick the $\lambda$ that makes this smallest.
+: Use CV and pick the $\lambda$ that makes this smallest (maybe within $1\sigma$).
 
 Intuition (bias)
 : As $\lambda\rightarrow\infty$, bias ⬆
@@ -453,10 +472,25 @@ Intuition (bias)
 Intuition (variance)
 : As $\lambda\rightarrow\infty$, variance ⬇
 
-You should think about why.
+## Regularization for variable selection?
 
+Ridge regression is a *regularized* approach to prediction.
 
+* nice bias/variance tradeoff
+* closed-form / easy-to-compute solution
+* no predictor variable selection.
+    * (NB: picking a $\lambda$ is still *model selection*)
 
+Is there a regularization approach to variable selection?
+
+. . .
+
+e.g., best (in-sample) linear regression model of size $s$:
+: $\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ (\text{\# of nonzero $\beta_j$}) \leq s$
+
+That is a *super nasty* optimization. What to do?...
+
+<!--
 ## Can we get the best of both worlds?
 
 To recap:
@@ -492,8 +526,8 @@ Ridge regression is convex (easy to solve), but doesn't do __variable__ selectio
 
 Can we somehow "interpolate" to get both?
 
-
 Note: selecting $\lambda$ is still __model__ selection, but we've included __all__ the variables.
+-->
 
 
 # Next time...
