@@ -398,7 +398,7 @@
 <h2>08 Ridge regression</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 27 September 2023</p>
+<p>Last modified – 29 September 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,20 +424,27 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="recap" class="slide level2">
 <h2>Recap</h2>
-<p>So far, we have emphasized <strong>model selection</strong> as</p>
-<p><span class="hand">Decide which predictors we would like to use in our linear model</span></p>
-<p>Or similarly:</p>
-<p><span class="hand">Decide which of a few linear models to use</span></p>
-<p>To do this, we used a risk estimate, and chose the “model” with the lowest estimate</p>
+<p>General idea:</p>
+<ol type="1">
+<li>Pick a <em>model</em> (a family of distributions).</li>
+<li>Pick a <em>loss function</em> (measures how wrong predictions are).</li>
+<li>Design a <em>predictor/estimator</em> that minimizes the <em>prediction/estimation risk</em>.</li>
+</ol>
+<p>Risk includes <span class="secondary">bias</span>, <span class="secondary">variance</span>, and <span class="secondary">irreducible error</span>.</p>
+<p>So far, trade bias/variance via <em>variable selection</em> using a risk estimate.</p>
 <div class="fragment">
-<p>Moving forward, we need to generalize this to</p>
-<p><span class="hand">Decide which of possibly infinite prediction functions</span> <span class="math inline">\(f\in\mathcal{F}\)</span> <span class="hand">to use</span></p>
-<p>Thankfully, this isn’t really any different. We still use those same risk estimates.</p>
-<p><span class="secondary">Remember:</span> We were choosing models that balance bias and variance (and hence have low prediction risk).</p>
+<p><strong>Today:</strong> trade bias/variance via <span class="secondary"><em>regularization</em></span></p>
+<ul>
+<li>use <strong>all</strong> predictors</li>
+<li>shrink <span class="math inline">\(\hat\beta\)</span> towards 0 (increase bias, reduce variance)</li>
+</ul>
 <p><span class="math display">\[
 \newcommand{\brt}{\widehat{\beta}^R_{s}}
 \newcommand{\brl}{\widehat{\beta}^R_{\lambda}}
@@ -445,53 +452,91 @@
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
 \]</span></p>
+<!--
+## Regularization
+
+
+* Another way to control bias and variance is through [regularization]{.secondary} or
+[shrinkage]{.secondary}.  
+
+
+* Rather than selecting a few predictors that seem reasonable, maybe trying a few combinations, use them all.
+
+* I mean [ALL]{.tertiary}.
+
+* But, make your estimates of $\beta$ "smaller"
+-->
 </div>
 </section>
-<section id="regularization" class="slide level2">
-<h2>Regularization</h2>
+<section id="ols-bias-and-variance" class="slide level2">
+<h2>OLS: bias and variance</h2>
+<p>Minimize</p>
+<p><span class="math display">\[\min_\beta \frac{1}{n}\sum_i (y_i - x_i^T\beta)^2 \quad \mbox{ subject to } \quad \beta \in \R^p\]</span></p>
+<div class="fragment">
+<p>Can rewrite using matrix-vector notation:</p>
+<p><span class="math display">\[\min_\beta \frac{1}{n}\| \y - \X\beta\|_2^2\quad \mbox{ subject to } \quad \beta \in \R^p\]</span></p>
+</div>
+<div class="fragment">
+<p>Solve by setting derivative to 0: <span class="math inline">\(\bls = (\X^\top\X)^{-1}\X^\top\y\)</span></p>
 <ul>
-<li><p>Another way to control bias and variance is through <span class="secondary">regularization</span> or <span class="secondary">shrinkage</span>.</p></li>
-<li><p>Rather than selecting a few predictors that seem reasonable, maybe trying a few combinations, use them all.</p></li>
-<li><p>I mean <span class="tertiary">ALL</span>.</p></li>
-<li><p>But, make your estimates of <span class="math inline">\(\beta\)</span> “smaller”</p></li>
+<li>unbiased: <span class="math inline">\(\E[\bls] = \E[\E[\bls \mid \X]] = \E[(\X^\top\X)^{-1}\X^\top\X\beta] = \beta\)</span></li>
+<li>variance: <span class="math inline">\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1}\)</span> ??</li>
 </ul>
+</div>
 </section>
-<section id="brief-aside-on-optimization" class="slide level2" data-background-color="#97D4E9">
-<h2>Brief aside on optimization</h2>
+<section id="singular-value-decomposition-svd" class="slide level2" data-background-color="#97D4E9">
+<h2>Singular Value Decomposition (SVD)</h2>
+<p>A rectangular <span class="math inline">\(n \times p\)</span> matrix <span class="math inline">\(X\)</span> has <em>singular value decomposition</em> <span class="math inline">\(X = U D V^\top\)</span></p>
 <ul>
-<li><p>An optimization problem has 2 components:</p>
-<ol type="1">
-<li>The “Objective function”: e.g.&nbsp;<span class="math inline">\(\frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2\)</span>.</li>
-<li>The “constraint”: e.g.&nbsp;“fewer than 5 non-zero entries in <span class="math inline">\(\beta\)</span>”.</li>
-</ol></li>
-<li><p>A constrained minimization problem is written</p></li>
+<li><span class="math inline">\(U\)</span> is <span class="math inline">\(n\times n\)</span>, <em>orthonormal</em>: <span class="math inline">\(U^\top U = UU^\top = I\)</span></li>
+<li><span class="math inline">\(V\)</span> is <span class="math inline">\(p\times p\)</span>, <em>orthonormal</em>: <span class="math inline">\(V^\top V = VV^\top = I\)</span></li>
+<li><span class="math inline">\(D\)</span> is rectangular <span class="math inline">\(n\times p\)</span>, <em>diagonal and nonnegative</em> (<em>singular values</em>)</li>
 </ul>
-<p><span class="math display">\[\min_\beta f(\beta)\;\; \mbox{ subject to }\;\; C(\beta)\]</span></p>
-<ul>
-<li><span class="math inline">\(f(\beta)\)</span> is the objective function</li>
-<li><span class="math inline">\(C(\beta)\)</span> is the constraint</li>
-</ul>
+<div class="fragment">
+<p>e.g.&nbsp;<span class="math inline">\(n = 4, p = 2\)</span>, singular values <span class="math inline">\(d_1, d_2\)</span>:</p>
+<p><span class="math display">\[D = \left[\begin{array} dd_1 &amp; 0 \\ 0 &amp; d_2 \\ 0 &amp; 0 \\ 0 &amp; 0 \end{array}\right] \qquad D^\top D = \left[\begin{array} dd_1^2 &amp; 0 \\ 0 &amp; d_2^2\end{array}\right].\]</span></p>
+</div>
+<div class="fragment">
+<p>If <span class="math inline">\(X\)</span> has (almost) linearly dependent columns, some singular values in <span class="math inline">\(D\)</span> are (near) zero</p>
+<p><span class="math inline">\(X\)</span> is <em>(nearly) rank-deficient</em> or <em>ill-conditioned</em></p>
+</div>
 </section>
-<section id="ridge-regression-constrained-version" class="slide level2">
-<h2>Ridge regression (constrained version)</h2>
-<p>One way to do this for regression is to solve (say): <span class="math display">\[
-\minimize_\beta \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2
-\quad \st \sum_j \beta^2_j &lt; s
-\]</span> for some <span class="math inline">\(s&gt;0\)</span>.</p>
+<section id="the-variance-of-ols" class="slide level2">
+<h2>The variance of OLS</h2>
+<p>Let’s use the SVD <span class="math inline">\(X = UDV^T\)</span> to examine the OLS variance <span class="math inline">\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1}\)</span>:</p>
+<p><span class="math display">\[(\X^\top \X)^{-1} = (VD^\top U^\top UDV^\top)^{-1} = V (D^\top D)^{-1}V^\top =  V\left[\begin{array}dd_1^{-2} &amp; 0 &amp; 0\\ 0 &amp; \ddots &amp; 0 \\ 0 &amp; 0 &amp; d_p^{-2}\end{array}\right]V^\top\]</span></p>
+<div class="fragment">
+<p><span class="secondary">Multicollinearity:</span> a linear combination of variables is nearly equal to another variable.</p>
 <ul>
-<li>This is called “ridge regression”.</li>
-<li>Call the <span class="secondary">minimizer</span> of this problem <span class="math inline">\(\brt\)</span></li>
+<li>so <span class="math inline">\(\X\)</span> is ill-conditioned</li>
+<li>so some singular values <span class="math inline">\(d_j\approx 0\)</span></li>
+<li>so <span class="math inline">\(d^{-2}_j\)</span> is large</li>
+<li>so <span class="math inline">\(\bls\)</span> has large, unstable values; i.e., <strong>large variance</strong></li>
 </ul>
+</div>
+</section>
+<section id="how-to-stop-large-unstable-values-of-widehatbeta" class="slide level2">
+<h2>How to stop large, unstable values of <span class="math inline">\(\widehat{\beta}\)</span>?</h2>
+<p>Idea: <strong>constrain</strong> the values of <span class="math inline">\(\beta\)</span> to be small. For <span class="math inline">\(s &gt; 0\)</span>: <span class="math display">\[
+\minimize_\beta \underbrace{\frac{1}{n}\|\y - \X\beta\|_2^2}_{\text{objective function}} \quad \st \underbrace{\|\beta\|_2^2 &lt; s}_{\text{constraint}}.
+\]</span></p>
+<p>Recall, for a vector <span class="math inline">\(\beta \in \R^p\)</span></p>
+<dl>
+<dt><span class="math inline">\(\ell_2\)</span>-norm</dt>
+<dd>
+<span class="math inline">\(\|\beta\|_2 = \sqrt{\beta_1^2 + \beta_2^2 + \dots + \beta_p^2} = \left(\sum_{j=1}^p |\beta_j|^2\right)^{1/2}\)</span> (so <span class="math inline">\(\|\beta\|_2^2 = \sum_j \beta_j^2\)</span>)
+</dd>
+</dl>
 <div class="fragment">
 <p>Compare this to ordinary least squares:</p>
 <p><span class="math display">\[
-\minimize_\beta \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2
-\quad \st \beta \in \R^p
+\minimize_\beta \underbrace{\frac{1}{n}\|\y-\X\beta\|_2^2}_{\text{same objective}}
+\quad \st \underbrace{\beta \in \R^p}_{\textbf{no constraint}}
 \]</span></p>
 </div>
 </section>
-<section id="geometry-of-ridge-regression-contours" class="slide level2">
-<h2>Geometry of ridge regression (contours)</h2>
+<section id="geometry-of-constrained-regression-contours" class="slide level2">
+<h2>Geometry of constrained regression (contours)</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -555,149 +600,138 @@
 
 </div>
 <img data-src="08-ridge-regression_files/figure-revealjs/plotting-functions-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="brief-aside-on-norms" class="slide level2">
-<h2>Brief aside on norms</h2>
-<p>Recall, for a vector <span class="math inline">\(z \in \R^p\)</span></p>
-<p><span class="math display">\[\snorm{z}_2 = \sqrt{z_1^2 + z_2^2 + \cdots + z^2_p} = \sqrt{\sum_{j=1}^p z_j^2}\]</span></p>
-<p>So,</p>
-<p><span class="math display">\[\snorm{z}^2_2 = z_1^2 + z_2^2 + \cdots + z^2_p = \sum_{j=1}^p z_j^2.\]</span></p>
-</section>
-<section id="other-norms-we-should-remember" class="slide level2">
-<h2>Other norms we should remember:</h2>
-<dl>
-<dt><span class="math inline">\(\ell_q\)</span>-norm</dt>
-<dd>
-<span class="math inline">\(\left(\sum_{j=1}^p |z_j|^q\right)^{1/q}\)</span>
-</dd>
-<dt><span class="math inline">\(\ell_1\)</span>-norm (special case)</dt>
-<dd>
-<span class="math inline">\(\sum_{j=1}^p |z_j|\)</span>
-</dd>
-<dt><span class="math inline">\(\ell_0\)</span>-norm</dt>
-<dd>
-<span class="math inline">\(\sum_{j=1}^p I(z_j \neq 0 ) = \lvert \{j : z_j \neq 0 \}\rvert\)</span>
-</dd>
-<dt><span class="math inline">\(\ell_\infty\)</span>-norm</dt>
-<dd>
-<span class="math inline">\(\max_{1\leq j \leq p} |z_j|\)</span>
-</dd>
-</dl>
-
-<aside><div>
-<p>Recall what a norm is: <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)" class="uri">https://en.wikipedia.org/wiki/Norm_(mathematics)</a></p>
-</div></aside></section>
 <section id="ridge-regression" class="slide level2">
 <h2>Ridge regression</h2>
 <p>An equivalent way to write</p>
-<p><span class="math display">\[\brt = \argmin_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2\]</span></p>
-<p>is in the <span class="secondary">Lagrangian</span> form</p>
-<p><span class="math display">\[\brl = \argmin_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2.\]</span></p>
-<p>For every <span class="math inline">\(\lambda\)</span> there is a unique <span class="math inline">\(s\)</span> (and vice versa) that makes</p>
-<p><span class="math display">\[\brt = \brl\]</span></p>
+<p><span class="math display">\[\brt = \argmin_{\beta} \frac{1}{n}\|\y - \X\beta\|_2^2 \st  || \beta ||_2^2 \leq s\]</span></p>
+<p>is as a <span class="secondary"><em>regularized</em></span> (or <em>penalized</em>) optimization with <em>regularization weight</em> <span class="math inline">\(\lambda\)</span>:</p>
+<p><span class="math display">\[\brl = \argmin_{ \beta} \frac{1}{n}\|\y-\X\beta\|_2^2 + \lambda || \beta ||_2^2.\]</span></p>
+<p>For every <span class="math inline">\(\lambda\)</span> there is a unique <span class="math inline">\(s\)</span> (and vice versa) that makes <span class="math inline">\(\brt = \brl\)</span>. We will work with <span class="math inline">\(\lambda\)</span>.</p>
 </section>
 <section id="ridge-regression-1" class="slide level2">
 <h2>Ridge regression</h2>
-<p><span class="math inline">\(\brt = \argmin_{ || \beta ||_2^2 \leq s} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2\)</span></p>
-<p><span class="math inline">\(\brl = \argmin_{ \beta} \frac{1}{n}\sum_i (y_i-x^\top_i \beta)^2 + \lambda || \beta ||_2^2\)</span></p>
+<p><span class="math display">\[\brl = \argmin_{ \beta} \frac{1}{n}\|\y-\X\beta\|_2^2 + \lambda || \beta ||_2^2\]</span></p>
 <p>Observe:</p>
 <ul>
-<li><span class="math inline">\(\lambda = 0\)</span> (or <span class="math inline">\(s = \infty\)</span>) makes <span class="math inline">\(\brl = \bls\)</span></li>
-<li>Any <span class="math inline">\(\lambda &gt; 0\)</span> (or <span class="math inline">\(s &lt;\infty\)</span>) penalizes larger values of <span class="math inline">\(\beta\)</span>, effectively shrinking them.</li>
+<li><span class="math inline">\(\lambda = 0\)</span> makes <span class="math inline">\(\brl = \bls\)</span></li>
+<li><span class="math inline">\(\lambda \to\infty\)</span> makes <span class="math inline">\(\brl \to 0\)</span></li>
+<li>Any <span class="math inline">\(0 &lt; \lambda &lt; \infty\)</span> penalizes larger values of <span class="math inline">\(\beta\)</span>, effectively shrinking them.</li>
+<li><span class="math inline">\(\lambda\)</span> is a <strong>tuning parameter:</strong> we need to pick it</li>
 </ul>
-<p><span class="math inline">\(\lambda\)</span> and <span class="math inline">\(s\)</span> are known as <span class="secondary">tuning parameters</span></p>
+<!--
+
+## Visualizing ridge regression (2 coefficients)
+
+
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code  code-fold="true"}
+b <- c(1, 1)
+n <- 1000
+lams <- c(1, 5, 10)
+ols_loss <- function(b1, b2) colMeans((y - X %*% rbind(b1, b2))^2) / 2
+pen <- function(b1, b2, lambda = 1) lambda * (b1^2 + b2^2) / 2
+gr <- expand_grid(
+  b1 = seq(b[1] - 0.5, b[1] + 0.5, length.out = 100),
+  b2 = seq(b[2] - 0.5, b[2] + 0.5, length.out = 100)
+)
+
+X <- mvtnorm::rmvnorm(n, c(0, 0), sigma = matrix(c(1, .3, .3, .5), nrow = 2))
+y <- drop(X %*% b + rnorm(n))
+
+bols <- coef(lm(y ~ X - 1))
+bridge <- coef(MASS::lm.ridge(y ~ X - 1, lambda = lams * sqrt(n)))
+
+penalties <- lams |>
+  set_names(~ paste("lam =", .)) |>
+  map(~ pen(gr$b1, gr$b2, .x)) |>
+  as_tibble()
+gr <- gr |>
+  mutate(loss = ols_loss(b1, b2)) |>
+  bind_cols(penalties)
+
+g1 <- ggplot(gr, aes(b1, b2)) +
+  geom_raster(aes(fill = loss)) +
+  scale_fill_viridis_c(direction = -1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 20, barheight = 0.5))
+
+g2 <- gr |>
+    pivot_longer(starts_with("lam")) |>
+    mutate(name = factor(name, levels = paste("lam =", lams))) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = value)) +
+  scale_fill_viridis_c(direction = -1, name = "penalty") +
+  facet_wrap(~name, ncol = 1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
+
+g3 <- gr |> 
+  mutate(across(starts_with("lam"), ~ loss + .x)) |>
+  pivot_longer(starts_with("lam")) |>
+  mutate(name = factor(name, levels = paste("lam =", lams))) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = value)) +
+  scale_fill_viridis_c(direction = -1, name = "loss + pen") +
+  facet_wrap(~name, ncol = 1) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2])) +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_colourbar(barwidth = 10, barheight = 0.5))
+
+cowplot::plot_grid(g1, g2, g3, rel_widths = c(2, 1, 1), nrow = 1)
+```
+
+::: {.cell-output-display}
+![](08-ridge-regression_files/figure-revealjs/unnamed-chunk-1-1.png){fig-align='center'}
+:::
+:::
+
+
+
+
+## The effect on the estimates
+
+
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code  code-fold="true"}
+gr |> 
+  mutate(z = ols_loss(b1, b2) + max(lams) * pen(b1, b2)) |>
+  ggplot(aes(b1, b2)) +
+  geom_raster(aes(fill = z)) +
+  scale_fill_viridis_c(direction = -1) +
+  geom_point(data = tibble(
+    b1 = c(bols[1], bridge[,1]),
+    b2 = c(bols[2], bridge[,2]),
+    estimate = factor(c("ols", paste0("ridge = ", lams)), 
+                      levels = c("ols", paste0("ridge = ", lams)))
+  ),
+  aes(shape = estimate), size = 3) +
+  geom_point(data = data.frame(b1 = b[1], b2 = b[2]), colour = orange, size = 4)
+```
+
+::: {.cell-output-display}
+![](08-ridge-regression_files/figure-revealjs/unnamed-chunk-2-1.png){fig-align='center'}
+:::
+:::
+
+
+
+
+-->
 </section>
-<section id="visualizing-ridge-regression-2-coefficients" class="slide level2">
-<h2>Visualizing ridge regression (2 coefficients)</h2>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)</span>
-<span id="cb2-2"><a></a>n <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb2-3"><a></a>lams <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">10</span>)</span>
-<span id="cb2-4"><a></a>ols_loss <span class="ot">&lt;-</span> <span class="cf">function</span>(b1, b2) <span class="fu">colMeans</span>((y <span class="sc">-</span> X <span class="sc">%*%</span> <span class="fu">rbind</span>(b1, b2))<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb2-5"><a></a>pen <span class="ot">&lt;-</span> <span class="cf">function</span>(b1, b2, <span class="at">lambda =</span> <span class="dv">1</span>) lambda <span class="sc">*</span> (b1<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span> b2<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb2-6"><a></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(</span>
-<span id="cb2-7"><a></a>  <span class="at">b1 =</span> <span class="fu">seq</span>(b[<span class="dv">1</span>] <span class="sc">-</span> <span class="fl">0.5</span>, b[<span class="dv">1</span>] <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">length.out =</span> <span class="dv">100</span>),</span>
-<span id="cb2-8"><a></a>  <span class="at">b2 =</span> <span class="fu">seq</span>(b[<span class="dv">2</span>] <span class="sc">-</span> <span class="fl">0.5</span>, b[<span class="dv">2</span>] <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
-<span id="cb2-9"><a></a>)</span>
-<span id="cb2-10"><a></a></span>
-<span id="cb2-11"><a></a>X <span class="ot">&lt;-</span> mvtnorm<span class="sc">::</span><span class="fu">rmvnorm</span>(n, <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, .<span class="dv">3</span>, .<span class="dv">3</span>, .<span class="dv">5</span>), <span class="at">nrow =</span> <span class="dv">2</span>))</span>
-<span id="cb2-12"><a></a>y <span class="ot">&lt;-</span> <span class="fu">drop</span>(X <span class="sc">%*%</span> b <span class="sc">+</span> <span class="fu">rnorm</span>(n))</span>
-<span id="cb2-13"><a></a></span>
-<span id="cb2-14"><a></a>bols <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">lm</span>(y <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>))</span>
-<span id="cb2-15"><a></a>bridge <span class="ot">&lt;-</span> <span class="fu">coef</span>(MASS<span class="sc">::</span><span class="fu">lm.ridge</span>(y <span class="sc">~</span> X <span class="sc">-</span> <span class="dv">1</span>, <span class="at">lambda =</span> lams <span class="sc">*</span> <span class="fu">sqrt</span>(n)))</span>
-<span id="cb2-16"><a></a></span>
-<span id="cb2-17"><a></a>penalties <span class="ot">&lt;-</span> lams <span class="sc">|&gt;</span></span>
-<span id="cb2-18"><a></a>  <span class="fu">set_names</span>(<span class="sc">~</span> <span class="fu">paste</span>(<span class="st">"lam ="</span>, .)) <span class="sc">|&gt;</span></span>
-<span id="cb2-19"><a></a>  <span class="fu">map</span>(<span class="sc">~</span> <span class="fu">pen</span>(gr<span class="sc">$</span>b1, gr<span class="sc">$</span>b2, .x)) <span class="sc">|&gt;</span></span>
-<span id="cb2-20"><a></a>  <span class="fu">as_tibble</span>()</span>
-<span id="cb2-21"><a></a>gr <span class="ot">&lt;-</span> gr <span class="sc">|&gt;</span></span>
-<span id="cb2-22"><a></a>  <span class="fu">mutate</span>(<span class="at">loss =</span> <span class="fu">ols_loss</span>(b1, b2)) <span class="sc">|&gt;</span></span>
-<span id="cb2-23"><a></a>  <span class="fu">bind_cols</span>(penalties)</span>
-<span id="cb2-24"><a></a></span>
-<span id="cb2-25"><a></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(gr, <span class="fu">aes</span>(b1, b2)) <span class="sc">+</span></span>
-<span id="cb2-26"><a></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> loss)) <span class="sc">+</span></span>
-<span id="cb2-27"><a></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb2-28"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">b1 =</span> b[<span class="dv">1</span>], <span class="at">b2 =</span> b[<span class="dv">2</span>])) <span class="sc">+</span></span>
-<span id="cb2-29"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb2-30"><a></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_colourbar</span>(<span class="at">barwidth =</span> <span class="dv">20</span>, <span class="at">barheight =</span> <span class="fl">0.5</span>))</span>
-<span id="cb2-31"><a></a></span>
-<span id="cb2-32"><a></a>g2 <span class="ot">&lt;-</span> gr <span class="sc">|&gt;</span></span>
-<span id="cb2-33"><a></a>    <span class="fu">pivot_longer</span>(<span class="fu">starts_with</span>(<span class="st">"lam"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-34"><a></a>    <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">factor</span>(name, <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">"lam ="</span>, lams))) <span class="sc">|&gt;</span></span>
-<span id="cb2-35"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(b1, b2)) <span class="sc">+</span></span>
-<span id="cb2-36"><a></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> value)) <span class="sc">+</span></span>
-<span id="cb2-37"><a></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">name =</span> <span class="st">"penalty"</span>) <span class="sc">+</span></span>
-<span id="cb2-38"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb2-39"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">b1 =</span> b[<span class="dv">1</span>], <span class="at">b2 =</span> b[<span class="dv">2</span>])) <span class="sc">+</span></span>
-<span id="cb2-40"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb2-41"><a></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_colourbar</span>(<span class="at">barwidth =</span> <span class="dv">10</span>, <span class="at">barheight =</span> <span class="fl">0.5</span>))</span>
-<span id="cb2-42"><a></a></span>
-<span id="cb2-43"><a></a>g3 <span class="ot">&lt;-</span> gr <span class="sc">|&gt;</span> </span>
-<span id="cb2-44"><a></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">starts_with</span>(<span class="st">"lam"</span>), <span class="sc">~</span> loss <span class="sc">+</span> .x)) <span class="sc">|&gt;</span></span>
-<span id="cb2-45"><a></a>  <span class="fu">pivot_longer</span>(<span class="fu">starts_with</span>(<span class="st">"lam"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-46"><a></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">factor</span>(name, <span class="at">levels =</span> <span class="fu">paste</span>(<span class="st">"lam ="</span>, lams))) <span class="sc">|&gt;</span></span>
-<span id="cb2-47"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(b1, b2)) <span class="sc">+</span></span>
-<span id="cb2-48"><a></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> value)) <span class="sc">+</span></span>
-<span id="cb2-49"><a></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">name =</span> <span class="st">"loss + pen"</span>) <span class="sc">+</span></span>
-<span id="cb2-50"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb2-51"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">b1 =</span> b[<span class="dv">1</span>], <span class="at">b2 =</span> b[<span class="dv">2</span>])) <span class="sc">+</span></span>
-<span id="cb2-52"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>) <span class="sc">+</span></span>
-<span id="cb2-53"><a></a>  <span class="fu">guides</span>(<span class="at">fill =</span> <span class="fu">guide_colourbar</span>(<span class="at">barwidth =</span> <span class="dv">10</span>, <span class="at">barheight =</span> <span class="fl">0.5</span>))</span>
-<span id="cb2-54"><a></a></span>
-<span id="cb2-55"><a></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">rel_widths =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="08-ridge-regression_files/figure-revealjs/unnamed-chunk-1-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="the-effect-on-the-estimates" class="slide level2">
-<h2>The effect on the estimates</h2>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>gr <span class="sc">|&gt;</span> </span>
-<span id="cb3-2"><a></a>  <span class="fu">mutate</span>(<span class="at">z =</span> <span class="fu">ols_loss</span>(b1, b2) <span class="sc">+</span> <span class="fu">max</span>(lams) <span class="sc">*</span> <span class="fu">pen</span>(b1, b2)) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(b1, b2)) <span class="sc">+</span></span>
-<span id="cb3-4"><a></a>  <span class="fu">geom_raster</span>(<span class="fu">aes</span>(<span class="at">fill =</span> z)) <span class="sc">+</span></span>
-<span id="cb3-5"><a></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">direction =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb3-6"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(</span>
-<span id="cb3-7"><a></a>    <span class="at">b1 =</span> <span class="fu">c</span>(bols[<span class="dv">1</span>], bridge[,<span class="dv">1</span>]),</span>
-<span id="cb3-8"><a></a>    <span class="at">b2 =</span> <span class="fu">c</span>(bols[<span class="dv">2</span>], bridge[,<span class="dv">2</span>]),</span>
-<span id="cb3-9"><a></a>    <span class="at">estimate =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"ols"</span>, <span class="fu">paste0</span>(<span class="st">"ridge = "</span>, lams)), </span>
-<span id="cb3-10"><a></a>                      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"ols"</span>, <span class="fu">paste0</span>(<span class="st">"ridge = "</span>, lams)))</span>
-<span id="cb3-11"><a></a>  ),</span>
-<span id="cb3-12"><a></a>  <span class="fu">aes</span>(<span class="at">shape =</span> estimate), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb3-13"><a></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">data.frame</span>(<span class="at">b1 =</span> b[<span class="dv">1</span>], <span class="at">b2 =</span> b[<span class="dv">2</span>]), <span class="at">colour =</span> orange, <span class="at">size =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="08-ridge-regression_files/figure-revealjs/unnamed-chunk-2-1.png" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="example-data" class="slide level2">
 <h2>Example data</h2>
 <p><code>prostate</code> data from [ESL]</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
-<span id="cb4-2"><a></a>prostate <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
+<span id="cb2-2"><a></a>prostate <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 97 × 10
    lcavol lweight   age   lbph   svi   lcp gleason pgg45   lpsa train
@@ -731,95 +765,124 @@
 </section>
 <section id="ridge-regression-path" class="slide level2">
 <h2>Ridge regression path</h2>
+<p>We can look at coefficients as we vary <span class="math inline">\(\lambda\)</span> (a “path” or “coefficient trace”)</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
-<span id="cb6-2"><a></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> ., <span class="at">data =</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa))</span>
-<span id="cb6-3"><a></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb6-4"><a></a>ridge <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> .<span class="dv">00001</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
+<span id="cb4-2"><a></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> ., <span class="at">data =</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa))</span>
+<span id="cb4-3"><a></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb4-4"><a></a>ridge <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> .<span class="dv">00001</span>)</span>
+<span id="cb4-5"><a></a><span class="fu">plot</span>(ridge, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
 </div>
-<p><br></p>
-<div class="flex">
-<div class="w-60">
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">plot</span>(ridge, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure>
-<p><img data-src="08-ridge-regression_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-<div class="w-35">
-<p>Model selection here:</p>
-<ul>
-<li><p>means <span class="secondary">choose</span> some <span class="math inline">\(\lambda\)</span></p></li>
-<li><p>A value of <span class="math inline">\(\lambda\)</span> is a vertical line.</p></li>
-<li><p>This graphic is a “path” or “coefficient trace”</p></li>
-<li><p>Coefficients for varying <span class="math inline">\(\lambda\)</span></p></li>
-</ul>
-</div>
-</div>
+<img data-src="08-ridge-regression_files/figure-revealjs/process-prostate-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p><strong>Model selection:</strong> choose some <span class="math inline">\(\lambda\)</span> (a vertical line on this plot)</p>
 </section>
-<section id="solving-the-minimization" class="slide level2">
-<h2>Solving the minimization</h2>
+<section id="ridge-regression-closed-form" class="slide level2">
+<h2>Ridge regression: closed-form</h2>
+<p>Ridge regression has a closed-form solution like OLS (set the derivative in <span class="math inline">\(\beta\)</span> to 0):</p>
+<p><span class="math display">\[\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y\]</span></p>
+<p>Compare to OLS:</p>
+<p><span class="math display">\[\bls = (\X^\top \X)^{-1}\X^\top \y\]</span></p>
 <ul>
-<li>One nice thing about ridge regression is that it has a closed-form solution (like OLS)</li>
+<li><p>What does the <span class="math inline">\(+\lambda I\)</span> do?</p></li>
+<li><p>What about bias and variance?</p></li>
+<li><p>Is <span class="math inline">\(\brl\)</span> faster/slower/neither to compute?</p></li>
+<li><p>Is <span class="math inline">\(\brl\)</span> more/less numerically stable to compute?</p></li>
 </ul>
+</section>
+<section id="ridge-regression-bias-and-variance" class="slide level2">
+<h2>Ridge regression: bias and variance</h2>
+<p>Ridge regression has a closed-form solution like OLS (set the derivative in <span class="math inline">\(\beta\)</span> to 0):</p>
 <p><span class="math display">\[\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y\]</span></p>
 <ul>
-<li><p>This is easy to calculate in <code>R</code> for any <span class="math inline">\(\lambda\)</span>.</p></li>
-<li><p>However, computations and interpretation are simplified if we examine the <span class="secondary">Singular Value Decomposition</span> of <span class="math inline">\(\X = \mathbf{UDV}^\top\)</span>.</p></li>
-<li><p>Recall: any matrix has an SVD.</p></li>
-<li><p>Here <span class="math inline">\(\mathbf{D}\)</span> is diagonal and <span class="math inline">\(\mathbf{U}\)</span> and <span class="math inline">\(\mathbf{V}\)</span> are orthonormal: <span class="math inline">\(\mathbf{U}^\top\mathbf{U} = \mathbf{I}\)</span>.</p></li>
+<li><p>bias: <span class="math inline">\(\E[\brl | \X] = (\X^\top\X + \lambda I)^{-1}\X^\top \X\beta \neq \beta\)</span></p></li>
+<li><p>variance: <span class="math inline">\(\Var{\brl \mid \X} = \sigma^2 (\X^\top\X + \lambda I)^{-1}\X^\top \X(\X^\top\X + \lambda I)^{-1}\)</span></p></li>
 </ul>
+<div class="fragment">
+<p>Using the SVD <span class="math inline">\(\X = UDV^T\)</span>, <span class="math inline">\(\Var{\brl \mid \X} = \sigma^2 VG V^\top\)</span> where <span class="math inline">\(G\)</span> is diagonal with entries</p>
+<p><span class="math display">\[ g_j = \frac{d_j^2}{(d_j^2 + \lambda)^2} \qquad \left(\text{compare to OLS:} \quad g_j = \frac{1}{d_j^{2}} \right)\]</span></p>
+<p>Mitigates the issue of <span class="secondary">multicollinearity</span> (ill-conditioned <span class="math inline">\(\X\)</span>)!</p>
+<!--
+* This is easy to calculate in `R` for any $\lambda$.
+
+* However, computations and interpretation are simplified if we examine the 
+[Singular Value Decomposition]{.secondary} of $\X = \mathbf{UDV}^\top$.
+
+* Recall: any matrix has an SVD.
+
+* Here $\mathbf{D}$ is diagonal and $\mathbf{U}$ and $\mathbf{V}$ are orthonormal: $\mathbf{U}^\top\mathbf{U} = \mathbf{I}$.
+
+
+## Solving the minization
+
+$$\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y$$
+
+* Note that $\mathbf{X}^\top\mathbf{X} = \mathbf{VDU}^\top\mathbf{UDV}^\top = \mathbf{V}\mathbf{D}^2\mathbf{V}^\top$.
+
+
+* Then,
+
+
+$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top + \lambda \mathbf{I})^{-1}\mathbf{VDU}^\top \y
+= \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.$$
+
+* For computations, now we only need to invert $\mathbf{D}$.
+
+
+## Comparing with OLS
+
+
+* $\mathbf{D}$ is a diagonal matrix
+
+$$\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-2}\mathbf{D}}\mathbf{U}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-1}}\mathbf{U}^\top \y$$
+
+$$\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}\color{red}{(\mathbf{D}^2+\lambda \mathbf{I})^{-1}} \mathbf{DU}^\top \y.$$
+
+
+* Notice that $\bls$ depends on $d_j/d_j^2$ while $\brl$ depends on $d_j/(d_j^2 + \lambda)$.
+
+* Ridge regression makes the coefficients smaller relative to OLS.
+
+* But if $\X$ has small singular values, ridge regression compensates with $\lambda$ in the denominator.
+
+
+
+## Ridge regression and multicollinearity
+
+[Multicollinearity:]{.secondary} a linear combination of predictor variables is nearly equal to another predictor variable. 
+
+Some comments:
+
+* A better phrase: $\X$ is ill-conditioned
+
+* AKA "(numerically) rank-deficient".
+
+* $\X = \mathbf{U D V}^\top$ ill-conditioned $\Longleftrightarrow$ some elements of $\mathbf{D} \approx 0$
+
+* $\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y$, so small entries of $\mathbf{D}$ $\Longleftrightarrow$ huge elements of $\mathbf{D}^{-1}$
+
+* Means huge variance: $\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top$
+
+-->
+</div>
 </section>
-<section id="solving-the-minization" class="slide level2">
-<h2>Solving the minization</h2>
-<p><span class="math display">\[\brl = (\X^\top\X + \lambda \mathbf{I})^{-1}\X^\top \y\]</span></p>
-<ul>
-<li><p>Note that <span class="math inline">\(\mathbf{X}^\top\mathbf{X} = \mathbf{VDU}^\top\mathbf{UDV}^\top = \mathbf{V}\mathbf{D}^2\mathbf{V}^\top\)</span>.</p></li>
-<li><p>Then,</p></li>
-</ul>
-<p><span class="math display">\[\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top + \lambda \mathbf{I})^{-1}\mathbf{VDU}^\top \y
-= \mathbf{V}(\mathbf{D}^2+\lambda \mathbf{I})^{-1} \mathbf{DU}^\top \y.\]</span></p>
-<ul>
-<li>For computations, now we only need to invert <span class="math inline">\(\mathbf{D}\)</span>.</li>
-</ul>
-</section>
-<section id="comparing-with-ols" class="slide level2">
-<h2>Comparing with OLS</h2>
-<ul>
-<li><span class="math inline">\(\mathbf{D}\)</span> is a diagonal matrix</li>
-</ul>
-<p><span class="math display">\[\bls = (\X^\top\X)^{-1}\X^\top \y = (\mathbf{VD}^2\mathbf{V}^\top)^{-1}\mathbf{VDU}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-2}\mathbf{D}}\mathbf{U}^\top \y = \mathbf{V}\color{red}{\mathbf{D}^{-1}}\mathbf{U}^\top \y\]</span></p>
-<p><span class="math display">\[\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y = \mathbf{V}\color{red}{(\mathbf{D}^2+\lambda \mathbf{I})^{-1}} \mathbf{DU}^\top \y.\]</span></p>
-<ul>
-<li><p>Notice that <span class="math inline">\(\bls\)</span> depends on <span class="math inline">\(d_j/d_j^2\)</span> while <span class="math inline">\(\brl\)</span> depends on <span class="math inline">\(d_j/(d_j^2 + \lambda)\)</span>.</p></li>
-<li><p>Ridge regression makes the coefficients smaller relative to OLS.</p></li>
-<li><p>But if <span class="math inline">\(\X\)</span> has small singular values, ridge regression compensates with <span class="math inline">\(\lambda\)</span> in the denominator.</p></li>
-</ul>
-</section>
-<section id="ridge-regression-and-multicollinearity" class="slide level2">
-<h2>Ridge regression and multicollinearity</h2>
-<p><span class="secondary">Multicollinearity:</span> a linear combination of predictor variables is nearly equal to another predictor variable.</p>
-<p>Some comments:</p>
-<ul>
-<li><p>A better phrase: <span class="math inline">\(\X\)</span> is ill-conditioned</p></li>
-<li><p>AKA “(numerically) rank-deficient”.</p></li>
-<li><p><span class="math inline">\(\X = \mathbf{U D V}^\top\)</span> ill-conditioned <span class="math inline">\(\Longleftrightarrow\)</span> some elements of <span class="math inline">\(\mathbf{D} \approx 0\)</span></p></li>
-<li><p><span class="math inline">\(\bls= \mathbf{V D}^{-1} \mathbf{U}^\top \y\)</span>, so small entries of <span class="math inline">\(\mathbf{D}\)</span> <span class="math inline">\(\Longleftrightarrow\)</span> huge elements of <span class="math inline">\(\mathbf{D}^{-1}\)</span></p></li>
-<li><p>Means huge variance: <span class="math inline">\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1} = \sigma^2 \mathbf{V D}^{-2} \mathbf{V}^\top\)</span></p></li>
-</ul>
-</section>
-<section id="ridge-regression-and-ill-posed-x" class="slide level2">
-<h2>Ridge regression and ill-posed <span class="math inline">\(\X\)</span></h2>
-<p>Ridge Regression fixes this problem by preventing the division by a near-zero number</p>
+<section id="tuning-the-regularization-weight-lambda" class="slide level2">
+<h2>Tuning the regularization weight <span class="math inline">\(\lambda\)</span></h2>
+<p>Use <strong>cross-validation</strong> (it’s built into <code>glmnet</code> if you use <code>cv.glmnet</code>!)</p>
+<p><code>plot</code> shows mean CV estimate <span class="math inline">\(\pm\)</span> standard error</p>
+<p>Left line is minimum risk estimate; right is the largest <span class="math inline">\(\lambda\)</span> within 1<span class="math inline">\(\sigma\)</span></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> .<span class="dv">00001</span>)</span>
+<span id="cb5-2"><a></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="08-ridge-regression_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="ridge-regression-summary" class="slide level2">
+<h2>Ridge regression: summary</h2>
+<p>Ridge regression addresses <span class="secondary">multicollinearity</span> by preventing division by near-zero numbers</p>
 <dl>
 <dt>Conclusion</dt>
 <dd>
-<span class="math inline">\((\X^{\top}\X)^{-1}\)</span> can be really unstable, while <span class="math inline">\((\X^{\top}\X + \lambda \mathbf{I})^{-1}\)</span> is not.
+<span class="math inline">\(\bls = (\X^{\top}\X)^{-1}\X^\top \y\)</span> can be unstable, while <span class="math inline">\(\brl=(\X^{\top}\X + \lambda \mathbf{I})^{-1}\X^\top\y\)</span> is not.
 </dd>
 <dt>Aside</dt>
 <dd>
@@ -830,7 +893,7 @@ Engineering approach to solving linear systems is to always do this with small <
 <dl>
 <dt>Computational</dt>
 <dd>
-Use CV and pick the <span class="math inline">\(\lambda\)</span> that makes this smallest.
+Use CV and pick the <span class="math inline">\(\lambda\)</span> that makes this smallest (maybe within <span class="math inline">\(1\sigma\)</span>).
 </dd>
 <dt>Intuition (bias)</dt>
 <dd>
@@ -841,40 +904,66 @@ As <span class="math inline">\(\lambda\rightarrow\infty\)</span>, bias ⬆
 As <span class="math inline">\(\lambda\rightarrow\infty\)</span>, variance ⬇
 </dd>
 </dl>
-<p>You should think about why.</p>
 </section>
-<section id="can-we-get-the-best-of-both-worlds" class="slide level2">
-<h2>Can we get the best of both worlds?</h2>
-<p>To recap:</p>
+<section id="regularization-for-variable-selection" class="slide level2">
+<h2>Regularization for variable selection?</h2>
+<p>Ridge regression is a <em>regularized</em> approach to prediction.</p>
 <ul>
-<li><p>Deciding which predictors to include, adding quadratic terms, or interactions is <span class="secondary">model selection</span> (more precisely variable selection within a linear model).</p></li>
-<li><p>Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.</p></li>
-<li><p>If the LM is <strong>true</strong>,</p>
-<ol type="1">
-<li>OLS is unbiased, but Variance depends on <span class="math inline">\(\mathbf{D}^{-2}\)</span>. Can be big.</li>
-<li>Ridge is biased (can you find the bias?). But Variance is smaller than OLS.</li>
-</ol></li>
-<li><p>Ridge regression does not perform variable selection.</p></li>
-<li><p>But <span class="hand">picking</span> <span class="math inline">\(\lambda=3.7\)</span> and thereby <span class="hand">deciding</span> to predict with <span class="math inline">\(\widehat{\beta}^R_{3.7}\)</span> is <span class="secondary">model selection</span>.</p></li>
+<li>nice bias/variance tradeoff</li>
+<li>closed-form / easy-to-compute solution</li>
+<li>no predictor variable selection.
+<ul>
+<li>(NB: picking a <span class="math inline">\(\lambda\)</span> is still <em>model selection</em>)</li>
+</ul></li>
 </ul>
-</section>
-<section id="can-we-get-the-best-of-both-worlds-1" class="slide level2">
-<h2>Can we get the best of both worlds?</h2>
+<p>Is there a regularization approach to variable selection?</p>
+<div class="fragment">
 <dl>
-<dt>Ridge regression</dt>
+<dt>e.g., best (in-sample) linear regression model of size <span class="math inline">\(s\)</span>:</dt>
 <dd>
-<span class="math inline">\(\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ ||\beta||_2^2 \leq s\)</span>
-</dd>
-<dt>Best (in-sample) linear regression model of size <span class="math inline">\(s\)</span></dt>
-<dd>
-<span class="math inline">\(\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ ||\beta||_0 \leq s\)</span>
+<span class="math inline">\(\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ (\text{\# of nonzero $\beta_j$}) \leq s\)</span>
 </dd>
 </dl>
-<p><span class="math inline">\(||\beta||_0\)</span> is the number of nonzero elements in <span class="math inline">\(\beta\)</span></p>
-<p>Finding the best in-sample linear model (of size <span class="math inline">\(s\)</span>, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)</p>
-<p>Ridge regression is convex (easy to solve), but doesn’t do <strong>variable</strong> selection</p>
-<p>Can we somehow “interpolate” to get both?</p>
-<p>Note: selecting <span class="math inline">\(\lambda\)</span> is still <strong>model</strong> selection, but we’ve included <strong>all</strong> the variables.</p>
+<p>That is a <em>super nasty</em> optimization. What to do?…</p>
+<!--
+## Can we get the best of both worlds?
+
+To recap:
+
+* Deciding which predictors to include, adding quadratic terms, or interactions is [model selection]{.secondary} (more precisely variable selection within a linear model).
+
+* Ridge regression provides regularization, which trades off bias and variance and also stabilizes multicollinearity.  
+
+* If the LM is **true**, 
+    1. OLS is unbiased, but Variance depends on $\mathbf{D}^{-2}$. Can be big.
+    2. Ridge is biased (can you find the bias?). But Variance is smaller than OLS.
+
+* Ridge regression does not perform variable selection.
+
+* But [picking]{.hand} $\lambda=3.7$ and thereby [deciding]{.hand} to predict with $\widehat{\beta}^R_{3.7}$ is [model selection]{.secondary}.
+
+
+
+## Can we get the best of both worlds?
+
+Ridge regression 
+: $\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ ||\beta||_2^2 \leq s$ 
+
+Best (in-sample) linear regression model of size $s$
+: $\minimize \frac{1}{n}||\y-\X\beta||_2^2 \ \st\ ||\beta||_0 \leq s$
+
+
+$||\beta||_0$ is the number of nonzero elements in $\beta$
+
+Finding the best in-sample linear model (of size $s$, among these predictors) is a nonconvex optimization problem (In fact, it is NP-hard)
+
+Ridge regression is convex (easy to solve), but doesn't do __variable__ selection
+
+Can we somehow "interpolate" to get both?
+
+Note: selecting $\lambda$ is still __model__ selection, but we've included __all__ the variables.
+-->
+</div>
 </section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
