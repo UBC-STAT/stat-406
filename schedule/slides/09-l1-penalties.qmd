@@ -17,13 +17,13 @@ Ridge regression
 Best (in sample) linear regression model of size $s$
 : $\min \frac 1n \snorm{\y-\X\beta}_2^2 \st \snorm{\beta}_0 \leq s$
 
-$\snorm{\beta}_0$ is the number of nonzero elements in $\beta$
+* $\snorm{\beta}_0$ is the number of nonzero elements in $\beta$
 
-Finding the "best" linear model (of size $s$, among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)
+* Finding the "best" linear model (of size $s$, among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)
 
-Ridge regression is convex (easy to solve), but doesn't do variable selection
+* Ridge regression is convex (easy to solve), but doesn't do variable selection
 
-Can we somehow "interpolate" to get both?
+* Can we somehow "interpolate" to get both?
 
 ## Brief aside on norms
 
@@ -47,20 +47,14 @@ $\ell_0$-norm
 $\ell_\infty$-norm
 : $\|z\|_\infty = \max_{1\leq j \leq p} |z_j|$
 
-<!--
-::: aside
-Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
-:::
--->
-
-
+See <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 
 ## Geometry of convexity
 
 ```{r plotting-functions}
 #| code-fold: true
-#| fig-width: 12
-#| fig-height: 6
+#| fig-width: 16
+#| fig-height: 8
 library(mvtnorm)
 normBall <- function(q = 1, len = 1000) {
   tg <- seq(0, 2 * pi, length = len)
@@ -96,6 +90,8 @@ nbs <- list()
 nbs[[1]] <- normBall(0, 1)
 qs <- c(.5, .75, 1, 1.5, 2)
 for (ii in 2:6) nbs[[ii]] <- normBall(qs[ii - 1])
+nbs[[1]]$lab <- paste0('"||" * beta * "||"', "[0.0]")
+nbs[[4]]$lab <- paste0('"||" * beta * "||"', "[1.0]")
 nbs <- bind_rows(nbs)
 nbs$lab <- factor(nbs$lab, levels = unique(nbs$lab))
 seg <- data.frame(
@@ -105,7 +101,7 @@ seg <- data.frame(
 levels(seg$lab) <- levels(nbs$lab)
 ggplot(nbs, aes(x, y)) +
   geom_path(size = 1.2) +
-  facet_wrap(~lab, labeller = label_parsed) +
+  facet_grid(.~lab, labeller = label_parsed) +
   geom_segment(data = seg, aes(x = x0, xend = x1, y = y0, yend = y1), size = 1.2) +
   theme_bw(base_family = "", base_size = 24) +
   coord_equal() +
@@ -116,6 +112,10 @@ ggplot(nbs, aes(x, y)) +
   xlab(bquote(beta[1])) +
   ylab(bquote(beta[2]))
 ```
+
+* Want a convex constraint / regularizer for easy optimization ($\ell_q$ convex for $q \geq 1$)
+* Want "corners" to perform variable selection ($\ell_q$ has "corners" for $q \leq 1$)
+
 
 
 ## The best of both worlds
@@ -148,9 +148,9 @@ ggplot(nb, aes(x, y)) +
   )
 ```
 
-This regularization set...
+This regularization set with $q = 1$...
 
-* ... is convex (computationally efficient)
+* ... is convex (computationally efficient to optimize)
 * ... has corners (performs variable selection)
 
 
@@ -161,40 +161,32 @@ Known as
 * "lasso"
 * "basis pursuit"
 
-The estimator satisfies
+The estimator is given by the constrained optimization
 
-$$\blt = \argmin_{ \snorm{\beta}_1 \leq s}  \frac{1}{n}\snorm{\y-\X\beta}_2^2$$
+$$\blt = \argmin_{\beta}  \frac{1}{n}\snorm{\y-\X\beta}_2^2 \st  \snorm{\beta}_1 \leq s$$
 
-
-In its corresponding Lagrangian dual form:
+As with ridge regression, we will use the unconstrained, regularized form (*Lagrangian*):
 
 $$\bll = \argmin_{\beta} \frac{1}{n}\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1$$
 
-
 ## Lasso
 
-While the ridge solution can be easily computed 
+While the ridge regression estimate can be easily computed:
 
 $$\brl = \argmin_{\beta} \frac 1n \snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_2^2 = (\X^{\top}\X + \lambda \mathbf{I})^{-1} \X^{\top}\y$$
 
 
-the lasso solution
-
+the lasso estimate does not have a closed form:
 
 $$\bll = \argmin_{\beta} \frac 1n\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1 = \; ??$$
 
-doesn't have a closed-form solution.
-
-
-However, because the optimization problem is convex, there exist efficient algorithms for computing it
+But the optimization problem is convex, so there are efficient algorithms to compute it!
 
 ::: aside
 The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn't work very well in practice.
 :::
 
-
 ## Coefficient path: ridge vs lasso
-
 
 ```{r ridge-v-lasso}
 #| code-fold: true
@@ -206,6 +198,20 @@ lasso <- glmnet(x = X, y = Y) # alpha = 1 by default
 ridge <- glmnet(x = X, y = Y, alpha = 0)
 op <- par()
 ```
+
+```{r ridge-v-lasso-again}
+par(mfrow = c(1, 2), mar = c(5, 3, 5, .1))
+plot(lasso, main = "Lasso", xvar = "lambda")
+plot(ridge, main = "Ridge", xvar = "lambda")
+```
+
+```{r}
+#| echo: false
+par(op)
+```
+
+
+## Same path versus $\ell_1$ norm
 
 ```{r}
 par(mfrow = c(1, 2), mar = c(5, 3, 5, .1))
@@ -241,19 +247,6 @@ bind_rows(df, df1) %>%
 ```
 
 
-## Same but against Lambda
-
-```{r ridge-v-lasso-again}
-par(mfrow = c(1, 2), mar = c(5, 3, 5, .1))
-plot(lasso, main = "Lasso", xvar = "lambda")
-plot(ridge, main = "Ridge", xvar = "lambda")
-```
-
-```{r}
-#| echo: false
-par(op)
-```
-
 ## Additional intuition for why Lasso selects variables
 
 Suppose, for a particular $\lambda$, I have solutions for $\widehat{\beta}_k$, $k = 1,\ldots,j-1, j+1,\ldots,p$.
@@ -267,8 +260,9 @@ $$
 $$
 
 $$
-S(z, \gamma) = \textrm{sign}(z)(|z| - \gamma)_+ = \begin{cases} z - \gamma & z > \gamma\\
-z + \gamma & z < -\gamma \\ 0 & |z| \leq \gamma \end{cases}
+S(z, \lambda) = \begin{cases} z - \lambda & z > \lambda \\
+z + \lambda & z < -\lambda \\ 0 & |z| \leq \lambda \end{cases}
+%= \textrm{sign}(z)(|z| - \lambda)_+ 
 $$
 
 * Iterating over this is called [coordinate descent]{.secondary} and gives the solution
@@ -292,8 +286,8 @@ There are two main `R` implementations for finding lasso
 `{glmnet}`: `lasso = glmnet(X, Y, alpha=1)`.  
 
 * Setting `alpha = 0` gives ridge regression (as does `lm.ridge` in the `MASS` package)
-* Setting `alpha` $\in (0,1)$ gives a method called the "elastic net" which combines ridge regression and lasso, more on that next lecture.
-* If you don't specify `alpha`, it does lasso
+* Setting `alpha` $\in (0,1)$ gives a method called the "elastic net" which combines ridge regression and lasso (regularization $\alpha \|\beta\|_1 + (1-\alpha)\|\beta\|^2_2$). More on that later.
+* Default `alpha = 1` (it does lasso)
 
 `{lars}`: `lars = lars(X, Y)`
 
@@ -317,10 +311,9 @@ All of these packages come with CV built in.
 
 However, the way to do it differs from package to package
 
-. . .
-
+<!--
 <p align="center"><iframe src="https://giphy.com/embed/fYfeQAOD8pSjN7M0jY" width="480" height="270" frameBorder="0" class="giphy-embed"></iframe></p>
-
+-->
 
 
 ## `{glmnet}` version (same procedure for lasso or ridge)
