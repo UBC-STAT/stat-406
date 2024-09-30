@@ -441,10 +441,12 @@
 <span class="math inline">\(\min \frac 1n \snorm{\y-\X\beta}_2^2 \st \snorm{\beta}_0 \leq s\)</span>
 </dd>
 </dl>
-<p><span class="math inline">\(\snorm{\beta}_0\)</span> is the number of nonzero elements in <span class="math inline">\(\beta\)</span></p>
-<p>Finding the “best” linear model (of size <span class="math inline">\(s\)</span>, among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)</p>
-<p>Ridge regression is convex (easy to solve), but doesn’t do variable selection</p>
-<p>Can we somehow “interpolate” to get both?</p>
+<ul>
+<li><p><span class="math inline">\(\snorm{\beta}_0\)</span> is the number of nonzero elements in <span class="math inline">\(\beta\)</span></p></li>
+<li><p>Finding the “best” linear model (of size <span class="math inline">\(s\)</span>, among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)</p></li>
+<li><p>Ridge regression is convex (easy to solve), but doesn’t do variable selection</p></li>
+<li><p>Can we somehow “interpolate” to get both?</p></li>
+</ul>
 </section>
 <section id="brief-aside-on-norms" class="slide level2">
 <h2>Brief aside on norms</h2>
@@ -474,11 +476,7 @@
 <span class="math inline">\(\|z\|_\infty = \max_{1\leq j \leq p} |z_j|\)</span>
 </dd>
 </dl>
-<!--
-::: aside
-Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
-:::
--->
+<p>See <a href="https://en.wikipedia.org/wiki/Norm_(mathematics)" class="uri">https://en.wikipedia.org/wiki/Norm_(mathematics)</a></p>
 </section>
 <section id="geometry-of-convexity" class="slide level2">
 <h2>Geometry of convexity</h2>
@@ -520,29 +518,35 @@ Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 <span id="cb1-33"><a></a>nbs[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
 <span id="cb1-34"><a></a>qs <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">75</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>)</span>
 <span id="cb1-35"><a></a><span class="cf">for</span> (ii <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>) nbs[[ii]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(qs[ii <span class="sc">-</span> <span class="dv">1</span>])</span>
-<span id="cb1-36"><a></a>nbs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(nbs)</span>
-<span id="cb1-37"><a></a>nbs<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">factor</span>(nbs<span class="sc">$</span>lab, <span class="at">levels =</span> <span class="fu">unique</span>(nbs<span class="sc">$</span>lab))</span>
-<span id="cb1-38"><a></a>seg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb1-39"><a></a>  <span class="at">lab =</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)[<span class="dv">1</span>],</span>
-<span id="cb1-40"><a></a>  <span class="at">x0 =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="at">x1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">y0 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">y1 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb1-41"><a></a>)</span>
-<span id="cb1-42"><a></a><span class="fu">levels</span>(seg<span class="sc">$</span>lab) <span class="ot">&lt;-</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)</span>
-<span id="cb1-43"><a></a><span class="fu">ggplot</span>(nbs, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
-<span id="cb1-44"><a></a>  <span class="fu">geom_path</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-45"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>lab, <span class="at">labeller =</span> label_parsed) <span class="sc">+</span></span>
-<span id="cb1-46"><a></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> seg, <span class="fu">aes</span>(<span class="at">x =</span> x0, <span class="at">xend =</span> x1, <span class="at">y =</span> y0, <span class="at">yend =</span> y1), <span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-47"><a></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb1-48"><a></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb1-49"><a></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-50"><a></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-51"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-52"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-53"><a></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
-<span id="cb1-54"><a></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-36"><a></a>nbs[[<span class="dv">1</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[0.0]"</span>)</span>
+<span id="cb1-37"><a></a>nbs[[<span class="dv">4</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[1.0]"</span>)</span>
+<span id="cb1-38"><a></a>nbs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(nbs)</span>
+<span id="cb1-39"><a></a>nbs<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">factor</span>(nbs<span class="sc">$</span>lab, <span class="at">levels =</span> <span class="fu">unique</span>(nbs<span class="sc">$</span>lab))</span>
+<span id="cb1-40"><a></a>seg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-41"><a></a>  <span class="at">lab =</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)[<span class="dv">1</span>],</span>
+<span id="cb1-42"><a></a>  <span class="at">x0 =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="at">x1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">y0 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">y1 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb1-43"><a></a>)</span>
+<span id="cb1-44"><a></a><span class="fu">levels</span>(seg<span class="sc">$</span>lab) <span class="ot">&lt;-</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)</span>
+<span id="cb1-45"><a></a><span class="fu">ggplot</span>(nbs, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
+<span id="cb1-46"><a></a>  <span class="fu">geom_path</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb1-47"><a></a>  <span class="fu">facet_grid</span>(.<span class="sc">~</span>lab, <span class="at">labeller =</span> label_parsed) <span class="sc">+</span></span>
+<span id="cb1-48"><a></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> seg, <span class="fu">aes</span>(<span class="at">x =</span> x0, <span class="at">xend =</span> x1, <span class="at">y =</span> y0, <span class="at">yend =</span> y1), <span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb1-49"><a></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
+<span id="cb1-50"><a></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
+<span id="cb1-51"><a></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb1-52"><a></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb1-53"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb1-54"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb1-55"><a></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
+<span id="cb1-56"><a></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="09-l1-penalties_files/figure-revealjs/plotting-functions-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="09-l1-penalties_files/figure-revealjs/plotting-functions-1.svg" class="quarto-figure quarto-figure-center r-stretch"><ul>
+<li>Want a convex constraint / regularizer for easy optimization (<span class="math inline">\(\ell_q\)</span> convex for <span class="math inline">\(q \geq 1\)</span>)</li>
+<li>Want “corners” to perform variable selection (<span class="math inline">\(\ell_q\)</span> has “corners” for <span class="math inline">\(q \leq 1\)</span>)</li>
+</ul>
+</section>
 <section id="the-best-of-both-worlds" class="slide level2">
 <h2>The best of both worlds</h2>
 <div class="cell" data-layout-align="center">
@@ -574,9 +578,9 @@ Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 </details>
 
 </div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>This regularization set…</p>
+<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>This regularization set with <span class="math inline">\(q = 1\)</span>…</p>
 <ul>
-<li>… is convex (computationally efficient)</li>
+<li>… is convex (computationally efficient to optimize)</li>
 <li>… has corners (performs variable selection)</li>
 </ul>
 </section>
@@ -587,19 +591,18 @@ Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 <li>“lasso”</li>
 <li>“basis pursuit”</li>
 </ul>
-<p>The estimator satisfies</p>
-<p><span class="math display">\[\blt = \argmin_{ \snorm{\beta}_1 \leq s}  \frac{1}{n}\snorm{\y-\X\beta}_2^2\]</span></p>
-<p>In its corresponding Lagrangian dual form:</p>
+<p>The estimator is given by the constrained optimization</p>
+<p><span class="math display">\[\blt = \argmin_{\beta}  \frac{1}{n}\snorm{\y-\X\beta}_2^2 \st  \snorm{\beta}_1 \leq s\]</span></p>
+<p>As with ridge regression, we will use the unconstrained, regularized form (<em>Lagrangian</em>):</p>
 <p><span class="math display">\[\bll = \argmin_{\beta} \frac{1}{n}\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1\]</span></p>
 </section>
 <section id="lasso" class="slide level2">
 <h2>Lasso</h2>
-<p>While the ridge solution can be easily computed</p>
+<p>While the ridge regression estimate can be easily computed:</p>
 <p><span class="math display">\[\brl = \argmin_{\beta} \frac 1n \snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_2^2 = (\X^{\top}\X + \lambda \mathbf{I})^{-1} \X^{\top}\y\]</span></p>
-<p>the lasso solution</p>
+<p>the lasso estimate does not have a closed form:</p>
 <p><span class="math display">\[\bll = \argmin_{\beta} \frac 1n\snorm{\y-\X\beta}_2^2 + \lambda \snorm{\beta}_1 = \; ??\]</span></p>
-<p>doesn’t have a closed-form solution.</p>
-<p>However, because the optimization problem is convex, there exist efficient algorithms for computing it</p>
+<p>But the optimization problem is convex, so there are efficient algorithms to compute it!</p>
 
 <aside><div>
 <p>The best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice.</p>
@@ -620,20 +623,20 @@ Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 </div>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">5</span>, .<span class="dv">1</span>))</span>
-<span id="cb4-2"><a></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>)</span>
-<span id="cb4-3"><a></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="same-but-against-lambda" class="slide level2">
-<h2>Same but against Lambda</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">5</span>, .<span class="dv">1</span>))</span>
-<span id="cb5-2"><a></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span>
-<span id="cb5-3"><a></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-2"><a></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span>
+<span id="cb4-3"><a></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
 <img data-src="09-l1-penalties_files/figure-revealjs/ridge-v-lasso-again-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="same-path-versus-ell_1-norm" class="slide level2">
+<h2>Same path versus <span class="math inline">\(\ell_1\)</span> norm</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">5</span>, .<span class="dv">1</span>))</span>
+<span id="cb5-2"><a></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"Lasso"</span>)</span>
+<span id="cb5-3"><a></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="09-l1-penalties_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="additional-intuition-for-why-lasso-selects-variables" class="slide level2">
 <h2>Additional intuition for why Lasso selects variables</h2>
 <p>Suppose, for a particular <span class="math inline">\(\lambda\)</span>, I have solutions for <span class="math inline">\(\widehat{\beta}_k\)</span>, <span class="math inline">\(k = 1,\ldots,j-1, j+1,\ldots,p\)</span>.</p>
@@ -643,8 +646,9 @@ Recall what a norm is: <https://en.wikipedia.org/wiki/Norm_(mathematics)>
 \widehat{\beta}_j = S\left(\mathbf{X}^\top_j(\y - \widehat{\y}_{-j}),\ \lambda\right).
 \]</span></p>
 <p><span class="math display">\[
-S(z, \gamma) = \textrm{sign}(z)(|z| - \gamma)_+ = \begin{cases} z - \gamma &amp; z &gt; \gamma\\
-z + \gamma &amp; z &lt; -\gamma \\ 0 &amp; |z| \leq \gamma \end{cases}
+S(z, \lambda) = \begin{cases} z - \lambda &amp; z &gt; \lambda \\
+z + \lambda &amp; z &lt; -\lambda \\ 0 &amp; |z| \leq \lambda \end{cases}
+%= \textrm{sign}(z)(|z| - \lambda)_+
 \]</span></p>
 <ul>
 <li>Iterating over this is called <span class="secondary">coordinate descent</span> and gives the solution</li>
@@ -675,8 +679,8 @@ z + \gamma &amp; z &lt; -\gamma \\ 0 &amp; |z| \leq \gamma \end{cases}
 <p><code>{glmnet}</code>: <code>lasso = glmnet(X, Y, alpha=1)</code>.</p>
 <ul>
 <li>Setting <code>alpha = 0</code> gives ridge regression (as does <code>lm.ridge</code> in the <code>MASS</code> package)</li>
-<li>Setting <code>alpha</code> <span class="math inline">\(\in (0,1)\)</span> gives a method called the “elastic net” which combines ridge regression and lasso, more on that next lecture.</li>
-<li>If you don’t specify <code>alpha</code>, it does lasso</li>
+<li>Setting <code>alpha</code> <span class="math inline">\(\in (0,1)\)</span> gives a method called the “elastic net” which combines ridge regression and lasso (regularization <span class="math inline">\(\alpha \|\beta\|_1 + (1-\alpha)\|\beta\|^2_2\)</span>). More on that later.</li>
+<li>Default <code>alpha = 1</code> (it does lasso)</li>
 </ul>
 <p><code>{lars}</code>: <code>lars = lars(X, Y)</code></p>
 <ul>
@@ -693,12 +697,9 @@ z + \gamma &amp; z &lt; -\gamma \\ 0 &amp; |z| \leq \gamma \end{cases}
 <p>lasso selects variables (by setting coefficients to zero), but the value of <span class="math inline">\(\lambda\)</span> determines how many/which.</p>
 <p>All of these packages come with CV built in.</p>
 <p>However, the way to do it differs from package to package</p>
-<div class="fragment">
-<p align="center">
-<iframe src="https://giphy.com/embed/fYfeQAOD8pSjN7M0jY" width="480" height="270" frameborder="0" class="giphy-embed">
-</iframe>
-</p>
-</div>
+<!--
+<p align="center"><iframe src="https://giphy.com/embed/fYfeQAOD8pSjN7M0jY" width="480" height="270" frameBorder="0" class="giphy-embed"></iframe></p>
+-->
 </section>
 <section id="glmnet-version-same-procedure-for-lasso-or-ridge" class="slide level2">
 <h2><code>{glmnet}</code> version (same procedure for lasso or ridge)</h2>
