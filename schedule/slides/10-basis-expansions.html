@@ -398,7 +398,7 @@
 <h2>10 Basis expansions</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 27 September 2023</p>
+<p>Last modified – 02 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,11 +424,106 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
+</section>
+<section>
+<section id="quick-review-of-ridge-and-lasso" class="title-slide slide level1 center">
+<h1>Quick Review of Ridge and Lasso</h1>
+
+</section>
+<section id="ols-low-bias-potentially-high-variance" class="slide level2">
+<h2>OLS: low bias, (potentially) high variance</h2>
+<p><span class="math display">\[
+\begin{gathered}
+\text{Model:} \quad y = x^\top \beta + \epsilon, \qquad \epsilon \sim N(0, \sigma^2)
+\\
+\text{OLS:} \quad \bls = \argmin_\beta \| \y - \X\beta\|_2^2\quad
+\end{gathered}
+\]</span></p>
+<ul>
+<li>Bias: <span class="math inline">\(\E[\bls] - \beta = \E[\E[\bls \mid \X]] - \beta = \ldots = 0\)</span></li>
+<li>variance: <span class="math inline">\(\Var{\bls} =  \sigma^2(\X^\top \X)^{-1}\)</span></li>
+</ul>
+<p><span class="secondary">When is <span class="math inline">\((\X^\top \X)^{-1}\)</span> large?</span></p>
+<div class="fragment">
+<p>When we have <em>nearly colinear features</em><br>
+Nearly colinear features <span class="math inline">\(\Rightarrow\)</span> small singular values <span class="math inline">\(\Rightarrow\)</span> large matrix inverse<br>
+<span class="secondary">(Colinearity is more likely when <span class="math inline">\(n\)</span> is small)</span></p>
+</div>
+</section>
+<section id="reducing-variance-at-the-cost-of-additional-bias" class="slide level2">
+<h2>Reducing variance (at the cost of additional bias)</h2>
+<ol start="0" type="1">
+<li><em>Manual variable selection</em></li>
+<li><em>Ridge regression</em>: <span class="math inline">\(\min_\beta \| \y - \X\beta\|_2^2 + \lambda \Vert \beta \Vert_2^2\)</span></li>
+<li><em>Lasso</em>: <span class="math inline">\(\min_\beta \| \y - \X\beta\|_2^2 + \lambda \Vert \beta \Vert_1\)</span></li>
+</ol>
+<div class="fragment">
+<p><em>Ridge</em> shrinks all parameters towards 0.<br>
+<em>Lasso</em> performs automatic variable selection.<br>
+</p>
+</div>
+<div class="fragment">
+<p><br>
+Increasing <span class="math inline">\(\lambda\)</span> <em>increases bias</em> and <em>decreases variance</em>.<br>
+<span class="small">(For ridge, larger lambda <span class="math inline">\(\rightarrow\)</span> smaller <span class="math inline">\(\beta\)</span>.)</span><br>
+<span class="small">(For lasso, larger lambda <span class="math inline">\(\rightarrow\)</span> sparser <span class="math inline">\(\beta\)</span>.)</span></p>
+</div>
+</section>
+<section class="slide level2">
+
+
+<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="computing-ridge-and-lasso-predictors" class="slide level2">
+<h2>Computing ridge and lasso predictors</h2>
+<ul>
+<li><em>OLS:</em> <span class="math inline">\(\bls = (\X^\top \X)^{-1}\X^\top \y\)</span></li>
+<li><em>Ridge:</em> <span class="math inline">\(\brl = (\X^\top \X + \lambda \mathbf{I})^{-1}\X^\top \y\)</span></li>
+<li><em>Lasso:</em> No closed form solution 😔
+<ul>
+<li>(Convex optimization problem solvable with iterative algorithms.)</li>
+</ul></li>
+</ul>
+</section>
+<section id="optional-proof-that-ridge-shrinks-parameters" class="slide level2">
+<h2>(Optional) Proof that ridge shrinks parameters</h2>
+<p>(This proof is not too hard if you use facts about SVDs and eigenvalues. I recommend working through it.)</p>
+<p>Let <span class="math inline">\(\mathbf{UDV^\top} = X\)</span> be the SVD of <span class="math inline">\(\mathbf X\)</span>.</p>
+<p><span class="math display">\[
+\begin{align}
+\brl &amp;= (\X^\top \X + \lambda \mathbf{I})^{-1} \X^\top \y
+     \\
+     &amp;= (\X^\top \X + \lambda \mathbf{I})^{-1} {\color{blue} \X \X^\top (\X^\top \X)^{-1}} \X^\top \y
+     \\
+     &amp;= (\X^\top \X + \lambda \mathbf{I})^{-1} \X \X^\top \underbrace{\left( (\X^\top \X)^{-1} \X^\top \y \right)}_{\bls}
+     \\
+     &amp;= (\mathbf V \mathbf D^2 \mathbf V^\top + \lambda \mathbf{I})^{-1} \mathbf V \mathbf D^2 \mathbf V^\top \bls
+     \\
+     &amp;= (\mathbf V (\mathbf D^2 + \lambda I) \mathbf V^\top)^{-1} \mathbf V \mathbf D^2 \mathbf V^\top \bls
+     \\
+     &amp;= \mathbf V (\mathbf D^2)(\mathbf D^2 + \lambda I)^{-1} \mathbf V^\top \bls
+\end{align}
+\]</span></p>
+</section>
+<section class="slide level2">
+
+<p><span class="math inline">\((\mathbf D^2)(\mathbf D^2 + \lambda I)^{-1}\)</span> is a diagonal matrix with entries <span class="math inline">\(d_i^2/(d_i^2 + \lambda) &lt; 1\)</span>.</p>
+<p>So <span class="math inline">\(\mathbf V (\mathbf D^2)(\mathbf D^2 + \lambda I)^{-1} \mathbf V^\top\)</span> is a matrix that <em>shrinks</em> all coefficients of any vector multiplied against it.</p>
+<p><span class="math display">\[
+\Vert \mathbf V (\mathbf D^2)(\mathbf D^2 + \lambda I)^{-1} \mathbf V^\top \bls \Vert_2 &lt; \Vert \bls \Vert_2.
+\]</span> So <span class="math inline">\(\Vert \brl \Vert_2 &lt; \Vert \bls \Vert_2\)</span></p>
+</section></section>
+<section>
+<section id="now-onto-new-stuff" class="title-slide slide level1 center">
+<h1>Now onto new stuff</h1>
+<p>(But first, more clickers!)</p>
 </section>
 <section id="what-about-nonlinear-things" class="slide level2">
 <h2>What about nonlinear things</h2>
-<p><span class="math display">\[\Expect{Y \given X=x} = \sum_{j=1}^p x_j\beta_j\]</span></p>
+<p><span class="math display">\[\text{Our usual model:} \quad \Expect{Y \given X=x} = \sum_{j=1}^p x_j\beta_j\]</span></p>
 <p>Now we relax this assumption of linearity:</p>
 <p><span class="math display">\[\Expect{Y \given X=x} = f(x)\]</span></p>
 <p>How do we estimate <span class="math inline">\(f\)</span>?</p>
@@ -457,7 +552,7 @@
 </details>
 
 </div>
-<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="same-thing-different-orders" class="slide level2">
 <h2>Same thing, different orders</h2>
 <div class="cell" data-layout-align="center">
@@ -474,7 +569,7 @@
 </details>
 
 </div>
-<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="still-a-linear-smoother" class="slide level2">
 <h2>Still a “linear smoother”</h2>
 <p>Really, this is still linear regression, just in a transformed space.</p>
@@ -511,7 +606,7 @@
 </details>
 
 </div>
-<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="other-bases" class="slide level2">
 <h2>Other bases</h2>
 <dl>
@@ -521,26 +616,97 @@
 </dd>
 <dt>Linear splines</dt>
 <dd>
-<span class="math inline">\(x \mapsto \bigg(1,\ x,\ (x-k_1)_+,\ (x-k_2)_+,\ldots, (x-k_p)_+\bigg)\)</span> for some choices <span class="math inline">\(\{k_1,\ldots,k_p\}\)</span>
+<span class="math inline">\(x \mapsto \bigg(1,\ x,\ (x-k_1)_+,\ (x-k_2)_+,\ldots, (x-k_p)_+\bigg)\)</span> for some <span class="math inline">\(\{k_1,\ldots,k_p\}\)</span>
 </dd>
-<dt>Cubic splines</dt>
-<dd>
-<span class="math inline">\(x \mapsto \bigg(1,\ x,\ x^2,\ x^3,\ (x-k_1)^3_+,\ (x-k_2)^3_+,\ldots, (x-k_p)^3_+\bigg)\)</span> for some choices <span class="math inline">\(\{k_1,\ldots,k_p\}\)</span>
-</dd>
+</dl>
+<!--
+Cubic splines
+: $x \mapsto \bigg(1,\ x,\ x^2,\ x^3,\ (x-k_1)^3_+,\ (x-k_2)^3_+,\ldots, (x-k_p)^3_+\bigg)$ for some choices $\{k_1,\ldots,k_p\}$
+-->
+<dl>
 <dt>Fourier series</dt>
 <dd>
 <span class="math inline">\(x \mapsto \bigg(1,\ \cos(2\pi x),\ \sin(2\pi x),\ \cos(2\pi 2 x),\ \sin(2\pi 2 x), \ldots, \cos(2\pi p x),\ \sin(2\pi p x)\bigg)\)</span>
 </dd>
 </dl>
-</section>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb5-2"><a></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb5-3"><a></a></span>
+<span id="cb5-4"><a></a>relu_shifted <span class="ot">&lt;-</span> <span class="cf">function</span>(x, shift) {<span class="fu">pmax</span>(<span class="dv">0</span>, x <span class="sc">-</span> shift)}</span>
+<span id="cb5-5"><a></a></span>
+<span id="cb5-6"><a></a><span class="co"># Create a sequence of x values</span></span>
+<span id="cb5-7"><a></a>x_vals <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb5-8"><a></a></span>
+<span id="cb5-9"><a></a><span class="co"># Create a data frame with all the shifted functions</span></span>
+<span id="cb5-10"><a></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-11"><a></a>  <span class="at">x =</span> <span class="fu">rep</span>(x_vals, <span class="dv">5</span>),</span>
+<span id="cb5-12"><a></a>  <span class="at">polynomial =</span> <span class="fu">c</span>(x_vals, x_vals<span class="sc">^</span><span class="dv">2</span>, x_vals<span class="sc">^</span><span class="dv">3</span>, x_vals<span class="sc">^</span><span class="dv">4</span>, x_vals<span class="sc">^</span><span class="dv">5</span>),</span>
+<span id="cb5-13"><a></a>  <span class="at">linear.splines =</span> <span class="fu">c</span>(<span class="fu">relu_shifted</span>(x_vals, <span class="dv">2</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="dv">1</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="dv">0</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="sc">-</span><span class="dv">1</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="sc">-</span><span class="dv">2</span>)),</span>
+<span id="cb5-14"><a></a>  <span class="at">fourier =</span> <span class="fu">c</span>(<span class="fu">cos</span>(pi <span class="sc">/</span> <span class="dv">2</span> <span class="sc">*</span> x_vals), <span class="fu">sin</span>(pi <span class="sc">/</span> <span class="dv">2</span> <span class="sc">*</span> x_vals), <span class="fu">cos</span>(pi <span class="sc">/</span> <span class="dv">4</span> <span class="sc">*</span> x_vals), <span class="fu">sin</span>(pi <span class="sc">/</span> <span class="dv">4</span> <span class="sc">*</span> x_vals), <span class="fu">cos</span>(pi <span class="sc">*</span> x_vals)),</span>
+<span id="cb5-15"><a></a>  <span class="at">function_label =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span>), <span class="at">each =</span> <span class="fu">length</span>(x_vals))</span>
+<span id="cb5-16"><a></a>)</span>
+<span id="cb5-17"><a></a></span>
+<span id="cb5-18"><a></a><span class="co"># Plot using ggplot2</span></span>
+<span id="cb5-19"><a></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> polynomial, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb5-20"><a></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb5-21"><a></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb5-22"><a></a>g2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> linear.splines, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb5-23"><a></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb5-24"><a></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb5-25"><a></a>g3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> fourier, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb5-26"><a></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb5-27"><a></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb5-28"><a></a></span>
+<span id="cb5-29"><a></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="how-do-you-choose" class="slide level2">
 <h2>How do you choose?</h2>
 <p><span class="secondary">Procedure 1:</span></p>
 <ol type="1">
-<li><p>Pick your favorite basis. This is not as easy as it sounds. For instance, if <span class="math inline">\(f\)</span> is a step function, linear splines will do well with good knots, but polynomials will be terrible unless you have <strong>lots</strong> of terms.</p></li>
+<li>Pick your favorite basis. (Think if the data might “prefer” one basis over another.)
+<ul>
+<li><span class="small">How “smooth” is the response you’re trying to model?</span></li>
+</ul></li>
+</ol>
+<!-- This is not as easy as it sounds. For instance, if $f$ is a step function, linear splines will do well with good knots, but polynomials will be terrible unless you have __lots__ of terms. -->
+<ol start="2" type="1">
 <li><p>Perform OLS on different orders.</p></li>
 <li><p>Use model selection criterion to choose the order.</p></li>
 </ol>
+</section>
+<section class="slide level2">
+
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="10-basis-expansions_files/figure-revealjs/unnamed-chunk-8-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>What bases do you think will work best for <span class="math inline">\(f1\)</span>, <span class="math inline">\(f2\)</span> and <span class="math inline">\(f3\)</span>?</p>
+<div class="fragment">
+<p><span class="secondary"><em>Answer: <span class="math inline">\(f1\)</span> was made from polynomial bases, <span class="math inline">\(f2\)</span> from fourier, <span class="math inline">\(f3\)</span> from linear splines</em></span></p>
+</div>
+</section>
+<section id="how-do-you-choose-1" class="slide level2">
+<h2>How do you choose?</h2>
 <p><span class="secondary">Procedure 2:</span></p>
 <ol type="1">
 <li><p>Use a bunch of high-order bases, say Linear splines and Fourier series and whatever else you like.</p></li>
@@ -553,46 +719,46 @@
 <ol type="1">
 <li><p>Split <code>arcuate</code> into 75% training data and 25% testing data.</p></li>
 <li><p>Estimate polynomials up to 20 as before and choose best order.</p></li>
-<li><p>Do ridge, lasso and elastic net <span class="math inline">\(\alpha=.5\)</span> on 20th order polynomials, B splines with 20 knots, and Fourier series with <span class="math inline">\(p=20\)</span>. Choose tuning parameter (using <code>lambda.1se</code>).</p></li>
+<li><p>Do ridge, lasso and elastic net <span class="math inline">\(\alpha=.5\)</span> on 20th order polynomials, splines with 20 knots, and Fourier series with <span class="math inline">\(p=20\)</span>. Choose tuning parameter (using <code>lambda.1se</code>).</p></li>
 <li><p>Repeat 1-3 10 times (different splits)</p></li>
 </ol>
 </section>
 <section id="section-2" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb5-2"><a></a>mapto01 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">pad =</span> .<span class="dv">005</span>) (x <span class="sc">-</span> <span class="fu">min</span>(x) <span class="sc">+</span> pad) <span class="sc">/</span> (<span class="fu">max</span>(x) <span class="sc">-</span> <span class="fu">min</span>(x) <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> pad)</span>
-<span id="cb5-3"><a></a>x <span class="ot">&lt;-</span> <span class="fu">mapto01</span>(arcuate<span class="sc">$</span>position)</span>
-<span id="cb5-4"><a></a>Xmat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
-<span id="cb5-5"><a></a>  <span class="fu">poly</span>(x, <span class="dv">20</span>), </span>
-<span id="cb5-6"><a></a>  splines<span class="sc">::</span><span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">20</span>), </span>
-<span id="cb5-7"><a></a>  <span class="fu">cos</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> <span class="fu">outer</span>(x, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)), <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> <span class="fu">outer</span>(x, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>))</span>
-<span id="cb5-8"><a></a>)</span>
-<span id="cb5-9"><a></a>y <span class="ot">&lt;-</span> arcuate<span class="sc">$</span>fa</span>
-<span id="cb5-10"><a></a>rmse <span class="ot">&lt;-</span> <span class="cf">function</span>(z, s) <span class="fu">sqrt</span>(<span class="fu">mean</span>( (z <span class="sc">-</span> s)<span class="sc">^</span><span class="dv">2</span> ))</span>
-<span id="cb5-11"><a></a>nzero <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">with</span>(x, nzero[<span class="fu">match</span>(lambda<span class="fl">.1</span>se, lambda)])</span>
-<span id="cb5-12"><a></a>sim <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">maxdeg =</span> <span class="dv">20</span>, <span class="at">train_frac =</span> <span class="fl">0.75</span>) {</span>
-<span id="cb5-13"><a></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(arcuate)</span>
-<span id="cb5-14"><a></a>  train <span class="ot">&lt;-</span> <span class="fu">as.logical</span>(<span class="fu">rbinom</span>(n, <span class="dv">1</span>, train_frac))</span>
-<span id="cb5-15"><a></a>  test <span class="ot">&lt;-</span> <span class="sc">!</span>train <span class="co"># not precisely 25%, but on average</span></span>
-<span id="cb5-16"><a></a>  polycv <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="fu">seq</span>(maxdeg), <span class="sc">~</span> <span class="fu">cv_nice</span>(<span class="fu">lm</span>(y <span class="sc">~</span> Xmat[,<span class="fu">seq</span>(.)], <span class="at">subset =</span> train))) <span class="co"># figure out which order to use</span></span>
-<span id="cb5-17"><a></a>  bpoly <span class="ot">&lt;-</span> <span class="fu">lm</span>(y[train] <span class="sc">~</span> Xmat[train, <span class="fu">seq</span>(<span class="fu">which.min</span>(polycv))]) <span class="co"># now use it</span></span>
-<span id="cb5-18"><a></a>  lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train])</span>
-<span id="cb5-19"><a></a>  ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train], <span class="at">alpha =</span> <span class="dv">0</span>)</span>
-<span id="cb5-20"><a></a>  elnet <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train], <span class="at">alpha =</span> .<span class="dv">5</span>)</span>
-<span id="cb5-21"><a></a>  <span class="fu">tibble</span>(</span>
-<span id="cb5-22"><a></a>    <span class="at">methods =</span> <span class="fu">c</span>(<span class="st">"poly"</span>, <span class="st">"lasso"</span>, <span class="st">"ridge"</span>, <span class="st">"elnet"</span>),</span>
-<span id="cb5-23"><a></a>    <span class="at">rmses =</span> <span class="fu">c</span>(</span>
-<span id="cb5-24"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">cbind</span>(<span class="dv">1</span>, Xmat[test, <span class="dv">1</span><span class="sc">:</span><span class="fu">which.min</span>(polycv)]) <span class="sc">%*%</span> <span class="fu">coef</span>(bpoly)),</span>
-<span id="cb5-25"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(lasso, Xmat[test,])),</span>
-<span id="cb5-26"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(ridge, Xmat[test,])),</span>
-<span id="cb5-27"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(elnet, Xmat[test,]))</span>
-<span id="cb5-28"><a></a>    ),</span>
-<span id="cb5-29"><a></a>    <span class="at">nvars =</span> <span class="fu">c</span>(<span class="fu">which.min</span>(polycv), <span class="fu">nzero</span>(lasso), <span class="fu">nzero</span>(ridge), <span class="fu">nzero</span>(elnet))</span>
-<span id="cb5-30"><a></a>  )</span>
-<span id="cb5-31"><a></a>}</span>
-<span id="cb5-32"><a></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
-<span id="cb5-33"><a></a>sim_results <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="fu">seq</span>(<span class="dv">20</span>), sim) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>() <span class="co"># repeat it 20 times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb6-2"><a></a>mapto01 <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">pad =</span> .<span class="dv">005</span>) (x <span class="sc">-</span> <span class="fu">min</span>(x) <span class="sc">+</span> pad) <span class="sc">/</span> (<span class="fu">max</span>(x) <span class="sc">-</span> <span class="fu">min</span>(x) <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> pad)</span>
+<span id="cb6-3"><a></a>x <span class="ot">&lt;-</span> <span class="fu">mapto01</span>(arcuate<span class="sc">$</span>position)</span>
+<span id="cb6-4"><a></a>Xmat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb6-5"><a></a>  <span class="fu">poly</span>(x, <span class="dv">20</span>), </span>
+<span id="cb6-6"><a></a>  splines<span class="sc">::</span><span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">degree =</span> <span class="dv">1</span>), </span>
+<span id="cb6-7"><a></a>  <span class="fu">cos</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> <span class="fu">outer</span>(x, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>)), <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> <span class="fu">outer</span>(x, <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>))</span>
+<span id="cb6-8"><a></a>)</span>
+<span id="cb6-9"><a></a>y <span class="ot">&lt;-</span> arcuate<span class="sc">$</span>fa</span>
+<span id="cb6-10"><a></a>rmse <span class="ot">&lt;-</span> <span class="cf">function</span>(z, s) <span class="fu">sqrt</span>(<span class="fu">mean</span>( (z <span class="sc">-</span> s)<span class="sc">^</span><span class="dv">2</span> ))</span>
+<span id="cb6-11"><a></a>nzero <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">with</span>(x, nzero[<span class="fu">match</span>(lambda<span class="fl">.1</span>se, lambda)])</span>
+<span id="cb6-12"><a></a>sim <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">maxdeg =</span> <span class="dv">20</span>, <span class="at">train_frac =</span> <span class="fl">0.75</span>) {</span>
+<span id="cb6-13"><a></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(arcuate)</span>
+<span id="cb6-14"><a></a>  train <span class="ot">&lt;-</span> <span class="fu">as.logical</span>(<span class="fu">rbinom</span>(n, <span class="dv">1</span>, train_frac))</span>
+<span id="cb6-15"><a></a>  test <span class="ot">&lt;-</span> <span class="sc">!</span>train <span class="co"># not precisely 25%, but on average</span></span>
+<span id="cb6-16"><a></a>  polycv <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="fu">seq</span>(maxdeg), <span class="sc">~</span> <span class="fu">cv_nice</span>(<span class="fu">lm</span>(y <span class="sc">~</span> Xmat[,<span class="fu">seq</span>(.)], <span class="at">subset =</span> train))) <span class="co"># figure out which order to use</span></span>
+<span id="cb6-17"><a></a>  bpoly <span class="ot">&lt;-</span> <span class="fu">lm</span>(y[train] <span class="sc">~</span> Xmat[train, <span class="fu">seq</span>(<span class="fu">which.min</span>(polycv))]) <span class="co"># now use it</span></span>
+<span id="cb6-18"><a></a>  lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train])</span>
+<span id="cb6-19"><a></a>  ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train], <span class="at">alpha =</span> <span class="dv">0</span>)</span>
+<span id="cb6-20"><a></a>  elnet <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(Xmat[train, ], y[train], <span class="at">alpha =</span> .<span class="dv">5</span>)</span>
+<span id="cb6-21"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb6-22"><a></a>    <span class="at">methods =</span> <span class="fu">c</span>(<span class="st">"poly"</span>, <span class="st">"lasso"</span>, <span class="st">"ridge"</span>, <span class="st">"elnet"</span>),</span>
+<span id="cb6-23"><a></a>    <span class="at">rmses =</span> <span class="fu">c</span>(</span>
+<span id="cb6-24"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">cbind</span>(<span class="dv">1</span>, Xmat[test, <span class="dv">1</span><span class="sc">:</span><span class="fu">which.min</span>(polycv)]) <span class="sc">%*%</span> <span class="fu">coef</span>(bpoly)),</span>
+<span id="cb6-25"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(lasso, Xmat[test,])),</span>
+<span id="cb6-26"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(ridge, Xmat[test,])),</span>
+<span id="cb6-27"><a></a>      <span class="fu">rmse</span>(y[test], <span class="fu">predict</span>(elnet, Xmat[test,]))</span>
+<span id="cb6-28"><a></a>    ),</span>
+<span id="cb6-29"><a></a>    <span class="at">nvars =</span> <span class="fu">c</span>(<span class="fu">which.min</span>(polycv), <span class="fu">nzero</span>(lasso), <span class="fu">nzero</span>(ridge), <span class="fu">nzero</span>(elnet))</span>
+<span id="cb6-30"><a></a>  )</span>
+<span id="cb6-31"><a></a>}</span>
+<span id="cb6-32"><a></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb6-33"><a></a>sim_results <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="fu">seq</span>(<span class="dv">20</span>), sim) <span class="sc">|&gt;</span> <span class="fu">list_rbind</span>() <span class="co"># repeat it 20 times</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="section-3" class="slide level2">
@@ -600,15 +766,15 @@
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>sim_results <span class="sc">|&gt;</span>  </span>
-<span id="cb6-2"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>methods) <span class="sc">|&gt;</span> </span>
-<span id="cb6-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(methods, value, <span class="at">fill =</span> methods)) <span class="sc">+</span> </span>
-<span id="cb6-4"><a></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb6-5"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span> </span>
-<span id="cb6-6"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb6-7"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
-<span id="cb6-8"><a></a>  <span class="fu">xlab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb6-9"><a></a>  <span class="fu">scale_fill_viridis_d</span>(<span class="at">begin =</span> .<span class="dv">2</span>, <span class="at">end =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>sim_results <span class="sc">|&gt;</span>  </span>
+<span id="cb7-2"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>methods) <span class="sc">|&gt;</span> </span>
+<span id="cb7-3"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(methods, value, <span class="at">fill =</span> methods)) <span class="sc">+</span> </span>
+<span id="cb7-4"><a></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb7-5"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span> </span>
+<span id="cb7-6"><a></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb7-7"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb7-8"><a></a>  <span class="fu">xlab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb7-9"><a></a>  <span class="fu">scale_fill_viridis_d</span>(<span class="at">begin =</span> .<span class="dv">2</span>, <span class="at">end =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
@@ -623,14 +789,16 @@
 <section id="featurization" class="slide level2">
 <h2>Featurization</h2>
 <p>Each case applied a <span class="secondary">feature map</span> to <span class="math inline">\(x\)</span>, call it <span class="math inline">\(\Phi\)</span></p>
-<p>We used new “features” <span class="math inline">\(\Phi(x) = \bigg(\phi_1(x),\ \phi_2(x),\ldots,\phi_k(x)\bigg)\)</span></p>
-<p>Neural networks (coming in module 4) use this idea</p>
-<p>You’ve also probably seen it in earlier courses when you added interaction terms or other transformations.</p>
+<p>We used new “features” <span class="math inline">\(\Phi(x) = \bigg(\phi_1(x),\ \phi_2(x),\ldots,\phi_k(x)\bigg)\)</span> w/ a linear model</p>
+<p><span class="math display">\[f(x) = \Phi(x)^\top \beta\]</span></p>
+<p>Neural networks (coming in module 4) build upon this idea</p>
+<!-- You've also probably seen it in earlier courses when you added interaction terms or other transformations. -->
 <div class="fragment">
-<p>Some methods (notably Support Vector Machines and Ridge regression) allow <span class="math inline">\(k=\infty\)</span></p>
-<p>See [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)</p>
+<p><br>
+Some methods (notably Support Vector Machines and other Kernel Machines) allow <span class="math inline">\(k=\infty\)</span><br>
+<span class="small">See [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)</span></p>
 </div>
-</section>
+</section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>Kernel regression and nearest neighbors</p>

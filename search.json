@@ -889,333 +889,396 @@
     "text": "The lesson\n\nDeep learning isn’t magic.\nZero training error with lots of parameters doesn’t mean good test error.\nWe still need the bias variance tradeoff\nIt’s intuition still applies: more flexibility eventually leads to increased MSE\nBut we need to be careful how we measure complexity.\n\n\n\nThere is very interesting recent theory that says when we can expect lower test error to the right of the interpolation threshold than to the left."
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#section",
-    "href": "schedule/slides/25-pca-issues.html#section",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#section",
+    "href": "schedule/slides/05-estimating-test-mse.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "25 Principal components, the troubles",
-    "text": "25 Principal components, the troubles\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "05 Estimating Risk and Test Error",
+    "text": "05 Estimating Risk and Test Error\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#pca",
-    "href": "schedule/slides/25-pca-issues.html#pca",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA",
-    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\nPCA works when the data can be represented (in a lower dimension) as lines (or planes, or hyperplanes).\nSo, in two dimensions:"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-reduced",
-    "href": "schedule/slides/25-pca-issues.html#pca-reduced",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA reduced",
-    "text": "PCA reduced\nHere, we can capture a lot of the variation and underlying structure with just 1 dimension,\ninstead of the original 2 (the colouring is for visualizing)."
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-bad",
-    "href": "schedule/slides/25-pca-issues.html#pca-bad",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA bad",
-    "text": "PCA bad\nWhat about other data structures? Again in two dimensions"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-bad-1",
-    "href": "schedule/slides/25-pca-issues.html#pca-bad-1",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA bad",
-    "text": "PCA bad\nHere, we have failed miserably.\nThere is actually only 1 dimension to this data (imagine walking up the spiral going from purple to yellow).\nHowever, when we write it as 1 PCA dimension, all the points are all “mixed up”."
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#explanation",
-    "href": "schedule/slides/25-pca-issues.html#explanation",
-    "title": "UBC Stat406 2024W",
-    "section": "Explanation",
-    "text": "Explanation\n\n\nPCA wants to minimize distances (equivalently maximize variance).\nThis means it slices through the data at the meatiest point, and then the next one, and so on.\nIf the data are curved this is going to induce artifacts.\nPCA also looks at things as being close if they are near each other in a Euclidean sense.\nOn the spiral, our intuition says that things are close only if the distance is constrained to go along the curve.\nIn other words, purple and blue are close, blue and yellow are not."
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca",
-    "href": "schedule/slides/25-pca-issues.html#kernel-pca",
-    "title": "UBC Stat406 2024W",
-    "section": "Kernel PCA",
-    "text": "Kernel PCA\nClassical PCA comes from \\(\\X=  \\U\\D\\V^{\\top}\\), the SVD of the (centered) data\nHowever, we can just as easily get it from the outer product \\(\\mathbf{K} = \\X\\X^{\\top} =  \\U\\D^2\\U^{\\top}\\)\nThe intuition behind KPCA is that \\(\\mathbf{K}\\) is an expansion into a kernel space, where \\[\\mathbf{K}_{i,i'} = k(x_i,\\ x_{i'}) = \\langle x_i,x_{i'} \\rangle\\]\nWe saw this trick before with feature expansion."
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#procedure",
-    "href": "schedule/slides/25-pca-issues.html#procedure",
-    "title": "UBC Stat406 2024W",
-    "section": "Procedure",
-    "text": "Procedure\n\nSpecify a kernel function \\(k\\)\nmany people use \\(k(x,x') = \\exp\\left( -d(x, x')/\\gamma\\right)\\) where \\(d(x,x') = \\norm{x-x'}_2^2\\)\nForm \\(\\mathbf{K}_{i,i'} = k(x_i,x_{i'})\\)\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\) where \\(\\mathbf{P} = \\mathbf{I}_n - \\mathbf{11}^\\top / n\\)\nTake eigendecomposition \\(\\mathbf{K} = \\U\\D^2\\U^{\\top}\\)\n\nThe scores are still \\(\\mathbf{Z} = \\U_M\\D_M\\)\n\n\n\n\n\n\nNote\n\n\nWe don’t explicitly generate the feature map \\(\\longrightarrow\\) there are NO loadings"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#an-alternate-view",
-    "href": "schedule/slides/25-pca-issues.html#an-alternate-view",
-    "title": "UBC Stat406 2024W",
-    "section": "An alternate view",
-    "text": "An alternate view\nTo get the first PC in classical PCA, we solve \\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\nIn the kernel setting we solve \\[\\max_{g \\in \\mathcal{H}_k} \\Var{g(X)} \\quad \\textrm{ subject to } \\quad\\left|\\left| g \\right|\\right|_{\\mathcal{H}_k} = 1\\]\nHere \\(\\mathcal{H}_k\\) is a function space determined by \\(k(x,x')\\)."
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#example-kernels",
-    "href": "schedule/slides/25-pca-issues.html#example-kernels",
-    "title": "UBC Stat406 2024W",
-    "section": "Example kernels",
-    "text": "Example kernels\n\n\\(k(x,x') = x^\\top x'\\)\n\ngives back regular PCA\n\n\\(k(x,x') = (1+x^\\top x')^d\\)\n\ngives a function space which contains all \\(d^{th}\\)-order\n\n\npolynomials.\n\n\\(k(x,x') = \\exp(-\\norm{x-x'}_2^2/\\gamma)\\)\n\ngives a function space spanned by the infinite Fourier basis\n\n\n\nFor more details see [ESL 14.5]"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
-    "href": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
-    "title": "UBC Stat406 2024W",
-    "section": "Kernel PCA on the spiral",
-    "text": "Kernel PCA on the spiral\n\n\nCode\nn &lt;- nrow(df_spiral)\nI_M &lt;- (diag(n) - tcrossprod(rep(1, n)) / n)\nkp &lt;- (tcrossprod(as.matrix(df_spiral[, 1:2])) + 1)^2\nKp &lt;- I_M %*% kp %*% I_M\nEp &lt;- eigen(Kp, symmetric = TRUE)\npolydf &lt;- tibble(\n  x = Ep$vectors[, 1] * Ep$values[1],\n  y = jit,\n  z = df_spiral$z\n)\nkg &lt;- exp(-as.matrix(dist(df_spiral[, 1:2]))^2 / 1)\nKg &lt;- I_M %*% kg %*% I_M\nEg &lt;- eigen(Kg, symmetric = TRUE)\ngaussdf &lt;- tibble(\n  x = Eg$vectors[, 1] * Eg$values[1],\n  y = jit,\n  z = df_spiral$z\n)\ndfkern &lt;- bind_rows(df_spiral, df_spiral2, polydf, gaussdf)\ndfkern$method &lt;- rep(c(\"data\", \"pca\", \"kpoly (d = 2)\", \"kgauss (gamma = 1)\"), each = n)"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#kpca-summary",
-    "href": "schedule/slides/25-pca-issues.html#kpca-summary",
-    "title": "UBC Stat406 2024W",
-    "section": "KPCA: summary",
-    "text": "KPCA: summary\nKernel PCA seeks to generalize the notion of similarity using a kernel map\nThis can be interpreted as finding smooth, orthogonal directions in an RKHS\nThis can allow us to start picking up nonlinear (in the original feature space) aspects of our data\nThis new representation can be passed to a supervised method to form a semisupervised learner\nThis kernel is different than kernel smoothing!!\n\nJust like with PCA (and lots of other things) the way you measure distance is important\nThe choice of Kernel is important\nThe embedding dimension must be chosen"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
-    "href": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
-    "title": "UBC Stat406 2024W",
-    "section": "Basic semi-supervised (see [ISLR 6.3.1])",
-    "text": "Basic semi-supervised (see [ISLR 6.3.1])\n\nYou get data \\(\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\).\nYou do something unsupervised on \\(\\X\\) to create new features (like PCA).\nYou use the learned features to find a predictor \\(\\hat{f}\\) (say, do OLS on them)"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#quick-example",
-    "href": "schedule/slides/25-pca-issues.html#quick-example",
-    "title": "UBC Stat406 2024W",
-    "section": "Quick example",
-    "text": "Quick example\n\nmusic &lt;- Stat406::popmusic_train\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE)\nZ &lt;- predict(pca)[, 1:2]\nZgrid &lt;- expand.grid(\n  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), \n  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)\n)\nout &lt;- class::knn(Z, Zgrid, music$artist, k = 6)"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#why",
-    "href": "schedule/slides/25-pca-issues.html#why",
-    "title": "UBC Stat406 2024W",
-    "section": "Why?",
-    "text": "Why?\nRecall that for nonparametric regression, we must deal with the curse of dimensionality.\n\nThis did KNN in 2 dimensions instead of 8: less curse\nHowever, the dimensions were learned independently of \\(\\y\\): may not be helpful\nThere’s a bias-variance tradeoff here…"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
-    "href": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
-    "title": "UBC Stat406 2024W",
-    "section": "What is PCA / KPCA estimating?",
-    "text": "What is PCA / KPCA estimating?\nImagine that the Population data lie near a low-dimensional linear manifold…\n\nThink of the spiral. (1D manifold in 2D space)\nOr a flat piece of paper (2D manifold in 3D space)\n\nPCA / KPCA are estimating the manifold.\n\nThis works well under some conditions\nAnd if it’s true, then we have reduced variance but added a bit of bias\nAnd the downstream method may work better, because there are fewer predictors.\n\nWe just need the data near the manifold. But if not, then we introduced a lot of bias.\nPCA estimates linear manifolds, KPCA estimates non-linear"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#section",
-    "href": "schedule/slides/24-pca-intro.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "24 Principal components, introduction",
-    "text": "24 Principal components, introduction\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 24 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#unsupervised-learning",
-    "href": "schedule/slides/24-pca-intro.html#unsupervised-learning",
-    "title": "UBC Stat406 2024W",
-    "section": "Unsupervised learning",
-    "text": "Unsupervised learning\nIn Machine Learning, rather than calling \\(\\y\\) the response, people call it the supervisor\nSo unsupervised learning means learning without \\(\\y\\)\nThe only data you get are the features \\(\\{x_1,\\ldots,x_n\\}\\).\nThis type of analysis is more often exploratory\nWe’re not necessarily using this for prediction (but we could)\nSo now, we get \\(\\X\\)\nThe two main activities are representation learning and clustering"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#representation-learning",
-    "href": "schedule/slides/24-pca-intro.html#representation-learning",
-    "title": "UBC Stat406 2024W",
-    "section": "Representation learning",
-    "text": "Representation learning\nRepresentation learning is the idea that performance of ML methods is highly dependent on the choice of representation\nFor this reason, much of ML is geared towards transforming the data into the relevant features and then using these as inputs\nThis idea is as old as statistics itself, really,\nHowever, the idea is constantly revisited in a variety of fields and contexts\nCommonly, these learned representations capture low-level information like overall shapes\nIt is possible to quantify this intuition for PCA at least\n\n\nGoal\n\nTransform \\(\\mathbf{X}\\in \\R^{n\\times p}\\) into \\(\\mathbf{Z} \\in \\R^{n \\times ?}\\)\n\n\n?-dimension can be bigger (feature creation) or smaller (dimension reduction) than \\(p\\)"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#youve-done-this-already",
-    "href": "schedule/slides/24-pca-intro.html#youve-done-this-already",
-    "title": "UBC Stat406 2024W",
-    "section": "You’ve done this already!",
-    "text": "You’ve done this already!\n\nYou added transformations as predictors in regression\nYou “expanded” \\(\\mathbf{X}\\) using a basis \\(\\Phi\\) (polynomials, splines, etc.)\nYou used Neural Nets to do a “feature map”\n\n\nThis is the same, just no \\(Y\\) around"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#pca",
-    "href": "schedule/slides/24-pca-intro.html#pca",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA",
-    "text": "PCA\nPrincipal components analysis (PCA) is an (unsupervised) dimension reduction technique\nIt solves various equivalent optimization problems\n(Maximize variance, minimize \\(\\ell_2\\) distortions, find closest subspace of a given rank, \\(\\ldots\\))\nAt its core, we are finding linear combinations of the original (centered) covariates \\[z_{ij} = \\alpha_j^{\\top} x_i\\]\nThis is expressed via the SVD: \\(\\X  = \\U\\D\\V^{\\top}\\).\n\n\n\n\n\n\n\nImportant\n\n\nWe assume throughout that \\(\\X - \\mathbf{11^\\top}\\overline{x} = 0\\) (we center the columns)\n\n\n\nThen our new features are\n\\[\\mathbf{Z} = \\X \\V = \\U\\D\\]"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#short-svd-aside-reminder-from-ridge-regression",
-    "href": "schedule/slides/24-pca-intro.html#short-svd-aside-reminder-from-ridge-regression",
-    "title": "UBC Stat406 2024W",
-    "section": "Short SVD aside (reminder from Ridge Regression)",
-    "text": "Short SVD aside (reminder from Ridge Regression)\n\nAny \\(n\\times p\\) matrix can be decomposed into \\(\\mathbf{UDV}^\\top\\).\nThese have properties:\n\n\n\\(\\mathbf{U}^\\top \\mathbf{U} = \\mathbf{I}_n\\)\n\\(\\mathbf{V}^\\top \\mathbf{V} = \\mathbf{I}_p\\)\n\\(\\mathbf{D}\\) is diagonal (0 off the diagonal)\n\nAlmost all the methods for we’ll talk about for representation learning use the SVD of some matrix."
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#why",
-    "href": "schedule/slides/24-pca-intro.html#why",
-    "title": "UBC Stat406 2024W",
-    "section": "Why?",
-    "text": "Why?\n\nGiven \\(\\X\\), find a projection \\(\\mathbf{P}\\) onto \\(\\R^M\\) with \\(M \\leq p\\) that minimizes the reconstruction error \\[\n\\begin{aligned}\n\\min_{\\mathbf{P}} &\\,\\, \\lVert \\mathbf{X} - \\mathbf{X}\\mathbf{P} \\rVert^2_F \\,\\,\\, \\textrm{(sum all the elements)}\\\\\n\\textrm{subject to} &\\,\\, \\textrm{rank}(\\mathbf{P}) = M,\\, \\mathbf{P} = \\mathbf{P}^T,\\, \\mathbf{P} = \\mathbf{P}^2\n\\end{aligned}\n\\] The conditions ensure that \\(\\mathbf{P}\\) is a projection matrix onto \\(M\\) dimensions.\nMaximize the variance explained by an orthogonal transformation \\(\\mathbf{A} \\in \\R^{p\\times M}\\) \\[\n\\begin{aligned}\n\\max_{\\mathbf{A}} &\\,\\, \\textrm{trace}\\left(\\frac{1}{n}\\mathbf{A}^\\top \\X^\\top \\X \\mathbf{A}\\right)\\\\\n\\textrm{subject to} &\\,\\, \\mathbf{A}^\\top\\mathbf{A} = \\mathbf{I}_M\n\\end{aligned}\n\\]\n\n\nIn case one, the minimizer is \\(\\mathbf{P} = \\mathbf{V}_M\\mathbf{V}_M^\\top\\)\nIn case two, the maximizer is \\(\\mathbf{A} = \\mathbf{V}_M\\)."
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings",
-    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings",
-    "title": "UBC Stat406 2024W",
-    "section": "Lower dimensional embeddings",
-    "text": "Lower dimensional embeddings\nSuppose we have predictors \\(\\x_1\\) and \\(\\x_2\\)\n\nWe more faithfully preserve the structure of this data by keeping \\(\\x_1\\) and setting \\(\\x_2\\) to zero than the opposite"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-1",
-    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Lower dimensional embeddings",
-    "text": "Lower dimensional embeddings\nAn important feature of the previous example is that \\(\\x_1\\) and \\(\\x_2\\) aren’t correlated\nWhat if they are?\n\nWe lose a lot of structure by setting either \\(\\x_1\\) or \\(\\x_2\\) to zero"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-2",
-    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-2",
-    "title": "UBC Stat406 2024W",
-    "section": "Lower dimensional embeddings",
-    "text": "Lower dimensional embeddings\nThe only difference is the first is a rotation of the second"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#pca-1",
-    "href": "schedule/slides/24-pca-intro.html#pca-1",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA",
-    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\n\nCenter (+scale?) the data matrix \\(\\X\\)\nCompute the SVD of \\(\\X = \\U\\D \\V^\\top\\) or \\(\\X\\X^\\top = \\U\\D^2\\U^\\top\\) or \\(\\X^\\top \\X = \\V\\D^2 \\V^\\top\\)\nReturn \\(\\U_M\\D_M\\), where \\(\\D_M\\) is the largest \\(M\\) singular values of \\(\\X\\)"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#pca-2",
-    "href": "schedule/slides/24-pca-intro.html#pca-2",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA",
-    "text": "PCA\n\n\nCode\ns &lt;- svd(X)\ntib &lt;- rbind(X, s$u %*% diag(s$d), s$u %*% diag(c(s$d[1], 0)))\ntib &lt;- tibble(\n  x1 = tib[, 1], x2 = tib[, 2],\n  name = rep(1:3, each = 20)\n)\nplotter &lt;- function(set = 1, main = \"original\") {\n  tib |&gt;\n    filter(name == set) |&gt;\n    ggplot(aes(x1, x2)) +\n    geom_point(colour = blue) +\n    coord_cartesian(c(-2, 2), c(-2, 2)) +\n    theme(legend.title = element_blank(), legend.position = \"bottom\") +\n    ggtitle(main)\n}\ncowplot::plot_grid(\n  plotter() + labs(x = bquote(x[1]), y = bquote(x[2])),\n  plotter(2, \"rotated\") +\n    labs(x = bquote((UD)[1] == (XV)[1]), y = bquote((UD)[2] == (XV)[2])),\n  plotter(3, \"rotated and projected\") +\n    labs(x = bquote(U[1] ~ D[1] == (XV)[1]), y = bquote(U[2] ~ D[2] %==% 0)),\n  nrow = 1\n)"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
-    "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA on some pop music data",
-    "text": "PCA on some pop music data\n\nmusic &lt;- Stat406::popmusic_train\nstr(music)\n\ntibble [1,269 × 15] (S3: tbl_df/tbl/data.frame)\n $ artist          : Factor w/ 3 levels \"Radiohead\",\"Taylor Swift\",..: 2 2 2 2 2 2 2 2 2 2 ...\n $ danceability    : num [1:1269] 0.781 0.627 0.516 0.629 0.686 0.522 0.31 0.705 0.553 0.419 ...\n $ energy          : num [1:1269] 0.357 0.266 0.917 0.757 0.705 0.691 0.374 0.621 0.604 0.908 ...\n $ key             : int [1:1269] 0 9 11 1 9 2 6 2 1 9 ...\n $ loudness        : num [1:1269] -16.39 -15.43 -3.19 -8.37 -10.82 ...\n $ mode            : int [1:1269] 1 1 0 0 1 1 1 1 0 1 ...\n $ speechiness     : num [1:1269] 0.912 0.929 0.0827 0.0512 0.249 0.0307 0.0275 0.0334 0.0258 0.0651 ...\n $ acousticness    : num [1:1269] 0.717 0.796 0.0139 0.00384 0.832 0.00609 0.761 0.101 0.202 0.00048 ...\n $ instrumentalness: num [1:1269] 0.00 0.00 6.37e-06 7.45e-01 4.55e-06 0.00 2.46e-05 4.30e-06 0.00 0.00 ...\n $ liveness        : num [1:1269] 0.185 0.292 0.36 0.0864 0.134 0.249 0.11 0.147 0.125 0.815 ...\n $ valence         : num [1:1269] 0.645 0.646 0.635 0.623 0.919 0.651 0.16 0.395 0.186 0.472 ...\n $ tempo           : num [1:1269] 118.3 79.3 145.8 157 151.9 ...\n $ time_signature  : int [1:1269] 4 4 4 4 5 4 4 4 4 4 ...\n $ duration_ms     : int [1:1269] 107133 89648 217160 201853 180653 201106 285640 240773 302266 290520 ...\n $ explicit        : logi [1:1269] FALSE FALSE FALSE FALSE FALSE FALSE ...\n\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE) ## DON'T USE princomp()"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
-    "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA on some pop music data",
-    "text": "PCA on some pop music data\n\nproj_pca &lt;- predict(pca)[,1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(artist = music$artist)"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#things-to-look-at",
-    "href": "schedule/slides/24-pca-intro.html#things-to-look-at",
-    "title": "UBC Stat406 2024W",
-    "section": "Things to look at",
-    "text": "Things to look at\n\npca$rotation[, 1:2]\n\n                         PC1          PC2\ndanceability     -0.02811038  0.577020027\nenergy           -0.56077454 -0.001137424\nloudness         -0.53893087  0.085912854\nspeechiness       0.30125038  0.431188730\nacousticness      0.51172138  0.082108326\ninstrumentalness  0.01374425 -0.370058813\nliveness         -0.02282669 -0.194947054\nvalence          -0.20242211  0.540418541\n\npca$sdev\n\n[1] 1.6233469 1.3466829 1.0690017 0.9510417 0.7638669 0.6737958 0.5495869\n[8] 0.4054698\n\npca$sdev^2 / sum(pca$sdev^2)\n\n[1] 0.32940690 0.22669435 0.14284558 0.11306004 0.07293658 0.05675010 0.03775572\n[8] 0.02055072"
-  },
-  {
-    "objectID": "schedule/slides/24-pca-intro.html#plotting-the-weights",
-    "href": "schedule/slides/24-pca-intro.html#plotting-the-weights",
-    "title": "UBC Stat406 2024W",
-    "section": "Plotting the weights",
-    "text": "Plotting the weights\n\n\nCode\npca$rotation[, 1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(feature = names(X)) |&gt;\n  pivot_longer(-feature) |&gt;\n  ggplot(aes(value, feature, fill = feature)) +\n  facet_wrap(~name) +\n  geom_col() +\n  theme(legend.position = \"none\", axis.title = element_blank()) +\n  scale_fill_brewer(palette = \"Dark2\") +\n  geom_vline(xintercept = 0)"
-  },
-  {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#section",
-    "href": "schedule/slides/15-LDA-and-QDA.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "15 LDA and QDA",
-    "text": "15 LDA and QDA\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#last-time",
-    "href": "schedule/slides/15-LDA-and-QDA.html#last-time",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#last-time",
+    "href": "schedule/slides/05-estimating-test-mse.html#last-time",
     "title": "UBC Stat406 2024W",
     "section": "Last time",
-    "text": "Last time\nWe showed that with two classes, the Bayes’ classifier is\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere \\(p_1(X) = Pr(X \\given Y=1)\\), \\(p_0(X) = Pr(X \\given Y=0)\\) and \\(\\pi = Pr(Y=1)\\)\n\nFor more than two classes.\n\\[g_*(X) =\n\\argmax_k \\frac{\\pi_k p_k(X)}{\\sum_k \\pi_k p_k(X)}\\]\nwhere \\(p_k(X) = Pr(X \\given Y=k)\\) and \\(\\pi_k = P(Y=k)\\)"
+    "text": "Last time\n\nWhat is a model (formal definition)?\nEvaluating models (risk/loss functions)\nDecomposing risk (bias, variance, irreducible error)"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
-    "href": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
+    "href": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
     "title": "UBC Stat406 2024W",
-    "section": "Estimating these",
-    "text": "Estimating these\nLet’s make some assumptions:\n\n\\(Pr(X\\given Y=k) = \\mbox{N}(\\mu_k,\\Sigma_k)\\)\n\\(\\Sigma_k = \\Sigma_{k'} = \\Sigma\\)\n\n\nThis leads to Linear Discriminant Analysis (LDA), one of the oldest classifiers"
+    "section": "What is a model?",
+    "text": "What is a model?\nA model is a set of distributions that explain data \\(\\{ Z = (X, Y) \\}\\), i.e.\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' }f \\}\\]\n(Why do we have to specify that \\(f\\) is smooth? Why can’t it be any function?)\n\nGoal of learning\nChoose the \\(P \\in \\mathcal P\\) that makes the “best” predictions on new \\(X, Y\\) pairs.\n(Next slide: how do we formalize “best”?)"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda",
-    "href": "schedule/slides/15-LDA-and-QDA.html#lda",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
+    "href": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
     "title": "UBC Stat406 2024W",
-    "section": "LDA",
-    "text": "LDA\n\nSplit your training data into \\(K\\) subsets based on \\(y_i=k\\).\nIn each subset, estimate the mean of \\(X\\): \\(\\widehat\\mu_k = \\overline{X}_k\\)\nEstimate the pooled variance: \\[\\widehat\\Sigma = \\frac{1}{n-K} \\sum_{k \\in \\mathcal{K}} \\sum_{i \\in k} (x_i - \\overline{X}_k) (x_i - \\overline{X}_k)^{\\top}\\]\nEstimate the class proportion: \\(\\widehat\\pi_k = n_k/n\\)"
+    "section": "How do we evaluate models?",
+    "text": "How do we evaluate models?\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\nSpecify how a \\(P \\in \\mathcal P\\) makes predictions \\(\\hat Y\\) on new inputs \\(X\\).\n(E.g.: \\(\\hat Y = f(X)\\) for \\(P = \\mathcal N(f(X), \\sigma^2)\\).)\nIntroduce a loss function \\(\\ell(Y, \\hat{Y})\\) (a datapoint-level function).\n(E.g.: \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\))\nDefine the test error of \\(P \\in \\mathcal P\\) as the expected loss (a population-level function):\n\\(T_n(P) = E[\\ell(Y, \\hat Y)] = E[(Y - f(X))^2]\\)\nThe best model is the one that minimizes the test error\n(\\(P^* = \\argmin_{P \\in \\mathcal P} T_n(P)\\))"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-1",
-    "href": "schedule/slides/15-LDA-and-QDA.html#lda-1",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
     "title": "UBC Stat406 2024W",
-    "section": "LDA",
-    "text": "LDA\nAssume just \\(K = 2\\) so \\(k \\in \\{0,\\ 1\\}\\)\nWe predict \\(\\widehat{y} = 1\\) if\n\\[\\widehat{p_1}(x) / \\widehat{p_0}(x) &gt; \\widehat{\\pi_0} / \\widehat{\\pi_1}\\]\nPlug in the density estimates:\n\\[\\widehat{p_k}(x) = N(x - \\widehat{\\mu}_k,\\ \\widehat\\Sigma)\\]"
+    "section": "Risk (Expected Test Error) and its Decomposition",
+    "text": "Risk (Expected Test Error) and its Decomposition\nOur estimator \\(\\hat f\\) is a random variable (it depends on training sample).\nSo let’s consider the risk (the expected test error):\n\\[\nR_n = E_{\\hat f} \\left[ T_n(\\hat f) \\right] = E_{\\hat f, X, Y} \\left[ \\ell(Y, \\hat f(X)) \\right]\n\\]\n\n\n\n\n\n\n\nNote\n\n\nTest error is a metric for a fixed \\(\\hat f\\). It averages over all possible test points, but assumes a fixed training set.\nRisk averages over everything that is random: (1) the test data point sampled from our population, and (2) the training data that produces \\(\\hat f\\)"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-2",
-    "href": "schedule/slides/15-LDA-and-QDA.html#lda-2",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
     "title": "UBC Stat406 2024W",
-    "section": "LDA",
-    "text": "LDA\nNow we take \\(\\log\\) and simplify \\((K=2)\\):\n\\[\n\\begin{aligned}\n&\\Rightarrow \\log(\\widehat{p_1}(x)\\times\\widehat{\\pi_1}) - \\log(\\widehat{p_0}(x)\\times\\widehat{\\pi_0})\n= \\cdots = \\cdots\\\\\n&= \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\right)}_{\\delta_1(x)} -  \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_0-\\frac{1}{2}\\overline X_0^\\top \\widehat\\Sigma^{-1}\\overline X_0 + \\log \\widehat\\pi_0\\right)}_{\\delta_0(x)}\\\\\n&= \\delta_1(x) - \\delta_0(x)\n\\end{aligned}\n\\]\nIf \\(\\delta_1(x) &gt; \\delta_0(x)\\), we set \\(\\widehat g(x)=1\\)"
+    "section": "Risk (Expected Test Error) and its Decomposition",
+    "text": "Risk (Expected Test Error) and its Decomposition\nWhen \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\), the prediction risk of \\(\\hat f(X)\\) decomposes into two factors:\n\\[\nR_n \\quad = \\quad \\underbrace{E_{\\hat f, X, Y} \\left[ \\: \\left( E[Y\\mid X] - \\hat f(X) \\right)^2 \\right]}_{(1)} \\quad + \\quad \\underbrace{E_{X, Y} \\left[ \\: \\left( Y - E[Y\\mid X] \\right)^2 \\right]}_{(2)}\n\\]\n\n\nEstimation error (or “reducible error”)\nIrreducible error (or “noise”)"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
-    "href": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
+    "href": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
     "title": "UBC Stat406 2024W",
-    "section": "One dimensional intuition",
-    "text": "One dimensional intuition\n\nset.seed(406406406)\nn &lt;- 100\npi &lt;- .6\nmu0 &lt;- -1\nmu1 &lt;- 2\nsigma &lt;- 2\ntib &lt;- tibble(\n  y = rbinom(n, 1, pi),\n  x = rnorm(n, mu0, sigma) * (y == 0) + rnorm(n, mu1, sigma) * (y == 1)\n)\n\n\n\nCode\ngg &lt;- ggplot(tib, aes(x, y)) +\n  geom_point(colour = blue) +\n  stat_function(fun = ~ 6 * (1 - pi) * dnorm(.x, mu0, sigma), colour = orange) +\n  stat_function(fun = ~ 6 * pi * dnorm(.x, mu1, sigma), colour = orange) +\n  annotate(\"label\",\n    x = c(-3, 4.5), y = c(.5, 2 / 3),\n    label = c(\"(1-pi)*p[0](x)\", \"pi*p[1](x)\"), parse = TRUE\n  )\ngg"
+    "section": "Sources of bias and variance",
+    "text": "Sources of bias and variance\nWhat conditions give rise to a high bias estimator?\n\n\nNot enough covariates (small \\(p\\))\nModel is too simple\nModel is misspecified (doesn’t accurately represent the data generating process)\nBad training algorithm\n\n\nWhat conditions give rise to a high variance estimator?\n\n\nNot enough training samples (small \\(n\\))\nModel is too complicated\nLots of irreducible noise in training data (if my model has power to fit noise, it will)"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
-    "href": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
+    "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
     "title": "UBC Stat406 2024W",
-    "section": "What is linear?",
-    "text": "What is linear?\nLook closely at the equation for \\(\\delta_1(x)\\):\n\\[\\delta_1(x)=x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\]\nWe can write this as \\(\\delta_1(x) = x^\\top a_1 + b_1\\) with \\(a_1 = \\widehat\\Sigma^{-1}\\overline X_1\\) and \\(b_1=-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\).\nWe can do the same for \\(\\delta_0(x)\\) (in terms of \\(a_0\\) and \\(b_0\\))\nTherefore,\n\\[\\delta_1(x)-\\delta_0(x) = x^\\top(a_1-a_0) + (b_1-b_0)\\]\nThis is how we discriminate between the classes.\nWe just calculate \\((a_1 - a_0)\\) (a vector in \\(\\R^p\\)), and \\(b_1 - b_0\\) (a scalar)"
+    "section": "Don’t use training error",
+    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nTip\n\n\nWe also call \\(\\hat R_n(\\hat f)\\) the empirical risk.\n\n\n\n\n\\(\\hat R_n(\\hat f)\\) is a bad estimator for \\(R_n\\).\nSo we should never use it."
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#baby-example",
-    "href": "schedule/slides/15-LDA-and-QDA.html#baby-example",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
+    "href": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
     "title": "UBC Stat406 2024W",
-    "section": "Baby example",
-    "text": "Baby example\n\n\n\nlibrary(mvtnorm)\nlibrary(MASS)\ngenerate_lda_2d &lt;- function(\n    n, p = c(.5, .5), \n    mu = matrix(c(0, 0, 1, 1), 2),\n    Sigma = diag(2)) {\n  X &lt;- rmvnorm(n, sigma = Sigma)\n  tibble(\n    y = which(rmultinom(n, 1, p) == 1, TRUE)[,1],\n    x1 = X[, 1] + mu[1, y],\n    x2 = X[, 2] + mu[2, y]\n  )\n}\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlda_fit &lt;- lda(y ~ ., dat1)"
+    "section": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?",
+    "text": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?\n\n\nIt doesn’t say anything about predictions on new data.\n(It’s a measure of how well the model fits a fixed set of training data.)\nIt can be made arbitrarily small by making your model more complex."
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
-    "href": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
+    "href": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
     "title": "UBC Stat406 2024W",
-    "section": "Multiple classes",
-    "text": "Multiple classes\n\nmoreclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(0, 0, 1, 1, 1, 0), 2), .5 * diag(2))\nseparateclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(-1, -1, 2, 2, 2, -1), 2), .1 * diag(2))"
+    "section": "1. It doesn’t say anything about predictions on new data.",
+    "text": "1. It doesn’t say anything about predictions on new data.\nThese all have the same \\(R^2\\) and Training Error\n\n\n\n\nCode\nans &lt;- anscombe |&gt;\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), \n               names_pattern = \"(.)(.)\")\nggplot(ans, aes(x, y)) + \n  geom_point(colour = orange, size = 3) + \n  geom_smooth(method = \"lm\", se = FALSE, color = blue, linewidth = 2) +\n  facet_wrap(~set, labeller = label_both)\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#qda",
-    "href": "schedule/slides/15-LDA-and-QDA.html#qda",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
+    "href": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
     "title": "UBC Stat406 2024W",
-    "section": "QDA",
-    "text": "QDA\nJust like LDA, but \\(\\Sigma_k\\) is separate for each class.\nProduces Quadratic decision boundary.\nEverything else is the same.\n\nqda_fit &lt;- qda(y ~ ., dat1)\nqda_3fit &lt;- qda(y ~ ., moreclasses)"
+    "section": "2. It can be made arbitrarily small by making your model more complex.",
+    "text": "2. It can be made arbitrarily small by making your model more complex.\nAdding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}\n\n\n\nCode\nmap(q, regress_on_junk) |&gt; \n  list_rbind() |&gt;\n  mutate(q = q) |&gt;\n  pivot_longer(-q) |&gt;\n  ggplot(aes(q, value, colour = name)) +\n  geom_line(linewidth = 2) + xlab(\"train_error\") +\n  scale_colour_manual(values = c(blue, orange), guide = \"none\") +\n  facet_wrap(~ name, scales = \"free_y\")"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
-    "href": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
+    "href": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
     "title": "UBC Stat406 2024W",
-    "section": "3 class comparison",
-    "text": "3 class comparison"
+    "section": "Other things you can’t use",
+    "text": "Other things you can’t use\nYou should not use anova\nor the \\(p\\)-values from the lm output for this purpose.\n\n\nThese things are to determine whether those parameters are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.\n\nIn other words, they are useful for inference problems.\nThis is not the same as being useful for prediction problems (i.e. how to get small \\(R_n\\))."
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#notes",
-    "href": "schedule/slides/15-LDA-and-QDA.html#notes",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
+    "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
     "title": "UBC Stat406 2024W",
-    "section": "Notes",
-    "text": "Notes\n\nLDA is a linear classifier. It is not a linear smoother.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors, but the same (common) covariance matrix.\nIt estimates densities and probabilities and “plugs in”\n\nQDA is not a linear classifier. It depends on quadratic functions of the data.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors and different covariance matrices.\nIt estimates densities and probabilities and “plugs in”"
+    "section": "Don’t use training error: the formal argument",
+    "text": "Don’t use training error: the formal argument\nOur training error \\(\\hat R_n(\\hat f)\\) is an estimator of \\(R_n\\).\nSo we can ask “is \\(\\widehat{R}_n(\\hat{f})\\) a good estimator for \\(R_n\\)?”"
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#section-1",
-    "href": "schedule/slides/15-LDA-and-QDA.html#section-1",
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
+    "title": "UBC Stat406 2024W",
+    "section": "The error of our risk estimator",
+    "text": "The error of our risk estimator\nLet’s measure the error of our empirical risk estimator:\n\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\] (What is the expectation with respect to?)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
+    "title": "UBC Stat406 2024W",
+    "section": "The error of our risk estimator",
+    "text": "The error of our risk estimator\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\]\n\n\\(R_n\\) is deterministic (we average over test data and training data)\n\\(\\hat R_n(\\hat f)\\) also only depends on training data\nSo the expectation is with respect to our training dataset\n\n\nAs before, we can decompose the error of our risk estimator into bias and variance\n\\[\nE[(R_n - \\hat R_n(\\hat f))^2] = \\underbrace{( R_n - E[\\hat R_n(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n(\\hat f) - E[\\hat R_n(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?",
+    "text": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?\n\nAssume we have a very complex model capable of (nearly) fitting our training data\n\nI.e. \\(\\hat R_n(\\hat f) \\approx 0\\)\n\n\\(\\text{Bias} = ( R_n - E[\\hat R_n(\\hat f)])^2 \\approx ( R_n - 0 ) = R_n\\)\n(That’s the worst bias we could get! 😔)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
+    "href": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
+    "title": "UBC Stat406 2024W",
+    "section": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)",
+    "text": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)\nConsider an alternative estimator built from \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) that was not part of the training set. \\[\\tilde R_m(\\hat f) = {\\textstyle \\frac{1}{m} \\sum_{j=1}^m} \\ell(Y_j, \\hat f(X_j)),\n\\] The error of this estimator can also be decompsed into bias and variance \\[\nE[(R_n - \\tilde R_m(\\hat f))^2] = \\underbrace{( R_n - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E_{\\hat f,X_j,Y_j}[( \\tilde R_m(\\hat f) - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?",
+    "text": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?\n\\(\\tilde R_m(\\hat f)\\) has zero bias!\n\\[\n\\begin{aligned}\nE_{\\hat f,X_j,Y_j} \\left[ \\tilde R_m(\\hat f) \\right]\n&= E_{\\hat f,X_j,Y_j} \\left[ \\frac{1}{m} \\sum_{j=1}^m \\ell(Y_j, \\hat f(X_j)) \\right] \\\\\n&= \\frac{1}{m} \\sum_{j=1}^m E_{\\hat f,X_j,Y_j} \\left[ \\ell(Y_j, \\hat f(X_j)) \\right]\n= R_n\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
+    "href": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
+    "title": "UBC Stat406 2024W",
+    "section": "Holdout sets",
+    "text": "Holdout sets\nOne option is to have a separate “holdout” or “validation” dataset.\n\n\n\n\n\n\nTip\n\n\nThis option follows the logic on the previous slide.\nIf we randomly “hold out” \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) from the training set, we can use this data to get an (nearly) unbiased estimator of \\(R_n\\). \\[\nR_n \\approx \\tilde R_m(\\hat f) \\triangleq {\\textstyle{\\frac 1 m \\sum_{j=1}^m \\ell ( Y_j - \\hat Y_j(X_j))}}\n\\]\n\n\n\n\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has a little bias (because we aren’t estimating \\(\\hat f\\) from all of the training data)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#aside",
+    "href": "schedule/slides/05-estimating-test-mse.html#aside",
+    "title": "UBC Stat406 2024W",
+    "section": "Aside",
+    "text": "Aside\nIn my experience, CS has particular definitions of “training”, “validation”, and “test” data.\nI think these are not quite the same as in Statistics.\n\nTest data - Hypothetical data you don’t get to see, ever. Infinite amounts drawn from the population.\n\nExpected test error or Risk is an expected value over this distribution. It’s not a sum over some data kept aside.\n\nSometimes I’ll give you “test data”. You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.\nTraining data - This is “holdout” data that you get to touch.\nValidation set - Often, we need to choose models. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.\n\nWhen and how you split your training data can be very important."
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk vs. Test Error",
+    "text": "Risk vs. Test Error\n\nRisk (\\(R_n\\)): expected error when the training data have not yet been observed (random!)\n\ndepends on true data distribution, predictor\n\nTest Error (\\(T_n\\)): expected error when the training data have been observed (fixed!)\n\ndepends on true data distribution, predictor, training data\n\n\\(R_n = \\E[T_n]\\)\n\n\n\nwe mostly care about risk when designing a new predictor / estimator\n\nwe want to know how well it will work on future training and test data\n\nwe mostly care about test error when we’ve fit a predictor / estimator\n\nwe want to know how well it will work on future test data"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#an-important-clarification",
+    "href": "schedule/slides/05-estimating-test-mse.html#an-important-clarification",
+    "title": "UBC Stat406 2024W",
+    "section": "An important clarification",
+    "text": "An important clarification\n\n\n\n\n\n\nImportant\n\n\nIn previous lectures, we’ve used \\(R_n(\\hat f)\\) to denote risk.\nConfusing: the \\(\\hat \\mu\\) argument looks like a trained predictor, so \\(R_n(\\hat f)\\) looks like a function of training data. Not true!\nWe will just avoid this confusion from now on and use \\(R_n\\) for risk."
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk vs. Test Error: Warmup in 1D",
+    "text": "Risk vs. Test Error: Warmup in 1D\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\sim \\mathcal N(\\mu, 1), \\quad \\mu\\in\\R\\}\\), loss \\(\\ell(y,\\hat y) = (y-\\hat y)^2\\)\nTraining Data: \\(Y_i\\in\\R\\) from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (i.e., “true” \\(\\mu_0\\))\nPredictor: function of training data \\(\\hat\\mu : \\R^n \\to \\R\\)\n\ne.g., scaled empirical average \\(\\hat\\mu(Y_{1:n}) = \\alpha\\frac{1}{n}\\sum_{n=1}^N Y_n\\) for \\(\\alpha &gt; 0\\)\n\n\n\n\nRisk \\(R_n\\): expected loss over both training and test data \\(R_n = E[\\ell(Y,\\hat\\mu(Y_{1:n}))]\\)\n\nfunction of true dist \\(P_0\\) and predictor function \\(\\hat\\mu(\\cdot)\\)\naverages over randomness in training data\n\n\n\n\n\nTest Error \\(T_n\\): expected loss over only test data \\(T_n(\\hat\\mu) = E[\\ell(Y,\\hat\\mu(Y_{1:n})) | Y_{1:n}]\\)\n\nfunction of true dist \\(P_0\\), predictor function \\(\\hat\\mu(\\cdot)\\), and training data\ntraining data (and trained predictor) are known/fixed"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk vs. Test Error: Warmup in 1D",
+    "text": "Risk vs. Test Error: Warmup in 1D\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\sim \\mathcal N(\\mu, 1), \\quad \\mu\\in\\R\\}\\), loss \\(\\ell(y,\\hat y) = (y-\\hat y)^2\\)\nTraining Data: \\(Y_i\\in\\R\\) from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (i.e., “true” \\(\\mu_0\\))\nPredictor: scaled empirical average \\(\\hat\\mu(Y_{1:n}) = \\alpha \\frac{1}{n}\\sum_{i=1}^n Y_i\\) for a fixed \\(\\alpha &gt; 0\\)\n\n(What can the risk and test error depend on?)\n\n\\[ R_n = E[(Y - \\hat\\mu(Y_{1:n}))^2] = \\underbrace{1}_{\\text{irr.}} + \\underbrace{\\mu^2_0(\\alpha-1)^2}_{\\text{bias}^2}+\\underbrace{\\alpha^2/n}_{\\text{variance}}\\]\n\n\n\\[ T_n = E[(Y - \\hat\\mu(Y_{1:n}))^2 |Y_{1:n}] = 1 + \\left(\\mu_0 - \\alpha \\frac{1}{n}\\sum_{i=1}^n Y_i\\right)^2\\]\n\n\n\n\\(R_n\\) is a function of the true distribution (\\(\\mu_0\\)) and predictor (\\(\\alpha\\)); not training data!\n\\(T_n\\) is a function of \\(\\mu_0\\), \\(\\alpha\\) and training data"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk vs. Test Error: Regression",
+    "text": "Risk vs. Test Error: Regression\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), 1), \\quad f(x)=ax, \\, \\text{for } a\\in\\R \\}\\)\nTraining Data: \\(X_i,Y_i\\in\\R\\) pairs from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (“true” \\(a_0\\))\nPredictor: a function of the training data and a new test input \\(\\hat f : \\R^n\\times \\R^{n} \\times \\R \\to \\R\\)\n\ne.g., the function \\(\\hat f(X_{1:n},Y_{1:n},x) = \\beta \\frac{Y_2 - Y_1}{X_2 - X_1} x\\) for \\(\\beta &gt; 0\\)\n\n\n\n\nRisk \\(R_n\\): avg loss over both training and test data \\(R_n = E[\\ell(Y, \\hat f(X_{1:n}, Y_{1:n}, X))]\\)\n\n\n\n\nTest Error \\(T_n\\): avg loss over only test data \\(T_n = E[\\ell(Y, \\hat f(Y_{1:n}, X_{1:n},X)) | Y_{1:n},X_{1:n}]\\)\n\ntraining data fixed/known"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression-1",
+    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Risk vs. Test Error: Regression",
+    "text": "Risk vs. Test Error: Regression\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), 1), \\quad f(x)=ax, \\, \\text{for } a\\in\\R \\}\\) (“true” value \\(a_0\\))\nPredictor: the function \\(\\hat f(X_{1:n}, Y_{1:n}, x) = \\beta \\frac{Y_2 - Y_1}{X_2 - X_1} x\\)\n\n(What can the risk and test error depend on?)\n\n\\[\n\\begin{aligned}\nR_n = E[(Y - \\hat f(X))^2]\n%= E[(Y - a_0X)^2] + E[(a_0X - \\hat f(X))^2]\\\\\n%&= 1 +  E\\left[\\left(a_0X - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}X\\right)^2\\right]\\\\\n&= \\text{annoying algebra...}\\\\\n% &= 1 +  E[X^2]E\\left[\\left(a_0 - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}\\right)^2\\right]\\\\\n% &= 1 +  E[X^2]E\\left[\\left(a_0 - \\beta\\frac{a_0 X_2 + Z_2 - a_0 X_1 - Z_1}{X_2-X_1}\\right)^2\\right]\\\\\n&= \\underbrace{1}_{\\text{irr.}} +  \\underbrace{a_0^2(1-\\beta)^2E[X^2]}_{\\text{bias}^2} + \\underbrace{2\\beta^2E\\left[(X_2-X_1)^{-2}\\right]E[X^2]}_{\\text{variance}}.\n\\end{aligned}\n\\]\n\n\n\\[ T_n = E[(Y - \\hat f(X))^2|X_{1:n},Y_{1:n}] = 1 +  E[X^2]\\left(a_0 - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}\\right)^2 \\]\n\n\n\nRisk \\(R_n\\) depends only on \\(a_0, \\beta\\) and \\(X\\)-marginal distribution\nTest error \\(T_n\\) depends on training data too!"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk",
+    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating risk",
+    "text": "Estimating risk\nWe can’t compute \\(R_n\\) in practice (we don’t know the true data distribution)\nCan we estimate risk (\\(\\hat R_n\\)) with data? How do we measure the quality of our estimate?\n\n\\[E[(R_n - \\hat R_n)^2]\\] (What is the expectation with respect to?)\n\n\n\n\\(R_n\\) is just a fixed value (we already averaged over test data and training data)\n\\(\\hat R_n\\) depends only on training data\nSo the expectation is with respect to our training dataset\n\n\n\nAs before, we can decompose the error of our risk estimator into bias and variance\n\\[\nE[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-empirical-risk",
+    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-empirical-risk",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating risk: empirical risk",
+    "text": "Estimating risk: empirical risk\n\\[\n\\text{Recall: }E[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]\n\nEmpirical risk: just use the training loss \\(\\hat R_n = \\frac{1}{n}\\sum_{i=1}^n \\ell(Y_i, \\hat f(X_i))\\)\n\n(What is the bias and variance with a really flexible model?)\n\n\nIf our model is so flexible that it can nearly fit all data always, then \\(\\hat R_n \\approx 0\\)\n\\(\\text{Variance} = E[( \\hat R_n - E[\\hat R_n])^2] \\approx E[(0 - 0)^2] = 0\\)\n\\(\\text{Bias}^2 = ( R_n - E[\\hat R_n(\\hat f)])^2 \\approx ( R_n - 0 ) = R_n\\)\n\n\n\n(Is that good or bad?)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-holdout-sets",
+    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-holdout-sets",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating risk: holdout sets",
+    "text": "Estimating risk: holdout sets\n\\[\n\\text{Recall: }E[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\] Holdout: train \\(\\hat f\\) with \\(n-m\\) data, estimate with \\(m\\) data: \\(\\hat R_n = \\frac{1}{m}\\sum_{j=1}^{m} \\ell(Y_j, \\hat f(X_j))\\)\n\n\nbias (increasing, decreasing, or either with \\(m\\)?) \\[\n\\text{Bias}^2 = (R_n - R_{n-m})^2\n\\]\n\n\n\n\nvariance (increasing, decreasing, or either with \\(m\\)?)\n\n\\[\n\\text{Variance}\n= \\underbrace{\\frac{1}{m}E[(\\tilde \\ell - E[\\tilde\\ell| \\hat f])^2]}_{\\text{estimation variance}}\n+ \\underbrace{E[(E[\\tilde \\ell| \\hat f] - R_{n-m})^2]}_{\\text{training variance}} \\quad \\text{where }\\tilde \\ell = \\ell(Y_1, \\hat f(X_1))\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-leave-one-out-cross-val.-loo-cv",
+    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-leave-one-out-cross-val.-loo-cv",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating risk: leave-one-out cross-val. (LOO-CV)",
+    "text": "Estimating risk: leave-one-out cross-val. (LOO-CV)\n\nLOO-CV estimate: \\(\\hat R_n = \\frac{1}{n} \\sum_{i=1}^n \\tilde R_i\\), where:\n\nRemove the first observation and train (\\(\\hat f_1\\)), estimate \\(\\tilde R_1 = \\ell(Y_1, \\hat f_1(X_1))\\)\nRemove the second observation and train (\\(\\hat f_2\\)), estimate \\(\\tilde R_2 = \\ell(Y_2, \\hat f_2(X_2))\\)\nWash, rinse, repeat…\n\n\n\n(Bias? Hint: if we train with \\(n-m\\), we get \\((R_n - R_{n-m})^2\\)…)\n\n\n\nBias is \\((R_n - R_{n-1})^2\\) – quite small!\nVariance is small too! Roughly: \\(E[( \\hat R_n - E[\\hat R_n])^2]\\approx \\frac{1}{n} E[(\\tilde R_1 - R_{n-1})^2]\\)\n\nassumption: ignoring \\(\\tilde R_j\\), \\(\\tilde R_k\\) covariance for \\(j\\neq k\\)\nreasonable if \\(n\\) large enough that one data point doesn’t influence \\(\\hat f\\) too much\n\n\n\n\n\nmajor downside: have to train \\(n\\) models (super expensive!)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
+    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
+    "title": "UBC Stat406 2024W",
+    "section": "K-fold CV",
+    "text": "K-fold CV\n\\(K\\)-fold cross validation finds a decent tradeoff between these options.\nThe idea of \\(K\\)-fold CV is\n\nDivide the data into \\(K\\) groups.\nLeave one group out and train with the remaining \\(K-1\\) groups.\nTest on the held-out group. Calculate an average risk over these \\(\\sim n/K\\) data.\nRepeat for all \\(K\\) groups.\nAverage the average risks."
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-illustration",
+    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-illustration",
+    "title": "UBC Stat406 2024W",
+    "section": "K-fold CV: illustration",
+    "text": "K-fold CV: illustration\n\n\nCode\npar(mar = c(0, 0, 0, 0))\nplot(NA, NA, ylim = c(0, 5), xlim = c(0, 10), bty = \"n\", yaxt = \"n\", xaxt = \"n\")\nrect(0, .1 + c(0, 2, 3, 4), 10, .9 + c(0, 2, 3, 4), col = blue, density = 10)\nrect(c(0, 1, 2, 9), rev(.1 + c(0, 2, 3, 4)), c(1, 2, 3, 10), \n     rev(.9 + c(0, 2, 3, 4)), col = red, density = 10)\npoints(c(5, 5, 5), 1 + 1:3 / 4, pch = 19)\ntext(.5 + c(0, 1, 2, 9), .5 + c(4, 3, 2, 0), c(\"1\", \"2\", \"3\", \"K\"), cex = 3, \n     col = red)\ntext(6, 4.5, \"Training data\", cex = 3, col = blue)\ntext(2, 1.5, \"Validation data\", cex = 3, col = red)"
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-vs.-loo-cv",
+    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-vs.-loo-cv",
+    "title": "UBC Stat406 2024W",
+    "section": "K-fold CV vs. LOO CV",
+    "text": "K-fold CV vs. LOO CV\n\n🎉 Less costly than LOO CV (i.e., actually possible; only need to train \\(K\\) times)\n💩 K-fold CV has higher sq. bias \\((R_n - R_{n(1-1/K)})^2\\) than LOO CV \\((R_n - R_{n-1})^2\\)\na bit painful to compare variance…\n\nI hereby invoke the sacred incantation: “this exercise is left to the reader”\n\n\nThe overall risk \\(R_n\\) depends on \\(n\\).\n\n\n\n\n\n\nTip\n\n\nIn practice, most people just default to using 5-fold or 10-fold. This is probably fine in most cases."
+  },
+  {
+    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-code",
+    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-code",
+    "title": "UBC Stat406 2024W",
+    "section": "K-fold CV: Code",
+    "text": "K-fold CV: Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.8928686"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#section",
+    "href": "schedule/slides/13-gams-trees.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "13 GAMs and Trees",
+    "text": "13 GAMs and Trees\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#gams",
+    "href": "schedule/slides/13-gams-trees.html#gams",
+    "title": "UBC Stat406 2024W",
+    "section": "GAMs",
+    "text": "GAMs\nLast time we discussed smoothing in multiple dimensions.\nHere we introduce the concept of GAMs (Generalized Additive Models)\nThe basic idea is to imagine that the response is the sum of some functions of the predictors:\n\\[\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}).\\]\nNote that OLS is a GAM (take \\(f_j(x_{j})=\\beta_j x_{j}\\)):\n\\[\\Expect{Y \\given X=x} = \\beta_0 + \\beta_1 x_{1}+\\cdots+\\beta_p x_{p}.\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#gams-1",
+    "href": "schedule/slides/13-gams-trees.html#gams-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Gams",
+    "text": "Gams\nThese work by estimating each \\(f_i\\) using basis expansions in predictor \\(i\\)\nThe algorithm for fitting these things is called “backfitting” (very similar to the CD intuition for lasso):\n\nCenter \\(\\y\\) and \\(\\X\\).\nHold \\(f_k\\) for all \\(k\\neq j\\) fixed, and regress \\(\\X_j\\) on \\((\\y - \\widehat{\\y}_{-j})\\) using your favorite smoother.\nRepeat for \\(1\\leq j\\leq p\\).\nRepeat steps 2 and 3 until the estimated functions “stop moving” (iterate)\nReturn the results."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example",
+    "title": "UBC Stat406 2024W",
+    "section": "Very small example",
+    "text": "Very small example\n\nlibrary(mgcv)\nset.seed(12345)\nn &lt;- 500\nsimple &lt;- tibble(\n  x1 = runif(n, 0, 2*pi),\n  x2 = runif(n),\n  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)\n)\n\npivot_longer(simple, -y, names_to = \"predictor\", values_to = \"x\") |&gt;\n  ggplot(aes(x, y)) +\n  geom_point(col = blue) +\n  facet_wrap(~predictor, scales = \"free_x\")"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Very small example",
+    "text": "Very small example\nSmooth each coordinate independently\n\nex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)\n# s(z) means \"smooth\" z, uses spline basis for each with ridge penalty, GCV\nplot(ex_smooth, pages = 1, scale = 0, shade = TRUE, \n     resid = TRUE, se = 2, las = 1)\n\nhead(coef(ex_smooth))\n\n(Intercept)     s(x1).1     s(x1).2     s(x1).3     s(x1).4     s(x1).5 \n 10.2070490  -4.5764100   0.7117161   0.4548928   0.5535001  -0.2092996 \n\nex_smooth$gcv.ubre\n\n    GCV.Cp \n0.06619721"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "href": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "title": "UBC Stat406 2024W",
+    "section": "Wherefore GAMs?",
+    "text": "Wherefore GAMs?\nIf\n\\(\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}),\\)\nthen\n\\(\\textrm{MSE}(\\hat f) = \\frac{Cp}{n^{4/5}} + \\sigma^2.\\)\n\nExponent no longer depends on \\(p\\). Converges faster. (If the truth is additive.)\nYou could also use the same methods to include “some” interactions like\n\n\\[\\begin{aligned}&\\Expect{Y \\given X=x}\\\\ &= \\beta_0 + f_{12}(x_{1},\\ x_{2})+f_3(x_3)+\\cdots+f_p(x_{p}),\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "title": "UBC Stat406 2024W",
+    "section": "Very small example",
+    "text": "Very small example\nSmooth two coordinates together\n\nex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)\nplot(ex_smooth2,\n  scheme = 2, scale = 0, shade = TRUE,\n  resid = TRUE, se = 2, las = 1\n)"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#regression-trees",
+    "href": "schedule/slides/13-gams-trees.html#regression-trees",
+    "title": "UBC Stat406 2024W",
+    "section": "Regression trees",
+    "text": "Regression trees\nTrees involve stratifying or segmenting the predictor space into a number of simple regions.\nTrees are simple and useful for interpretation.\nBasic trees are not great at prediction.\nModern methods that use trees are much better (Module 4)"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#regression-trees-1",
+    "href": "schedule/slides/13-gams-trees.html#regression-trees-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Regression trees",
+    "text": "Regression trees\nRegression trees estimate piece-wise constant functions\nThe slabs are axis-parallel rectangles \\(R_1,\\ldots,R_K\\) based on \\(\\X\\)\nIn each region, we average the \\(y_i\\)’s: \\(\\hat\\mu_1,\\ldots,\\hat\\mu_k\\)\nMinimize \\(\\sum_{k=1}^K \\sum_{i=1}^n (y_i-\\mu_k)^2\\) over \\(R_k,\\mu_k\\) for \\(k\\in \\{1,\\ldots,K\\}\\)\n\nThis sounds more complicated than it is.\nThe minimization is performed greedily (like forward stepwise regression)."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#mobility-data",
+    "href": "schedule/slides/13-gams-trees.html#mobility-data",
+    "title": "UBC Stat406 2024W",
+    "section": "Mobility data",
+    "text": "Mobility data\n\nbigtree &lt;- tree(Mobility ~ ., data = mob)\nsmalltree &lt;- prune.tree(bigtree, k = .09)\ndraw.tree(smalltree, digits = 2)\n\n\nThis is called the dendrogram"
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#partition-view",
+    "href": "schedule/slides/13-gams-trees.html#partition-view",
+    "title": "UBC Stat406 2024W",
+    "section": "Partition view",
+    "text": "Partition view\n\nmob$preds &lt;- predict(smalltree)\npar(mfrow = c(1, 2), mar = c(5, 3, 0, 0))\ndraw.tree(smalltree, digits = 2)\ncols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]\nplot(mob$Black, mob$Commute,\n  pch = 19, cex = .4, bty = \"n\", las = 1, col = cols,\n  ylab = \"Commute time\", xlab = \"% Black\"\n)\npartition.tree(smalltree, add = TRUE, ordvars = c(\"Black\", \"Commute\"))\n\n\nWe predict all observations in a region with the same value.\n\\(\\bullet\\) The three regions correspond to the leaves of the tree."
+  },
+  {
+    "objectID": "schedule/slides/13-gams-trees.html#section-2",
+    "href": "schedule/slides/13-gams-trees.html#section-2",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "It is hard (maybe impossible) to come up with reasonable classifiers that are linear smoothers. Many “look” like a linear smoother, but then apply a nonlinear transformation."
+    "text": "draw.tree(bigtree, digits = 2)\n\n\nTerminology\nWe call each split or end point a node. Each terminal node is referred to as a leaf.\nThe interior nodes lead to branches."
   },
   {
-    "objectID": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
-    "href": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
+    "objectID": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
+    "href": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
     "title": "UBC Stat406 2024W",
-    "section": "Naïve Bayes",
-    "text": "Naïve Bayes\nAssume that \\(Pr(X | Y = k) = Pr(X_1 | Y = k)\\cdots Pr(X_p | Y = k)\\).\nThat is, conditional on the class, the feature distribution is independent.\n\nIf we further assume that \\(Pr(X_j | Y = k)\\) is Gaussian,\nThis is the same as QDA but with \\(\\Sigma_k\\) Diagonal.\n\n\nDon’t have to assume Gaussian. Could do lots of stuff."
+    "section": "Advantages and disadvantages of trees",
+    "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Full trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#section",
+    "href": "schedule/slides/26-pca-v-kpca.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "26 PCA v KPCA",
+    "text": "26 PCA v KPCA\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 24 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#pca-v-kpca",
+    "href": "schedule/slides/26-pca-v-kpca.html#pca-v-kpca",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA v KPCA",
+    "text": "PCA v KPCA\n(We assume \\(\\X\\) is already centered/scaled, \\(n\\) rows, \\(p\\) columns)\n\n\nPCA:\n\nDecompose \\(\\X=\\U\\D\\V^\\top\\) (SVD).\nEmbed into \\(M\\leq p\\) dimensions: \\[\\U_M \\D_M = \\X\\V_M\\]\n\nThe “embedding” is \\(\\U_M \\D_M\\).\n(called the “Principal Components” or the “scores” or occasionally the “factors”)\nThe “loadings” or “weights” are \\(\\V_M\\)\n\n\nKPCA:\n\nChoose \\(k(x_i, x_{i'})\\). Create \\(\\mathbf{K}\\).\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\).\nDecompose \\(\\mathbf{K} = \\U \\D^2 \\U^\\top\\) (eigendecomposition).\nEmbed into \\(M\\leq p\\) dimensions: \\[\\U_M \\D_M\\]\n\nThe “embedding” is \\(\\U_M \\D_M\\).\nThere are no “loadings”\n(\\(\\not\\exists\\ \\mathbf{B}\\) such that \\(\\X\\mathbf{B} = \\U_M \\D_M\\))"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#why-is-this-the-solution",
+    "href": "schedule/slides/26-pca-v-kpca.html#why-is-this-the-solution",
+    "title": "UBC Stat406 2024W",
+    "section": "Why is this the solution?",
+    "text": "Why is this the solution?\nThe “maximize variance” version of PCA:\n\\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\n( \\(\\Var{\\X\\alpha} = \\alpha^\\top\\X^\\top\\X\\alpha\\) )\nThis is equivalent to solving (Lagrangian):\n\\[\\max_\\alpha \\alpha^\\top\\X^\\top\\X\\alpha - \\lambda\\left|\\left| \\alpha \\right|\\right|_2^2\\]\nTake derivative wrt \\(\\alpha\\) and set to 0:\n\\[0 = 2\\X^\\top\\X\\alpha - 2\\lambda\\alpha\\]\nThis is the equation for an eigenproblem. The solution is \\(\\alpha=\\V_1\\) and the maximum is \\(\\D_1^2\\)."
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#example-not-real-unless-theres-code",
+    "href": "schedule/slides/26-pca-v-kpca.html#example-not-real-unless-theres-code",
+    "title": "UBC Stat406 2024W",
+    "section": "Example (not real unless there’s code)",
+    "text": "Example (not real unless there’s code)\n\nX &lt;- Stat406::mobility |&gt;\n  select(Black:Married) |&gt;\n  as.matrix()\nnot_missing &lt;- complete.cases(X)\nX &lt;- scale(X[not_missing, ], center = TRUE, scale = TRUE)\ncolors &lt;- Stat406::mobility$Mobility[not_missing]\nM &lt;- 2 # embedding dimension\nP &lt;- diag(nrow(X)) - 1 / nrow(X)\n\n\n\nPCA: (all 3 are equivalent)\n\ns &lt;- svd(X) # use svd\npca_loadings &lt;- s$v[, 1:M]\npca_scores &lt;- X %*% pca_loadings\n\n\ns &lt;- eigen(t(X) %*% X) # V D^2 V'\npca_loadings &lt;- s$vectors[, 1:M]\npca_scores &lt;- X %*% pca_loadings\n\n\ns &lt;- eigen(X %*% t(X)) # U D^2 U'\nD &lt;- sqrt(diag(s$values[1:M]))\nU &lt;- s$vectors[, 1:M]\npca_scores &lt;- U %*% D\npca_loadings &lt;- (1 / D) %*% t(U) %*% X\n\n\n\nKPCA:\n\nd &lt;- 2\nK &lt;- P %*% (1 + X %*% t(X))^d %*% P # polynomial\ne &lt;- eigen(K) # U D^2 U'\n# (different from the PCA one, K /= XX')\nU &lt;- e$vectors[, 1:M]\nD &lt;- diag(sqrt(e$values[1:M]))\nkpca_poly &lt;- U %*% D\n\n\nK &lt;- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel\ne &lt;- eigen(K) # U D^2 U'\n# (different from the PCA one, K /= XX')\nU &lt;- e$vectors[, 1:M]\nD &lt;- diag(sqrt(e$values[1:M]))\nkpca_sigmoid &lt;- U %*% D"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#plotting",
+    "href": "schedule/slides/26-pca-v-kpca.html#plotting",
+    "title": "UBC Stat406 2024W",
+    "section": "Plotting",
+    "text": "Plotting"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#pca-loadings",
+    "href": "schedule/slides/26-pca-v-kpca.html#pca-loadings",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA loadings",
+    "text": "PCA loadings\nShowing the first 10 PCA loadings:\n\nFirst column are the weights on the first score\neach number corresponds to a variable in the original data\nHow much does that variable contribute to that score?\n\n\nhead(round(pca_loadings, 2), 10)\n\n       [,1]  [,2]\n [1,]  0.25  0.07\n [2,]  0.13 -0.14\n [3,]  0.17 -0.34\n [4,]  0.18 -0.33\n [5,]  0.16 -0.34\n [6,] -0.24  0.11\n [7,] -0.04 -0.35\n [8,]  0.28  0.00\n [9,]  0.13 -0.14\n[10,]  0.29  0.10"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#kpca-feature-map-version",
+    "href": "schedule/slides/26-pca-v-kpca.html#kpca-feature-map-version",
+    "title": "UBC Stat406 2024W",
+    "section": "KPCA, feature map version",
+    "text": "KPCA, feature map version\n\np &lt;- ncol(X)\nwidth &lt;- p * (p - 1) / 2 + p # = 630\nZ &lt;- matrix(NA, nrow(X), width)\nk &lt;- 0\nfor (i in 1:p) {\n  for (j in i:p) {\n    k &lt;- k + 1\n    Z[, k] &lt;- X[, i] * X[, j]\n  }\n}\nwideX &lt;- scale(cbind(X, Z))\ns &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow\nfkpca_scores &lt;- s$u %*% diag(s$d)\n\n\nUnfortunately, can’t easily compare to check whether the result is the same\nAlso can cause numerical issues\nBut should be the “same” (assuming I didn’t screw up…)\nWould also allow me to get the loadings, though they’d depend on polynomials"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
+    "href": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
+    "title": "UBC Stat406 2024W",
+    "section": "Other manifold learning methods",
+    "text": "Other manifold learning methods\nTo name a few\n\nHessian maps\nLaplacian eigenmaps\nClassical Multidimensional Scaling\ntSNE\nUMAP\nLocally linear embeddings\nDiffusion maps\nLocal tangent space alignment\nIsomap"
+  },
+  {
+    "objectID": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
+    "href": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
+    "title": "UBC Stat406 2024W",
+    "section": "Issues with nonlinear techniques",
+    "text": "Issues with nonlinear techniques\n\n\n\nNeed to choose \\(M\\) (also with linear)\nAlso other tuning parameters.\nThese others can have huge effects\nThe difference between the data lying on the manifold and the data lying near the manifold is important\n\n\n\n\n\nCode\nelephant &lt;- function(eye = TRUE) {\n  tib &lt;- tibble(\n    tt = -100:500 / 100,\n    y = -(12 * cos(3 * tt) - 14 * cos(5 * tt) + 50 * sin(tt) + 18 * sin(2 * tt)),\n    x = -30 * sin(tt) + 8 * sin(2 * tt) - 10 * sin(3 * tt) - 60 * cos(tt)\n  )\n  if (eye) tib &lt;- add_row(tib, y = 20, x = 20)\n  tib\n}\nele &lt;- elephant(FALSE)\nnoisy_ele &lt;- ele |&gt;\n  mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))\nggplot(noisy_ele, aes(x, y, colour = tt)) +\n  geom_point() +\n  scale_color_viridis_c() +\n  theme(legend.position = \"none\") +\n  geom_path(data = ele, colour = \"black\", linewidth = 2)"
   },
   {
     "objectID": "schedule/slides/00-classification-losses.html#section",
@@ -3661,18 +3724,375 @@
     "text": "Grade predictions\n\n\n5 people say 100%\n18 say 90%\n20 say 85%\n41 say 80%\n\n\n\n\nUBC Stat 406 - 2024"
   },
   {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#section",
+    "href": "schedule/slides/15-LDA-and-QDA.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "15 LDA and QDA",
+    "text": "15 LDA and QDA\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#last-time",
+    "href": "schedule/slides/15-LDA-and-QDA.html#last-time",
+    "title": "UBC Stat406 2024W",
+    "section": "Last time",
+    "text": "Last time\nWe showed that with two classes, the Bayes’ classifier is\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere \\(p_1(X) = Pr(X \\given Y=1)\\), \\(p_0(X) = Pr(X \\given Y=0)\\) and \\(\\pi = Pr(Y=1)\\)\n\nFor more than two classes.\n\\[g_*(X) =\n\\argmax_k \\frac{\\pi_k p_k(X)}{\\sum_k \\pi_k p_k(X)}\\]\nwhere \\(p_k(X) = Pr(X \\given Y=k)\\) and \\(\\pi_k = P(Y=k)\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
+    "href": "schedule/slides/15-LDA-and-QDA.html#estimating-these",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating these",
+    "text": "Estimating these\nLet’s make some assumptions:\n\n\\(Pr(X\\given Y=k) = \\mbox{N}(\\mu_k,\\Sigma_k)\\)\n\\(\\Sigma_k = \\Sigma_{k'} = \\Sigma\\)\n\n\nThis leads to Linear Discriminant Analysis (LDA), one of the oldest classifiers"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda",
+    "title": "UBC Stat406 2024W",
+    "section": "LDA",
+    "text": "LDA\n\nSplit your training data into \\(K\\) subsets based on \\(y_i=k\\).\nIn each subset, estimate the mean of \\(X\\): \\(\\widehat\\mu_k = \\overline{X}_k\\)\nEstimate the pooled variance: \\[\\widehat\\Sigma = \\frac{1}{n-K} \\sum_{k \\in \\mathcal{K}} \\sum_{i \\in k} (x_i - \\overline{X}_k) (x_i - \\overline{X}_k)^{\\top}\\]\nEstimate the class proportion: \\(\\widehat\\pi_k = n_k/n\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-1",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda-1",
+    "title": "UBC Stat406 2024W",
+    "section": "LDA",
+    "text": "LDA\nAssume just \\(K = 2\\) so \\(k \\in \\{0,\\ 1\\}\\)\nWe predict \\(\\widehat{y} = 1\\) if\n\\[\\widehat{p_1}(x) / \\widehat{p_0}(x) &gt; \\widehat{\\pi_0} / \\widehat{\\pi_1}\\]\nPlug in the density estimates:\n\\[\\widehat{p_k}(x) = N(x - \\widehat{\\mu}_k,\\ \\widehat\\Sigma)\\]"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#lda-2",
+    "href": "schedule/slides/15-LDA-and-QDA.html#lda-2",
+    "title": "UBC Stat406 2024W",
+    "section": "LDA",
+    "text": "LDA\nNow we take \\(\\log\\) and simplify \\((K=2)\\):\n\\[\n\\begin{aligned}\n&\\Rightarrow \\log(\\widehat{p_1}(x)\\times\\widehat{\\pi_1}) - \\log(\\widehat{p_0}(x)\\times\\widehat{\\pi_0})\n= \\cdots = \\cdots\\\\\n&= \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\right)}_{\\delta_1(x)} -  \\underbrace{\\left(x^\\top\\widehat\\Sigma^{-1}\\overline X_0-\\frac{1}{2}\\overline X_0^\\top \\widehat\\Sigma^{-1}\\overline X_0 + \\log \\widehat\\pi_0\\right)}_{\\delta_0(x)}\\\\\n&= \\delta_1(x) - \\delta_0(x)\n\\end{aligned}\n\\]\nIf \\(\\delta_1(x) &gt; \\delta_0(x)\\), we set \\(\\widehat g(x)=1\\)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
+    "href": "schedule/slides/15-LDA-and-QDA.html#one-dimensional-intuition",
+    "title": "UBC Stat406 2024W",
+    "section": "One dimensional intuition",
+    "text": "One dimensional intuition\n\nset.seed(406406406)\nn &lt;- 100\npi &lt;- .6\nmu0 &lt;- -1\nmu1 &lt;- 2\nsigma &lt;- 2\ntib &lt;- tibble(\n  y = rbinom(n, 1, pi),\n  x = rnorm(n, mu0, sigma) * (y == 0) + rnorm(n, mu1, sigma) * (y == 1)\n)\n\n\n\nCode\ngg &lt;- ggplot(tib, aes(x, y)) +\n  geom_point(colour = blue) +\n  stat_function(fun = ~ 6 * (1 - pi) * dnorm(.x, mu0, sigma), colour = orange) +\n  stat_function(fun = ~ 6 * pi * dnorm(.x, mu1, sigma), colour = orange) +\n  annotate(\"label\",\n    x = c(-3, 4.5), y = c(.5, 2 / 3),\n    label = c(\"(1-pi)*p[0](x)\", \"pi*p[1](x)\"), parse = TRUE\n  )\ngg"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
+    "href": "schedule/slides/15-LDA-and-QDA.html#what-is-linear",
+    "title": "UBC Stat406 2024W",
+    "section": "What is linear?",
+    "text": "What is linear?\nLook closely at the equation for \\(\\delta_1(x)\\):\n\\[\\delta_1(x)=x^\\top\\widehat\\Sigma^{-1}\\overline X_1-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\]\nWe can write this as \\(\\delta_1(x) = x^\\top a_1 + b_1\\) with \\(a_1 = \\widehat\\Sigma^{-1}\\overline X_1\\) and \\(b_1=-\\frac{1}{2}\\overline X_1^\\top \\widehat\\Sigma^{-1}\\overline X_1 + \\log \\widehat\\pi_1\\).\nWe can do the same for \\(\\delta_0(x)\\) (in terms of \\(a_0\\) and \\(b_0\\))\nTherefore,\n\\[\\delta_1(x)-\\delta_0(x) = x^\\top(a_1-a_0) + (b_1-b_0)\\]\nThis is how we discriminate between the classes.\nWe just calculate \\((a_1 - a_0)\\) (a vector in \\(\\R^p\\)), and \\(b_1 - b_0\\) (a scalar)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#baby-example",
+    "href": "schedule/slides/15-LDA-and-QDA.html#baby-example",
+    "title": "UBC Stat406 2024W",
+    "section": "Baby example",
+    "text": "Baby example\n\n\n\nlibrary(mvtnorm)\nlibrary(MASS)\ngenerate_lda_2d &lt;- function(\n    n, p = c(.5, .5), \n    mu = matrix(c(0, 0, 1, 1), 2),\n    Sigma = diag(2)) {\n  X &lt;- rmvnorm(n, sigma = Sigma)\n  tibble(\n    y = which(rmultinom(n, 1, p) == 1, TRUE)[,1],\n    x1 = X[, 1] + mu[1, y],\n    x2 = X[, 2] + mu[2, y]\n  )\n}\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlda_fit &lt;- lda(y ~ ., dat1)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#multiple-classes",
+    "title": "UBC Stat406 2024W",
+    "section": "Multiple classes",
+    "text": "Multiple classes\n\nmoreclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(0, 0, 1, 1, 1, 0), 2), .5 * diag(2))\nseparateclasses &lt;- generate_lda_2d(150, c(.2, .3, .5), matrix(c(-1, -1, 2, 2, 2, -1), 2), .1 * diag(2))"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#qda",
+    "href": "schedule/slides/15-LDA-and-QDA.html#qda",
+    "title": "UBC Stat406 2024W",
+    "section": "QDA",
+    "text": "QDA\nJust like LDA, but \\(\\Sigma_k\\) is separate for each class.\nProduces Quadratic decision boundary.\nEverything else is the same.\n\nqda_fit &lt;- qda(y ~ ., dat1)\nqda_3fit &lt;- qda(y ~ ., moreclasses)"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
+    "href": "schedule/slides/15-LDA-and-QDA.html#class-comparison",
+    "title": "UBC Stat406 2024W",
+    "section": "3 class comparison",
+    "text": "3 class comparison"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#notes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#notes",
+    "title": "UBC Stat406 2024W",
+    "section": "Notes",
+    "text": "Notes\n\nLDA is a linear classifier. It is not a linear smoother.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors, but the same (common) covariance matrix.\nIt estimates densities and probabilities and “plugs in”\n\nQDA is not a linear classifier. It depends on quadratic functions of the data.\n\nIt is derived from Bayes rule.\nAssume each class-conditional density in Gaussian\nIt assumes the classes have different mean vectors and different covariance matrices.\nIt estimates densities and probabilities and “plugs in”"
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#section-1",
+    "href": "schedule/slides/15-LDA-and-QDA.html#section-1",
+    "title": "UBC Stat406 2024W",
+    "section": "",
+    "text": "It is hard (maybe impossible) to come up with reasonable classifiers that are linear smoothers. Many “look” like a linear smoother, but then apply a nonlinear transformation."
+  },
+  {
+    "objectID": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
+    "href": "schedule/slides/15-LDA-and-QDA.html#naïve-bayes",
+    "title": "UBC Stat406 2024W",
+    "section": "Naïve Bayes",
+    "text": "Naïve Bayes\nAssume that \\(Pr(X | Y = k) = Pr(X_1 | Y = k)\\cdots Pr(X_p | Y = k)\\).\nThat is, conditional on the class, the feature distribution is independent.\n\nIf we further assume that \\(Pr(X_j | Y = k)\\) is Gaussian,\nThis is the same as QDA but with \\(\\Sigma_k\\) Diagonal.\n\n\nDon’t have to assume Gaussian. Could do lots of stuff."
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#section",
+    "href": "schedule/slides/24-pca-intro.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "24 Principal components, introduction",
+    "text": "24 Principal components, introduction\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 24 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#unsupervised-learning",
+    "href": "schedule/slides/24-pca-intro.html#unsupervised-learning",
+    "title": "UBC Stat406 2024W",
+    "section": "Unsupervised learning",
+    "text": "Unsupervised learning\nIn Machine Learning, rather than calling \\(\\y\\) the response, people call it the supervisor\nSo unsupervised learning means learning without \\(\\y\\)\nThe only data you get are the features \\(\\{x_1,\\ldots,x_n\\}\\).\nThis type of analysis is more often exploratory\nWe’re not necessarily using this for prediction (but we could)\nSo now, we get \\(\\X\\)\nThe two main activities are representation learning and clustering"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#representation-learning",
+    "href": "schedule/slides/24-pca-intro.html#representation-learning",
+    "title": "UBC Stat406 2024W",
+    "section": "Representation learning",
+    "text": "Representation learning\nRepresentation learning is the idea that performance of ML methods is highly dependent on the choice of representation\nFor this reason, much of ML is geared towards transforming the data into the relevant features and then using these as inputs\nThis idea is as old as statistics itself, really,\nHowever, the idea is constantly revisited in a variety of fields and contexts\nCommonly, these learned representations capture low-level information like overall shapes\nIt is possible to quantify this intuition for PCA at least\n\n\nGoal\n\nTransform \\(\\mathbf{X}\\in \\R^{n\\times p}\\) into \\(\\mathbf{Z} \\in \\R^{n \\times ?}\\)\n\n\n?-dimension can be bigger (feature creation) or smaller (dimension reduction) than \\(p\\)"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#youve-done-this-already",
+    "href": "schedule/slides/24-pca-intro.html#youve-done-this-already",
+    "title": "UBC Stat406 2024W",
+    "section": "You’ve done this already!",
+    "text": "You’ve done this already!\n\nYou added transformations as predictors in regression\nYou “expanded” \\(\\mathbf{X}\\) using a basis \\(\\Phi\\) (polynomials, splines, etc.)\nYou used Neural Nets to do a “feature map”\n\n\nThis is the same, just no \\(Y\\) around"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#pca",
+    "href": "schedule/slides/24-pca-intro.html#pca",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA",
+    "text": "PCA\nPrincipal components analysis (PCA) is an (unsupervised) dimension reduction technique\nIt solves various equivalent optimization problems\n(Maximize variance, minimize \\(\\ell_2\\) distortions, find closest subspace of a given rank, \\(\\ldots\\))\nAt its core, we are finding linear combinations of the original (centered) covariates \\[z_{ij} = \\alpha_j^{\\top} x_i\\]\nThis is expressed via the SVD: \\(\\X  = \\U\\D\\V^{\\top}\\).\n\n\n\n\n\n\n\nImportant\n\n\nWe assume throughout that \\(\\X - \\mathbf{11^\\top}\\overline{x} = 0\\) (we center the columns)\n\n\n\nThen our new features are\n\\[\\mathbf{Z} = \\X \\V = \\U\\D\\]"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#short-svd-aside-reminder-from-ridge-regression",
+    "href": "schedule/slides/24-pca-intro.html#short-svd-aside-reminder-from-ridge-regression",
+    "title": "UBC Stat406 2024W",
+    "section": "Short SVD aside (reminder from Ridge Regression)",
+    "text": "Short SVD aside (reminder from Ridge Regression)\n\nAny \\(n\\times p\\) matrix can be decomposed into \\(\\mathbf{UDV}^\\top\\).\nThese have properties:\n\n\n\\(\\mathbf{U}^\\top \\mathbf{U} = \\mathbf{I}_n\\)\n\\(\\mathbf{V}^\\top \\mathbf{V} = \\mathbf{I}_p\\)\n\\(\\mathbf{D}\\) is diagonal (0 off the diagonal)\n\nAlmost all the methods for we’ll talk about for representation learning use the SVD of some matrix."
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#why",
+    "href": "schedule/slides/24-pca-intro.html#why",
+    "title": "UBC Stat406 2024W",
+    "section": "Why?",
+    "text": "Why?\n\nGiven \\(\\X\\), find a projection \\(\\mathbf{P}\\) onto \\(\\R^M\\) with \\(M \\leq p\\) that minimizes the reconstruction error \\[\n\\begin{aligned}\n\\min_{\\mathbf{P}} &\\,\\, \\lVert \\mathbf{X} - \\mathbf{X}\\mathbf{P} \\rVert^2_F \\,\\,\\, \\textrm{(sum all the elements)}\\\\\n\\textrm{subject to} &\\,\\, \\textrm{rank}(\\mathbf{P}) = M,\\, \\mathbf{P} = \\mathbf{P}^T,\\, \\mathbf{P} = \\mathbf{P}^2\n\\end{aligned}\n\\] The conditions ensure that \\(\\mathbf{P}\\) is a projection matrix onto \\(M\\) dimensions.\nMaximize the variance explained by an orthogonal transformation \\(\\mathbf{A} \\in \\R^{p\\times M}\\) \\[\n\\begin{aligned}\n\\max_{\\mathbf{A}} &\\,\\, \\textrm{trace}\\left(\\frac{1}{n}\\mathbf{A}^\\top \\X^\\top \\X \\mathbf{A}\\right)\\\\\n\\textrm{subject to} &\\,\\, \\mathbf{A}^\\top\\mathbf{A} = \\mathbf{I}_M\n\\end{aligned}\n\\]\n\n\nIn case one, the minimizer is \\(\\mathbf{P} = \\mathbf{V}_M\\mathbf{V}_M^\\top\\)\nIn case two, the maximizer is \\(\\mathbf{A} = \\mathbf{V}_M\\)."
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings",
+    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings",
+    "title": "UBC Stat406 2024W",
+    "section": "Lower dimensional embeddings",
+    "text": "Lower dimensional embeddings\nSuppose we have predictors \\(\\x_1\\) and \\(\\x_2\\)\n\nWe more faithfully preserve the structure of this data by keeping \\(\\x_1\\) and setting \\(\\x_2\\) to zero than the opposite"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-1",
+    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Lower dimensional embeddings",
+    "text": "Lower dimensional embeddings\nAn important feature of the previous example is that \\(\\x_1\\) and \\(\\x_2\\) aren’t correlated\nWhat if they are?\n\nWe lose a lot of structure by setting either \\(\\x_1\\) or \\(\\x_2\\) to zero"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-2",
+    "href": "schedule/slides/24-pca-intro.html#lower-dimensional-embeddings-2",
+    "title": "UBC Stat406 2024W",
+    "section": "Lower dimensional embeddings",
+    "text": "Lower dimensional embeddings\nThe only difference is the first is a rotation of the second"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#pca-1",
+    "href": "schedule/slides/24-pca-intro.html#pca-1",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA",
+    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\n\nCenter (+scale?) the data matrix \\(\\X\\)\nCompute the SVD of \\(\\X = \\U\\D \\V^\\top\\) or \\(\\X\\X^\\top = \\U\\D^2\\U^\\top\\) or \\(\\X^\\top \\X = \\V\\D^2 \\V^\\top\\)\nReturn \\(\\U_M\\D_M\\), where \\(\\D_M\\) is the largest \\(M\\) singular values of \\(\\X\\)"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#pca-2",
+    "href": "schedule/slides/24-pca-intro.html#pca-2",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA",
+    "text": "PCA\n\n\nCode\ns &lt;- svd(X)\ntib &lt;- rbind(X, s$u %*% diag(s$d), s$u %*% diag(c(s$d[1], 0)))\ntib &lt;- tibble(\n  x1 = tib[, 1], x2 = tib[, 2],\n  name = rep(1:3, each = 20)\n)\nplotter &lt;- function(set = 1, main = \"original\") {\n  tib |&gt;\n    filter(name == set) |&gt;\n    ggplot(aes(x1, x2)) +\n    geom_point(colour = blue) +\n    coord_cartesian(c(-2, 2), c(-2, 2)) +\n    theme(legend.title = element_blank(), legend.position = \"bottom\") +\n    ggtitle(main)\n}\ncowplot::plot_grid(\n  plotter() + labs(x = bquote(x[1]), y = bquote(x[2])),\n  plotter(2, \"rotated\") +\n    labs(x = bquote((UD)[1] == (XV)[1]), y = bquote((UD)[2] == (XV)[2])),\n  plotter(3, \"rotated and projected\") +\n    labs(x = bquote(U[1] ~ D[1] == (XV)[1]), y = bquote(U[2] ~ D[2] %==% 0)),\n  nrow = 1\n)"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
+    "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA on some pop music data",
+    "text": "PCA on some pop music data\n\nmusic &lt;- Stat406::popmusic_train\nstr(music)\n\ntibble [1,269 × 15] (S3: tbl_df/tbl/data.frame)\n $ artist          : Factor w/ 3 levels \"Radiohead\",\"Taylor Swift\",..: 2 2 2 2 2 2 2 2 2 2 ...\n $ danceability    : num [1:1269] 0.781 0.627 0.516 0.629 0.686 0.522 0.31 0.705 0.553 0.419 ...\n $ energy          : num [1:1269] 0.357 0.266 0.917 0.757 0.705 0.691 0.374 0.621 0.604 0.908 ...\n $ key             : int [1:1269] 0 9 11 1 9 2 6 2 1 9 ...\n $ loudness        : num [1:1269] -16.39 -15.43 -3.19 -8.37 -10.82 ...\n $ mode            : int [1:1269] 1 1 0 0 1 1 1 1 0 1 ...\n $ speechiness     : num [1:1269] 0.912 0.929 0.0827 0.0512 0.249 0.0307 0.0275 0.0334 0.0258 0.0651 ...\n $ acousticness    : num [1:1269] 0.717 0.796 0.0139 0.00384 0.832 0.00609 0.761 0.101 0.202 0.00048 ...\n $ instrumentalness: num [1:1269] 0.00 0.00 6.37e-06 7.45e-01 4.55e-06 0.00 2.46e-05 4.30e-06 0.00 0.00 ...\n $ liveness        : num [1:1269] 0.185 0.292 0.36 0.0864 0.134 0.249 0.11 0.147 0.125 0.815 ...\n $ valence         : num [1:1269] 0.645 0.646 0.635 0.623 0.919 0.651 0.16 0.395 0.186 0.472 ...\n $ tempo           : num [1:1269] 118.3 79.3 145.8 157 151.9 ...\n $ time_signature  : int [1:1269] 4 4 4 4 5 4 4 4 4 4 ...\n $ duration_ms     : int [1:1269] 107133 89648 217160 201853 180653 201106 285640 240773 302266 290520 ...\n $ explicit        : logi [1:1269] FALSE FALSE FALSE FALSE FALSE FALSE ...\n\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE) ## DON'T USE princomp()"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
+    "href": "schedule/slides/24-pca-intro.html#pca-on-some-pop-music-data-1",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA on some pop music data",
+    "text": "PCA on some pop music data\n\nproj_pca &lt;- predict(pca)[,1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(artist = music$artist)"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#things-to-look-at",
+    "href": "schedule/slides/24-pca-intro.html#things-to-look-at",
+    "title": "UBC Stat406 2024W",
+    "section": "Things to look at",
+    "text": "Things to look at\n\npca$rotation[, 1:2]\n\n                         PC1          PC2\ndanceability     -0.02811038  0.577020027\nenergy           -0.56077454 -0.001137424\nloudness         -0.53893087  0.085912854\nspeechiness       0.30125038  0.431188730\nacousticness      0.51172138  0.082108326\ninstrumentalness  0.01374425 -0.370058813\nliveness         -0.02282669 -0.194947054\nvalence          -0.20242211  0.540418541\n\npca$sdev\n\n[1] 1.6233469 1.3466829 1.0690017 0.9510417 0.7638669 0.6737958 0.5495869\n[8] 0.4054698\n\npca$sdev^2 / sum(pca$sdev^2)\n\n[1] 0.32940690 0.22669435 0.14284558 0.11306004 0.07293658 0.05675010 0.03775572\n[8] 0.02055072"
+  },
+  {
+    "objectID": "schedule/slides/24-pca-intro.html#plotting-the-weights",
+    "href": "schedule/slides/24-pca-intro.html#plotting-the-weights",
+    "title": "UBC Stat406 2024W",
+    "section": "Plotting the weights",
+    "text": "Plotting the weights\n\n\nCode\npca$rotation[, 1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(feature = names(X)) |&gt;\n  pivot_longer(-feature) |&gt;\n  ggplot(aes(value, feature, fill = feature)) +\n  facet_wrap(~name) +\n  geom_col() +\n  theme(legend.position = \"none\", axis.title = element_blank()) +\n  scale_fill_brewer(palette = \"Dark2\") +\n  geom_vline(xintercept = 0)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#section",
+    "href": "schedule/slides/25-pca-issues.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "25 Principal components, the troubles",
+    "text": "25 Principal components, the troubles\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#pca",
+    "href": "schedule/slides/25-pca-issues.html#pca",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA",
+    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\nPCA works when the data can be represented (in a lower dimension) as lines (or planes, or hyperplanes).\nSo, in two dimensions:"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#pca-reduced",
+    "href": "schedule/slides/25-pca-issues.html#pca-reduced",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA reduced",
+    "text": "PCA reduced\nHere, we can capture a lot of the variation and underlying structure with just 1 dimension,\ninstead of the original 2 (the colouring is for visualizing)."
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#pca-bad",
+    "href": "schedule/slides/25-pca-issues.html#pca-bad",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA bad",
+    "text": "PCA bad\nWhat about other data structures? Again in two dimensions"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#pca-bad-1",
+    "href": "schedule/slides/25-pca-issues.html#pca-bad-1",
+    "title": "UBC Stat406 2024W",
+    "section": "PCA bad",
+    "text": "PCA bad\nHere, we have failed miserably.\nThere is actually only 1 dimension to this data (imagine walking up the spiral going from purple to yellow).\nHowever, when we write it as 1 PCA dimension, all the points are all “mixed up”."
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#explanation",
+    "href": "schedule/slides/25-pca-issues.html#explanation",
+    "title": "UBC Stat406 2024W",
+    "section": "Explanation",
+    "text": "Explanation\n\n\nPCA wants to minimize distances (equivalently maximize variance).\nThis means it slices through the data at the meatiest point, and then the next one, and so on.\nIf the data are curved this is going to induce artifacts.\nPCA also looks at things as being close if they are near each other in a Euclidean sense.\nOn the spiral, our intuition says that things are close only if the distance is constrained to go along the curve.\nIn other words, purple and blue are close, blue and yellow are not."
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca",
+    "href": "schedule/slides/25-pca-issues.html#kernel-pca",
+    "title": "UBC Stat406 2024W",
+    "section": "Kernel PCA",
+    "text": "Kernel PCA\nClassical PCA comes from \\(\\X=  \\U\\D\\V^{\\top}\\), the SVD of the (centered) data\nHowever, we can just as easily get it from the outer product \\(\\mathbf{K} = \\X\\X^{\\top} =  \\U\\D^2\\U^{\\top}\\)\nThe intuition behind KPCA is that \\(\\mathbf{K}\\) is an expansion into a kernel space, where \\[\\mathbf{K}_{i,i'} = k(x_i,\\ x_{i'}) = \\langle x_i,x_{i'} \\rangle\\]\nWe saw this trick before with feature expansion."
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#procedure",
+    "href": "schedule/slides/25-pca-issues.html#procedure",
+    "title": "UBC Stat406 2024W",
+    "section": "Procedure",
+    "text": "Procedure\n\nSpecify a kernel function \\(k\\)\nmany people use \\(k(x,x') = \\exp\\left( -d(x, x')/\\gamma\\right)\\) where \\(d(x,x') = \\norm{x-x'}_2^2\\)\nForm \\(\\mathbf{K}_{i,i'} = k(x_i,x_{i'})\\)\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\) where \\(\\mathbf{P} = \\mathbf{I}_n - \\mathbf{11}^\\top / n\\)\nTake eigendecomposition \\(\\mathbf{K} = \\U\\D^2\\U^{\\top}\\)\n\nThe scores are still \\(\\mathbf{Z} = \\U_M\\D_M\\)\n\n\n\n\n\n\nNote\n\n\nWe don’t explicitly generate the feature map \\(\\longrightarrow\\) there are NO loadings"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#an-alternate-view",
+    "href": "schedule/slides/25-pca-issues.html#an-alternate-view",
+    "title": "UBC Stat406 2024W",
+    "section": "An alternate view",
+    "text": "An alternate view\nTo get the first PC in classical PCA, we solve \\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\nIn the kernel setting we solve \\[\\max_{g \\in \\mathcal{H}_k} \\Var{g(X)} \\quad \\textrm{ subject to } \\quad\\left|\\left| g \\right|\\right|_{\\mathcal{H}_k} = 1\\]\nHere \\(\\mathcal{H}_k\\) is a function space determined by \\(k(x,x')\\)."
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#example-kernels",
+    "href": "schedule/slides/25-pca-issues.html#example-kernels",
+    "title": "UBC Stat406 2024W",
+    "section": "Example kernels",
+    "text": "Example kernels\n\n\\(k(x,x') = x^\\top x'\\)\n\ngives back regular PCA\n\n\\(k(x,x') = (1+x^\\top x')^d\\)\n\ngives a function space which contains all \\(d^{th}\\)-order\n\n\npolynomials.\n\n\\(k(x,x') = \\exp(-\\norm{x-x'}_2^2/\\gamma)\\)\n\ngives a function space spanned by the infinite Fourier basis\n\n\n\nFor more details see [ESL 14.5]"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
+    "href": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
+    "title": "UBC Stat406 2024W",
+    "section": "Kernel PCA on the spiral",
+    "text": "Kernel PCA on the spiral\n\n\nCode\nn &lt;- nrow(df_spiral)\nI_M &lt;- (diag(n) - tcrossprod(rep(1, n)) / n)\nkp &lt;- (tcrossprod(as.matrix(df_spiral[, 1:2])) + 1)^2\nKp &lt;- I_M %*% kp %*% I_M\nEp &lt;- eigen(Kp, symmetric = TRUE)\npolydf &lt;- tibble(\n  x = Ep$vectors[, 1] * Ep$values[1],\n  y = jit,\n  z = df_spiral$z\n)\nkg &lt;- exp(-as.matrix(dist(df_spiral[, 1:2]))^2 / 1)\nKg &lt;- I_M %*% kg %*% I_M\nEg &lt;- eigen(Kg, symmetric = TRUE)\ngaussdf &lt;- tibble(\n  x = Eg$vectors[, 1] * Eg$values[1],\n  y = jit,\n  z = df_spiral$z\n)\ndfkern &lt;- bind_rows(df_spiral, df_spiral2, polydf, gaussdf)\ndfkern$method &lt;- rep(c(\"data\", \"pca\", \"kpoly (d = 2)\", \"kgauss (gamma = 1)\"), each = n)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#kpca-summary",
+    "href": "schedule/slides/25-pca-issues.html#kpca-summary",
+    "title": "UBC Stat406 2024W",
+    "section": "KPCA: summary",
+    "text": "KPCA: summary\nKernel PCA seeks to generalize the notion of similarity using a kernel map\nThis can be interpreted as finding smooth, orthogonal directions in an RKHS\nThis can allow us to start picking up nonlinear (in the original feature space) aspects of our data\nThis new representation can be passed to a supervised method to form a semisupervised learner\nThis kernel is different than kernel smoothing!!\n\nJust like with PCA (and lots of other things) the way you measure distance is important\nThe choice of Kernel is important\nThe embedding dimension must be chosen"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
+    "href": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
+    "title": "UBC Stat406 2024W",
+    "section": "Basic semi-supervised (see [ISLR 6.3.1])",
+    "text": "Basic semi-supervised (see [ISLR 6.3.1])\n\nYou get data \\(\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\).\nYou do something unsupervised on \\(\\X\\) to create new features (like PCA).\nYou use the learned features to find a predictor \\(\\hat{f}\\) (say, do OLS on them)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#quick-example",
+    "href": "schedule/slides/25-pca-issues.html#quick-example",
+    "title": "UBC Stat406 2024W",
+    "section": "Quick example",
+    "text": "Quick example\n\nmusic &lt;- Stat406::popmusic_train\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE)\nZ &lt;- predict(pca)[, 1:2]\nZgrid &lt;- expand.grid(\n  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), \n  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)\n)\nout &lt;- class::knn(Z, Zgrid, music$artist, k = 6)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#why",
+    "href": "schedule/slides/25-pca-issues.html#why",
+    "title": "UBC Stat406 2024W",
+    "section": "Why?",
+    "text": "Why?\nRecall that for nonparametric regression, we must deal with the curse of dimensionality.\n\nThis did KNN in 2 dimensions instead of 8: less curse\nHowever, the dimensions were learned independently of \\(\\y\\): may not be helpful\nThere’s a bias-variance tradeoff here…"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "href": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "title": "UBC Stat406 2024W",
+    "section": "What is PCA / KPCA estimating?",
+    "text": "What is PCA / KPCA estimating?\nImagine that the Population data lie near a low-dimensional linear manifold…\n\nThink of the spiral. (1D manifold in 2D space)\nOr a flat piece of paper (2D manifold in 3D space)\n\nPCA / KPCA are estimating the manifold.\n\nThis works well under some conditions\nAnd if it’s true, then we have reduced variance but added a bit of bias\nAnd the downstream method may work better, because there are fewer predictors.\n\nWe just need the data near the manifold. But if not, then we introduced a lot of bias.\nPCA estimates linear manifolds, KPCA estimates non-linear"
+  },
+  {
     "objectID": "schedule/slides/10-basis-expansions.html#section",
     "href": "schedule/slides/10-basis-expansions.html#section",
     "title": "UBC Stat406 2024W",
     "section": "10 Basis expansions",
-    "text": "10 Basis expansions\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 27 September 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "10 Basis expansions\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 02 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#ols-low-bias-potentially-high-variance",
+    "href": "schedule/slides/10-basis-expansions.html#ols-low-bias-potentially-high-variance",
+    "title": "UBC Stat406 2024W",
+    "section": "OLS: low bias, (potentially) high variance",
+    "text": "OLS: low bias, (potentially) high variance\n\\[\n\\begin{gathered}\n\\text{Model:} \\quad y = x^\\top \\beta + \\epsilon, \\qquad \\epsilon \\sim N(0, \\sigma^2)\n\\\\\n\\text{OLS:} \\quad \\bls = \\argmin_\\beta \\| \\y - \\X\\beta\\|_2^2\\quad\n\\end{gathered}\n\\]\n\nBias: \\(\\E[\\bls] - \\beta = \\E[\\E[\\bls \\mid \\X]] - \\beta = \\ldots = 0\\)\nvariance: \\(\\Var{\\bls} =  \\sigma^2(\\X^\\top \\X)^{-1}\\)\n\nWhen is \\((\\X^\\top \\X)^{-1}\\) large?\n\nWhen we have nearly colinear features\nNearly colinear features \\(\\Rightarrow\\) small singular values \\(\\Rightarrow\\) large matrix inverse\n(Colinearity is more likely when \\(n\\) is small)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#reducing-variance-at-the-cost-of-additional-bias",
+    "href": "schedule/slides/10-basis-expansions.html#reducing-variance-at-the-cost-of-additional-bias",
+    "title": "UBC Stat406 2024W",
+    "section": "Reducing variance (at the cost of additional bias)",
+    "text": "Reducing variance (at the cost of additional bias)\n\nManual variable selection\nRidge regression: \\(\\min_\\beta \\| \\y - \\X\\beta\\|_2^2 + \\lambda \\Vert \\beta \\Vert_2^2\\)\nLasso: \\(\\min_\\beta \\| \\y - \\X\\beta\\|_2^2 + \\lambda \\Vert \\beta \\Vert_1\\)\n\n\nRidge shrinks all parameters towards 0.\nLasso performs automatic variable selection.\n\n\n\n\nIncreasing \\(\\lambda\\) increases bias and decreases variance.\n(For ridge, larger lambda \\(\\rightarrow\\) smaller \\(\\beta\\).)\n(For lasso, larger lambda \\(\\rightarrow\\) sparser \\(\\beta\\).)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#computing-ridge-and-lasso-predictors",
+    "href": "schedule/slides/10-basis-expansions.html#computing-ridge-and-lasso-predictors",
+    "title": "UBC Stat406 2024W",
+    "section": "Computing ridge and lasso predictors",
+    "text": "Computing ridge and lasso predictors\n\nOLS: \\(\\bls = (\\X^\\top \\X)^{-1}\\X^\\top \\y\\)\nRidge: \\(\\brl = (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1}\\X^\\top \\y\\)\nLasso: No closed form solution 😔\n\n(Convex optimization problem solvable with iterative algorithms.)"
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#optional-proof-that-ridge-shrinks-parameters",
+    "href": "schedule/slides/10-basis-expansions.html#optional-proof-that-ridge-shrinks-parameters",
+    "title": "UBC Stat406 2024W",
+    "section": "(Optional) Proof that ridge shrinks parameters",
+    "text": "(Optional) Proof that ridge shrinks parameters\n(This proof is not too hard if you use facts about SVDs and eigenvalues. I recommend working through it.)\nLet \\(\\mathbf{UDV^\\top} = X\\) be the SVD of \\(\\mathbf X\\).\n\\[\n\\begin{align}\n\\brl &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} {\\color{blue} \\X \\X^\\top (\\X^\\top \\X)^{-1}} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X \\X^\\top \\underbrace{\\left( (\\X^\\top \\X)^{-1} \\X^\\top \\y \\right)}_{\\bls}\n     \\\\\n     &= (\\mathbf V \\mathbf D^2 \\mathbf V^\\top + \\lambda \\mathbf{I})^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= (\\mathbf V (\\mathbf D^2 + \\lambda I) \\mathbf V^\\top)^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= \\mathbf V (\\mathbf D^2)(\\mathbf D^2 + \\lambda I)^{-1} \\mathbf V^\\top \\bls\n\\end{align}\n\\]"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#what-about-nonlinear-things",
     "href": "schedule/slides/10-basis-expansions.html#what-about-nonlinear-things",
     "title": "UBC Stat406 2024W",
     "section": "What about nonlinear things",
-    "text": "What about nonlinear things\n\\[\\Expect{Y \\given X=x} = \\sum_{j=1}^p x_j\\beta_j\\]\nNow we relax this assumption of linearity:\n\\[\\Expect{Y \\given X=x} = f(x)\\]\nHow do we estimate \\(f\\)?\n\nFor this lecture, we use \\(x \\in \\R\\) (1 dimensional)\nHigher dimensions are possible, but complexity grows exponentially.\nWe’ll see some special techniques for \\(x\\in\\R^p\\) later this Module."
+    "text": "What about nonlinear things\n\\[\\text{Our usual model:} \\quad \\Expect{Y \\given X=x} = \\sum_{j=1}^p x_j\\beta_j\\]\nNow we relax this assumption of linearity:\n\\[\\Expect{Y \\given X=x} = f(x)\\]\nHow do we estimate \\(f\\)?\n\nFor this lecture, we use \\(x \\in \\R\\) (1 dimensional)\nHigher dimensions are possible, but complexity grows exponentially.\nWe’ll see some special techniques for \\(x\\in\\R^p\\) later this Module."
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#start-simple",
@@ -3707,28 +4127,35 @@
     "href": "schedule/slides/10-basis-expansions.html#other-bases",
     "title": "UBC Stat406 2024W",
     "section": "Other bases",
-    "text": "Other bases\n\nPolynomials\n\n\\(x \\mapsto \\left(1,\\ x,\\ x^2, \\ldots, x^p\\right)\\) (technically, not quite this, they are orthogonalized)\n\nLinear splines\n\n\\(x \\mapsto \\bigg(1,\\ x,\\ (x-k_1)_+,\\ (x-k_2)_+,\\ldots, (x-k_p)_+\\bigg)\\) for some choices \\(\\{k_1,\\ldots,k_p\\}\\)\n\nCubic splines\n\n\\(x \\mapsto \\bigg(1,\\ x,\\ x^2,\\ x^3,\\ (x-k_1)^3_+,\\ (x-k_2)^3_+,\\ldots, (x-k_p)^3_+\\bigg)\\) for some choices \\(\\{k_1,\\ldots,k_p\\}\\)\n\nFourier series\n\n\\(x \\mapsto \\bigg(1,\\ \\cos(2\\pi x),\\ \\sin(2\\pi x),\\ \\cos(2\\pi 2 x),\\ \\sin(2\\pi 2 x), \\ldots, \\cos(2\\pi p x),\\ \\sin(2\\pi p x)\\bigg)\\)"
+    "text": "Other bases\n\nPolynomials\n\n\\(x \\mapsto \\left(1,\\ x,\\ x^2, \\ldots, x^p\\right)\\) (technically, not quite this, they are orthogonalized)\n\nLinear splines\n\n\\(x \\mapsto \\bigg(1,\\ x,\\ (x-k_1)_+,\\ (x-k_2)_+,\\ldots, (x-k_p)_+\\bigg)\\) for some \\(\\{k_1,\\ldots,k_p\\}\\)\n\n\n\n\nFourier series\n\n\\(x \\mapsto \\bigg(1,\\ \\cos(2\\pi x),\\ \\sin(2\\pi x),\\ \\cos(2\\pi 2 x),\\ \\sin(2\\pi 2 x), \\ldots, \\cos(2\\pi p x),\\ \\sin(2\\pi p x)\\bigg)\\)\n\n\n\n\nCode\nlibrary(cowplot)\nlibrary(ggplot2)\n\nrelu_shifted &lt;- function(x, shift) {pmax(0, x - shift)}\n\n# Create a sequence of x values\nx_vals &lt;- seq(-3, 3, length.out = 1000)\n\n# Create a data frame with all the shifted functions\ndata &lt;- data.frame(\n  x = rep(x_vals, 5),\n  polynomial = c(x_vals, x_vals^2, x_vals^3, x_vals^4, x_vals^5),\n  linear.splines = c(relu_shifted(x_vals, 2), relu_shifted(x_vals, 1), relu_shifted(x_vals, 0), relu_shifted(x_vals, -1), relu_shifted(x_vals, -2)),\n  fourier = c(cos(pi / 2 * x_vals), sin(pi / 2 * x_vals), cos(pi / 4 * x_vals), sin(pi / 4 * x_vals), cos(pi * x_vals)),\n  function_label = rep(c(\"f1\", \"f2\", \"f3\", \"f4\", \"f5\"), each = length(x_vals))\n)\n\n# Plot using ggplot2\ng1 &lt;- ggplot(data, aes(x = x, y = polynomial, color = function_label)) +\n      geom_line(size = 1, show.legend=FALSE) +\n      theme(axis.text.y=element_blank())\ng2 &lt;- ggplot(data, aes(x = x, y = linear.splines, color = function_label)) +\n      geom_line(size = 1, show.legend=FALSE) +\n      theme(axis.text.y=element_blank())\ng3 &lt;- ggplot(data, aes(x = x, y = fourier, color = function_label)) +\n      geom_line(size = 1, show.legend=FALSE) +\n      theme(axis.text.y=element_blank())\n\nplot_grid(g1, g2, g3, ncol = 3)"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#how-do-you-choose",
     "href": "schedule/slides/10-basis-expansions.html#how-do-you-choose",
     "title": "UBC Stat406 2024W",
     "section": "How do you choose?",
-    "text": "How do you choose?\nProcedure 1:\n\nPick your favorite basis. This is not as easy as it sounds. For instance, if \\(f\\) is a step function, linear splines will do well with good knots, but polynomials will be terrible unless you have lots of terms.\nPerform OLS on different orders.\nUse model selection criterion to choose the order.\n\nProcedure 2:\n\nUse a bunch of high-order bases, say Linear splines and Fourier series and whatever else you like.\nUse Lasso or Ridge regression or elastic net. (combining bases can lead to multicollinearity, but we may not care)\nUse model selection criteria to choose the tuning parameter."
+    "text": "How do you choose?\nProcedure 1:\n\nPick your favorite basis. (Think if the data might “prefer” one basis over another.)\n\nHow “smooth” is the response you’re trying to model?\n\n\n\n\nPerform OLS on different orders.\nUse model selection criterion to choose the order."
+  },
+  {
+    "objectID": "schedule/slides/10-basis-expansions.html#how-do-you-choose-1",
+    "href": "schedule/slides/10-basis-expansions.html#how-do-you-choose-1",
+    "title": "UBC Stat406 2024W",
+    "section": "How do you choose?",
+    "text": "How do you choose?\nProcedure 2:\n\nUse a bunch of high-order bases, say Linear splines and Fourier series and whatever else you like.\nUse Lasso or Ridge regression or elastic net. (combining bases can lead to multicollinearity, but we may not care)\nUse model selection criteria to choose the tuning parameter."
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#try-both-procedures",
     "href": "schedule/slides/10-basis-expansions.html#try-both-procedures",
     "title": "UBC Stat406 2024W",
     "section": "Try both procedures",
-    "text": "Try both procedures\n\nSplit arcuate into 75% training data and 25% testing data.\nEstimate polynomials up to 20 as before and choose best order.\nDo ridge, lasso and elastic net \\(\\alpha=.5\\) on 20th order polynomials, B splines with 20 knots, and Fourier series with \\(p=20\\). Choose tuning parameter (using lambda.1se).\nRepeat 1-3 10 times (different splits)"
+    "text": "Try both procedures\n\nSplit arcuate into 75% training data and 25% testing data.\nEstimate polynomials up to 20 as before and choose best order.\nDo ridge, lasso and elastic net \\(\\alpha=.5\\) on 20th order polynomials, splines with 20 knots, and Fourier series with \\(p=20\\). Choose tuning parameter (using lambda.1se).\nRepeat 1-3 10 times (different splits)"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#section-2",
     "href": "schedule/slides/10-basis-expansions.html#section-2",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "library(glmnet)\nmapto01 &lt;- function(x, pad = .005) (x - min(x) + pad) / (max(x) - min(x) + 2 * pad)\nx &lt;- mapto01(arcuate$position)\nXmat &lt;- cbind(\n  poly(x, 20), \n  splines::bs(x, df = 20), \n  cos(2 * pi * outer(x, 1:20)), sin(2 * pi * outer(x, 1:20))\n)\ny &lt;- arcuate$fa\nrmse &lt;- function(z, s) sqrt(mean( (z - s)^2 ))\nnzero &lt;- function(x) with(x, nzero[match(lambda.1se, lambda)])\nsim &lt;- function(maxdeg = 20, train_frac = 0.75) {\n  n &lt;- nrow(arcuate)\n  train &lt;- as.logical(rbinom(n, 1, train_frac))\n  test &lt;- !train # not precisely 25%, but on average\n  polycv &lt;- map_dbl(seq(maxdeg), ~ cv_nice(lm(y ~ Xmat[,seq(.)], subset = train))) # figure out which order to use\n  bpoly &lt;- lm(y[train] ~ Xmat[train, seq(which.min(polycv))]) # now use it\n  lasso &lt;- cv.glmnet(Xmat[train, ], y[train])\n  ridge &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = 0)\n  elnet &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = .5)\n  tibble(\n    methods = c(\"poly\", \"lasso\", \"ridge\", \"elnet\"),\n    rmses = c(\n      rmse(y[test], cbind(1, Xmat[test, 1:which.min(polycv)]) %*% coef(bpoly)),\n      rmse(y[test], predict(lasso, Xmat[test,])),\n      rmse(y[test], predict(ridge, Xmat[test,])),\n      rmse(y[test], predict(elnet, Xmat[test,]))\n    ),\n    nvars = c(which.min(polycv), nzero(lasso), nzero(ridge), nzero(elnet))\n  )\n}\nset.seed(12345)\nsim_results &lt;- map(seq(20), sim) |&gt; list_rbind() # repeat it 20 times"
+    "text": "library(glmnet)\nmapto01 &lt;- function(x, pad = .005) (x - min(x) + pad) / (max(x) - min(x) + 2 * pad)\nx &lt;- mapto01(arcuate$position)\nXmat &lt;- cbind(\n  poly(x, 20), \n  splines::bs(x, df = 20, degree = 1), \n  cos(2 * pi * outer(x, 1:20)), sin(2 * pi * outer(x, 1:20))\n)\ny &lt;- arcuate$fa\nrmse &lt;- function(z, s) sqrt(mean( (z - s)^2 ))\nnzero &lt;- function(x) with(x, nzero[match(lambda.1se, lambda)])\nsim &lt;- function(maxdeg = 20, train_frac = 0.75) {\n  n &lt;- nrow(arcuate)\n  train &lt;- as.logical(rbinom(n, 1, train_frac))\n  test &lt;- !train # not precisely 25%, but on average\n  polycv &lt;- map_dbl(seq(maxdeg), ~ cv_nice(lm(y ~ Xmat[,seq(.)], subset = train))) # figure out which order to use\n  bpoly &lt;- lm(y[train] ~ Xmat[train, seq(which.min(polycv))]) # now use it\n  lasso &lt;- cv.glmnet(Xmat[train, ], y[train])\n  ridge &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = 0)\n  elnet &lt;- cv.glmnet(Xmat[train, ], y[train], alpha = .5)\n  tibble(\n    methods = c(\"poly\", \"lasso\", \"ridge\", \"elnet\"),\n    rmses = c(\n      rmse(y[test], cbind(1, Xmat[test, 1:which.min(polycv)]) %*% coef(bpoly)),\n      rmse(y[test], predict(lasso, Xmat[test,])),\n      rmse(y[test], predict(ridge, Xmat[test,])),\n      rmse(y[test], predict(elnet, Xmat[test,]))\n    ),\n    nvars = c(which.min(polycv), nzero(lasso), nzero(ridge), nzero(elnet))\n  )\n}\nset.seed(12345)\nsim_results &lt;- map(seq(20), sim) |&gt; list_rbind() # repeat it 20 times"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#section-3",
@@ -3749,399 +4176,7 @@
     "href": "schedule/slides/10-basis-expansions.html#featurization",
     "title": "UBC Stat406 2024W",
     "section": "Featurization",
-    "text": "Featurization\nEach case applied a feature map to \\(x\\), call it \\(\\Phi\\)\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNeural networks (coming in module 4) use this idea\nYou’ve also probably seen it in earlier courses when you added interaction terms or other transformations.\n\nSome methods (notably Support Vector Machines and Ridge regression) allow \\(k=\\infty\\)\nSee [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#section",
-    "href": "schedule/slides/26-pca-v-kpca.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "26 PCA v KPCA",
-    "text": "26 PCA v KPCA\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 24 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#pca-v-kpca",
-    "href": "schedule/slides/26-pca-v-kpca.html#pca-v-kpca",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA v KPCA",
-    "text": "PCA v KPCA\n(We assume \\(\\X\\) is already centered/scaled, \\(n\\) rows, \\(p\\) columns)\n\n\nPCA:\n\nDecompose \\(\\X=\\U\\D\\V^\\top\\) (SVD).\nEmbed into \\(M\\leq p\\) dimensions: \\[\\U_M \\D_M = \\X\\V_M\\]\n\nThe “embedding” is \\(\\U_M \\D_M\\).\n(called the “Principal Components” or the “scores” or occasionally the “factors”)\nThe “loadings” or “weights” are \\(\\V_M\\)\n\n\nKPCA:\n\nChoose \\(k(x_i, x_{i'})\\). Create \\(\\mathbf{K}\\).\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\).\nDecompose \\(\\mathbf{K} = \\U \\D^2 \\U^\\top\\) (eigendecomposition).\nEmbed into \\(M\\leq p\\) dimensions: \\[\\U_M \\D_M\\]\n\nThe “embedding” is \\(\\U_M \\D_M\\).\nThere are no “loadings”\n(\\(\\not\\exists\\ \\mathbf{B}\\) such that \\(\\X\\mathbf{B} = \\U_M \\D_M\\))"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#why-is-this-the-solution",
-    "href": "schedule/slides/26-pca-v-kpca.html#why-is-this-the-solution",
-    "title": "UBC Stat406 2024W",
-    "section": "Why is this the solution?",
-    "text": "Why is this the solution?\nThe “maximize variance” version of PCA:\n\\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\n( \\(\\Var{\\X\\alpha} = \\alpha^\\top\\X^\\top\\X\\alpha\\) )\nThis is equivalent to solving (Lagrangian):\n\\[\\max_\\alpha \\alpha^\\top\\X^\\top\\X\\alpha - \\lambda\\left|\\left| \\alpha \\right|\\right|_2^2\\]\nTake derivative wrt \\(\\alpha\\) and set to 0:\n\\[0 = 2\\X^\\top\\X\\alpha - 2\\lambda\\alpha\\]\nThis is the equation for an eigenproblem. The solution is \\(\\alpha=\\V_1\\) and the maximum is \\(\\D_1^2\\)."
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#example-not-real-unless-theres-code",
-    "href": "schedule/slides/26-pca-v-kpca.html#example-not-real-unless-theres-code",
-    "title": "UBC Stat406 2024W",
-    "section": "Example (not real unless there’s code)",
-    "text": "Example (not real unless there’s code)\n\nX &lt;- Stat406::mobility |&gt;\n  select(Black:Married) |&gt;\n  as.matrix()\nnot_missing &lt;- complete.cases(X)\nX &lt;- scale(X[not_missing, ], center = TRUE, scale = TRUE)\ncolors &lt;- Stat406::mobility$Mobility[not_missing]\nM &lt;- 2 # embedding dimension\nP &lt;- diag(nrow(X)) - 1 / nrow(X)\n\n\n\nPCA: (all 3 are equivalent)\n\ns &lt;- svd(X) # use svd\npca_loadings &lt;- s$v[, 1:M]\npca_scores &lt;- X %*% pca_loadings\n\n\ns &lt;- eigen(t(X) %*% X) # V D^2 V'\npca_loadings &lt;- s$vectors[, 1:M]\npca_scores &lt;- X %*% pca_loadings\n\n\ns &lt;- eigen(X %*% t(X)) # U D^2 U'\nD &lt;- sqrt(diag(s$values[1:M]))\nU &lt;- s$vectors[, 1:M]\npca_scores &lt;- U %*% D\npca_loadings &lt;- (1 / D) %*% t(U) %*% X\n\n\n\nKPCA:\n\nd &lt;- 2\nK &lt;- P %*% (1 + X %*% t(X))^d %*% P # polynomial\ne &lt;- eigen(K) # U D^2 U'\n# (different from the PCA one, K /= XX')\nU &lt;- e$vectors[, 1:M]\nD &lt;- diag(sqrt(e$values[1:M]))\nkpca_poly &lt;- U %*% D\n\n\nK &lt;- P %*% tanh(1 + X %*% t(X)) %*% P # sigmoid kernel\ne &lt;- eigen(K) # U D^2 U'\n# (different from the PCA one, K /= XX')\nU &lt;- e$vectors[, 1:M]\nD &lt;- diag(sqrt(e$values[1:M]))\nkpca_sigmoid &lt;- U %*% D"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#plotting",
-    "href": "schedule/slides/26-pca-v-kpca.html#plotting",
-    "title": "UBC Stat406 2024W",
-    "section": "Plotting",
-    "text": "Plotting"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#pca-loadings",
-    "href": "schedule/slides/26-pca-v-kpca.html#pca-loadings",
-    "title": "UBC Stat406 2024W",
-    "section": "PCA loadings",
-    "text": "PCA loadings\nShowing the first 10 PCA loadings:\n\nFirst column are the weights on the first score\neach number corresponds to a variable in the original data\nHow much does that variable contribute to that score?\n\n\nhead(round(pca_loadings, 2), 10)\n\n       [,1]  [,2]\n [1,]  0.25  0.07\n [2,]  0.13 -0.14\n [3,]  0.17 -0.34\n [4,]  0.18 -0.33\n [5,]  0.16 -0.34\n [6,] -0.24  0.11\n [7,] -0.04 -0.35\n [8,]  0.28  0.00\n [9,]  0.13 -0.14\n[10,]  0.29  0.10"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#kpca-feature-map-version",
-    "href": "schedule/slides/26-pca-v-kpca.html#kpca-feature-map-version",
-    "title": "UBC Stat406 2024W",
-    "section": "KPCA, feature map version",
-    "text": "KPCA, feature map version\n\np &lt;- ncol(X)\nwidth &lt;- p * (p - 1) / 2 + p # = 630\nZ &lt;- matrix(NA, nrow(X), width)\nk &lt;- 0\nfor (i in 1:p) {\n  for (j in i:p) {\n    k &lt;- k + 1\n    Z[, k] &lt;- X[, i] * X[, j]\n  }\n}\nwideX &lt;- scale(cbind(X, Z))\ns &lt;- RSpectra::svds(wideX, 2) # the whole svd would be super slow\nfkpca_scores &lt;- s$u %*% diag(s$d)\n\n\nUnfortunately, can’t easily compare to check whether the result is the same\nAlso can cause numerical issues\nBut should be the “same” (assuming I didn’t screw up…)\nWould also allow me to get the loadings, though they’d depend on polynomials"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
-    "href": "schedule/slides/26-pca-v-kpca.html#other-manifold-learning-methods",
-    "title": "UBC Stat406 2024W",
-    "section": "Other manifold learning methods",
-    "text": "Other manifold learning methods\nTo name a few\n\nHessian maps\nLaplacian eigenmaps\nClassical Multidimensional Scaling\ntSNE\nUMAP\nLocally linear embeddings\nDiffusion maps\nLocal tangent space alignment\nIsomap"
-  },
-  {
-    "objectID": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
-    "href": "schedule/slides/26-pca-v-kpca.html#issues-with-nonlinear-techniques",
-    "title": "UBC Stat406 2024W",
-    "section": "Issues with nonlinear techniques",
-    "text": "Issues with nonlinear techniques\n\n\n\nNeed to choose \\(M\\) (also with linear)\nAlso other tuning parameters.\nThese others can have huge effects\nThe difference between the data lying on the manifold and the data lying near the manifold is important\n\n\n\n\n\nCode\nelephant &lt;- function(eye = TRUE) {\n  tib &lt;- tibble(\n    tt = -100:500 / 100,\n    y = -(12 * cos(3 * tt) - 14 * cos(5 * tt) + 50 * sin(tt) + 18 * sin(2 * tt)),\n    x = -30 * sin(tt) + 8 * sin(2 * tt) - 10 * sin(3 * tt) - 60 * cos(tt)\n  )\n  if (eye) tib &lt;- add_row(tib, y = 20, x = 20)\n  tib\n}\nele &lt;- elephant(FALSE)\nnoisy_ele &lt;- ele |&gt;\n  mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))\nggplot(noisy_ele, aes(x, y, colour = tt)) +\n  geom_point() +\n  scale_color_viridis_c() +\n  theme(legend.position = \"none\") +\n  geom_path(data = ele, colour = \"black\", linewidth = 2)"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#section",
-    "href": "schedule/slides/13-gams-trees.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "13 GAMs and Trees",
-    "text": "13 GAMs and Trees\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#gams",
-    "href": "schedule/slides/13-gams-trees.html#gams",
-    "title": "UBC Stat406 2024W",
-    "section": "GAMs",
-    "text": "GAMs\nLast time we discussed smoothing in multiple dimensions.\nHere we introduce the concept of GAMs (Generalized Additive Models)\nThe basic idea is to imagine that the response is the sum of some functions of the predictors:\n\\[\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}).\\]\nNote that OLS is a GAM (take \\(f_j(x_{j})=\\beta_j x_{j}\\)):\n\\[\\Expect{Y \\given X=x} = \\beta_0 + \\beta_1 x_{1}+\\cdots+\\beta_p x_{p}.\\]"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#gams-1",
-    "href": "schedule/slides/13-gams-trees.html#gams-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Gams",
-    "text": "Gams\nThese work by estimating each \\(f_i\\) using basis expansions in predictor \\(i\\)\nThe algorithm for fitting these things is called “backfitting” (very similar to the CD intuition for lasso):\n\nCenter \\(\\y\\) and \\(\\X\\).\nHold \\(f_k\\) for all \\(k\\neq j\\) fixed, and regress \\(\\X_j\\) on \\((\\y - \\widehat{\\y}_{-j})\\) using your favorite smoother.\nRepeat for \\(1\\leq j\\leq p\\).\nRepeat steps 2 and 3 until the estimated functions “stop moving” (iterate)\nReturn the results."
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example",
-    "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\n\nlibrary(mgcv)\nset.seed(12345)\nn &lt;- 500\nsimple &lt;- tibble(\n  x1 = runif(n, 0, 2*pi),\n  x2 = runif(n),\n  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)\n)\n\npivot_longer(simple, -y, names_to = \"predictor\", values_to = \"x\") |&gt;\n  ggplot(aes(x, y)) +\n  geom_point(col = blue) +\n  facet_wrap(~predictor, scales = \"free_x\")"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-1",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\nSmooth each coordinate independently\n\nex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)\n# s(z) means \"smooth\" z, uses spline basis for each with ridge penalty, GCV\nplot(ex_smooth, pages = 1, scale = 0, shade = TRUE, \n     resid = TRUE, se = 2, las = 1)\n\nhead(coef(ex_smooth))\n\n(Intercept)     s(x1).1     s(x1).2     s(x1).3     s(x1).4     s(x1).5 \n 10.2070490  -4.5764100   0.7117161   0.4548928   0.5535001  -0.2092996 \n\nex_smooth$gcv.ubre\n\n    GCV.Cp \n0.06619721"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#wherefore-gams",
-    "href": "schedule/slides/13-gams-trees.html#wherefore-gams",
-    "title": "UBC Stat406 2024W",
-    "section": "Wherefore GAMs?",
-    "text": "Wherefore GAMs?\nIf\n\\(\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}),\\)\nthen\n\\(\\textrm{MSE}(\\hat f) = \\frac{Cp}{n^{4/5}} + \\sigma^2.\\)\n\nExponent no longer depends on \\(p\\). Converges faster. (If the truth is additive.)\nYou could also use the same methods to include “some” interactions like\n\n\\[\\begin{aligned}&\\Expect{Y \\given X=x}\\\\ &= \\beta_0 + f_{12}(x_{1},\\ x_{2})+f_3(x_3)+\\cdots+f_p(x_{p}),\\end{aligned}\\]"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-2",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example-2",
-    "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\nSmooth two coordinates together\n\nex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)\nplot(ex_smooth2,\n  scheme = 2, scale = 0, shade = TRUE,\n  resid = TRUE, se = 2, las = 1\n)"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#regression-trees",
-    "href": "schedule/slides/13-gams-trees.html#regression-trees",
-    "title": "UBC Stat406 2024W",
-    "section": "Regression trees",
-    "text": "Regression trees\nTrees involve stratifying or segmenting the predictor space into a number of simple regions.\nTrees are simple and useful for interpretation.\nBasic trees are not great at prediction.\nModern methods that use trees are much better (Module 4)"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#regression-trees-1",
-    "href": "schedule/slides/13-gams-trees.html#regression-trees-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Regression trees",
-    "text": "Regression trees\nRegression trees estimate piece-wise constant functions\nThe slabs are axis-parallel rectangles \\(R_1,\\ldots,R_K\\) based on \\(\\X\\)\nIn each region, we average the \\(y_i\\)’s: \\(\\hat\\mu_1,\\ldots,\\hat\\mu_k\\)\nMinimize \\(\\sum_{k=1}^K \\sum_{i=1}^n (y_i-\\mu_k)^2\\) over \\(R_k,\\mu_k\\) for \\(k\\in \\{1,\\ldots,K\\}\\)\n\nThis sounds more complicated than it is.\nThe minimization is performed greedily (like forward stepwise regression)."
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#mobility-data",
-    "href": "schedule/slides/13-gams-trees.html#mobility-data",
-    "title": "UBC Stat406 2024W",
-    "section": "Mobility data",
-    "text": "Mobility data\n\nbigtree &lt;- tree(Mobility ~ ., data = mob)\nsmalltree &lt;- prune.tree(bigtree, k = .09)\ndraw.tree(smalltree, digits = 2)\n\n\nThis is called the dendrogram"
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#partition-view",
-    "href": "schedule/slides/13-gams-trees.html#partition-view",
-    "title": "UBC Stat406 2024W",
-    "section": "Partition view",
-    "text": "Partition view\n\nmob$preds &lt;- predict(smalltree)\npar(mfrow = c(1, 2), mar = c(5, 3, 0, 0))\ndraw.tree(smalltree, digits = 2)\ncols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]\nplot(mob$Black, mob$Commute,\n  pch = 19, cex = .4, bty = \"n\", las = 1, col = cols,\n  ylab = \"Commute time\", xlab = \"% Black\"\n)\npartition.tree(smalltree, add = TRUE, ordvars = c(\"Black\", \"Commute\"))\n\n\nWe predict all observations in a region with the same value.\n\\(\\bullet\\) The three regions correspond to the leaves of the tree."
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#section-2",
-    "href": "schedule/slides/13-gams-trees.html#section-2",
-    "title": "UBC Stat406 2024W",
-    "section": "",
-    "text": "draw.tree(bigtree, digits = 2)\n\n\nTerminology\nWe call each split or end point a node. Each terminal node is referred to as a leaf.\nThe interior nodes lead to branches."
-  },
-  {
-    "objectID": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
-    "href": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
-    "title": "UBC Stat406 2024W",
-    "section": "Advantages and disadvantages of trees",
-    "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Full trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#section",
-    "href": "schedule/slides/05-estimating-test-mse.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "05 Estimating Risk and Test Error",
-    "text": "05 Estimating Risk and Test Error\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#last-time",
-    "href": "schedule/slides/05-estimating-test-mse.html#last-time",
-    "title": "UBC Stat406 2024W",
-    "section": "Last time",
-    "text": "Last time\n\nWhat is a model (formal definition)?\nEvaluating models (risk/loss functions)\nDecomposing risk (bias, variance, irreducible error)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
-    "href": "schedule/slides/05-estimating-test-mse.html#what-is-a-model",
-    "title": "UBC Stat406 2024W",
-    "section": "What is a model?",
-    "text": "What is a model?\nA model is a set of distributions that explain data \\(\\{ Z = (X, Y) \\}\\), i.e.\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' }f \\}\\]\n(Why do we have to specify that \\(f\\) is smooth? Why can’t it be any function?)\n\nGoal of learning\nChoose the \\(P \\in \\mathcal P\\) that makes the “best” predictions on new \\(X, Y\\) pairs.\n(Next slide: how do we formalize “best”?)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
-    "href": "schedule/slides/05-estimating-test-mse.html#how-do-we-evaluate-models",
-    "title": "UBC Stat406 2024W",
-    "section": "How do we evaluate models?",
-    "text": "How do we evaluate models?\n\\[\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), \\sigma^2) \\quad \\text{for some ``smooth'' f} \\}\\]\n\nSpecify how a \\(P \\in \\mathcal P\\) makes predictions \\(\\hat Y\\) on new inputs \\(X\\).\n(E.g.: \\(\\hat Y = f(X)\\) for \\(P = \\mathcal N(f(X), \\sigma^2)\\).)\nIntroduce a loss function \\(\\ell(Y, \\hat{Y})\\) (a datapoint-level function).\n(E.g.: \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\))\nDefine the test error of \\(P \\in \\mathcal P\\) as the expected loss (a population-level function):\n\\(T_n(P) = E[\\ell(Y, \\hat Y)] = E[(Y - f(X))^2]\\)\nThe best model is the one that minimizes the test error\n(\\(P^* = \\argmin_{P \\in \\mathcal P} T_n(P)\\))"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk (Expected Test Error) and its Decomposition",
-    "text": "Risk (Expected Test Error) and its Decomposition\nOur estimator \\(\\hat f\\) is a random variable (it depends on training sample).\nSo let’s consider the risk (the expected test error):\n\\[\nR_n = E_{\\hat f} \\left[ T_n(\\hat f) \\right] = E_{\\hat f, X, Y} \\left[ \\ell(Y, \\hat f(X)) \\right]\n\\]\n\n\n\n\n\n\n\nNote\n\n\nTest error is a metric for a fixed \\(\\hat f\\). It averages over all possible test points, but assumes a fixed training set.\nRisk averages over everything that is random: (1) the test data point sampled from our population, and (2) the training data that produces \\(\\hat f\\)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-expected-test-error-and-its-decomposition-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk (Expected Test Error) and its Decomposition",
-    "text": "Risk (Expected Test Error) and its Decomposition\nWhen \\(\\ell(Y, \\hat Y) = (Y - \\hat Y)^2\\), the prediction risk of \\(\\hat f(X)\\) decomposes into two factors:\n\\[\nR_n \\quad = \\quad \\underbrace{E_{\\hat f, X, Y} \\left[ \\: \\left( E[Y\\mid X] - \\hat f(X) \\right)^2 \\right]}_{(1)} \\quad + \\quad \\underbrace{E_{X, Y} \\left[ \\: \\left( Y - E[Y\\mid X] \\right)^2 \\right]}_{(2)}\n\\]\n\n\nEstimation error (or “reducible error”)\nIrreducible error (or “noise”)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
-    "href": "schedule/slides/05-estimating-test-mse.html#sources-of-bias-and-variance",
-    "title": "UBC Stat406 2024W",
-    "section": "Sources of bias and variance",
-    "text": "Sources of bias and variance\nWhat conditions give rise to a high bias estimator?\n\n\nNot enough covariates (small \\(p\\))\nModel is too simple\nModel is misspecified (doesn’t accurately represent the data generating process)\nBad training algorithm\n\n\nWhat conditions give rise to a high variance estimator?\n\n\nNot enough training samples (small \\(n\\))\nModel is too complicated\nLots of irreducible noise in training data (if my model has power to fit noise, it will)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
-    "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error",
-    "title": "UBC Stat406 2024W",
-    "section": "Don’t use training error",
-    "text": "Don’t use training error\nThe training error in regression is\n\\[\\widehat{R}_n(\\widehat{f}) = \\frac{1}{n} \\sum_{i=1}^n (y_i - \\hat{f}(x_i))^2\\]\nHere, the \\(n\\) is doubly used (annoying, but simple): \\(n\\) observations to create \\(\\widehat{f}\\) and \\(n\\) terms in the sum.\n\n\n\n\n\n\nTip\n\n\nWe also call \\(\\hat R_n(\\hat f)\\) the empirical risk.\n\n\n\n\n\\(\\hat R_n(\\hat f)\\) is a bad estimator for \\(R_n\\).\nSo we should never use it."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
-    "href": "schedule/slides/05-estimating-test-mse.html#why-is-hat-r_n-a-bad-estimator-of-r_n",
-    "title": "UBC Stat406 2024W",
-    "section": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?",
-    "text": "Why is \\(\\hat R_n\\) a bad estimator of \\(R_n\\)?\n\n\nIt doesn’t say anything about predictions on new data.\n(It’s a measure of how well the model fits a fixed set of training data.)\nIt can be made arbitrarily small by making your model more complex."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
-    "href": "schedule/slides/05-estimating-test-mse.html#it-doesnt-say-anything-about-predictions-on-new-data.",
-    "title": "UBC Stat406 2024W",
-    "section": "1. It doesn’t say anything about predictions on new data.",
-    "text": "1. It doesn’t say anything about predictions on new data.\nThese all have the same \\(R^2\\) and Training Error\n\n\n\n\nCode\nans &lt;- anscombe |&gt;\n  pivot_longer(everything(), names_to = c(\".value\", \"set\"), \n               names_pattern = \"(.)(.)\")\nggplot(ans, aes(x, y)) + \n  geom_point(colour = orange, size = 3) + \n  geom_smooth(method = \"lm\", se = FALSE, color = blue, linewidth = 2) +\n  facet_wrap(~set, labeller = label_both)\n\n\n\n\n\n\n\n\n\n\n\n\nans %&gt;% \n  group_by(set) |&gt; \n  summarise(\n    R2 = summary(lm(y ~ x))$r.sq, \n    train_error = mean((y - predict(lm(y ~ x)))^2)\n  ) |&gt;\n  kableExtra::kable(digits = 2)\n\n\n\n\nset\nR2\ntrain_error\n\n\n\n\n1\n0.67\n1.25\n\n\n2\n0.67\n1.25\n\n\n3\n0.67\n1.25\n\n\n4\n0.67\n1.25"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
-    "href": "schedule/slides/05-estimating-test-mse.html#it-can-be-made-arbitrarily-small-by-making-your-model-more-complex.",
-    "title": "UBC Stat406 2024W",
-    "section": "2. It can be made arbitrarily small by making your model more complex.",
-    "text": "2. It can be made arbitrarily small by making your model more complex.\nAdding “junk” predictors increases \\(R^2\\) and decreases Training Error\n\nn &lt;- 100\np &lt;- 10\nq &lt;- 0:30\nx &lt;- matrix(rnorm(n * (p + max(q))), nrow = n)\ny &lt;- x[, 1:p] %*% c(5:1, 1:5) + rnorm(n, 0, 10)\n\nregress_on_junk &lt;- function(q) {\n  x &lt;- x[, 1:(p + q)]\n  mod &lt;- lm(y ~ x)\n  tibble(R2 = summary(mod)$r.sq,  train_error = mean((y - predict(mod))^2))\n}\n\n\n\nCode\nmap(q, regress_on_junk) |&gt; \n  list_rbind() |&gt;\n  mutate(q = q) |&gt;\n  pivot_longer(-q) |&gt;\n  ggplot(aes(q, value, colour = name)) +\n  geom_line(linewidth = 2) + xlab(\"train_error\") +\n  scale_colour_manual(values = c(blue, orange), guide = \"none\") +\n  facet_wrap(~ name, scales = \"free_y\")"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
-    "href": "schedule/slides/05-estimating-test-mse.html#other-things-you-cant-use",
-    "title": "UBC Stat406 2024W",
-    "section": "Other things you can’t use",
-    "text": "Other things you can’t use\nYou should not use anova\nor the \\(p\\)-values from the lm output for this purpose.\n\n\nThese things are to determine whether those parameters are different from zero if you were to repeat the experiment many times, if the model were true, etc. etc.\n\nIn other words, they are useful for inference problems.\nThis is not the same as being useful for prediction problems (i.e. how to get small \\(R_n\\))."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
-    "href": "schedule/slides/05-estimating-test-mse.html#dont-use-training-error-the-formal-argument",
-    "title": "UBC Stat406 2024W",
-    "section": "Don’t use training error: the formal argument",
-    "text": "Don’t use training error: the formal argument\nOur training error \\(\\hat R_n(\\hat f)\\) is an estimator of \\(R_n\\).\nSo we can ask “is \\(\\widehat{R}_n(\\hat{f})\\) a good estimator for \\(R_n\\)?”"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
-    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator",
-    "title": "UBC Stat406 2024W",
-    "section": "The error of our risk estimator",
-    "text": "The error of our risk estimator\nLet’s measure the error of our empirical risk estimator:\n\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\] (What is the expectation with respect to?)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#the-error-of-our-risk-estimator-1",
-    "title": "UBC Stat406 2024W",
-    "section": "The error of our risk estimator",
-    "text": "The error of our risk estimator\n\\[E[(R_n - \\hat R_n(\\hat f))^2]\\]\n\n\\(R_n\\) is deterministic (we average over test data and training data)\n\\(\\hat R_n(\\hat f)\\) also only depends on training data\nSo the expectation is with respect to our training dataset\n\n\nAs before, we can decompose the error of our risk estimator into bias and variance\n\\[\nE[(R_n - \\hat R_n(\\hat f))^2] = \\underbrace{( R_n - E[\\hat R_n(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n(\\hat f) - E[\\hat R_n(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-hat-r_nhat-f-small-or-large-why-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?",
-    "text": "Is the bias of \\(\\hat R_n(\\hat f)\\) small or large? Why?\n\nAssume we have a very complex model capable of (nearly) fitting our training data\n\nI.e. \\(\\hat R_n(\\hat f) \\approx 0\\)\n\n\\(\\text{Bias} = ( R_n - E[\\hat R_n(\\hat f)])^2 \\approx ( R_n - 0 ) = R_n\\)\n(That’s the worst bias we could get! 😔)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
-    "href": "schedule/slides/05-estimating-test-mse.html#formalizing-why-hat-r_nhat-f-is-a-bad-estimator-of-r_n",
-    "title": "UBC Stat406 2024W",
-    "section": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)",
-    "text": "Formalizing why \\(\\hat R_n(\\hat f)\\) is a bad estimator of \\(R_n\\)\nConsider an alternative estimator built from \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) that was not part of the training set. \\[\\tilde R_m(\\hat f) = {\\textstyle \\frac{1}{m} \\sum_{j=1}^m} \\ell(Y_j, \\hat f(X_j)),\n\\] The error of this estimator can also be decompsed into bias and variance \\[\nE[(R_n - \\tilde R_m(\\hat f))^2] = \\underbrace{( R_n - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2}_{\\text{bias}} + \\underbrace{E_{\\hat f,X_j,Y_j}[( \\tilde R_m(\\hat f) - E_{\\hat f,X_j,Y_j}[\\tilde R_m(\\hat f)])^2]}_{\\text{variance}}\n\\]\nIs the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#is-the-bias-of-tilde-r_mhat-f-small-or-large-why-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?",
-    "text": "Is the bias of \\(\\tilde R_m(\\hat f)\\) small or large? Why?\n\\(\\tilde R_m(\\hat f)\\) has zero bias!\n\\[\n\\begin{aligned}\nE_{\\hat f,X_j,Y_j} \\left[ \\tilde R_m(\\hat f) \\right]\n&= E_{\\hat f,X_j,Y_j} \\left[ \\frac{1}{m} \\sum_{j=1}^m \\ell(Y_j, \\hat f(X_j)) \\right] \\\\\n&= \\frac{1}{m} \\sum_{j=1}^m E_{\\hat f,X_j,Y_j} \\left[ \\ell(Y_j, \\hat f(X_j)) \\right]\n= R_n\n\\end{aligned}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
-    "href": "schedule/slides/05-estimating-test-mse.html#holdout-sets",
-    "title": "UBC Stat406 2024W",
-    "section": "Holdout sets",
-    "text": "Holdout sets\nOne option is to have a separate “holdout” or “validation” dataset.\n\n\n\n\n\n\nTip\n\n\nThis option follows the logic on the previous slide.\nIf we randomly “hold out” \\(\\{ (X_j, Y_j) \\}_{j=1}^m\\) from the training set, we can use this data to get an (nearly) unbiased estimator of \\(R_n\\). \\[\nR_n \\approx \\tilde R_m(\\hat f) \\triangleq {\\textstyle{\\frac 1 m \\sum_{j=1}^m \\ell ( Y_j - \\hat Y_j(X_j))}}\n\\]\n\n\n\n\n👍 Estimates the test error\n👍 Fast computationally\n🤮 Estimate is random\n🤮 Estimate has high variance (depends on 1 choice of split)\n🤮 Estimate has a little bias (because we aren’t estimating \\(\\hat f\\) from all of the training data)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#aside",
-    "href": "schedule/slides/05-estimating-test-mse.html#aside",
-    "title": "UBC Stat406 2024W",
-    "section": "Aside",
-    "text": "Aside\nIn my experience, CS has particular definitions of “training”, “validation”, and “test” data.\nI think these are not quite the same as in Statistics.\n\nTest data - Hypothetical data you don’t get to see, ever. Infinite amounts drawn from the population.\n\nExpected test error or Risk is an expected value over this distribution. It’s not a sum over some data kept aside.\n\nSometimes I’ll give you “test data”. You pretend that this is a good representation of the expectation and use it to see how well you did on the training data.\nTraining data - This is “holdout” data that you get to touch.\nValidation set - Often, we need to choose models. One way to do this is to split off some of your training data and pretend that it’s like a “Test Set”.\n\nWhen and how you split your training data can be very important."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk vs. Test Error",
-    "text": "Risk vs. Test Error\n\nRisk (\\(R_n\\)): expected error when the training data have not yet been observed (random!)\n\ndepends on true data distribution, predictor\n\nTest Error (\\(T_n\\)): expected error when the training data have been observed (fixed!)\n\ndepends on true data distribution, predictor, training data\n\n\\(R_n = \\E[T_n]\\)\n\n\n\nwe mostly care about risk when designing a new predictor / estimator\n\nwe want to know how well it will work on future training and test data\n\nwe mostly care about test error when we’ve fit a predictor / estimator\n\nwe want to know how well it will work on future test data"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#an-important-clarification",
-    "href": "schedule/slides/05-estimating-test-mse.html#an-important-clarification",
-    "title": "UBC Stat406 2024W",
-    "section": "An important clarification",
-    "text": "An important clarification\n\n\n\n\n\n\nImportant\n\n\nIn previous lectures, we’ve used \\(R_n(\\hat f)\\) to denote risk.\nConfusing: the \\(\\hat \\mu\\) argument looks like a trained predictor, so \\(R_n(\\hat f)\\) looks like a function of training data. Not true!\nWe will just avoid this confusion from now on and use \\(R_n\\) for risk."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk vs. Test Error: Warmup in 1D",
-    "text": "Risk vs. Test Error: Warmup in 1D\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\sim \\mathcal N(\\mu, 1), \\quad \\mu\\in\\R\\}\\), loss \\(\\ell(y,\\hat y) = (y-\\hat y)^2\\)\nTraining Data: \\(Y_i\\in\\R\\) from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (i.e., “true” \\(\\mu_0\\))\nPredictor: function of training data \\(\\hat\\mu : \\R^n \\to \\R\\)\n\ne.g., scaled empirical average \\(\\hat\\mu(Y_{1:n}) = \\alpha\\frac{1}{n}\\sum_{n=1}^N Y_n\\) for \\(\\alpha &gt; 0\\)\n\n\n\n\nRisk \\(R_n\\): expected loss over both training and test data \\(R_n = E[\\ell(Y,\\hat\\mu(Y_{1:n}))]\\)\n\nfunction of true dist \\(P_0\\) and predictor function \\(\\hat\\mu(\\cdot)\\)\naverages over randomness in training data\n\n\n\n\n\nTest Error \\(T_n\\): expected loss over only test data \\(T_n(\\hat\\mu) = E[\\ell(Y,\\hat\\mu(Y_{1:n})) | Y_{1:n}]\\)\n\nfunction of true dist \\(P_0\\), predictor function \\(\\hat\\mu(\\cdot)\\), and training data\ntraining data (and trained predictor) are known/fixed"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-warmup-in-1d-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk vs. Test Error: Warmup in 1D",
-    "text": "Risk vs. Test Error: Warmup in 1D\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\sim \\mathcal N(\\mu, 1), \\quad \\mu\\in\\R\\}\\), loss \\(\\ell(y,\\hat y) = (y-\\hat y)^2\\)\nTraining Data: \\(Y_i\\in\\R\\) from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (i.e., “true” \\(\\mu_0\\))\nPredictor: scaled empirical average \\(\\hat\\mu(Y_{1:n}) = \\alpha \\frac{1}{n}\\sum_{i=1}^n Y_i\\) for a fixed \\(\\alpha &gt; 0\\)\n\n(What can the risk and test error depend on?)\n\n\\[ R_n = E[(Y - \\hat\\mu(Y_{1:n}))^2] = \\underbrace{1}_{\\text{irr.}} + \\underbrace{\\mu^2_0(\\alpha-1)^2}_{\\text{bias}^2}+\\underbrace{\\alpha^2/n}_{\\text{variance}}\\]\n\n\n\\[ T_n = E[(Y - \\hat\\mu(Y_{1:n}))^2 |Y_{1:n}] = 1 + \\left(\\mu_0 - \\alpha \\frac{1}{n}\\sum_{i=1}^n Y_i\\right)^2\\]\n\n\n\n\\(R_n\\) is a function of the true distribution (\\(\\mu_0\\)) and predictor (\\(\\alpha\\)); not training data!\n\\(T_n\\) is a function of \\(\\mu_0\\), \\(\\alpha\\) and training data"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk vs. Test Error: Regression",
-    "text": "Risk vs. Test Error: Regression\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), 1), \\quad f(x)=ax, \\, \\text{for } a\\in\\R \\}\\)\nTraining Data: \\(X_i,Y_i\\in\\R\\) pairs from some unknown “true” \\(P_0 \\in \\mathcal{P}\\) (“true” \\(a_0\\))\nPredictor: a function of the training data and a new test input \\(\\hat f : \\R^n\\times \\R^{n} \\times \\R \\to \\R\\)\n\ne.g., the function \\(\\hat f(X_{1:n},Y_{1:n},x) = \\beta \\frac{Y_2 - Y_1}{X_2 - X_1} x\\) for \\(\\beta &gt; 0\\)\n\n\n\n\nRisk \\(R_n\\): avg loss over both training and test data \\(R_n = E[\\ell(Y, \\hat f(X_{1:n}, Y_{1:n}, X))]\\)\n\n\n\n\nTest Error \\(T_n\\): avg loss over only test data \\(T_n = E[\\ell(Y, \\hat f(Y_{1:n}, X_{1:n},X)) | Y_{1:n},X_{1:n}]\\)\n\ntraining data fixed/known"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression-1",
-    "href": "schedule/slides/05-estimating-test-mse.html#risk-vs.-test-error-regression-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Risk vs. Test Error: Regression",
-    "text": "Risk vs. Test Error: Regression\n\nModel: \\(\\mathcal{P} = \\{ P: \\quad Y \\mid X \\sim \\mathcal N( f(X), 1), \\quad f(x)=ax, \\, \\text{for } a\\in\\R \\}\\) (“true” value \\(a_0\\))\nPredictor: the function \\(\\hat f(X_{1:n}, Y_{1:n}, x) = \\beta \\frac{Y_2 - Y_1}{X_2 - X_1} x\\)\n\n(What can the risk and test error depend on?)\n\n\\[\n\\begin{aligned}\nR_n = E[(Y - \\hat f(X))^2]\n%= E[(Y - a_0X)^2] + E[(a_0X - \\hat f(X))^2]\\\\\n%&= 1 +  E\\left[\\left(a_0X - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}X\\right)^2\\right]\\\\\n&= \\text{annoying algebra...}\\\\\n% &= 1 +  E[X^2]E\\left[\\left(a_0 - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}\\right)^2\\right]\\\\\n% &= 1 +  E[X^2]E\\left[\\left(a_0 - \\beta\\frac{a_0 X_2 + Z_2 - a_0 X_1 - Z_1}{X_2-X_1}\\right)^2\\right]\\\\\n&= \\underbrace{1}_{\\text{irr.}} +  \\underbrace{a_0^2(1-\\beta)^2E[X^2]}_{\\text{bias}^2} + \\underbrace{2\\beta^2E\\left[(X_2-X_1)^{-2}\\right]E[X^2]}_{\\text{variance}}.\n\\end{aligned}\n\\]\n\n\n\\[ T_n = E[(Y - \\hat f(X))^2|X_{1:n},Y_{1:n}] = 1 +  E[X^2]\\left(a_0 - \\beta\\frac{Y_2 - Y_1}{X_2-X_1}\\right)^2 \\]\n\n\n\nRisk \\(R_n\\) depends only on \\(a_0, \\beta\\) and \\(X\\)-marginal distribution\nTest error \\(T_n\\) depends on training data too!"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk",
-    "title": "UBC Stat406 2024W",
-    "section": "Estimating risk",
-    "text": "Estimating risk\nWe can’t compute \\(R_n\\) in practice (we don’t know the true data distribution)\nCan we estimate risk (\\(\\hat R_n\\)) with data? How do we measure the quality of our estimate?\n\n\\[E[(R_n - \\hat R_n)^2]\\] (What is the expectation with respect to?)\n\n\n\n\\(R_n\\) is just a fixed value (we already averaged over test data and training data)\n\\(\\hat R_n\\) depends only on training data\nSo the expectation is with respect to our training dataset\n\n\n\nAs before, we can decompose the error of our risk estimator into bias and variance\n\\[\nE[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-empirical-risk",
-    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-empirical-risk",
-    "title": "UBC Stat406 2024W",
-    "section": "Estimating risk: empirical risk",
-    "text": "Estimating risk: empirical risk\n\\[\n\\text{Recall: }E[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\]\n\nEmpirical risk: just use the training loss \\(\\hat R_n = \\frac{1}{n}\\sum_{i=1}^n \\ell(Y_i, \\hat f(X_i))\\)\n\n(What is the bias and variance with a really flexible model?)\n\n\nIf our model is so flexible that it can nearly fit all data always, then \\(\\hat R_n \\approx 0\\)\n\\(\\text{Variance} = E[( \\hat R_n - E[\\hat R_n])^2] \\approx E[(0 - 0)^2] = 0\\)\n\\(\\text{Bias}^2 = ( R_n - E[\\hat R_n(\\hat f)])^2 \\approx ( R_n - 0 ) = R_n\\)\n\n\n\n(Is that good or bad?)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-holdout-sets",
-    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-holdout-sets",
-    "title": "UBC Stat406 2024W",
-    "section": "Estimating risk: holdout sets",
-    "text": "Estimating risk: holdout sets\n\\[\n\\text{Recall: }E[(R_n - \\hat R_n)^2] = \\underbrace{( R_n - E[\\hat R_n])^2}_{\\text{bias}} + \\underbrace{E[( \\hat R_n - E[\\hat R_n])^2]}_{\\text{variance}}\n\\] Holdout: train \\(\\hat f\\) with \\(n-m\\) data, estimate with \\(m\\) data: \\(\\hat R_n = \\frac{1}{m}\\sum_{j=1}^{m} \\ell(Y_j, \\hat f(X_j))\\)\n\n\nbias (increasing, decreasing, or either with \\(m\\)?) \\[\n\\text{Bias}^2 = (R_n - R_{n-m})^2\n\\]\n\n\n\n\nvariance (increasing, decreasing, or either with \\(m\\)?)\n\n\\[\n\\text{Variance}\n= \\underbrace{\\frac{1}{m}E[(\\tilde \\ell - E[\\tilde\\ell| \\hat f])^2]}_{\\text{estimation variance}}\n+ \\underbrace{E[(E[\\tilde \\ell| \\hat f] - R_{n-m})^2]}_{\\text{training variance}} \\quad \\text{where }\\tilde \\ell = \\ell(Y_1, \\hat f(X_1))\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#estimating-risk-leave-one-out-cross-val.-loo-cv",
-    "href": "schedule/slides/05-estimating-test-mse.html#estimating-risk-leave-one-out-cross-val.-loo-cv",
-    "title": "UBC Stat406 2024W",
-    "section": "Estimating risk: leave-one-out cross-val. (LOO-CV)",
-    "text": "Estimating risk: leave-one-out cross-val. (LOO-CV)\n\nLOO-CV estimate: \\(\\hat R_n = \\frac{1}{n} \\sum_{i=1}^n \\tilde R_i\\), where:\n\nRemove the first observation and train (\\(\\hat f_1\\)), estimate \\(\\tilde R_1 = \\ell(Y_1, \\hat f_1(X_1))\\)\nRemove the second observation and train (\\(\\hat f_2\\)), estimate \\(\\tilde R_2 = \\ell(Y_2, \\hat f_2(X_2))\\)\nWash, rinse, repeat…\n\n\n\n(Bias? Hint: if we train with \\(n-m\\), we get \\((R_n - R_{n-m})^2\\)…)\n\n\n\nBias is \\((R_n - R_{n-1})^2\\) – quite small!\nVariance is small too! Roughly: \\(E[( \\hat R_n - E[\\hat R_n])^2]\\approx \\frac{1}{n} E[(\\tilde R_1 - R_{n-1})^2]\\)\n\nassumption: ignoring \\(\\tilde R_j\\), \\(\\tilde R_k\\) covariance for \\(j\\neq k\\)\nreasonable if \\(n\\) large enough that one data point doesn’t influence \\(\\hat f\\) too much\n\n\n\n\n\nmajor downside: have to train \\(n\\) models (super expensive!)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
-    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv",
-    "title": "UBC Stat406 2024W",
-    "section": "K-fold CV",
-    "text": "K-fold CV\n\\(K\\)-fold cross validation finds a decent tradeoff between these options.\nThe idea of \\(K\\)-fold CV is\n\nDivide the data into \\(K\\) groups.\nLeave one group out and train with the remaining \\(K-1\\) groups.\nTest on the held-out group. Calculate an average risk over these \\(\\sim n/K\\) data.\nRepeat for all \\(K\\) groups.\nAverage the average risks."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-illustration",
-    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-illustration",
-    "title": "UBC Stat406 2024W",
-    "section": "K-fold CV: illustration",
-    "text": "K-fold CV: illustration\n\n\nCode\npar(mar = c(0, 0, 0, 0))\nplot(NA, NA, ylim = c(0, 5), xlim = c(0, 10), bty = \"n\", yaxt = \"n\", xaxt = \"n\")\nrect(0, .1 + c(0, 2, 3, 4), 10, .9 + c(0, 2, 3, 4), col = blue, density = 10)\nrect(c(0, 1, 2, 9), rev(.1 + c(0, 2, 3, 4)), c(1, 2, 3, 10), \n     rev(.9 + c(0, 2, 3, 4)), col = red, density = 10)\npoints(c(5, 5, 5), 1 + 1:3 / 4, pch = 19)\ntext(.5 + c(0, 1, 2, 9), .5 + c(4, 3, 2, 0), c(\"1\", \"2\", \"3\", \"K\"), cex = 3, \n     col = red)\ntext(6, 4.5, \"Training data\", cex = 3, col = blue)\ntext(2, 1.5, \"Validation data\", cex = 3, col = red)"
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-vs.-loo-cv",
-    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-vs.-loo-cv",
-    "title": "UBC Stat406 2024W",
-    "section": "K-fold CV vs. LOO CV",
-    "text": "K-fold CV vs. LOO CV\n\n🎉 Less costly than LOO CV (i.e., actually possible; only need to train \\(K\\) times)\n💩 K-fold CV has higher sq. bias \\((R_n - R_{n(1-1/K)})^2\\) than LOO CV \\((R_n - R_{n-1})^2\\)\na bit painful to compare variance…\n\nI hereby invoke the sacred incantation: “this exercise is left to the reader”\n\n\nThe overall risk \\(R_n\\) depends on \\(n\\).\n\n\n\n\n\n\nTip\n\n\nIn practice, most people just default to using 5-fold or 10-fold. This is probably fine in most cases."
-  },
-  {
-    "objectID": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-code",
-    "href": "schedule/slides/05-estimating-test-mse.html#k-fold-cv-code",
-    "title": "UBC Stat406 2024W",
-    "section": "K-fold CV: Code",
-    "text": "K-fold CV: Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.8928686"
+    "text": "Featurization\nEach case applied a feature map to \\(x\\), call it \\(\\Phi\\)\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\) w/ a linear model\n\\[f(x) = \\Phi(x)^\\top \\beta\\]\nNeural networks (coming in module 4) build upon this idea\n\n\n\nSome methods (notably Support Vector Machines and other Kernel Machines) allow \\(k=\\infty\\)\nSee [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)"
   },
   {
     "objectID": "schedule/slides/28-hclust.html#section",
