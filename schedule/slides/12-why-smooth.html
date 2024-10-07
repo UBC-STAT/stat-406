@@ -333,7 +333,7 @@
 <h2>12 To(o) smooth or not to(o) smooth?</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 09 October 2023</p>
+<p>Last modified – 07 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -359,38 +359,73 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="last-time" class="slide level2">
-<h2>Last time…</h2>
-<p>We’ve been discussing smoothing methods in 1-dimension:</p>
+<section id="smooting-vs-linear-models" class="slide level2">
+<h2>Smooting vs Linear Models</h2>
+<p>We’ve been discussing nonlinear methods in 1-dimension:</p>
 <p><span class="math display">\[\Expect{Y\given X=x} = f(x),\quad x\in\R\]</span></p>
-<p>We looked at basis expansions, e.g.:</p>
-<p><span class="math display">\[f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_k x^k\]</span></p>
-<p>We looked at local methods, e.g.:</p>
-<p><span class="math display">\[f(x_i) \approx  s_i^\top \y\]</span></p>
+<ol type="1">
+<li>Basis expansions, e.g.:</li>
+</ol>
+<p><span class="math display">\[\hat f_\mathrm{basis}(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_k x^k\]</span></p>
+<ol start="2" type="1">
+<li>Local methods, e.g.:</li>
+</ol>
+<p><span class="math display">\[\hat f_\mathrm{local}(x_i) = s_i^\top \y\]</span></p>
+<p>Which should we choose?<br>
+<span class="small">Of course, we can do model selection. But can we analyze the risk mathematically?</span></p>
+</section>
+<section id="risk-decomposition" class="slide level2">
+<h2>Risk Decomposition</h2>
+<p><span class="math display">\[
+R_n = \mathrm{Bias}^2 + \mathrm{Var} + \sigma^2
+\]</span></p>
+<p>How does <span class="math inline">\(R_n^{(\mathrm{basis})}\)</span> compare to <span class="math inline">\(R_n^{(\mathrm{local})}\)</span> as we change <span class="math inline">\(n\)</span>?<br>
+</p>
 <div class="fragment">
-<p>What if <span class="math inline">\(x \in \R^p\)</span> and <span class="math inline">\(p&gt;1\)</span>?</p>
-
+<!-- -->
+<h3 id="variance">Variance</h3>
+<ul>
+<li>Basis: variance decreases as <span class="math inline">\(n\)</span> increases</li>
+<li>Local: variance decreases as <span class="math inline">\(n\)</span> increases<br>
+<span class="small">But at what rate?</span></li>
+</ul>
 </div>
-<aside><div>
-<p>Note that <span class="math inline">\(p\)</span> means the dimension of <span class="math inline">\(x\)</span>, not the dimension of the space of the polynomial basis or something else. That’s why I put <span class="math inline">\(k\)</span> above.</p>
-</div></aside></section>
-<section id="kernels-and-interactions" class="slide level2">
-<h2>Kernels and interactions</h2>
-<p>In multivariate nonparametric regression, you estimate a <span class="secondary">surface</span> over the input variables.</p>
-<p>This is trying to find <span class="math inline">\(\widehat{f}(x_1,\ldots,x_p)\)</span>.</p>
-<p>Therefore, this function <span class="secondary">by construction</span> includes interactions, handles categorical data, etc. etc.</p>
-<p>This is in contrast with explicit <span class="secondary">linear models</span> which need you to specify these things.</p>
-<p>This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.</p>
 <div class="fragment">
-<p>More complicated functions (smooth Kernel regressions vs.&nbsp;linear models) tend to have <span class="secondary">lower bias</span> but <span class="secondary">higher variance</span>.</p>
+<!-- -->
+<h3 id="bias">Bias</h3>
+<ul>
+<li>Basis: bias is <em>fixed</em><br>
+<span class="small">Assuming <span class="math inline">\(k\)</span> is fixed</span></li>
+<li>Local: bias depends on choice of bandwidth <span class="math inline">\(\sigma\)</span>.</li>
+</ul>
 </div>
 </section>
-<section id="issue-1" class="slide level2">
-<h2>Issue 1</h2>
-<p>For <span class="math inline">\(p=1\)</span>, one can show that for kernels (with the correct bandwidth)</p>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
+<section id="risk-decomposition-1" class="slide level2">
+<h2>Risk Decomposition</h2>
+<div class="flex">
+<div class="w-60">
+<h3 id="basis">Basis</h3>
+<p><span class="math display">\[
+R_n^{(\mathrm{basis})} =
+  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(b)}}{n}}_{\mathrm{var}} +
+  \sigma^2
+\]</span></p>
+<h3 id="local">Local</h3>
+<p><em>With the optimal bandwidth</em> (<span class="math inline">\(\propto n^{-1/5}\)</span>), we have</p>
+<p><span class="math display">\[
+R_n^{(\mathrm{local})} =
+  \underbrace{\frac{C_1^{(l)}}{n^{4/5}}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(l)}}{n^{4/5}}}_{\mathrm{var}} +
+  \sigma^2
+\]</span></p>
+</div>
+<div class="w-40">
 <div class="callout callout-important callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
@@ -401,86 +436,158 @@
 </div>
 <div class="callout-content">
 <p><em>you don’t need to memorize these formulas</em> but you should know the intuition</p>
-<p><em>the constants</em> don’t matter for the intuition, but they matter for a particular data set. We don’t know them. So you estimate this.</p>
+<p><em>The constants</em> don’t matter for the intuition, but they matter for a particular data set. You have to estimate them.</p>
 </div>
 </div>
 </div>
-</section>
-<section id="issue-1-1" class="slide level2">
-<h2>Issue 1</h2>
-<p>For <span class="math inline">\(p=1\)</span>, one can show that for kernels (with the correct bandwidth)</p>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
-<p>Recall, this decomposition is <span class="secondary">squared bias + variance + irreducible error</span></p>
+<h3 id="what-do-you-notice">What do you notice?</h3>
+<div class="fragment">
 <ul>
-<li>It depends on the <strong>choice</strong> of <span class="math inline">\(h\)</span></li>
+<li>As <span class="math inline">\(n\)</span> increases, the optimal bandwidth <span class="math inline">\(\sigma\)</span> decreases</li>
+<li>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(R_n^{(\mathrm{basis})} \to C_1^{(b)} + \sigma^2\)</span></li>
+<li>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(R_n^{(\mathrm{local})} \to \sigma^2\)</span></li>
 </ul>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = C_1 h^4 + \frac{C_2}{nh} + \sigma^2\]</span></p>
-<ul>
-<li>Using <span class="math inline">\(h = cn^{-1/5}\)</span> <strong>balances</strong> squared bias and variance, leads to the above rate. (That balance minimizes the MSE)</li>
-</ul>
+</div>
+</div>
+</div>
+<!-- . . . -->
+<!-- What if $x \in \R^p$ and $p>1$? -->
+<!-- ::: aside -->
+<!-- Note that $p$ means the dimension of $x$, not the dimension of the space of the polynomial basis or something else. That's why I put $k$ above. -->
+<!-- ::: -->
 </section>
-<section id="issue-1-2" class="slide level2">
-<h2>Issue 1</h2>
-<p>For <span class="math inline">\(p=1\)</span>, one can show that for kernels (with the correct bandwidth)</p>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
-<h3 id="intuition">Intuition:</h3>
-<p>as you collect data, use a smaller bandwidth and the MSE (on future data) decreases</p>
-</section>
-<section id="issue-1-3" class="slide level2">
-<h2>Issue 1</h2>
-<p>For <span class="math inline">\(p=1\)</span>, one can show that for kernels (with the correct bandwidth)</p>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
-<p><span class="primary">How does this compare to just using a linear model?</span></p>
-<p><span class="primary">Bias</span></p>
+<section id="takeaway" class="slide level2">
+<h2>Takeaway</h2>
 <ol type="1">
-<li>The bias of using a linear model <span class="secondary">when the truth nonlinear</span> is a number <span class="math inline">\(b &gt; 0\)</span> which doesn’t depend on <span class="math inline">\(n\)</span>.</li>
-<li>The bias of using kernel regression is <span class="math inline">\(C_1/n^{4/5}\)</span>. This goes to 0 as <span class="math inline">\(n\rightarrow\infty\)</span>.</li>
+<li>Local methods are <em>consistent</em> (bias and variance go to 0 as <span class="math inline">\(n \to \infty\)</span>)</li>
+<li>Fixed basis expansions are <em>biased</em> but have lower variance when <span class="math inline">\(n\)</span> is relatively small.<br>
+<span class="small"><span class="math inline">\(\underbrace{O(1/n)}_{\text{basis var.}} &lt; \underbrace{O(1/n^{4/5})}_{\text{local var.}}\)</span></span></li>
 </ol>
-<p><span class="primary">Variance</span></p>
-<ol type="1">
-<li>The variance of using a linear model is <span class="math inline">\(C/n\)</span> <span class="secondary">no matter what</span></li>
-<li>The variance of using kernel regression is <span class="math inline">\(C_2/n^{4/5}\)</span>.</li>
-</ol>
-</section>
-<section id="issue-1-4" class="slide level2">
-<h2>Issue 1</h2>
-<p>For <span class="math inline">\(p=1\)</span>, one can show that for kernels (with the correct bandwidth)</p>
-<p><span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
-<h3 id="to-conclude">To conclude:</h3>
-<ul>
-<li><p>bias of kernels goes to zero, bias of lines doesn’t (unless the truth is linear).</p></li>
-<li><p>but variance of lines goes to zero faster than for kernels.</p></li>
-</ul>
-<p>If the linear model is <span class="secondary">right</span>, you win.</p>
-<p>But if it’s wrong, you (eventually) lose as <span class="math inline">\(n\)</span> grows.</p>
-<p>How do you know if you have enough data?</p>
-<p>Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.</p>
 </section>
 <section>
+<section id="the-curse-of-dimensionality" class="title-slide slide level1 center">
+<h1>The Curse of Dimensionality</h1>
+<p>How do local methods perform when <span class="math inline">\(p &gt; 1\)</span>?</p>
+</section>
+<section id="intuitively" class="slide level2">
+<h2>Intuitively</h2>
+<p><em>Parametric</em> multivariate regressors (e.g.&nbsp;basis expansions) require you to specify nonlinear interaction terms<br>
+<span class="small">e.g.&nbsp;<span class="math inline">\(x^{(1)} x^{(2)}\)</span>, <span class="math inline">\(\cos( x^{(1)} + x^{(2)})\)</span>, etc.</span></p>
+<p><br>
+<em>Nonparametric</em> multivariate regressors (e.g.&nbsp;KNN, local methods) automatically handle interactions.<br>
+<span class="small">The distance function (e.g.&nbsp;<span class="math inline">\(d(x,x') = \Vert x - x' \Vert_2\)</span>) used by kernels implicitly defines <em>infinitely many</em> interactions!</span></p>
+<p><br>
+<span class="secondary">This extra complexity (automatically including interactions, as well as other things) comes with a tradeoff.</span></p>
+</section>
+<section id="mathematically" class="slide level2">
+<h2>Mathematically</h2>
+<p>Let’s say <span class="math inline">\(x_1, \ldots, x_n\)</span> are distributed <em>uniformly</em> over the space <span class="math inline">\(\mathcal B_1(p)\)</span><br>
+<span class="small"><span class="math inline">\(B_1(p)\)</span> is the “unit ball,” or the set of all <span class="math inline">\(x\)</span> such that <span class="math inline">\(\Vert x \Vert_2 \leq 1\)</span>.</span></p>
+<div class="fragment">
+<p><br>
+<span class="secondary">What is the <em>maximum</em> distance between any two points in <span class="math inline">\(\mathcal B_1(p)\)</span>?</span></p>
+</div>
+<div class="fragment">
+<p><span class="math inline">\(\Vert x - x' \Vert_2 \leq \Vert x \Vert_2 + \Vert x' \Vert_2 \leq 1 + 1 = 2.\)</span></p>
+</div>
+<div class="fragment">
+<p><br>
+<span class="secondary">What about the <em>average</em> distance?</span></p>
+</div>
+</section>
+<section id="the-average-sq.-distance-between-points-in-mathcal-b_1p" class="slide level2">
+<h2>The average (sq.) distance between points in <span class="math inline">\(\mathcal B_1(p)\)</span></h2>
+<p><span class="math display">\[
+\begin{align}
+E\left[ \Vert x - x' \Vert_2^2 \right]
+&amp;=
+E\left[ \textstyle \sum_{k=1}^p (x_k - x_k')^2 \right]
+\\
+&amp;= \textstyle{
+  E[ \sum_{k=1}^p x_k^2 ]
+  + 2 \sum_{k=1}^p \sum_{\ell=1}^p \underbrace{E[ x_l x'_k ]}_{=0}
+  + E[ \sum_{k=1}^p x_k^{\prime 2} ]
+}
+\\
+&amp;= 2  E[ \textstyle{\sum_{k=1}^p} x_k^2 ]
+= 2 E[ \Vert x \Vert_2^2 ]
+\end{align}
+\]</span></p>
+<div class="fragment">
+<p><span class="math inline">\(2 E[ \Vert x \Vert_2^2 ] = 2^{1 - 1/p}.\)</span></p>
+<div class="flex">
+<div class="w-60">
+<div class="fragment">
+<ul>
+<li>When <span class="math inline">\(p=2\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.707\)</span></li>
+<li>When <span class="math inline">\(p=5\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.871\)</span>!</li>
+<li>When <span class="math inline">\(p=10\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.933\)</span>!!</li>
+<li>When <span class="math inline">\(p=100\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.993\)</span>!!!</li>
+</ul>
+</div>
+</div>
+<div class="w-40">
+<div class="fragment">
+<!-- -->
+<h3 id="why-is-this-problematic">Why is this problematic?</h3>
+<ul>
+<li>All points are maximally far apart from all other points</li>
+<li>Can’t distinguish between “similar” and “different” inputs</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="curse-of-dimensionality" class="slide level2">
+<h2>Curse of Dimensionality</h2>
+<p>Distance becomes (exponentially) meaningless in high dimensions.*<br>
+<span class="small">*(Unless our data has “low dimensional structure.”)</span></p>
+<div class="fragment">
+<h3 id="risk-decomposition-p-1">Risk decomposition (<span class="math inline">\(p &gt; 1\)</span>)</h3>
+<p><span class="small">Assuming optimal bandwidth of <span class="math inline">\(n^{-1/(4+p)}\)</span>…</span></p>
+<p><span class="math display">\[
+R_n^{(\mathrm{basis})} =
+  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(b)}}{n/p}}_{\mathrm{var}} +
+  \sigma^2,
+\qquad
+R_n^{(\mathrm{local})} =
+  \underbrace{\tfrac{C_1^{(l)}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(l)}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+  \sigma^2.
+\]</span></p>
+<div class="fragment">
+<!-- -->
+<h3 id="observations">Observations</h3>
+<ul>
+<li><span class="math inline">\((C_1 + C_2) / n^{4/(4+p)}\)</span> is relatively big, but <span class="math inline">\(C_2^{(b)} / (n/p)\)</span> is relatively small.</li>
+<li>So unless <span class="math inline">\(C_1^{(b)}\)</span> is big, we should use the linear model.*<br>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="in-practice" class="slide level2">
+<h2>In practice</h2>
+<p><span class="small">The previous math assumes that our data are “densely” distributed throughout <span class="math inline">\(\R^p\)</span>.</span></p>
+<p>However, if our data lie on a low-dimensional manifold within <span class="math inline">\(\R^p\)</span>, then local methods can work well!</p>
+<p><span class="small">We generally won’t know the “intrinsic dimensinality” of our data though…</span></p>
+<div class="fragment">
+<!-- -->
+<h3 id="how-to-decide-between-basis-expansions-versus-local-kernel-smoothers">How to decide between basis expansions versus local kernel smoothers:</h3>
+<ol type="1">
+<li>Model selection</li>
+<li>Using a <span class="secondary">very, very</span> questionable rule of thumb: if <span class="math inline">\(p&gt;\log(n)\)</span>, don’t do smoothing.</li>
+</ol>
+</div>
+</section></section>
 <section id="danger" class="title-slide slide level1 center">
 <h1>☠️☠️ Danger ☠️☠️</h1>
-<p>You can’t just compare the CVM for the kernel version to the CVM for the LM. This is because you used CVM to select the tuning parameter, so we’re back to the usual problem of using the data twice. You have to do <span class="hand">another</span> CV to estimate the risk of the kernel version at CV selected tuning parameter. ️</p>
+<p>You can’t just compare the GCV/CV/etc. scores for basis models versus local kernel smoothers.</p>
+<p>You used GCV/CV/etc. to select the tuning parameter, so we’re back to the usual problem of using the data twice. You have to do <span class="hand">another</span> CV to estimate the risk of the kernel version once you have used GCV/CV/etc. to select the bandwidth.</p>
 </section>
-<section id="issue-2" class="slide level2">
-<h2>Issue 2</h2>
-<p>For <span class="math inline">\(p&gt;1\)</span>, there is more trouble.</p>
-<p>First, lets look again at <span class="math display">\[\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2\]</span></p>
-<p>That is for <span class="math inline">\(p=1\)</span>. It’s not <span class="secondary">that much</span> slower than <span class="math inline">\(C/n\)</span>, the variance for linear models.</p>
-<p>If <span class="math inline">\(p&gt;1\)</span> similar calculations show,</p>
-<p><span class="math display">\[\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .\]</span></p>
-</section>
-<section id="issue-2-1" class="slide level2">
-<h2>Issue 2</h2>
-<p><span class="math display">\[\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .\]</span></p>
-<p>What if <span class="math inline">\(p\)</span> is big (and <span class="math inline">\(n\)</span> is really big)?</p>
-<ol type="1">
-<li>Then <span class="math inline">\((C_1 + C_2) / n^{4/(4+p)}\)</span> is still big.</li>
-<li>But <span class="math inline">\(Cp / n\)</span> is small.</li>
-<li>So unless <span class="math inline">\(b\)</span> is big, we should use the linear model.</li>
-</ol>
-<p>How do you tell? Do model selection to decide.</p>
-<p>A <span class="secondary">very, very</span> questionable rule of thumb: if <span class="math inline">\(p&gt;\log(n)\)</span>, don’t do smoothing.</p>
-</section></section>
+
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>Compromises if <em>p</em> is big</p>
