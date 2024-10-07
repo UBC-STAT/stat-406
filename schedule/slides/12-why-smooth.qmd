@@ -8,167 +8,246 @@ metadata-files:
 {{< include _titleslide.qmd >}}
 
 
-## Last time...
+## Smooting vs Linear Models
 
-
-We've been discussing smoothing methods in 1-dimension:
+We've been discussing nonlinear methods in 1-dimension:
 
 $$\Expect{Y\given X=x} = f(x),\quad x\in\R$$
 
-We looked at basis expansions, e.g.:
+1. Basis expansions, e.g.:
 
-$$f(x) \approx \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_k x^k$$ 
+$$\hat f_\mathrm{basis}(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \cdots + \beta_k x^k$$ 
 
-We looked at local methods, e.g.:
+2. Local methods, e.g.:
 
-$$f(x_i) \approx  s_i^\top \y$$
+$$\hat f_\mathrm{local}(x_i) = s_i^\top \y$$
 
-. . .
+Which should we choose? \
+[Of course, we can do model selection. But can we analyze the risk mathematically?]{.small}
 
-What if $x \in \R^p$ and $p>1$?
 
-::: aside
-Note that $p$ means the dimension of $x$, not the dimension of the space of the polynomial basis or something else. That's why I put $k$ above.
+## Risk Decomposition
+
+$$
+R_n = \mathrm{Bias}^2 + \mathrm{Var} + \sigma^2
+$$
+
+How does $R_n^{(\mathrm{basis})}$ compare to $R_n^{(\mathrm{local})}$ as we change $n$?\
+
+::: fragment
+### Variance
+
+- Basis: variance decreases as $n$ increases
+- Local: variance decreases as $n$ increases\
+  [But at what rate?]{.small}
+
+:::
+
+::: fragment
+### Bias
+
+- Basis: bias is *fixed*\
+  [Assuming $k$ is fixed]{.small}
+- Local: bias depends on choice of bandwidth $\sigma$. 
+
 :::
 
 
-
-## Kernels and interactions
-
-In multivariate nonparametric regression, you estimate a [surface]{.secondary} over the input variables.
-
-This is trying to find $\widehat{f}(x_1,\ldots,x_p)$.
-
-Therefore, this function [by construction]{.secondary} includes interactions, handles categorical data, etc. etc.
-
-This is in contrast with explicit [linear models]{.secondary} which need you to specify these things.
-
-This extra complexity (automatically including interactions, as well as other things) comes with tradeoffs.
-
-. . . 
-
-More complicated functions (smooth Kernel regressions vs. linear models) tend to have [lower bias]{.secondary} but [higher variance]{.secondary}.
+## Risk Decomposition
 
 
+::: flex
 
-## Issue 1
+::: w-60
+### Basis
 
-For $p=1$, one can show that for kernels (with the correct bandwidth)
+$$
+R_n^{(\mathrm{basis})} =
+  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(b)}}{n}}_{\mathrm{var}} +
+  \sigma^2
+$$
 
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+### Local
 
+*With the optimal bandwidth* ($\propto n^{-1/5}$), we have
 
+$$
+R_n^{(\mathrm{local})} =
+  \underbrace{\frac{C_1^{(l)}}{n^{4/5}}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(l)}}{n^{4/5}}}_{\mathrm{var}} +
+  \sigma^2
+$$ 
+:::
+
+::: w-40
 ::: callout-important
 
 _you don't need to memorize these formulas_ but you should know the intuition
 
-_the constants_ don't matter for the intuition, but they matter for a particular data set. We don't know them. So you estimate this.
+_The constants_ don't matter for the intuition, but they matter for a particular data set. You have to estimate them.
 
 :::
 
-## Issue 1
+### What do you notice?
+::: fragment
+- As $n$ increases, the optimal bandwidth $\sigma$ decreases
+- As $n \to \infty$, $R_n^{(\mathrm{basis})} \to C_1^{(b)} + \sigma^2$
+- As $n \to \infty$, $R_n^{(\mathrm{local})} \to \sigma^2$
+:::
 
-For $p=1$, one can show that for kernels (with the correct bandwidth)
+:::
+:::
 
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+<!-- . . . -->
 
+<!-- What if $x \in \R^p$ and $p>1$? -->
 
-Recall, this decomposition is [squared bias + variance + irreducible error]{.secondary}
-
-* It depends on the **choice** of $h$
-
-$$\textrm{MSE}(\hat{f}) = C_1 h^4 + \frac{C_2}{nh} + \sigma^2$$ 
-
-* Using $h = cn^{-1/5}$ **balances** squared bias and variance, leads to the above rate. (That balance minimizes the MSE)
-
-## Issue 1
-
-
-For $p=1$, one can show that for kernels (with the correct bandwidth)
-
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+<!-- ::: aside -->
+<!-- Note that $p$ means the dimension of $x$, not the dimension of the space of the polynomial basis or something else. That's why I put $k$ above. -->
+<!-- ::: -->
 
 
-### Intuition: 
+## Takeaway
 
-as you collect data, use a smaller bandwidth and the MSE (on future data) decreases
-
-
-## Issue 1
-
-For $p=1$, one can show that for kernels (with the correct bandwidth)
-
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+1. Local methods are *consistent* (bias and variance go to 0 as $n \to \infty$)
+2. Fixed basis expansions are *biased* but have lower variance when $n$ is relatively small.\
+   [$\underbrace{O(1/n)}_{\text{basis var.}} < \underbrace{O(1/n^{4/5})}_{\text{local var.}}$]{.small}
 
 
-[How does this compare to just using a linear model?]{.primary}
+# The Curse of Dimensionality
 
-[Bias]{.primary}
-    
-1. The bias of using a linear model [when the truth nonlinear]{.secondary} is a number $b > 0$ which doesn't depend on $n$.
-2. The bias of using kernel regression is $C_1/n^{4/5}$. This goes to 0 as $n\rightarrow\infty$.
-  
-[Variance]{.primary}
-
-1. The variance of using a linear model is $C/n$ [no matter what]{.secondary}
-2. The variance of using kernel regression is $C_2/n^{4/5}$.
-
-## Issue 1
+How do local methods perform when $p > 1$?
 
 
-For $p=1$, one can show that for kernels (with the correct bandwidth)
+## Intuitively
 
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
+*Parametric* multivariate regressors (e.g. basis expansions) require you to specify nonlinear interaction terms\
+[e.g. $x^{(1)} x^{(2)}$, $\cos( x^{(1)} + x^{(2)})$, etc.]{.small}
+
+\
+*Nonparametric* multivariate regressors (e.g. KNN, local methods)
+automatically handle interactions.\
+[The distance function (e.g. $d(x,x') = \Vert x - x' \Vert_2$) used by kernels implicitly defines *infinitely many* interactions!]{.small}
 
 
-### To conclude: 
+\
+[This extra complexity (automatically including interactions, as well as other things) comes with a tradeoff.]{.secondary}
 
-* bias of kernels goes to zero, bias of lines doesn't (unless the truth is linear).
 
-* but variance of lines goes to zero faster than for kernels.
 
-If the linear model is [right]{.secondary}, you win. 
+## Mathematically
 
-But if it's wrong, you (eventually) lose as $n$ grows.
+Let's say $x_1, \ldots, x_n$ are distributed *uniformly* over the space $\mathcal B_1(p)$\
+[$B_1(p)$ is the "unit ball," or the set of all $x$ such that $\Vert x \Vert_2 \leq 1$.]{.small}
 
-How do you know if you have enough data? 
+. . . 
 
-Compare of the kernel version with CV-selected tuning parameter with the estimate of the risk for the linear model.
+\
+[What is the *maximum* distance between any two points in $\mathcal B_1(p)$?]{.secondary}
 
+. . .
+
+$\Vert x - x' \Vert_2 \leq \Vert x \Vert_2 + \Vert x' \Vert_2 \leq 1 + 1 = 2.$
+
+. . .
+
+\
+[What about the *average* distance?]{.secondary}
+
+
+## The average (sq.) distance between points in $\mathcal B_1(p)$
+
+$$
+\begin{align}
+E\left[ \Vert x - x' \Vert_2^2 \right]
+&=
+E\left[ \textstyle \sum_{k=1}^p (x_k - x_k')^2 \right]
+\\
+&= \textstyle{
+  E[ \sum_{k=1}^p x_k^2 ] 
+  + 2 \sum_{k=1}^p \sum_{\ell=1}^p \underbrace{E[ x_l x'_k ]}_{=0}
+  + E[ \sum_{k=1}^p x_k^{\prime 2} ]
+}
+\\
+&= 2  E[ \textstyle{\sum_{k=1}^p} x_k^2 ] 
+= 2 E[ \Vert x \Vert_2^2 ]
+\end{align}
+$$
+
+. . .
+
+$2 E[ \Vert x \Vert_2^2 ] = 2^{1 - 1/p}.$
+
+::: flex
+::: w-60
+::: fragment
+- When $p=2$, $\frac{\text{avg dist}}{\text{max dist}} = 0.707$
+- When $p=5$, $\frac{\text{avg dist}}{\text{max dist}} = 0.871$!
+- When $p=10$, $\frac{\text{avg dist}}{\text{max dist}} = 0.933$!!
+- When $p=100$, $\frac{\text{avg dist}}{\text{max dist}} = 0.993$!!!
+:::
+:::
+
+::: w-40
+::: fragment
+### Why is this problematic?
+
+- All points are maximally far apart from all other points
+- Can't distinguish between "similar" and "different" inputs
+:::
+:::
+:::
+
+## Curse of Dimensionality
+
+Distance becomes (exponentially) meaningless in high dimensions.*\
+[*(Unless our data has "low dimensional structure.")]{.small}
+
+. . .
+
+### Risk decomposition ($p > 1$)
+[Assuming optimal bandwidth of $n^{-1/(4+p)}$...]{.small}
+
+$$
+R_n^{(\mathrm{basis})} =
+  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(b)}}{n/p}}_{\mathrm{var}} +
+  \sigma^2,
+\qquad
+R_n^{(\mathrm{local})} =
+  \underbrace{\tfrac{C_1^{(l)}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(l)}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+  \sigma^2.
+$$
+
+::: fragment
+### Observations
+
+- $(C_1 + C_2) / n^{4/(4+p)}$ is relatively big, but $C_2^{(b)} / (n/p)$ is relatively small.
+- So unless $C_1^{(b)}$ is big, we should use the linear model.*\
+:::
+
+## In practice
+
+[The previous math assumes that our data are "densely" distributed throughout $\R^p$.]{.small}
+
+However, if our data lie on a low-dimensional manifold within $\R^p$, then local methods can work well!
+
+[We generally won't know the "intrinsic dimensinality" of our data though...]{.small}
+
+:::fragment
+### How to decide between basis expansions versus local kernel smoothers:
+1. Model selection
+2. Using a [very, very]{.secondary} questionable rule of thumb: if $p>\log(n)$, don't do smoothing.
+:::
 
 # ☠️☠️ Danger ☠️☠️
 
-You can't just compare the CVM for the kernel version to the CVM for the LM. This is because you used CVM to select the tuning parameter, so we're back to the usual problem of using the data twice. You have to do [another]{.hand} CV to estimate the risk of the kernel version at CV selected tuning parameter.
-️
+You can't just compare the GCV/CV/etc. scores for basis models versus local kernel smoothers.
 
+You used GCV/CV/etc. to select the tuning parameter, so we're back to the usual problem of using the data twice. You have to do [another]{.hand} CV to estimate the risk of the kernel version once you have used GCV/CV/etc. to select the bandwidth.
 
-## Issue 2
-
-For $p>1$, there is more trouble.
-
-First, lets look again at 
-$$\textrm{MSE}(\hat{f}) = \frac{C_1}{n^{4/5}} + \frac{C_2}{n^{4/5}} + \sigma^2$$ 
-
-That is for $p=1$. It's not [that much]{.secondary} slower than $C/n$, the variance for linear models.
-
-If $p>1$ similar calculations show,
-
-$$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .$$
-
-## Issue 2
-
-$$\textrm{MSE}(\hat f) = \frac{C_1+C_2}{n^{4/(4+p)}} + \sigma^2 \hspace{2em} \textrm{MSE}(\hat \beta)  = b + \frac{Cp}{n} + \sigma^2 .$$
-
-
-What if $p$ is big (and $n$ is really big)?
-
-1. Then $(C_1 + C_2) / n^{4/(4+p)}$ is still big.
-2. But $Cp / n$ is small.
-3. So unless $b$ is big, we should use the linear model.
-  
-How do you tell? Do model selection to decide.
-
-A [very, very]{.secondary} questionable rule of thumb: if $p>\log(n)$, don't do smoothing.
 
 
 # Next time...
