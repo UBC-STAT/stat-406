@@ -394,11 +394,65 @@
     <div class="slides">
 
 
+<section>
+<section id="two-great-questions-from-last-lecture" class="title-slide slide level1 center">
+<h1>Two Great Questions from Last Lecture</h1>
+
+</section>
+<section id="the-bias-of-ols" class="slide level2">
+<h2>1) The Bias of OLS</h2>
+<p>In last class’ clicker question, we were trying to predict income from a <span class="math inline">\(p=2\)</span>, <span class="math inline">\(n=50000\)</span> dataset. I claimed that the <em>OLS predictor is high bias</em> in this example.<br>
+</p>
+<p><br>
+But Trevor proved that the <em>OLS predictor is unbiased</em> (via the following proof):</p>
+<p>A. Assume that <span class="math inline">\(y = x^\top \beta + \epsilon, \quad \epsilon \sim \mathcal N(0, \sigma^2).\)</span></p>
+<p>B. Then <span class="math inline">\(E[\hat \beta_\mathrm{ols}] = E[ E[\hat \beta_\mathrm{ols} \mid \mathbf X] ]\)</span></p>
+<p>C. <span class="math inline">\(E[\hat \beta_\mathrm{ols} \mid \mathbf X] = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top E[ \mathbf y \mid \mathbf X]\)</span></p>
+<p>D. <span class="math inline">\(E[ \mathbf y \mid \mathbf X] = \mathbf X^\top \beta\)</span></p>
+<p>E. So <span class="math inline">\(E[\hat \beta_\mathrm{ols}] - \beta = E[(\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf X \beta] - \beta = \beta - \beta = 0\)</span>.</p>
+<p><br>
+<span class="secondary">Why did this proof not apply to the clicker question?</span><br>
+<span class="small">(Which step of this proof breaks down?)</span></p>
+</section>
+<section id="the-bias-of-ols-1" class="slide level2">
+<h2>1) The Bias of OLS</h2>
+<p>Which step did the proof break down?</p>
+<p>A. Assume that <span class="math inline">\(y = x^\top \beta + \epsilon, \quad \epsilon \sim \mathcal N(0, \sigma^2).\)</span></p>
+<p><br>
+This assumption does not hold.</p>
+<p>It is (almost certainly) not the case that <code>Income ~ Age + Education</code>.</p>
+<div class="fragment">
+<p><br>
+In reality, <span class="math inline">\(y \sim f(x) + \epsilon\)</span> where <span class="math inline">\(f(x)\)</span> is some potentially nonlinear function. So</p>
+<p><span class="math display">\[
+\begin{align}
+E[\hat \beta_\mathrm{ols}] = E[E[\hat \beta_\mathrm{ols} \mid \mathbf X ]]
+= E[ (\mathbf X^\top \mathbf X)^{-1} \mathbf X f(\mathbf X) ] \ne \beta
+\end{align}
+\]</span></p>
+<p>In statistics speak, our model is <em>misspecified</em>.<br>
+<span class="small">Ridge/lasso will still increase bias and decrease variance even under misspecification.</span></p>
+</div>
+</section>
+<section id="why-does-ridge-regression-shrink-varinace" class="slide level2">
+<h2>2) Why does ridge regression shrink varinace?</h2>
+<h3 id="mathematically">Mathematically</h3>
+<ul>
+<li>Variance of OLS: <span class="math inline">\(\mathrm{Cov}[\hat \beta_\mathrm{ols}] = \sigma^2 E[ (\mathbf X^\top \mathbf X)^{-1} ]\)</span></li>
+<li>Variance of ridge regression: <span class="math inline">\(\mathrm{Cov}[\hat \beta_\mathrm{ols}] = \sigma^2 E[ (\mathbf X^\top \mathbf X + \lambda \mathbf I)^{-1} ]\)</span></li>
+</ul>
+<div class="fragment">
+<!-- -->
+<h3 id="intuitively">Intuitively…</h3>
+<p>Think about the constrained optimization problem pictorally.<br>
+What happens if we had a different dataset?</p>
+</div>
+</section>
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
 <h2>11 Local methods</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 09 October 2023</p>
+<p>Last modified – 07 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,6 +478,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="last-time" class="slide level2">
@@ -516,17 +573,56 @@
 <h2>This method is <span class="math inline">\(K\)</span>-nearest neighbours.</h2>
 <p>It’s a <span class="secondary">linear smoother</span> just like in previous lectures: <span class="math inline">\(\widehat{\mathbf{y}} = \mathbf{S} \mathbf{y}\)</span> for some matrix <span class="math inline">\(S\)</span>.</p>
 <p>You should imagine what <span class="math inline">\(\mathbf{S}\)</span> looks like.</p>
-<p>What is the degrees of freedom of KNN?</p>
+<ol type="1">
+<li>What is the degrees of freedom of KNN, and how does it depend on <span class="math inline">\(k\)</span>?</li>
+<li>How does <span class="math inline">\(k\)</span> affect the bias/variance?</li>
+</ol>
+<div class="fragment">
+<ul>
+<li><span class="math inline">\(\mathrm{df} = \tr{\mathbf S} = n/k\)</span>.</li>
+<li><span class="math inline">\(k = n\)</span> produces a constant predictor (highest bias, lowest variance).</li>
+<li><span class="math inline">\(k = 1\)</span> produces a low bias but extremely high variance predictor.</li>
+</ul>
+</div>
+</section>
+<section class="slide level2">
+
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb3-2"><a></a></span>
+<span id="cb3-3"><a></a>plot_knn <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
+<span id="cb3-4"><a></a>  <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb3-5"><a></a>    <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb3-6"><a></a>    <span class="fu">geom_line</span>(</span>
+<span id="cb3-7"><a></a>      <span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-8"><a></a>        <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb3-9"><a></a>        <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
+<span id="cb3-10"><a></a>          arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
+<span id="cb3-11"><a></a>          <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa,</span>
+<span id="cb3-12"><a></a>          <span class="at">k =</span> k</span>
+<span id="cb3-13"><a></a>        )<span class="sc">$</span>pred</span>
+<span id="cb3-14"><a></a>      ),</span>
+<span id="cb3-15"><a></a>      <span class="at">colour =</span> orange, <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb3-16"><a></a>    ) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"k ="</span>, k))</span>
+<span id="cb3-17"><a></a>}</span>
+<span id="cb3-18"><a></a></span>
+<span id="cb3-19"><a></a>g1 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">1</span>)</span>
+<span id="cb3-20"><a></a>g2 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">5</span>)</span>
+<span id="cb3-21"><a></a>g3 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="fu">length</span>(arcuate_unif<span class="sc">$</span>position))</span>
+<span id="cb3-22"><a></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="local-averages-soft-knn" class="slide level2">
+<h2>Local averages (soft KNN)</h2>
 <p>KNN averages the neighbours with equal weight.</p>
 <p>But some neighbours are “closer” than other neighbours.</p>
-</section>
-<section id="local-averages" class="slide level2">
-<h2>Local averages</h2>
 <p>Instead of choosing the number of neighbours to average, we can average any observations within a certain distance.</p>
 
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"><div class="fragment">
-<p>The boxes have width 30.</p>
-</div>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>The boxes have width 30.</p>
 </section>
 <section id="what-is-a-kernel-smoother" class="slide level2">
 <h2>What is a “kernel” smoother?</h2>
@@ -534,10 +630,15 @@
 <li>The mathematics:</li>
 </ul>
 <blockquote>
-<p>A kernel is any function <span class="math inline">\(K\)</span> such that for any <span class="math inline">\(u\)</span>, <span class="math inline">\(K(u) \geq 0\)</span>, <span class="math inline">\(\int du K(u)=1\)</span> and <span class="math inline">\(\int uK(u)du=0\)</span>.</p>
+<p>A kernel is any function <span class="math inline">\(K\)</span> such that for any <span class="math inline">\(u\)</span>,</p>
+<ul>
+<li><span class="math inline">\(K(u) \geq 0\)</span>,</li>
+<li><span class="math inline">\(\int K(u) du = 1\)</span>,</li>
+<li><span class="math inline">\(\int uK(u) du = 0\)</span>.</li>
+</ul>
 </blockquote>
 <ul>
-<li><p>The idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.</p></li>
+<li><p>The idea: a kernel takes weighted averages. The kernel function gives the weights.</p></li>
 <li><p>The previous example is called the <span class="secondary">boxcar</span> kernel.</p></li>
 </ul>
 </section>
@@ -546,14 +647,14 @@
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>testpts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="at">length.out =</span> <span class="dv">101</span>)</span>
-<span id="cb3-2"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">outer</span>(testpts, arcuate_unif<span class="sc">$</span>position, <span class="st">"-"</span>))</span>
-<span id="cb3-3"><a></a>S <span class="ot">&lt;-</span> (dmat <span class="sc">&lt;</span> <span class="dv">15</span>)</span>
-<span id="cb3-4"><a></a>S <span class="ot">&lt;-</span> S <span class="sc">/</span> <span class="fu">rowSums</span>(S)</span>
-<span id="cb3-5"><a></a>boxcar <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">position =</span> testpts, <span class="at">fa =</span> S <span class="sc">%*%</span> arcuate_unif<span class="sc">$</span>fa)</span>
-<span id="cb3-6"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb3-7"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb3-8"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> boxcar, <span class="at">colour =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>testpts <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">200</span>, <span class="at">length.out =</span> <span class="dv">101</span>)</span>
+<span id="cb4-2"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">abs</span>(<span class="fu">outer</span>(testpts, arcuate_unif<span class="sc">$</span>position, <span class="st">"-"</span>))</span>
+<span id="cb4-3"><a></a>S <span class="ot">&lt;-</span> (dmat <span class="sc">&lt;</span> <span class="dv">15</span>)</span>
+<span id="cb4-4"><a></a>S <span class="ot">&lt;-</span> S <span class="sc">/</span> <span class="fu">rowSums</span>(S)</span>
+<span id="cb4-5"><a></a>boxcar <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">position =</span> testpts, <span class="at">fa =</span> S <span class="sc">%*%</span> arcuate_unif<span class="sc">$</span>fa)</span>
+<span id="cb4-6"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb4-7"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb4-8"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> boxcar, <span class="at">colour =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
@@ -561,21 +662,38 @@
 </section>
 <section id="other-kernels" class="slide level2">
 <h2>Other kernels</h2>
-<p>Most of the time, we don’t use the boxcar because the weights are weird. (constant)</p>
-<p>A more common one is the Gaussian kernel:</p>
+<p>Most of the time, we don’t use the boxcar because the weights are weird.<br>
+<span class="small">Ideally we would like closer points to have more weight.</span></p>
+<div class="flex">
+<div class="w-60">
+<p>A more common kernel: the Gaussian kernel</p>
+<p><span class="math display">\[
+K(u) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{u^2}{2\sigma^2}\right)
+\]</span></p>
+<p>For the plot, I made <span class="math inline">\(\sigma=7.5\)</span>.</p>
+<p>Now the weights “die away” for points farther from where we’re predicting.<br>
+<span class="small">(but all nonzero!!)</span></p>
+</div>
+<div class="w-40">
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="fl">7.5</span>) <span class="sc">*</span> <span class="dv">3</span></span>
-<span id="cb4-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb4-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb4-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb4-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="fl">7.5</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb5-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb5-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb5-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>For the plot, I made <span class="math inline">\(\sigma=7.5\)</span>.</p>
-<p>Now the weights “die away” for points farther from where we’re predicting. (but all nonzero!!)</p>
+</div>
+</div>
+</div>
+</div>
 </section>
 <section id="other-kernels-1" class="slide level2">
 <h2>Other kernels</h2>
@@ -583,61 +701,60 @@
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="dv">3</span></span>
-<span id="cb5-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb5-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
-<span id="cb5-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb5-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>gaussian_kernel <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="at">mean =</span> arcuate_unif<span class="sc">$</span>position[<span class="dv">15</span>], <span class="at">sd =</span> <span class="dv">15</span>) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb6-2"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb6-3"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span></span>
+<span id="cb6-4"><a></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">x =</span> position[<span class="dv">15</span>], <span class="at">y =</span> <span class="dv">0</span>, <span class="at">xend =</span> position[<span class="dv">15</span>], <span class="at">yend =</span> fa[<span class="dv">15</span>]), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb6-5"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> gaussian_kernel, <span class="at">geom =</span> <span class="st">"area"</span>, <span class="at">fill =</span> orange)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>Before, points far from <span class="math inline">\(x_{15}\)</span> got very small weights, now they have more influence.</p>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>Before, points far from <span class="math inline">\(x_{15}\)</span> got very small weights, now they have more influence.</p>
 <p>For the Gaussian kernel, <span class="math inline">\(\sigma\)</span> determines something like the “range” of the smoother.</p>
 </section>
 <section id="many-gaussians" class="slide level2">
 <h2>Many Gaussians</h2>
 <p>The following code creates <span class="math inline">\(\mathbf{S}\)</span> for Gaussian kernel smoothers with different <span class="math inline">\(\sigma\)</span></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(x))</span>
-<span id="cb6-2"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
-<span id="cb6-3"><a></a>  gg <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
-<span id="cb6-4"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg), <span class="st">"/"</span>) <span class="co"># make the rows sum to 1.</span></span>
-<span id="cb6-5"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>dmat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(x))</span>
+<span id="cb7-2"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb7-3"><a></a>  gg <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb7-4"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg), <span class="st">"/"</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb7-5"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
-<span id="cb7-2"><a></a>  gg <span class="ot">&lt;-</span>  <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
-<span id="cb7-3"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg),<span class="st">'/'</span>) <span class="co"># make the rows sum to 1.</span></span>
-<span id="cb7-4"><a></a>}</span>
-<span id="cb7-5"><a></a>boxcar<span class="sc">$</span>S15 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">15</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-6"><a></a>boxcar<span class="sc">$</span>S08 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">8</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-7"><a></a>boxcar<span class="sc">$</span>S30 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">30</span>) <span class="sc">%*%</span> fa)</span>
-<span id="cb7-8"><a></a>bc <span class="ot">=</span> boxcar <span class="sc">%&gt;%</span> <span class="fu">select</span>(position, S15, S08, S30) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-9"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>position, <span class="at">names_to =</span> <span class="st">"Sigma"</span>)</span>
-<span id="cb7-10"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span> </span>
-<span id="cb7-11"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span> </span>
-<span id="cb7-12"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> bc, <span class="fu">aes</span>(position, value, <span class="at">colour =</span> Sigma), <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb7-13"><a></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>Sgauss <span class="ot">&lt;-</span> <span class="cf">function</span>(sigma) {</span>
+<span id="cb8-2"><a></a>  gg <span class="ot">&lt;-</span>  <span class="fu">dnorm</span>(dmat, <span class="at">sd =</span> sigma) <span class="co"># not an argument, uses the global dmat</span></span>
+<span id="cb8-3"><a></a>  <span class="fu">sweep</span>(gg, <span class="dv">1</span>, <span class="fu">rowSums</span>(gg),<span class="st">'/'</span>) <span class="co"># make the rows sum to 1.</span></span>
+<span id="cb8-4"><a></a>}</span>
+<span id="cb8-5"><a></a>boxcar<span class="sc">$</span>S15 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">15</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb8-6"><a></a>boxcar<span class="sc">$</span>S08 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">8</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb8-7"><a></a>boxcar<span class="sc">$</span>S30 <span class="ot">=</span> <span class="fu">with</span>(arcuate_unif, <span class="fu">Sgauss</span>(<span class="dv">30</span>) <span class="sc">%*%</span> fa)</span>
+<span id="cb8-8"><a></a>bc <span class="ot">=</span> boxcar <span class="sc">%&gt;%</span> <span class="fu">select</span>(position, S15, S08, S30) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-9"><a></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>position, <span class="at">names_to =</span> <span class="st">"Sigma"</span>)</span>
+<span id="cb8-10"><a></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span> </span>
+<span id="cb8-11"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> blue) <span class="sc">+</span> </span>
+<span id="cb8-12"><a></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> bc, <span class="fu">aes</span>(position, value, <span class="at">colour =</span> Sigma), <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb8-13"><a></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="the-bandwidth" class="slide level2">
 <h2>The bandwidth</h2>
 <ul>
 <li><p>Choosing <span class="math inline">\(\sigma\)</span> is <span class="secondary">very</span> important.</p></li>
 <li><p>This “range” parameter is called the <span class="secondary">bandwidth</span>.</p></li>
 <li><p>It is way more important than which kernel you use.</p></li>
-<li><p>The default kernel in <code>ksmooth()</code> is something called ‘Epanechnikov’:</p></li>
 </ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>epan <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> x<span class="sc">^</span><span class="dv">2</span>) <span class="sc">*</span> (<span class="fu">abs</span>(x) <span class="sc">&lt;</span> <span class="dv">1</span>)</span>
-<span id="cb8-2"><a></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> epan, <span class="at">colour =</span> green, <span class="at">linewidth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
-</div>
-<img data-src="11-kernel-smoothers_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<!-- * The default kernel in `ksmooth()` is something called 'Epanechnikov': -->
+<!-- ```{r} -->
+<!-- epan <- function(x) 3/4 * (1 - x^2) * (abs(x) < 1) -->
+<!-- ggplot(data.frame(x = c(-2, 2)), aes(x)) + stat_function(fun = epan, colour = green, linewidth = 2) -->
+<!-- ``` -->
+</section>
 <section id="choosing-the-bandwidth" class="slide level2">
 <h2>Choosing the bandwidth</h2>
 <p>As we have discussed, kernel smoothing (and KNN) are linear smoothers</p>
@@ -732,7 +849,7 @@ say, <span class="math inline">\(d(\mathbf{x}_i, \mathbf{x}_j) = \Vert\mathbf{x}
 I can use these methods.
 </dd>
 </dl>
-</section>
+</section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p>Why don’t we just smooth everything all the time?</p>

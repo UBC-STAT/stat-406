@@ -322,11 +322,32 @@
     "text": "What about random forests?\nWhat if we just did random forests instead? Takes a good bit less effort.\n\nlibrary(ranger) # faster version of randomForests\ntrain_images &lt;- t(apply(train_images, 1, c)) # flatten\ntest_images &lt;- t(apply(test_images, 1, c))\ntrain_images &lt;- cbind(train_labels, train_images) |&gt; as_tibble()\n\nWarning: The `x` argument of `as_tibble.matrix()` must have unique column names if\n`.name_repair` is omitted as of tibble 2.0.0.\nℹ Using compatibility `.name_repair`.\n\ntest_images &lt;- cbind(test_labels, test_images) |&gt; as_tibble()\nnames(train_images) &lt;- c(\"cl\", paste0(\"x\", 1:(ncol(train_images) - 1)))\nnames(test_images) &lt;- names(train_images)\ntrain_images$cl &lt;- as.factor(train_images$cl)\ntest_images$cl &lt;- as.factor(test_images$cl)\nrf &lt;- ranger(cl ~ ., data = train_images, num.trees = 100)\npreds &lt;- predict(rf, data = test_images)\n\nThe Test Set accuracy from Random Forests is 88%.\nSlightly better than the Neural Net for my run, but reasonably close."
   },
   {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "title": "UBC Stat406 2024W",
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nIn last class’ clicker question, we were trying to predict income from a \\(p=2\\), \\(n=50000\\) dataset. I claimed that the OLS predictor is high bias in this example.\n\n\nBut Trevor proved that the OLS predictor is unbiased (via the following proof):\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\nB. Then \\(E[\\hat \\beta_\\mathrm{ols}] = E[ E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] ]\\)\nC. \\(E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top E[ \\mathbf y \\mid \\mathbf X]\\)\nD. \\(E[ \\mathbf y \\mid \\mathbf X] = \\mathbf X^\\top \\beta\\)\nE. So \\(E[\\hat \\beta_\\mathrm{ols}] - \\beta = E[(\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf X \\beta] - \\beta = \\beta - \\beta = 0\\).\n\nWhy did this proof not apply to the clicker question?\n(Which step of this proof breaks down?)"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
+    "title": "UBC Stat406 2024W",
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nWhich step did the proof break down?\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\n\nThis assumption does not hold.\nIt is (almost certainly) not the case that Income ~ Age + Education.\n\n\nIn reality, \\(y \\sim f(x) + \\epsilon\\) where \\(f(x)\\) is some potentially nonlinear function. So\n\\[\n\\begin{align}\nE[\\hat \\beta_\\mathrm{ols}] = E[E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X ]]\n= E[ (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X f(\\mathbf X) ] \\ne \\beta\n\\end{align}\n\\]\nIn statistics speak, our model is misspecified.\nRidge/lasso will still increase bias and decrease variance even under misspecification."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
+    "href": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
+    "title": "UBC Stat406 2024W",
+    "section": "2) Why does ridge regression shrink varinace?",
+    "text": "2) Why does ridge regression shrink varinace?\nMathematically\n\nVariance of OLS: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X)^{-1} ]\\)\nVariance of ridge regression: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X + \\lambda \\mathbf I)^{-1} ]\\)\n\n\n\nIntuitively…\nThink about the constrained optimization problem pictorally.\nWhat happens if we had a different dataset?"
+  },
+  {
     "objectID": "schedule/slides/11-kernel-smoothers.html#section",
     "href": "schedule/slides/11-kernel-smoothers.html#section",
     "title": "UBC Stat406 2024W",
     "section": "11 Local methods",
-    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 07 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
@@ -354,21 +375,21 @@
     "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
     "title": "UBC Stat406 2024W",
     "section": "This method is \\(K\\)-nearest neighbours.",
-    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\nWhat is the degrees of freedom of KNN?\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours."
+    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\n\nWhat is the degrees of freedom of KNN, and how does it depend on \\(k\\)?\nHow does \\(k\\) affect the bias/variance?\n\n\n\n\\(\\mathrm{df} = \\tr{\\mathbf S} = n/k\\).\n\\(k = n\\) produces a constant predictor (highest bias, lowest variance).\n\\(k = 1\\) produces a low bias but extremely high variance predictor."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages",
-    "href": "schedule/slides/11-kernel-smoothers.html#local-averages",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
     "title": "UBC Stat406 2024W",
-    "section": "Local averages",
-    "text": "Local averages\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\n\nThe boxes have width 30."
+    "section": "Local averages (soft KNN)",
+    "text": "Local averages (soft KNN)\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours.\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\nThe boxes have width 30."
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
     "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
     "title": "UBC Stat406 2024W",
     "section": "What is a “kernel” smoother?",
-    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\), \\(K(u) \\geq 0\\), \\(\\int du K(u)=1\\) and \\(\\int uK(u)du=0\\).\n\n\nThe idea: a kernel is a nice way to take weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
+    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\),\n\n\\(K(u) \\geq 0\\),\n\\(\\int K(u) du = 1\\),\n\\(\\int uK(u) du = 0\\).\n\n\n\nThe idea: a kernel takes weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
@@ -382,7 +403,7 @@
     "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
     "title": "UBC Stat406 2024W",
     "section": "Other kernels",
-    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird. (constant)\nA more common one is the Gaussian kernel:\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting. (but all nonzero!!)"
+    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird.\nIdeally we would like closer points to have more weight.\n\n\nA more common kernel: the Gaussian kernel\n\\[\nK(u) = \\frac{1}{\\sqrt{2 \\pi \\sigma^2}} \\exp\\left(-\\frac{u^2}{2\\sigma^2}\\right)\n\\]\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting.\n(but all nonzero!!)\n\n\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)"
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
@@ -403,7 +424,7 @@
     "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
     "title": "UBC Stat406 2024W",
     "section": "The bandwidth",
-    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use.\nThe default kernel in ksmooth() is something called ‘Epanechnikov’:\n\n\nepan &lt;- function(x) 3/4 * (1 - x^2) * (abs(x) &lt; 1)\nggplot(data.frame(x = c(-2, 2)), aes(x)) + stat_function(fun = epan, colour = green, linewidth = 2)"
+    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use."
   },
   {
     "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
@@ -4057,7 +4078,7 @@
     "href": "schedule/slides/10-basis-expansions.html#section",
     "title": "UBC Stat406 2024W",
     "section": "10 Basis expansions",
-    "text": "10 Basis expansions\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 02 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "text": "10 Basis expansions\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 07 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#ols-low-bias-potentially-high-variance",
@@ -4085,7 +4106,7 @@
     "href": "schedule/slides/10-basis-expansions.html#optional-proof-that-ridge-shrinks-parameters",
     "title": "UBC Stat406 2024W",
     "section": "(Optional) Proof that ridge shrinks parameters",
-    "text": "(Optional) Proof that ridge shrinks parameters\n(This proof is not too hard if you use facts about SVDs and eigenvalues. I recommend working through it.)\nLet \\(\\mathbf{UDV^\\top} = X\\) be the SVD of \\(\\mathbf X\\).\n\\[\n\\begin{align}\n\\brl &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} {\\color{blue} \\X \\X^\\top (\\X^\\top \\X)^{-1}} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X \\X^\\top \\underbrace{\\left( (\\X^\\top \\X)^{-1} \\X^\\top \\y \\right)}_{\\bls}\n     \\\\\n     &= (\\mathbf V \\mathbf D^2 \\mathbf V^\\top + \\lambda \\mathbf{I})^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= (\\mathbf V (\\mathbf D^2 + \\lambda I) \\mathbf V^\\top)^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= \\mathbf V (\\mathbf D^2)(\\mathbf D^2 + \\lambda I)^{-1} \\mathbf V^\\top \\bls\n\\end{align}\n\\]"
+    "text": "(Optional) Proof that ridge shrinks parameters\n(This proof is not too hard if you use facts about SVDs and eigenvalues. I recommend working through it.)\nLet \\(\\mathbf{UDV^\\top} = X\\) be the SVD of \\(\\mathbf X\\).\n\\[\n\\begin{align}\n\\brl &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} {\\color{blue} \\X^\\top \\X (\\X^\\top \\X)^{-1}} \\X^\\top \\y\n     \\\\\n     &= (\\X^\\top \\X + \\lambda \\mathbf{I})^{-1} \\X^\\top \\X \\underbrace{\\left( (\\X^\\top \\X)^{-1} \\X^\\top \\y \\right)}_{\\bls}\n     \\\\\n     &= (\\mathbf V \\mathbf D^2 \\mathbf V^\\top + \\lambda \\mathbf{I})^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= (\\mathbf V (\\mathbf D^2 + \\lambda I) \\mathbf V^\\top)^{-1} \\mathbf V \\mathbf D^2 \\mathbf V^\\top \\bls\n     \\\\\n     &= \\mathbf V (\\mathbf D^2)(\\mathbf D^2 + \\lambda I)^{-1} \\mathbf V^\\top \\bls\n\\end{align}\n\\]"
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#what-about-nonlinear-things",
@@ -4176,7 +4197,7 @@
     "href": "schedule/slides/10-basis-expansions.html#featurization",
     "title": "UBC Stat406 2024W",
     "section": "Featurization",
-    "text": "Featurization\nEach case applied a feature map to \\(x\\), call it \\(\\Phi\\)\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\) w/ a linear model\n\\[f(x) = \\Phi(x)^\\top \\beta\\]\nNeural networks (coming in module 4) build upon this idea\n\n\n\nSome methods (notably Support Vector Machines and other Kernel Machines) allow \\(k=\\infty\\)\nSee [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)"
+    "text": "Featurization\nEach case applied a feature map to \\(x\\), call it \\(\\Phi\\)\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\) w/ a linear model\n\\[f(x) = \\Phi(x)^\\top \\beta\\]\nNeural networks (coming in module 4) build upon this idea\n\n\n\nSome methods (Support Vector Machines and other Kernel Machines) allow \\(k=\\infty\\)\nSee [ISLR] 9.3.2 for baby overview or [ESL] 5.8 (note 😱)"
   },
   {
     "objectID": "schedule/slides/28-hclust.html#section",
