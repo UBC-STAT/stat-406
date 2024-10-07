@@ -5,6 +5,74 @@ metadata-files:
   - _metadata.yml
 ---
 
+# Two Great Questions from Last Lecture
+
+## 1) The Bias of OLS
+
+In the clicker question from last class, we were trying to predict income from
+a $p=2$ dataset with $n=50000$. I claimed that the OLS predictor was *high bias*.\
+
+\
+But Trevor proved that the OLS predictor was unbiased (via the following proof):
+
+A. Assume that $y = x^\top \beta + \epsilon, \quad \epsilon \sim \mathcal N(0, \sigma^2).$
+
+B. Then $E[\hat \beta_\mathrm{ols}] = E[ E[\hat \beta_\mathrm{ols} \mid \mathbf X] ]$
+
+C. $E[\hat \beta_\mathrm{ols} \mid \mathbf X] = (\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top E[ \mathbf y \mid \mathbf X]$
+
+D. $E[ \mathbf y \mid \mathbf X] = \mathbf X^\top \beta$
+
+E. So $E[\hat \beta_\mathrm{ols}] - \beta = E[(\mathbf X^\top \mathbf X)^{-1} \mathbf X^\top \mathbf X \beta] - \beta = \beta - \beta = 0$.
+
+\
+[Why did this proof not apply to the clicker question?]{.secondary} \
+[(Which step did the proof break down?)]{.small}
+
+
+## 1) The Bias of OLS
+
+[Why did this proof not apply to the clicker question?]{.secondary} \
+[(Which step did the proof break down?)]{.small}
+
+A. Assume that $y = x^\top \beta + \epsilon, \quad \epsilon \sim \mathcal N(0, \sigma^2).$
+
+This assumption does not hold.
+
+It is (almost certainly) not the case that `Income ~ Age + Education`.
+
+. . .
+
+\
+In reality, $y \sim f(x) + \epsilon$ where $f(x)$ is some nonlinear function and $\epsilon$ is non-Gaussian. So
+
+$$
+\begin{align}
+E[\hat \beta_\mathrm{ols}] = E[E[\hat \beta_\mathrm{ols} \mid \mathbf X ]]
+= E[ (\mathbf X^\top \mathbf X)^{-1} \mathbf X f(\mathbf X) ] \ne \beta
+\end{align}
+$$
+
+In statistics speak, our model is *misspecified*.\
+[Ridge/lasso will still increase bias and decrease variance even under misspecification.]{.small}
+
+
+## 2) Why does ridge regression shrink varinace?
+
+### Mathematically
+
+- Variance of OLS: $\mathrm{Cov}[\hat \beta_\mathrm{ols}] = \sigma^2 E[ (\mathbf X^\top \mathbf X)^{-1} ]$
+- Variance of ridge regression: $\mathrm{Cov}[\hat \beta_\mathrm{ols}] = \sigma^2 E[ (\mathbf X^\top \mathbf X + \lambda \mathbf I)^{-1} ]$
+
+::: fragment
+
+### Intuitively...
+
+Think about the constrained optimization problem pictorally. \
+What happens if we had a different dataset?
+
+:::
+
 {{< include _titleslide.qmd >}}
 
 ## Last time...
