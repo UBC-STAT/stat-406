@@ -333,7 +333,7 @@
 <h2>12 To(o) smooth or not to(o) smooth?</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 07 October 2024</p>
+<p>Last modified – 08 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -412,16 +412,16 @@ R_n = \mathrm{Bias}^2 + \mathrm{Var} + \sigma^2
 <h3 id="basis">Basis</h3>
 <p><span class="math display">\[
 R_n^{(\mathrm{basis})} =
-  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
-  \underbrace{\frac{C_2^{(b)}}{n}}_{\mathrm{var}} +
+  \underbrace{C_1^{(\mathrm{basis})}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(\mathrm{basis})}}{n}}_{\mathrm{var}} +
   \sigma^2
 \]</span></p>
 <h3 id="local">Local</h3>
 <p><em>With the optimal bandwidth</em> (<span class="math inline">\(\propto n^{-1/5}\)</span>), we have</p>
 <p><span class="math display">\[
 R_n^{(\mathrm{local})} =
-  \underbrace{\frac{C_1^{(l)}}{n^{4/5}}}_{\mathrm{bias}^2} +
-  \underbrace{\frac{C_2^{(l)}}{n^{4/5}}}_{\mathrm{var}} +
+  \underbrace{\frac{C_1^{(\mathrm{local})}}{n^{4/5}}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(\mathrm{local})}}{n^{4/5}}}_{\mathrm{var}} +
   \sigma^2
 \]</span></p>
 </div>
@@ -444,7 +444,7 @@ R_n^{(\mathrm{local})} =
 <div class="fragment">
 <ul>
 <li>As <span class="math inline">\(n\)</span> increases, the optimal bandwidth <span class="math inline">\(\sigma\)</span> decreases</li>
-<li>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(R_n^{(\mathrm{basis})} \to C_1^{(b)} + \sigma^2\)</span></li>
+<li>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(R_n^{(\mathrm{basis})} \to C_1^{(\mathrm{basis})} + \sigma^2\)</span></li>
 <li>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(R_n^{(\mathrm{local})} \to \sigma^2\)</span></li>
 </ul>
 </div>
@@ -481,57 +481,40 @@ R_n^{(\mathrm{local})} =
 </section>
 <section id="mathematically" class="slide level2">
 <h2>Mathematically</h2>
-<p>Let’s say <span class="math inline">\(x_1, \ldots, x_n\)</span> are distributed <em>uniformly</em> over the space <span class="math inline">\(\mathcal B_1(p)\)</span><br>
-<span class="small"><span class="math inline">\(B_1(p)\)</span> is the “unit ball,” or the set of all <span class="math inline">\(x\)</span> such that <span class="math inline">\(\Vert x \Vert_2 \leq 1\)</span>.</span></p>
-<div class="fragment">
-<p><br>
-<span class="secondary">What is the <em>maximum</em> distance between any two points in <span class="math inline">\(\mathcal B_1(p)\)</span>?</span></p>
-</div>
-<div class="fragment">
-<p><span class="math inline">\(\Vert x - x' \Vert_2 \leq \Vert x \Vert_2 + \Vert x' \Vert_2 \leq 1 + 1 = 2.\)</span></p>
-</div>
-<div class="fragment">
-<p><br>
-<span class="secondary">What about the <em>average</em> distance?</span></p>
-</div>
-</section>
-<section id="the-average-sq.-distance-between-points-in-mathcal-b_1p" class="slide level2">
-<h2>The average (sq.) distance between points in <span class="math inline">\(\mathcal B_1(p)\)</span></h2>
-<p><span class="math display">\[
-\begin{align}
-E\left[ \Vert x - x' \Vert_2^2 \right]
-&amp;=
-E\left[ \textstyle \sum_{k=1}^p (x_k - x_k')^2 \right]
-\\
-&amp;= \textstyle{
-  E[ \sum_{k=1}^p x_k^2 ]
-  + 2 \sum_{k=1}^p \sum_{\ell=1}^p \underbrace{E[ x_l x'_k ]}_{=0}
-  + E[ \sum_{k=1}^p x_k^{\prime 2} ]
-}
-\\
-&amp;= 2  E[ \textstyle{\sum_{k=1}^p} x_k^2 ]
-= 2 E[ \Vert x \Vert_2^2 ]
-\end{align}
-\]</span></p>
-<div class="fragment">
-<p><span class="math inline">\(2 E[ \Vert x \Vert_2^2 ] = 2^{1 - 1/p}.\)</span></p>
 <div class="flex">
 <div class="w-60">
-<div class="fragment">
-<ul>
-<li>When <span class="math inline">\(p=2\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.707\)</span></li>
-<li>When <span class="math inline">\(p=5\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.871\)</span>!</li>
-<li>When <span class="math inline">\(p=10\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.933\)</span>!!</li>
-<li>When <span class="math inline">\(p=100\)</span>, <span class="math inline">\(\frac{\text{avg dist}}{\text{max dist}} = 0.993\)</span>!!!</li>
-</ul>
-</div>
+<p>Consider points <span class="math inline">\(x_1, x_2, \ldots, x_n\)</span> distributed <em>uniformly</em> within a <span class="math inline">\(p\)</span>-dimensional ball of radius 1. For a test point <span class="math inline">\(x\)</span> at the center of the ball, how far away are its <span class="math inline">\(k = n/10\)</span> nearest neighbours?</p>
 </div>
 <div class="w-40">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="12-why-smooth_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fragment">
+<div class="flex">
+<div class="w-60">
+<p>Let <span class="math inline">\(r\)</span> the the average distance between <span class="math inline">\(x\)</span> and its <span class="math inline">\(k^\mathrm{th}\)</span> nearest neighbour.</p>
+<ul>
+<li>When <span class="math inline">\(p=2\)</span>, <span class="math inline">\(r = (0.1)^{1/2} \approx 0.316\)</span></li>
+<li>When <span class="math inline">\(p=5\)</span>, <span class="math inline">\(r = (0.1)^{1/5} \approx 0.631\)</span></li>
+<li>When <span class="math inline">\(p=10\)</span>, <span class="math inline">\(r = (0.1)^{1/10} \approx 0.794\)</span>(!)</li>
+<li>When <span class="math inline">\(p=100\)</span>, <span class="math inline">\(r = (0.1)^{1/100} \approx 0.977\)</span>(!!)</li>
+<li>When <span class="math inline">\(p=1000\)</span>, <span class="math inline">\(r = (0.1)^{1/1000} \approx 0.999\)</span>(!!!)</li>
+</ul>
+</div>
+<div class="w-35">
 <div class="fragment">
 <!-- -->
 <h3 id="why-is-this-problematic">Why is this problematic?</h3>
 <ul>
-<li>All points are maximally far apart from all other points</li>
+<li>All points are maximally far apart</li>
 <li>Can’t distinguish between “similar” and “different” inputs</li>
 </ul>
 </div>
@@ -547,22 +530,22 @@ E\left[ \textstyle \sum_{k=1}^p (x_k - x_k')^2 \right]
 <h3 id="risk-decomposition-p-1">Risk decomposition (<span class="math inline">\(p &gt; 1\)</span>)</h3>
 <p><span class="small">Assuming optimal bandwidth of <span class="math inline">\(n^{-1/(4+p)}\)</span>…</span></p>
 <p><span class="math display">\[
-R_n^{(\mathrm{basis})} =
-  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
-  \underbrace{\tfrac{C_2^{(b)}}{n/p}}_{\mathrm{var}} +
+R_n^{(\mathrm{OLS})} =
+  \underbrace{C_1^{(\mathrm{lin})}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{lin})}}{n/p}}_{\mathrm{var}} +
   \sigma^2,
 \qquad
 R_n^{(\mathrm{local})} =
-  \underbrace{\tfrac{C_1^{(l)}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
-  \underbrace{\tfrac{C_2^{(l)}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+  \underbrace{\tfrac{C_1^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{var}} +
   \sigma^2.
 \]</span></p>
 <div class="fragment">
 <!-- -->
 <h3 id="observations">Observations</h3>
 <ul>
-<li><span class="math inline">\((C_1 + C_2) / n^{4/(4+p)}\)</span> is relatively big, but <span class="math inline">\(C_2^{(b)} / (n/p)\)</span> is relatively small.</li>
-<li>So unless <span class="math inline">\(C_1^{(b)}\)</span> is big, we should use the linear model.*<br>
+<li><span class="math inline">\((C_1^{(\mathrm{local})} + C_2^{(\mathrm{local})}) / n^{4/(4+p)}\)</span> is relatively big, but <span class="math inline">\(C_2^{(\mathrm{lin})} / (n/p)\)</span> is relatively small.</li>
+<li>So unless <span class="math inline">\(C_1^{(\mathrm{lin})}\)</span> is big, we should use the linear model.*<br>
 </li>
 </ul>
 </div>
