@@ -63,8 +63,8 @@ How does $R_n^{(\mathrm{basis})}$ compare to $R_n^{(\mathrm{local})}$ as we chan
 
 $$
 R_n^{(\mathrm{basis})} =
-  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
-  \underbrace{\frac{C_2^{(b)}}{n}}_{\mathrm{var}} +
+  \underbrace{C_1^{(\mathrm{basis})}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(\mathrm{basis})}}{n}}_{\mathrm{var}} +
   \sigma^2
 $$
 
@@ -74,8 +74,8 @@ $$
 
 $$
 R_n^{(\mathrm{local})} =
-  \underbrace{\frac{C_1^{(l)}}{n^{4/5}}}_{\mathrm{bias}^2} +
-  \underbrace{\frac{C_2^{(l)}}{n^{4/5}}}_{\mathrm{var}} +
+  \underbrace{\frac{C_1^{(\mathrm{local})}}{n^{4/5}}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(\mathrm{local})}}{n^{4/5}}}_{\mathrm{var}} +
   \sigma^2
 $$ 
 :::
@@ -92,7 +92,7 @@ _The constants_ don't matter for the intuition, but they matter for a particular
 ### What do you notice?
 ::: fragment
 - As $n$ increases, the optimal bandwidth $\sigma$ decreases
-- As $n \to \infty$, $R_n^{(\mathrm{basis})} \to C_1^{(b)} + \sigma^2$
+- As $n \to \infty$, $R_n^{(\mathrm{basis})} \to C_1^{(\mathrm{basis})} + \sigma^2$
 - As $n \to \infty$, $R_n^{(\mathrm{local})} \to \sigma^2$
 :::
 
@@ -138,62 +138,71 @@ automatically handle interactions.\
 
 ## Mathematically
 
-Let's say $x_1, \ldots, x_n$ are distributed *uniformly* over the space $\mathcal B_1(p)$\
-[$B_1(p)$ is the "unit ball," or the set of all $x$ such that $\Vert x \Vert_2 \leq 1$.]{.small}
-
-. . . 
-
-\
-[What is the *maximum* distance between any two points in $\mathcal B_1(p)$?]{.secondary}
-
-. . .
-
-$\Vert x - x' \Vert_2 \leq \Vert x \Vert_2 + \Vert x' \Vert_2 \leq 1 + 1 = 2.$
-
-. . .
-
-\
-[What about the *average* distance?]{.secondary}
-
-
-## The average (sq.) distance between points in $\mathcal B_1(p)$
-
-$$
-\begin{align}
-E\left[ \Vert x - x' \Vert_2^2 \right]
-&=
-E\left[ \textstyle \sum_{k=1}^p (x_k - x_k')^2 \right]
-\\
-&= \textstyle{
-  E[ \sum_{k=1}^p x_k^2 ] 
-  + 2 \sum_{k=1}^p \sum_{\ell=1}^p \underbrace{E[ x_l x'_k ]}_{=0}
-  + E[ \sum_{k=1}^p x_k^{\prime 2} ]
-}
-\\
-&= 2  E[ \textstyle{\sum_{k=1}^p} x_k^2 ] 
-= 2 E[ \Vert x \Vert_2^2 ]
-\end{align}
-$$
-
-. . .
-
-$2 E[ \Vert x \Vert_2^2 ] = 2^{1 - 1/p}.$
-
 ::: flex
+
 ::: w-60
-::: fragment
-- When $p=2$, $\frac{\text{avg dist}}{\text{max dist}} = 0.707$
-- When $p=5$, $\frac{\text{avg dist}}{\text{max dist}} = 0.871$!
-- When $p=10$, $\frac{\text{avg dist}}{\text{max dist}} = 0.933$!!
-- When $p=100$, $\frac{\text{avg dist}}{\text{max dist}} = 0.993$!!!
-:::
+Consider points $x_1, x_2, \ldots, x_n$ distributed *uniformly* within
+a $p$-dimensional ball of radius 1.
+For a test point $x$ at the center of the ball,
+how far away are its $k = n/10$ nearest neighbours?
 :::
 
 ::: w-40
+```{r fig.height=2.5, fig.width=2.5, echo=FALSE}
+# Load necessary library
+library(ggplot2)
+set.seed(10000)
+
+# Function to generate random points uniformly in a circle
+generate_uniform_points_in_circle <- function(n, r = 1) {
+  theta <- runif(n, 0, 2 * pi)  # Random angles
+  rho <- sqrt(runif(n, 0, 1)) * r  # Random radii adjusted for uniform distribution
+  x <- rho * cos(theta)
+  y <- rho * sin(theta)
+  return(data.frame(x = x, y = y))
+}
+
+# Circle drawing data
+circle <- data.frame(
+  x = cos(seq(0, 2 * pi, length.out = 100)),
+  y = sin(seq(0, 2 * pi, length.out = 100))
+)
+
+# Generate 10 uniformly distributed points
+points <- generate_uniform_points_in_circle(20)
+
+# Plot circle and points
+ggplot() +
+  geom_path(data = circle, aes(x = x, y = y), color = "blue") +  # Circle
+  geom_point(data = points, aes(x = x, y = y), color = "red", size = 3) +  # Points
+  geom_point(aes(x = 0, y = 0), color = "black", size = 4) +  # Point at center
+  geom_text(aes(x = 0, y = 0, label = "x"), vjust = -1, color = "black") +  # Label at center
+  coord_equal() +
+  theme_minimal() + 
+  labs(x = NULL, y = NULL)
+```
+:::
+
+:::
+
+. . . 
+
+::: flex
+::: w-60
+Let $r$ the the average distance between $x$ and its $k^\mathrm{th}$ nearest neighbour.
+
+- When $p=2$, $r = (0.1)^{1/2} \approx 0.316$
+- When $p=5$, $r = (0.1)^{1/5} \approx 0.631$
+- When $p=10$, $r = (0.1)^{1/10} \approx 0.794$(!)
+- When $p=100$, $r = (0.1)^{1/100} \approx 0.977$(!!)
+- When $p=1000$, $r = (0.1)^{1/1000} \approx 0.999$(!!!)
+:::
+
+::: w-35
 ::: fragment
 ### Why is this problematic?
 
-- All points are maximally far apart from all other points
+- All points are maximally far apart
 - Can't distinguish between "similar" and "different" inputs
 :::
 :::
@@ -210,22 +219,22 @@ Distance becomes (exponentially) meaningless in high dimensions.*\
 [Assuming optimal bandwidth of $n^{-1/(4+p)}$...]{.small}
 
 $$
-R_n^{(\mathrm{basis})} =
-  \underbrace{C_1^{(b)}}_{\mathrm{bias}^2} +
-  \underbrace{\tfrac{C_2^{(b)}}{n/p}}_{\mathrm{var}} +
+R_n^{(\mathrm{OLS})} =
+  \underbrace{C_1^{(\mathrm{lin})}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{lin})}}{n/p}}_{\mathrm{var}} +
   \sigma^2,
 \qquad
 R_n^{(\mathrm{local})} =
-  \underbrace{\tfrac{C_1^{(l)}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
-  \underbrace{\tfrac{C_2^{(l)}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+  \underbrace{\tfrac{C_1^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{var}} +
   \sigma^2.
 $$
 
 ::: fragment
 ### Observations
 
-- $(C_1 + C_2) / n^{4/(4+p)}$ is relatively big, but $C_2^{(b)} / (n/p)$ is relatively small.
-- So unless $C_1^{(b)}$ is big, we should use the linear model.*\
+- $(C_1^{(\mathrm{local})} + C_2^{(\mathrm{local})}) / n^{4/(4+p)}$ is relatively big, but $C_2^{(\mathrm{lin})} / (n/p)$ is relatively small.
+- So unless $C_1^{(\mathrm{lin})}$ is big, we should use the linear model.*\
 :::
 
 ## In practice
