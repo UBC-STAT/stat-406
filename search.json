@@ -1148,95 +1148,116 @@
     "text": "K-fold CV: Code\n\n#' @param data The full data set\n#' @param estimator Function. Has 1 argument (some data) and fits a model. \n#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and produces predictions\n#' @param error_fun Function. Has one arg: the test data, with fits added.\n#' @param kfolds Integer. The number of folds.\nkfold_cv &lt;- function(data, estimator, predictor, error_fun, kfolds = 5) {\n  n &lt;- nrow(data)\n  fold_labels &lt;- sample(rep(1:kfolds, length.out = n))\n  errors &lt;- double(kfolds)\n  for (fold in seq_len(kfolds)) {\n    test_rows &lt;- fold_labels == fold\n    train &lt;- data[!test_rows, ]\n    test &lt;- data[test_rows, ]\n    current_model &lt;- estimator(train)\n    test$.preds &lt;- predictor(current_model, test)\n    errors[fold] &lt;- error_fun(test)\n  }\n  mean(errors)\n}\n\n\n\nsomedata &lt;- data.frame(z = rnorm(100), x1 = rnorm(100), x2 = rnorm(100))\nest &lt;- function(dataset) lm(z ~ ., data = dataset)\npred &lt;- function(mod, dataset) predict(mod, newdata = dataset)\nerror_fun &lt;- function(testdata) mutate(testdata, errs = (z - .preds)^2) |&gt; pull(errs) |&gt; mean()\nkfold_cv(somedata, est, pred, error_fun, 5)\n\n[1] 0.8928686"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#section",
-    "href": "schedule/slides/13-gams-trees.html#section",
+    "objectID": "schedule/slides/25-pca-issues.html#section",
+    "href": "schedule/slides/25-pca-issues.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "13 GAMs and Trees",
-    "text": "13 GAMs and Trees\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 09 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "section": "25 Principal components, the troubles",
+    "text": "25 Principal components, the troubles\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#gams",
-    "href": "schedule/slides/13-gams-trees.html#gams",
+    "objectID": "schedule/slides/25-pca-issues.html#pca",
+    "href": "schedule/slides/25-pca-issues.html#pca",
     "title": "UBC Stat406 2024W",
-    "section": "GAMs",
-    "text": "GAMs\nLast time we discussed smoothing in multiple dimensions.\nHere we introduce the concept of GAMs (Generalized Additive Models)\nThe basic idea is to imagine that the response is the sum of some functions of the predictors:\n\\[\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}).\\]\nNote that OLS is a GAM (take \\(f_j(x_{j})=\\beta_j x_{j}\\)):\n\\[\\Expect{Y \\given X=x} = \\beta_0 + \\beta_1 x_{1}+\\cdots+\\beta_p x_{p}.\\]"
+    "section": "PCA",
+    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\nPCA works when the data can be represented (in a lower dimension) as lines (or planes, or hyperplanes).\nSo, in two dimensions:"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#gams-1",
-    "href": "schedule/slides/13-gams-trees.html#gams-1",
+    "objectID": "schedule/slides/25-pca-issues.html#pca-reduced",
+    "href": "schedule/slides/25-pca-issues.html#pca-reduced",
     "title": "UBC Stat406 2024W",
-    "section": "Gams",
-    "text": "Gams\nThese work by estimating each \\(f_i\\) using basis expansions in predictor \\(i\\)\nThe algorithm for fitting these things is called “backfitting” (very similar to the CD intuition for lasso):\n\nCenter \\(\\y\\) and \\(\\X\\).\nHold \\(f_k\\) for all \\(k\\neq j\\) fixed, and regress \\(\\X_j\\) on \\((\\y - \\widehat{\\y}_{-j})\\) using your favorite smoother.\nRepeat for \\(1\\leq j\\leq p\\).\nRepeat steps 2 and 3 until the estimated functions “stop moving” (iterate)\nReturn the results."
+    "section": "PCA reduced",
+    "text": "PCA reduced\nHere, we can capture a lot of the variation and underlying structure with just 1 dimension,\ninstead of the original 2 (the colouring is for visualizing)."
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example",
+    "objectID": "schedule/slides/25-pca-issues.html#pca-bad",
+    "href": "schedule/slides/25-pca-issues.html#pca-bad",
     "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\n\nlibrary(mgcv)\nset.seed(12345)\nn &lt;- 500\nsimple &lt;- tibble(\n  x1 = runif(n, 0, 2*pi),\n  x2 = runif(n),\n  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)\n)\n\npivot_longer(simple, -y, names_to = \"predictor\", values_to = \"x\") |&gt;\n  ggplot(aes(x, y)) +\n  geom_point(col = blue) +\n  facet_wrap(~predictor, scales = \"free_x\")"
+    "section": "PCA bad",
+    "text": "PCA bad\nWhat about other data structures? Again in two dimensions"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-1",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "objectID": "schedule/slides/25-pca-issues.html#pca-bad-1",
+    "href": "schedule/slides/25-pca-issues.html#pca-bad-1",
     "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\nSmooth each coordinate independently\n\nex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)\n# s(z) means \"smooth\" z, uses spline basis for each with ridge penalty, GCV\nplot(ex_smooth, pages = 1, scale = 0, shade = TRUE, \n     resid = TRUE, se = 2, las = 1)\n\nhead(coef(ex_smooth))\n\n(Intercept)     s(x1).1     s(x1).2     s(x1).3     s(x1).4     s(x1).5 \n 10.2070490  -4.5764100   0.7117161   0.4548928   0.5535001  -0.2092996 \n\nex_smooth$gcv.ubre\n\n    GCV.Cp \n0.06619721"
+    "section": "PCA bad",
+    "text": "PCA bad\nHere, we have failed miserably.\nThere is actually only 1 dimension to this data (imagine walking up the spiral going from purple to yellow).\nHowever, when we write it as 1 PCA dimension, all the points are all “mixed up”."
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#wherefore-gams",
-    "href": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "objectID": "schedule/slides/25-pca-issues.html#explanation",
+    "href": "schedule/slides/25-pca-issues.html#explanation",
     "title": "UBC Stat406 2024W",
-    "section": "Wherefore GAMs?",
-    "text": "Wherefore GAMs?\nIf\n\\(\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}),\\)\nthen\n\\(\\textrm{MSE}(\\hat f) = \\frac{Cp}{n^{4/5}} + \\sigma^2.\\)\n\nExponent no longer depends on \\(p\\). Converges faster. (If the truth is additive.)\nYou could also use the same methods to include “some” interactions like\n\n\\[\\begin{aligned}&\\Expect{Y \\given X=x}\\\\ &= \\beta_0 + f_{12}(x_{1},\\ x_{2})+f_3(x_3)+\\cdots+f_p(x_{p}),\\end{aligned}\\]"
+    "section": "Explanation",
+    "text": "Explanation\n\n\nPCA wants to minimize distances (equivalently maximize variance).\nThis means it slices through the data at the meatiest point, and then the next one, and so on.\nIf the data are curved this is going to induce artifacts.\nPCA also looks at things as being close if they are near each other in a Euclidean sense.\nOn the spiral, our intuition says that things are close only if the distance is constrained to go along the curve.\nIn other words, purple and blue are close, blue and yellow are not."
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-2",
-    "href": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca",
+    "href": "schedule/slides/25-pca-issues.html#kernel-pca",
     "title": "UBC Stat406 2024W",
-    "section": "Very small example",
-    "text": "Very small example\nSmooth two coordinates together\n\nex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)\nplot(ex_smooth2,\n  scheme = 2, scale = 0, shade = TRUE,\n  resid = TRUE, se = 2, las = 1\n)"
+    "section": "Kernel PCA",
+    "text": "Kernel PCA\nClassical PCA comes from \\(\\X=  \\U\\D\\V^{\\top}\\), the SVD of the (centered) data\nHowever, we can just as easily get it from the outer product \\(\\mathbf{K} = \\X\\X^{\\top} =  \\U\\D^2\\U^{\\top}\\)\nThe intuition behind KPCA is that \\(\\mathbf{K}\\) is an expansion into a kernel space, where \\[\\mathbf{K}_{i,i'} = k(x_i,\\ x_{i'}) = \\langle x_i,x_{i'} \\rangle\\]\nWe saw this trick before with feature expansion."
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#regression-trees",
-    "href": "schedule/slides/13-gams-trees.html#regression-trees",
+    "objectID": "schedule/slides/25-pca-issues.html#procedure",
+    "href": "schedule/slides/25-pca-issues.html#procedure",
     "title": "UBC Stat406 2024W",
-    "section": "Regression trees",
-    "text": "Regression trees\nTrees involve stratifying or segmenting the predictor space into a number of simple regions.\nTrees are simple and useful for interpretation.\nBasic trees are not great at prediction.\nModern methods that use trees are much better (Module 4)"
+    "section": "Procedure",
+    "text": "Procedure\n\nSpecify a kernel function \\(k\\)\nmany people use \\(k(x,x') = \\exp\\left( -d(x, x')/\\gamma\\right)\\) where \\(d(x,x') = \\norm{x-x'}_2^2\\)\nForm \\(\\mathbf{K}_{i,i'} = k(x_i,x_{i'})\\)\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\) where \\(\\mathbf{P} = \\mathbf{I}_n - \\mathbf{11}^\\top / n\\)\nTake eigendecomposition \\(\\mathbf{K} = \\U\\D^2\\U^{\\top}\\)\n\nThe scores are still \\(\\mathbf{Z} = \\U_M\\D_M\\)\n\n\n\n\n\n\nNote\n\n\nWe don’t explicitly generate the feature map \\(\\longrightarrow\\) there are NO loadings"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#regression-trees-1",
-    "href": "schedule/slides/13-gams-trees.html#regression-trees-1",
+    "objectID": "schedule/slides/25-pca-issues.html#an-alternate-view",
+    "href": "schedule/slides/25-pca-issues.html#an-alternate-view",
     "title": "UBC Stat406 2024W",
-    "section": "Regression trees",
-    "text": "Regression trees\nRegression trees estimate piece-wise constant functions\nThe slabs are axis-parallel rectangles \\(R_1,\\ldots,R_K\\) based on \\(\\X\\)\nIn each region, we average the \\(y_i\\)’s: \\(\\hat\\mu_1,\\ldots,\\hat\\mu_k\\)\nMinimize \\(\\sum_{k=1}^K \\sum_{i=1}^n (y_i-\\mu_k)^2\\) over \\(R_k,\\mu_k\\) for \\(k\\in \\{1,\\ldots,K\\}\\)\n\nThis sounds more complicated than it is.\nThe minimization is performed greedily (like forward stepwise regression)."
+    "section": "An alternate view",
+    "text": "An alternate view\nTo get the first PC in classical PCA, we solve \\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\nIn the kernel setting we solve \\[\\max_{g \\in \\mathcal{H}_k} \\Var{g(X)} \\quad \\textrm{ subject to } \\quad\\left|\\left| g \\right|\\right|_{\\mathcal{H}_k} = 1\\]\nHere \\(\\mathcal{H}_k\\) is a function space determined by \\(k(x,x')\\)."
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#mobility-data",
-    "href": "schedule/slides/13-gams-trees.html#mobility-data",
+    "objectID": "schedule/slides/25-pca-issues.html#example-kernels",
+    "href": "schedule/slides/25-pca-issues.html#example-kernels",
     "title": "UBC Stat406 2024W",
-    "section": "Mobility data",
-    "text": "Mobility data\n\nbigtree &lt;- tree(Mobility ~ ., data = mob)\nsmalltree &lt;- prune.tree(bigtree, k = .09)\ndraw.tree(smalltree, digits = 2)\n\n\nThis is called the dendrogram"
+    "section": "Example kernels",
+    "text": "Example kernels\n\n\\(k(x,x') = x^\\top x'\\)\n\ngives back regular PCA\n\n\\(k(x,x') = (1+x^\\top x')^d\\)\n\ngives a function space which contains all \\(d^{th}\\)-order\n\n\npolynomials.\n\n\\(k(x,x') = \\exp(-\\norm{x-x'}_2^2/\\gamma)\\)\n\ngives a function space spanned by the infinite Fourier basis\n\n\n\nFor more details see [ESL 14.5]"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#partition-view",
-    "href": "schedule/slides/13-gams-trees.html#partition-view",
+    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
+    "href": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
     "title": "UBC Stat406 2024W",
-    "section": "Partition view",
-    "text": "Partition view\n\nmob$preds &lt;- predict(smalltree)\npar(mfrow = c(1, 2), mar = c(5, 3, 0, 0))\ndraw.tree(smalltree, digits = 2)\ncols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]\nplot(mob$Black, mob$Commute,\n  pch = 19, cex = .4, bty = \"n\", las = 1, col = cols,\n  ylab = \"Commute time\", xlab = \"% Black\"\n)\npartition.tree(smalltree, add = TRUE, ordvars = c(\"Black\", \"Commute\"))\n\n\nWe predict all observations in a region with the same value.\n\\(\\bullet\\) The three regions correspond to the leaves of the tree."
+    "section": "Kernel PCA on the spiral",
+    "text": "Kernel PCA on the spiral\n\n\nCode\nn &lt;- nrow(df_spiral)\nI_M &lt;- (diag(n) - tcrossprod(rep(1, n)) / n)\nkp &lt;- (tcrossprod(as.matrix(df_spiral[, 1:2])) + 1)^2\nKp &lt;- I_M %*% kp %*% I_M\nEp &lt;- eigen(Kp, symmetric = TRUE)\npolydf &lt;- tibble(\n  x = Ep$vectors[, 1] * Ep$values[1],\n  y = jit,\n  z = df_spiral$z\n)\nkg &lt;- exp(-as.matrix(dist(df_spiral[, 1:2]))^2 / 1)\nKg &lt;- I_M %*% kg %*% I_M\nEg &lt;- eigen(Kg, symmetric = TRUE)\ngaussdf &lt;- tibble(\n  x = Eg$vectors[, 1] * Eg$values[1],\n  y = jit,\n  z = df_spiral$z\n)\ndfkern &lt;- bind_rows(df_spiral, df_spiral2, polydf, gaussdf)\ndfkern$method &lt;- rep(c(\"data\", \"pca\", \"kpoly (d = 2)\", \"kgauss (gamma = 1)\"), each = n)"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#section-2",
-    "href": "schedule/slides/13-gams-trees.html#section-2",
+    "objectID": "schedule/slides/25-pca-issues.html#kpca-summary",
+    "href": "schedule/slides/25-pca-issues.html#kpca-summary",
     "title": "UBC Stat406 2024W",
-    "section": "",
-    "text": "draw.tree(bigtree, digits = 2)\n\n\nTerminology\nWe call each split or end point a node. Each terminal node is referred to as a leaf.\nThe interior nodes lead to branches."
+    "section": "KPCA: summary",
+    "text": "KPCA: summary\nKernel PCA seeks to generalize the notion of similarity using a kernel map\nThis can be interpreted as finding smooth, orthogonal directions in an RKHS\nThis can allow us to start picking up nonlinear (in the original feature space) aspects of our data\nThis new representation can be passed to a supervised method to form a semisupervised learner\nThis kernel is different than kernel smoothing!!\n\nJust like with PCA (and lots of other things) the way you measure distance is important\nThe choice of Kernel is important\nThe embedding dimension must be chosen"
   },
   {
-    "objectID": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
-    "href": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
+    "objectID": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
+    "href": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
     "title": "UBC Stat406 2024W",
-    "section": "Advantages and disadvantages of trees",
-    "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Full trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
+    "section": "Basic semi-supervised (see [ISLR 6.3.1])",
+    "text": "Basic semi-supervised (see [ISLR 6.3.1])\n\nYou get data \\(\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\).\nYou do something unsupervised on \\(\\X\\) to create new features (like PCA).\nYou use the learned features to find a predictor \\(\\hat{f}\\) (say, do OLS on them)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#quick-example",
+    "href": "schedule/slides/25-pca-issues.html#quick-example",
+    "title": "UBC Stat406 2024W",
+    "section": "Quick example",
+    "text": "Quick example\n\nmusic &lt;- Stat406::popmusic_train\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE)\nZ &lt;- predict(pca)[, 1:2]\nZgrid &lt;- expand.grid(\n  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), \n  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)\n)\nout &lt;- class::knn(Z, Zgrid, music$artist, k = 6)"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#why",
+    "href": "schedule/slides/25-pca-issues.html#why",
+    "title": "UBC Stat406 2024W",
+    "section": "Why?",
+    "text": "Why?\nRecall that for nonparametric regression, we must deal with the curse of dimensionality.\n\nThis did KNN in 2 dimensions instead of 8: less curse\nHowever, the dimensions were learned independently of \\(\\y\\): may not be helpful\nThere’s a bias-variance tradeoff here…"
+  },
+  {
+    "objectID": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "href": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
+    "title": "UBC Stat406 2024W",
+    "section": "What is PCA / KPCA estimating?",
+    "text": "What is PCA / KPCA estimating?\nImagine that the Population data lie near a low-dimensional linear manifold…\n\nThink of the spiral. (1D manifold in 2D space)\nOr a flat piece of paper (2D manifold in 3D space)\n\nPCA / KPCA are estimating the manifold.\n\nThis works well under some conditions\nAnd if it’s true, then we have reduced variance but added a bit of bias\nAnd the downstream method may work better, because there are fewer predictors.\n\nWe just need the data near the manifold. But if not, then we introduced a lot of bias.\nPCA estimates linear manifolds, KPCA estimates non-linear"
   },
   {
     "objectID": "schedule/slides/26-pca-v-kpca.html#section",
@@ -3955,116 +3976,88 @@
     "text": "Plotting the weights\n\n\nCode\npca$rotation[, 1:2] |&gt;\n  as_tibble() |&gt;\n  mutate(feature = names(X)) |&gt;\n  pivot_longer(-feature) |&gt;\n  ggplot(aes(value, feature, fill = feature)) +\n  facet_wrap(~name) +\n  geom_col() +\n  theme(legend.position = \"none\", axis.title = element_blank()) +\n  scale_fill_brewer(palette = \"Dark2\") +\n  geom_vline(xintercept = 0)"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#section",
-    "href": "schedule/slides/25-pca-issues.html#section",
+    "objectID": "schedule/slides/13-gams-trees.html#section",
+    "href": "schedule/slides/13-gams-trees.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "25 Principal components, the troubles",
-    "text": "25 Principal components, the troubles\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "13 GAMs and Trees",
+    "text": "13 GAMs and Trees\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 08 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#pca",
-    "href": "schedule/slides/25-pca-issues.html#pca",
+    "objectID": "schedule/slides/13-gams-trees.html#gams",
+    "href": "schedule/slides/13-gams-trees.html#gams",
     "title": "UBC Stat406 2024W",
-    "section": "PCA",
-    "text": "PCA\nIf we knew how to rotate our data, then we could more easily retain the structure.\nPCA gives us exactly this rotation\nPCA works when the data can be represented (in a lower dimension) as lines (or planes, or hyperplanes).\nSo, in two dimensions:"
+    "section": "GAMs",
+    "text": "GAMs\nLast time we discussed smoothing in multiple dimensions.\nHere we introduce the concept of GAMs (Generalized Additive Models)\nThe basic idea is to imagine that the response is the sum of some functions of the predictors:\n\\[\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}).\\]\nNote that OLS is a GAM (take \\(f_j(x_{j})=\\beta_j x_{j}\\)):\n\\[\\Expect{Y \\given X=x} = \\beta_0 + \\beta_1 x_{1}+\\cdots+\\beta_p x_{p}.\\]"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-reduced",
-    "href": "schedule/slides/25-pca-issues.html#pca-reduced",
+    "objectID": "schedule/slides/13-gams-trees.html#gams-1",
+    "href": "schedule/slides/13-gams-trees.html#gams-1",
     "title": "UBC Stat406 2024W",
-    "section": "PCA reduced",
-    "text": "PCA reduced\nHere, we can capture a lot of the variation and underlying structure with just 1 dimension,\ninstead of the original 2 (the colouring is for visualizing)."
+    "section": "Gams",
+    "text": "Gams\nThese work by estimating each \\(f_i\\) using basis expansions in predictor \\(i\\)\nThe algorithm for fitting these things is called “backfitting” (very similar to the CD intuition for lasso):\n\nCenter \\(\\y\\) and \\(\\X\\).\nHold \\(f_k\\) for all \\(k\\neq j\\) fixed, and regress \\(\\X_j\\) on \\((\\y - \\widehat{\\y}_{-j})\\) using your favorite smoother.\nRepeat for \\(1\\leq j\\leq p\\).\nRepeat steps 2 and 3 until the estimated functions “stop moving” (iterate)\nReturn the results."
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-bad",
-    "href": "schedule/slides/25-pca-issues.html#pca-bad",
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example",
     "title": "UBC Stat406 2024W",
-    "section": "PCA bad",
-    "text": "PCA bad\nWhat about other data structures? Again in two dimensions"
+    "section": "Very small example",
+    "text": "Very small example\n\nlibrary(mgcv)\nset.seed(12345)\nn &lt;- 500\nsimple &lt;- tibble(\n  x1 = runif(n, 0, 2*pi),\n  x2 = runif(n),\n  y = 5 + 2 * sin(x1) + 8 * sqrt(x2) + rnorm(n, sd = .25)\n)\n\npivot_longer(simple, -y, names_to = \"predictor\", values_to = \"x\") |&gt;\n  ggplot(aes(x, y)) +\n  geom_point(col = blue) +\n  facet_wrap(~predictor, scales = \"free_x\")"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#pca-bad-1",
-    "href": "schedule/slides/25-pca-issues.html#pca-bad-1",
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-1",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-1",
     "title": "UBC Stat406 2024W",
-    "section": "PCA bad",
-    "text": "PCA bad\nHere, we have failed miserably.\nThere is actually only 1 dimension to this data (imagine walking up the spiral going from purple to yellow).\nHowever, when we write it as 1 PCA dimension, all the points are all “mixed up”."
+    "section": "Very small example",
+    "text": "Very small example\nSmooth each coordinate independently\n\nex_smooth &lt;- gam(y ~ s(x1) + s(x2), data = simple)\n# s(z) means \"smooth\" z, uses spline basis for each with ridge penalty, GCV\nplot(ex_smooth, pages = 1, scale = 0, shade = TRUE, \n     resid = TRUE, se = 2, las = 1)\n\nhead(coef(ex_smooth))\n\n(Intercept)     s(x1).1     s(x1).2     s(x1).3     s(x1).4     s(x1).5 \n 10.2070490  -4.5764100   0.7117161   0.4548928   0.5535001  -0.2092996 \n\nex_smooth$gcv.ubre\n\n    GCV.Cp \n0.06619721"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#explanation",
-    "href": "schedule/slides/25-pca-issues.html#explanation",
+    "objectID": "schedule/slides/13-gams-trees.html#wherefore-gams",
+    "href": "schedule/slides/13-gams-trees.html#wherefore-gams",
     "title": "UBC Stat406 2024W",
-    "section": "Explanation",
-    "text": "Explanation\n\n\nPCA wants to minimize distances (equivalently maximize variance).\nThis means it slices through the data at the meatiest point, and then the next one, and so on.\nIf the data are curved this is going to induce artifacts.\nPCA also looks at things as being close if they are near each other in a Euclidean sense.\nOn the spiral, our intuition says that things are close only if the distance is constrained to go along the curve.\nIn other words, purple and blue are close, blue and yellow are not."
+    "section": "Wherefore GAMs?",
+    "text": "Wherefore GAMs?\nIf\n\\(\\Expect{Y \\given X=x} = \\beta_0 + f_1(x_{1})+\\cdots+f_p(x_{p}),\\)\nthen\n\\[\nR_n^{(\\mathrm{GAM})} =\n  \\underbrace{\\frac{C_1^{(\\mathrm{GAM})}}{n^{4/5}}}_{\\mathrm{bias}^2} +\n  \\underbrace{\\frac{C_2^{(\\mathrm{GAM})}}{n^{4/5}}}_{\\mathrm{var}} +\n  \\sigma^2.\n\\] Compare with OLS and non-additive local smoothers:\n\\[\nR_n^{(\\mathrm{OLS})} =\n  \\underbrace{C_1^{(\\mathrm{OLS})}}_{\\mathrm{bias}^2} +\n  \\underbrace{\\tfrac{C_2^{(\\mathrm{OLS})}}{n/p}}_{\\mathrm{var}} +\n  \\sigma^2,\n\\qquad\nR_n^{(\\mathrm{local})} =\n  \\underbrace{\\tfrac{C_1^{(\\mathrm{local})}}{n^{4/(4+p)}}}_{\\mathrm{bias}^2} +\n  \\underbrace{\\tfrac{C_2^{(\\mathrm{local})}}{n^{4/(4+p)}}}_{\\mathrm{var}} +\n  \\sigma^2.\n\\]"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca",
-    "href": "schedule/slides/25-pca-issues.html#kernel-pca",
+    "objectID": "schedule/slides/13-gams-trees.html#very-small-example-2",
+    "href": "schedule/slides/13-gams-trees.html#very-small-example-2",
     "title": "UBC Stat406 2024W",
-    "section": "Kernel PCA",
-    "text": "Kernel PCA\nClassical PCA comes from \\(\\X=  \\U\\D\\V^{\\top}\\), the SVD of the (centered) data\nHowever, we can just as easily get it from the outer product \\(\\mathbf{K} = \\X\\X^{\\top} =  \\U\\D^2\\U^{\\top}\\)\nThe intuition behind KPCA is that \\(\\mathbf{K}\\) is an expansion into a kernel space, where \\[\\mathbf{K}_{i,i'} = k(x_i,\\ x_{i'}) = \\langle x_i,x_{i'} \\rangle\\]\nWe saw this trick before with feature expansion."
+    "section": "Very small example",
+    "text": "Very small example\nSmooth two coordinates together\n\nex_smooth2 &lt;- gam(y ~ s(x1, x2), data = simple)\nplot(ex_smooth2,\n  scheme = 2, scale = 0, shade = TRUE,\n  resid = TRUE, se = 2, las = 1\n)"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#procedure",
-    "href": "schedule/slides/25-pca-issues.html#procedure",
+    "objectID": "schedule/slides/13-gams-trees.html#regression-trees",
+    "href": "schedule/slides/13-gams-trees.html#regression-trees",
     "title": "UBC Stat406 2024W",
-    "section": "Procedure",
-    "text": "Procedure\n\nSpecify a kernel function \\(k\\)\nmany people use \\(k(x,x') = \\exp\\left( -d(x, x')/\\gamma\\right)\\) where \\(d(x,x') = \\norm{x-x'}_2^2\\)\nForm \\(\\mathbf{K}_{i,i'} = k(x_i,x_{i'})\\)\nDouble center \\(\\mathbf{K} = \\mathbf{PKP}\\) where \\(\\mathbf{P} = \\mathbf{I}_n - \\mathbf{11}^\\top / n\\)\nTake eigendecomposition \\(\\mathbf{K} = \\U\\D^2\\U^{\\top}\\)\n\nThe scores are still \\(\\mathbf{Z} = \\U_M\\D_M\\)\n\n\n\n\n\n\nNote\n\n\nWe don’t explicitly generate the feature map \\(\\longrightarrow\\) there are NO loadings"
+    "section": "Regression trees",
+    "text": "Regression trees\n\nTrees involve stratifying or segmenting the predictor space into a number of simple regions.\nTrees are simple and useful for interpretation.\n\nBasic trees are not great at prediction.\nModern methods that use trees are much better (Module 4)"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#an-alternate-view",
-    "href": "schedule/slides/25-pca-issues.html#an-alternate-view",
+    "objectID": "schedule/slides/13-gams-trees.html#example-with-mobility-data",
+    "href": "schedule/slides/13-gams-trees.html#example-with-mobility-data",
     "title": "UBC Stat406 2024W",
-    "section": "An alternate view",
-    "text": "An alternate view\nTo get the first PC in classical PCA, we solve \\[\\max_\\alpha \\Var{\\X\\alpha} \\quad \\textrm{ subject to } \\quad \\left|\\left| \\alpha \\right|\\right|_2^2 = 1\\]\nIn the kernel setting we solve \\[\\max_{g \\in \\mathcal{H}_k} \\Var{g(X)} \\quad \\textrm{ subject to } \\quad\\left|\\left| g \\right|\\right|_{\\mathcal{H}_k} = 1\\]\nHere \\(\\mathcal{H}_k\\) is a function space determined by \\(k(x,x')\\)."
+    "section": "Example with mobility data",
+    "text": "Example with mobility data\n\n\n“Small” tree\n\n\nCode\ndata(\"mobility\", package = \"Stat406\")\nlibrary(tree)\nlibrary(maptree)\nmob &lt;- mobility[complete.cases(mobility), ] %&gt;% dplyr::select(-ID, -Name)\nset.seed(12345)\npar(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0))\nbigtree &lt;- tree(Mobility ~ ., data = mob)\nsmalltree &lt;- prune.tree(bigtree, k = .09)\ndraw.tree(smalltree, digits = 2)\n\n\n\n\n\n\n\n\n\n\n\n“Big” tree\n\n\n\n\n\n\n\n\n\n\n\nTerminology\n\nWe call each split or end point a node.\nEach terminal node is referred to as a leaf."
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#example-kernels",
-    "href": "schedule/slides/25-pca-issues.html#example-kernels",
+    "objectID": "schedule/slides/13-gams-trees.html#example-with-mobility-data-1",
+    "href": "schedule/slides/13-gams-trees.html#example-with-mobility-data-1",
     "title": "UBC Stat406 2024W",
-    "section": "Example kernels",
-    "text": "Example kernels\n\n\\(k(x,x') = x^\\top x'\\)\n\ngives back regular PCA\n\n\\(k(x,x') = (1+x^\\top x')^d\\)\n\ngives a function space which contains all \\(d^{th}\\)-order\n\n\npolynomials.\n\n\\(k(x,x') = \\exp(-\\norm{x-x'}_2^2/\\gamma)\\)\n\ngives a function space spanned by the infinite Fourier basis\n\n\n\nFor more details see [ESL 14.5]"
+    "section": "Example with mobility data",
+    "text": "Example with mobility data\n\n\nCode\nmob$preds &lt;- predict(smalltree)\npar(mfrow = c(1, 2), mar = c(5, 3, 0, 0))\ndraw.tree(smalltree, digits = 2)\ncols &lt;- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)]\nplot(mob$Black, mob$Commute,\n  pch = 19, cex = .4, bty = \"n\", las = 1, col = cols,\n  ylab = \"Commute time\", xlab = \"% Black\"\n)\npartition.tree(smalltree, add = TRUE, ordvars = c(\"Black\", \"Commute\"))\n\n\n\n(The three regions correspond to the leaves of the tree.)\n\n\nTrees are piecewise constant functions.\nWe predict all observations in a region with the same value.\nPrediction regions are axis-parallel rectangles \\(R_1,\\ldots,R_K\\) based on \\(\\X\\)"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
-    "href": "schedule/slides/25-pca-issues.html#kernel-pca-on-the-spiral",
+    "objectID": "schedule/slides/13-gams-trees.html#constructing-trees",
+    "href": "schedule/slides/13-gams-trees.html#constructing-trees",
     "title": "UBC Stat406 2024W",
-    "section": "Kernel PCA on the spiral",
-    "text": "Kernel PCA on the spiral\n\n\nCode\nn &lt;- nrow(df_spiral)\nI_M &lt;- (diag(n) - tcrossprod(rep(1, n)) / n)\nkp &lt;- (tcrossprod(as.matrix(df_spiral[, 1:2])) + 1)^2\nKp &lt;- I_M %*% kp %*% I_M\nEp &lt;- eigen(Kp, symmetric = TRUE)\npolydf &lt;- tibble(\n  x = Ep$vectors[, 1] * Ep$values[1],\n  y = jit,\n  z = df_spiral$z\n)\nkg &lt;- exp(-as.matrix(dist(df_spiral[, 1:2]))^2 / 1)\nKg &lt;- I_M %*% kg %*% I_M\nEg &lt;- eigen(Kg, symmetric = TRUE)\ngaussdf &lt;- tibble(\n  x = Eg$vectors[, 1] * Eg$values[1],\n  y = jit,\n  z = df_spiral$z\n)\ndfkern &lt;- bind_rows(df_spiral, df_spiral2, polydf, gaussdf)\ndfkern$method &lt;- rep(c(\"data\", \"pca\", \"kpoly (d = 2)\", \"kgauss (gamma = 1)\"), each = n)"
+    "section": "Constructing Trees",
+    "text": "Constructing Trees\n\n\nIterative algorithm:\n\nWhile (\\(\\mathtt{depth} \\ne \\mathtt{max.depth}\\)):\n\nFor each existing region \\(R_k\\)\n\nFor a given splitting variable \\(j\\) and split value \\(s\\), define \\[\n\\begin{align}\nR_k^&gt; &= \\{x \\in R_k : x^{(j)} &gt; s\\} \\\\\nR_k^&lt; &= \\{x \\in R_k : x^{(j)} &gt; s\\}\n\\end{align}\n\\]\nChoose \\(j\\) and \\(s\\) to minimize \\[|R_k^&gt;| \\cdot \\widehat{Var}(R_k^&gt;) + |R_k^&lt;| \\cdot  \\widehat{Var}(R_k^&lt;)\\]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis algorithm is greedy, so it doesn’t find the optimal tree\n(But it works well!)"
   },
   {
-    "objectID": "schedule/slides/25-pca-issues.html#kpca-summary",
-    "href": "schedule/slides/25-pca-issues.html#kpca-summary",
+    "objectID": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
+    "href": "schedule/slides/13-gams-trees.html#advantages-and-disadvantages-of-trees",
     "title": "UBC Stat406 2024W",
-    "section": "KPCA: summary",
-    "text": "KPCA: summary\nKernel PCA seeks to generalize the notion of similarity using a kernel map\nThis can be interpreted as finding smooth, orthogonal directions in an RKHS\nThis can allow us to start picking up nonlinear (in the original feature space) aspects of our data\nThis new representation can be passed to a supervised method to form a semisupervised learner\nThis kernel is different than kernel smoothing!!\n\nJust like with PCA (and lots of other things) the way you measure distance is important\nThe choice of Kernel is important\nThe embedding dimension must be chosen"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
-    "href": "schedule/slides/25-pca-issues.html#basic-semi-supervised-see-islr-6.3.1",
-    "title": "UBC Stat406 2024W",
-    "section": "Basic semi-supervised (see [ISLR 6.3.1])",
-    "text": "Basic semi-supervised (see [ISLR 6.3.1])\n\nYou get data \\(\\{(x_1,y_1),\\ldots,(x_n,y_n)\\}\\).\nYou do something unsupervised on \\(\\X\\) to create new features (like PCA).\nYou use the learned features to find a predictor \\(\\hat{f}\\) (say, do OLS on them)"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#quick-example",
-    "href": "schedule/slides/25-pca-issues.html#quick-example",
-    "title": "UBC Stat406 2024W",
-    "section": "Quick example",
-    "text": "Quick example\n\nmusic &lt;- Stat406::popmusic_train\nX &lt;- music |&gt; select(danceability:energy, loudness, speechiness:valence)\npca &lt;- prcomp(X, scale = TRUE)\nZ &lt;- predict(pca)[, 1:2]\nZgrid &lt;- expand.grid(\n  Z1 = seq(min(Z[,1]), max(Z[,1]), len = 100L), \n  Z2 = seq(min(Z[,2]), max(Z[,2]), len = 100L)\n)\nout &lt;- class::knn(Z, Zgrid, music$artist, k = 6)"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#why",
-    "href": "schedule/slides/25-pca-issues.html#why",
-    "title": "UBC Stat406 2024W",
-    "section": "Why?",
-    "text": "Why?\nRecall that for nonparametric regression, we must deal with the curse of dimensionality.\n\nThis did KNN in 2 dimensions instead of 8: less curse\nHowever, the dimensions were learned independently of \\(\\y\\): may not be helpful\nThere’s a bias-variance tradeoff here…"
-  },
-  {
-    "objectID": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
-    "href": "schedule/slides/25-pca-issues.html#what-is-pca-kpca-estimating",
-    "title": "UBC Stat406 2024W",
-    "section": "What is PCA / KPCA estimating?",
-    "text": "What is PCA / KPCA estimating?\nImagine that the Population data lie near a low-dimensional linear manifold…\n\nThink of the spiral. (1D manifold in 2D space)\nOr a flat piece of paper (2D manifold in 3D space)\n\nPCA / KPCA are estimating the manifold.\n\nThis works well under some conditions\nAnd if it’s true, then we have reduced variance but added a bit of bias\nAnd the downstream method may work better, because there are fewer predictors.\n\nWe just need the data near the manifold. But if not, then we introduced a lot of bias.\nPCA estimates linear manifolds, KPCA estimates non-linear"
+    "section": "Advantages and disadvantages of trees",
+    "text": "Advantages and disadvantages of trees\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle categorical predictors without the need to create one-hot encodings.\n🎉 Trees are GREAT for missing data!!!\n💩 Trees aren’t very good at prediction.\n💩 Big trees badly overfit, so we “prune” them using CV\n\nWe’ll talk more about trees next module for Classification."
   },
   {
     "objectID": "schedule/slides/10-basis-expansions.html#section",

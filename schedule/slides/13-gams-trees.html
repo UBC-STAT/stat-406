@@ -398,7 +398,7 @@
 <h2>13 GAMs and Trees</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 09 October 2023</p>
+<p>Last modified – 08 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,6 +424,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="gams" class="slide level2">
@@ -492,9 +495,29 @@
 <p>If</p>
 <p><span class="math inline">\(\Expect{Y \given X=x} = \beta_0 + f_1(x_{1})+\cdots+f_p(x_{p}),\)</span></p>
 <p>then</p>
-<p><span class="math inline">\(\textrm{MSE}(\hat f) = \frac{Cp}{n^{4/5}} + \sigma^2.\)</span></p>
+<p><span class="math display">\[
+R_n^{(\mathrm{GAM})} =
+  \underbrace{\frac{C_1^{(\mathrm{GAM})}}{n^{4/5}}}_{\mathrm{bias}^2} +
+  \underbrace{\frac{C_2^{(\mathrm{GAM})}}{n^{4/5}}}_{\mathrm{var}} +
+  \sigma^2.
+\]</span> Compare with OLS and non-additive local smoothers:</p>
+<p><span class="math display">\[
+R_n^{(\mathrm{OLS})} =
+  \underbrace{C_1^{(\mathrm{OLS})}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{OLS})}}{n/p}}_{\mathrm{var}} +
+  \sigma^2,
+\qquad
+R_n^{(\mathrm{local})} =
+  \underbrace{\tfrac{C_1^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+  \underbrace{\tfrac{C_2^{(\mathrm{local})}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+  \sigma^2.
+\]</span></p>
+</section>
+<section class="slide level2">
+
 <ul>
-<li><p>Exponent no longer depends on <span class="math inline">\(p\)</span>. Converges faster. (If the truth is additive.)</p></li>
+<li><p>We no longer have an exponential dependence on <span class="math inline">\(p\)</span>!</p></li>
+<li><p>But our predictor is restrictive to functions that decompose additively. (This is a big limitation.)</p></li>
 <li><p>You could also use the same methods to include “some” interactions like</p></li>
 </ul>
 <p><span class="math display">\[\begin{aligned}&amp;\Expect{Y \given X=x}\\ &amp;= \beta_0 + f_{12}(x_{1},\ x_{2})+f_3(x_3)+\cdots+f_p(x_{p}),\end{aligned}\]</span></p>
@@ -513,39 +536,65 @@
 <img data-src="13-gams-trees_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="regression-trees" class="slide level2">
 <h2>Regression trees</h2>
-<p>Trees involve stratifying or segmenting the predictor space into a number of simple regions.</p>
-<p>Trees are simple and useful for interpretation.</p>
-<p>Basic trees are not great at prediction.</p>
-<p>Modern methods that use trees are much better (Module 4)</p>
+<ul>
+<li>Trees involve stratifying or segmenting the predictor space into a number of simple regions.</li>
+<li>Trees are simple and useful for interpretation.<br>
+</li>
+<li>Basic trees are not great at prediction.</li>
+<li>Modern methods that use trees are much better (Module 4)</li>
+</ul>
 </section>
-<section id="regression-trees-1" class="slide level2">
-<h2>Regression trees</h2>
-<p>Regression trees estimate piece-wise constant functions</p>
-<p>The slabs are axis-parallel rectangles <span class="math inline">\(R_1,\ldots,R_K\)</span> based on <span class="math inline">\(\X\)</span></p>
-<p>In each region, we average the <span class="math inline">\(y_i\)</span>’s: <span class="math inline">\(\hat\mu_1,\ldots,\hat\mu_k\)</span></p>
-<p>Minimize <span class="math inline">\(\sum_{k=1}^K \sum_{i=1}^n (y_i-\mu_k)^2\)</span> over <span class="math inline">\(R_k,\mu_k\)</span> for <span class="math inline">\(k\in \{1,\ldots,K\}\)</span></p>
-<div class="fragment">
-<p>This sounds more complicated than it is.</p>
-<p>The minimization is performed <strong>greedily</strong> (like forward stepwise regression).</p>
-</div>
-</section>
-<section id="section-1" class="slide level2">
-<h2></h2>
-
-<img data-src="https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png" class="r-stretch"></section>
-<section id="mobility-data" class="slide level2">
-<h2>Mobility data</h2>
+<section id="example-with-mobility-data" class="slide level2">
+<h2>Example with mobility data</h2>
+<div class="flex">
+<div class="w-50">
+<p>“Small” tree</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>bigtree <span class="ot">&lt;-</span> <span class="fu">tree</span>(Mobility <span class="sc">~</span> ., <span class="at">data =</span> mob)</span>
-<span id="cb8-2"><a></a>smalltree <span class="ot">&lt;-</span> <span class="fu">prune.tree</span>(bigtree, <span class="at">k =</span> .<span class="dv">09</span>)</span>
-<span id="cb8-3"><a></a><span class="fu">draw.tree</span>(smalltree, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">data</span>(<span class="st">"mobility"</span>, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb8-2"><a></a><span class="fu">library</span>(tree)</span>
+<span id="cb8-3"><a></a><span class="fu">library</span>(maptree)</span>
+<span id="cb8-4"><a></a>mob <span class="ot">&lt;-</span> mobility[<span class="fu">complete.cases</span>(mobility), ] <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>ID, <span class="sc">-</span>Name)</span>
+<span id="cb8-5"><a></a><span class="fu">set.seed</span>(<span class="dv">12345</span>)</span>
+<span id="cb8-6"><a></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">oma =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb8-7"><a></a>bigtree <span class="ot">&lt;-</span> <span class="fu">tree</span>(Mobility <span class="sc">~</span> ., <span class="at">data =</span> mob)</span>
+<span id="cb8-8"><a></a>smalltree <span class="ot">&lt;-</span> <span class="fu">prune.tree</span>(bigtree, <span class="at">k =</span> .<span class="dv">09</span>)</span>
+<span id="cb8-9"><a></a><span class="fu">draw.tree</span>(smalltree, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="13-gams-trees_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
 </div>
-<img data-src="13-gams-trees_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>This is called the <span class="secondary">dendrogram</span></p>
-</section>
-<section id="partition-view" class="slide level2">
-<h2>Partition view</h2>
+</div>
+</div>
+</div>
+<div class="w-50">
+<p>“Big” tree</p>
 <div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="13-gams-trees_files/figure-revealjs/big-tree-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><span class="secondary">Terminology</span></p>
+<ul>
+<li>We call each split or end point a <em>node</em>.</li>
+<li>Each terminal node is referred to as a <em>leaf</em>.</li>
+</ul>
+</section>
+<section id="example-with-mobility-data-1" class="slide level2">
+<h2>Example with mobility data</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>mob<span class="sc">$</span>preds <span class="ot">&lt;-</span> <span class="fu">predict</span>(smalltree)</span>
 <span id="cb9-2"><a></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
 <span id="cb9-3"><a></a><span class="fu">draw.tree</span>(smalltree, <span class="at">digits =</span> <span class="dv">2</span>)</span>
@@ -555,29 +604,94 @@
 <span id="cb9-7"><a></a>  <span class="at">ylab =</span> <span class="st">"Commute time"</span>, <span class="at">xlab =</span> <span class="st">"% Black"</span></span>
 <span id="cb9-8"><a></a>)</span>
 <span id="cb9-9"><a></a><span class="fu">partition.tree</span>(smalltree, <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">ordvars =</span> <span class="fu">c</span>(<span class="st">"Black"</span>, <span class="st">"Commute"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 
 </div>
-<img data-src="13-gams-trees_files/figure-revealjs/partition-view-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p>We predict all observations in a region with the same value.<br>
-<span class="math inline">\(\bullet\)</span> The three regions correspond to the leaves of the tree.</p>
+<img data-src="13-gams-trees_files/figure-revealjs/partition-view-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p><span class="small">(The three regions correspond to the leaves of the tree.)</span><br>
+</p>
+<ul>
+<li>Trees are <em>piecewise constant functions</em>.<br>
+<span class="small">We predict all observations in a region with the same value.</span></li>
+<li>Prediction regions are axis-parallel rectangles <span class="math inline">\(R_1,\ldots,R_K\)</span> based on <span class="math inline">\(\X\)</span></li>
+</ul>
+<!-- ## -->
+<!-- ![](https://www.aafp.org/dam/AAFP/images/journals/blogs/inpractice/covid_dx_algorithm4.png) -->
+<!-- ## Dendrogram view -->
+<!-- ```{r} -->
+<!-- #| code-fold: true -->
+<!-- #| fig-width: 8 -->
+<!-- data("mobility", package = "Stat406") -->
+<!-- library(tree) -->
+<!-- library(maptree) -->
+<!-- mob <- mobility[complete.cases(mobility), ] %>% dplyr::select(-ID, -Name) -->
+<!-- set.seed(12345) -->
+<!-- par(mar = c(0, 0, 0, 0), oma = c(0, 0, 0, 0)) -->
+<!-- smalltree <- prune.tree(bigtree, k = .09) -->
+<!-- draw.tree(smalltree, digits = 2) -->
+<!-- ``` -->
+<!-- This is called the [dendrogram]{.secondary} -->
+<!-- ## Partition view -->
+<!-- ```{r partition-view} -->
+<!-- #| code-fold: true -->
+<!-- #| fig-width: 10 -->
+<!-- mob$preds <- predict(smalltree) -->
+<!-- par(mfrow = c(1, 2), mar = c(5, 3, 0, 0)) -->
+<!-- draw.tree(smalltree, digits = 2) -->
+<!-- cols <- viridisLite::viridis(20, direction = -1)[cut(log(mob$Mobility), 20)] -->
+<!-- plot(mob$Black, mob$Commute, -->
+<!--   pch = 19, cex = .4, bty = "n", las = 1, col = cols, -->
+<!--   ylab = "Commute time", xlab = "% Black" -->
+<!-- ) -->
+<!-- partition.tree(smalltree, add = TRUE, ordvars = c("Black", "Commute")) -->
+<!-- ``` -->
 </section>
-<section id="section-2" class="slide level2">
-<h2></h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a><span class="fu">draw.tree</span>(bigtree, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
+<section id="constructing-trees" class="slide level2">
+<h2>Constructing Trees</h2>
+<div class="flex">
+<div class="w-60">
+<p>Iterative algorithm:</p>
+<ul>
+<li>While (<span class="math inline">\(\mathtt{depth} \ne \mathtt{max.depth}\)</span>):
+<ul>
+<li>For each existing region <span class="math inline">\(R_k\)</span>
+<ul>
+<li>For a given <em>splitting variable</em> <span class="math inline">\(j\)</span> and <em>split value</em> <span class="math inline">\(s\)</span>, define <span class="math display">\[
+\begin{align}
+R_k^&gt; &amp;= \{x \in R_k : x^{(j)} &gt; s\} \\
+R_k^&lt; &amp;= \{x \in R_k : x^{(j)} &gt; s\}
+\end{align}
+\]</span></li>
+<li>Choose <span class="math inline">\(j\)</span> and <span class="math inline">\(s\)</span> to minimize <span class="math display">\[|R_k^&gt;| \cdot \widehat{Var}(R_k^&gt;) + |R_k^&lt;| \cdot  \widehat{Var}(R_k^&lt;)\]</span></li>
+</ul></li>
+</ul></li>
+</ul>
 </div>
-<img data-src="13-gams-trees_files/figure-revealjs/big-tree-1.svg" class="quarto-figure quarto-figure-center r-stretch"><p><span class="secondary">Terminology</span></p>
-<p>We call each split or end point a node. Each terminal node is referred to as a leaf.</p>
-<p>The interior nodes lead to branches.</p>
+<div class="w-35">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="13-gams-trees_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>This algorithm is <em>greedy</em>, so it doesn’t find the optimal tree<br>
+<span class="small">(But it works well!)</span></p>
+</div>
+</div>
+</div>
 </section>
 <section id="advantages-and-disadvantages-of-trees" class="slide level2">
 <h2>Advantages and disadvantages of trees</h2>
 <p>🎉 Trees are very easy to explain (much easier than even linear regression).</p>
 <p>🎉 Some people believe that decision trees mirror human decision.</p>
 <p>🎉 Trees can easily be displayed graphically no matter the dimension of the data.</p>
-<p>🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.</p>
+<p>🎉 Trees can easily handle categorical predictors without the need to create one-hot encodings.</p>
+<p>🎉 <em>Trees are GREAT for missing data!!!</em></p>
 <p>💩 Trees aren’t very good at prediction.</p>
-<p>💩 Full trees badly overfit, so we “prune” them using CV</p>
+<p>💩 Big trees badly overfit, so we “prune” them using CV</p>
 <div class="fragment">
 <p><span class="hand">We’ll talk more about trees next module for Classification.</span></p>
 </div>
