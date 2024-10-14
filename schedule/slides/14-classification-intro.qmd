@@ -27,8 +27,12 @@ various mutations are associated with different phenotypes?
 These problems are [not]{.secondary} regression
 problems. They are [classification]{.secondary} problems.
 
+. . .
 
-## The Set-up
+Classification involves a **categorical response variable** (no notion of "order"/"distance").
+
+
+## Setup
 
 It begins just like regression: suppose we have observations
 $$\{(x_1,y_1),\ldots,(x_n,y_n)\}$$
@@ -50,14 +54,14 @@ variance and better predictions.
 
 ## How do we measure quality?
 
-Before in regression, we have $y_i \in \mathbb{R}$ and use squared error loss to measure accuracy: $(y - \hat{y})^2$.
+Before in regression, we have $y_i \in \mathbb{R}$ and use $(y - \hat{y})^2$ loss to measure accuracy.
 
 Instead, let $y \in \mathcal{K} = \{1,\ldots, K\}$
 
 (This is arbitrary, sometimes other numbers, such as $\{-1,1\}$ will be
 used)
 
-We can always take "factors": $\{\textrm{cat},\textrm{dog}\}$ and convert to integers, which is what we assume.
+We will usually convert categories/"factors" (e.g. $\{\textrm{cat},\textrm{dog}\}$) to integers.
 
 
 We again make predictions $\hat{y}=k$ based on the data
@@ -66,39 +70,59 @@ We again make predictions $\hat{y}=k$ based on the data
 * We get zero loss if we predict the right class
 * We lose $\ell(k,k')$ on $(k\neq k')$ for incorrect predictions
 
+## How do we measure quality?
+
+Example: You're trying to build a fun widget to classify images of cats and dogs.
+
+| Loss | Predict Dog | Predict Cat |
+|:---: | :---: | :---: |
+| Actual Dog | 0 | ? |
+| Actual Cat | ? | 0 |
+
+. . .
+
+Use the zero-one loss (1 if wrong, 0 if right). *Type of error doesn't matter.*
+
+| Loss | Predict Dog | Predict Cat |
+|:---: | :---: | :---: |
+| Actual Dog | 0 | 1 |
+| Actual Cat | 1 | 0 |
 
 ## How do we measure quality?
 
-Suppose you have a fever of 39º C. You get a rapid test on campus.
+Example: Suppose you have a fever of 39º C. You get a rapid test on campus.
 
 | Loss | Test + | Test - |
 |:---: | :---: | :---: |
-| Are + | 0 | Infect others |
-| Are - | Isolation | 0 |
+| Are + | 0 | ? (Infect others) |
+| Are - | ? (Isolation) | 0 |
 
-## How do we measure quality?
+. . .
 
-Suppose you have a fever of 39º C. You get a rapid test on campus.
+Use a weighted loss; *type of error matters!*
+
 
 | Loss | Test + | Test - |
 |:---: | :---: | :---: |
-| Are + | 0 | 1 |
+| Are + | 0 | (LARGE) |
 | Are - | 1 | 0 |
 
 
+Note that one class is "important": we sometimes call that one *positive*. Errors are *false positive* and *false negative*.
+
+In practice, you have to design your loss (just like before) to reflect what you care about.
+
+
 ## How do we measure quality?
 
-> We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.
+We're going to use $g(x)$ to be our classifier. It takes values in $\mathcal{K}$.
 
-
-## How do we measure quality?
-
-Again, we appeal to risk
+Consider the risk
 $$R_n(g) = E [\ell(Y,g(X))]$$ If we use the law of
 total probability, this can be written
-$$R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)$$
+$$R_n(g) = E\left[\sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)\right]$$
 We minimize this over a class of options $\mathcal{G}$, to produce
-$$g_*(X) = \argmin_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)$$
+$$g_*(X) = \argmin_{g\in\mathcal{G}} E\left[\sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)\right]$$
 
 ## How do we measure quality?
 
@@ -106,75 +130,80 @@ $g_*$ is named the [Bayes' classifier]{.secondary} for loss $\ell$ in class $\ma
 
 $R_n(g_*)$ is the called the [Bayes' limit]{.secondary} or [Bayes' Risk]{.secondary}. 
 
-[It's the best we could hope to do in terms of]{.hand} $\ell$ [if we knew the distribution of the data.]{.hand}
-
-. . .
+It's the best we could hope to do *even if we knew the distribution of the data* (recall irreducible error!)
 
 But we don't, so we'll try to do our best to estimate $g_*$.
 
 
 ## Best classifier overall
 
-(for now, we limit to 2 classes)
 
-Once we make a specific choice for $\ell$, we can find $g_*$ exactly (pretending we know the distribution)
+Suppose we actually *know* the distribution of everything, and we've picked $\ell$ to be the [zero-one loss]{.secondary}
 
-
-Because $Y$ takes only a few values, [zero-one]{.secondary}
-loss is natural (but not the only option)
-$$\ell(y,\ g(x)) = \begin{cases}0 & y=g(x)\\1 & y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),$$
-
-## Best classifier overall
+$$\ell(y,\ g(x)) = \begin{cases}0 & y=g(x)\\1 & y\neq g(x) \end{cases}$$
 
 | Loss | Test + | Test - |
 |:---: | :---: | :---: |
 | Are + | 0 | 1 |
 | Are - | 1 | 0 |
 
+Then 
+
+$$R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y)$$
+
 ## Best classifier overall
 
-This means we want to 
-classify a new observation $(x_0,y_0)$ such that
-$g(x_0) = y_0$ as often as possible
+Want to classify a new observation $(X,Y)$ such that
+$g(X) = Y$ with as high probability as possible. Under zero-one loss, we have
 
+$$g_* = \argmin_{g} Pr(g(X) \neq Y) = \argmin_g 1- \Pr(g(X) = Y) = \argmax_g \Pr(g(X) = Y)$$
 
-Under this loss, we have
+. . .
+
 $$
 \begin{aligned}
-g_*(X) &= \argmin_{g} Pr(g(X) \neq Y) \\
-&= \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  \\
-&= \argmax_{g} Pr(Y = g(x) | X=x )
+g_* &= \argmax_{g} E[\Pr(g(X) = Y | X)]\\
+ &= \argmax_{g} E\left[\sum_{k\in\mathcal{K}}1[g(X) = k]\Pr(Y=k | X)\right]
 \end{aligned}
 $$
 
+. . .
 
-## Estimating $g_*$
+For each $x$, only one $k$ can satisfy $g(x) = k$. So for each $x$,
 
+$$
+g_*(x) = \argmax_{k\in\mathcal{K}} \Pr(Y = k | X = x).
+$$
 
-
-### Classifier approach 1 (empirical risk minimization):
+## Estimating $g_*$ Approach 1: Empirical risk minimization
 
 1. Choose some class of classifiers $\mathcal{G}$. 
 
 2. Find $\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)$
 
 
-## Bayes' Classifier and class densities (2 classes)
+## Estimating $g_*$ Approach 2: Class densities
 
-Using **Bayes' theorem**, and recalling that $f_*(X) = E[Y \given X]$
+Consider 2 classes $\{0,1\}$: using **Bayes' theorem** (and being loose with notation),
 
 $$\begin{aligned}
-f_*(X) & = E[Y \given X] = Pr(Y = 1 \given X) \\ 
-&= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
-& =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ & = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}$$
+\Pr(Y=1 \given X=x) &= \frac{\Pr(X=x\given Y=1) \Pr(Y=1)}{\Pr(X=x)}\\
+&=\frac{\Pr(X=x\given Y = 1) \Pr(Y = 1)}{\sum_{k \in \{0,1\}} \Pr(X=x\given Y = k) \Pr(Y = k)} \\ 
+&= \frac{p_1(x) \pi}{ p_1(x)\pi + p_0(x)(1-\pi)}\end{aligned}$$
 
-* We call $p_k(X)$ the [class (conditional) densities]{.secondary}
+* We call $p_k(x)$ the [class (conditional) densities]{.secondary}
 
 * $\pi$ is the [marginal probability]{.secondary} $P(Y=1)$
 
-## Bayes' Classifier and class densities (2 classes)
+* Similar formula for $\Pr(Y=0\given X=x) = p_0(x)(1-\pi)/(\dots)$
 
-The Bayes' Classifier (best classifier for 0-1 loss) can be rewritten 
+## Estimating $g_*$ Approach 2: Class densities
+
+Recall $g_*(x) = \argmax_k \Pr(Y=k|x)$; so we classify 1 if
+
+$$\frac{p_1(x) \pi}{ p_1(x)\pi + p_0(x)(1-\pi)} > \frac{p_0(x) (1-\pi)}{ p_1(x)\pi + p_0(x)(1-\pi)}$$
+
+i.e.,  the [Bayes' Classifier]{.secondary} (best classifier for 0-1 loss) can be rewritten 
 
 $$g_*(X) = \begin{cases}
 1 & \textrm{ if } \frac{p_1(X)}{p_0(X)} > \frac{1-\pi}{\pi} \\
@@ -182,45 +211,34 @@ $$g_*(X) = \begin{cases}
 \end{cases}$$
 
 
-### Approach 2: estimate everything in the expression above.
+### Estimate everything in the expression above.
 
-* We need to estimate $p_1$, $p_2$, $\pi$, $1-\pi$
+* We need to estimate $p_0$, $p_1$, $\pi$, $1-\pi$
 * Easily extended to more than two classes
 
 
-## An alternative easy classifier
+## Estimating $g_*$ Approach 3: Regression discretization
 
 
-Zero-One loss was natural, but try something else
+0-1 loss natural, but discrete. Let's try using [squared error]{.secondary}: $\ell(y,\ f(x)) = (y - f(x))^2$
 
-
-Let's try using [squared error loss]{.secondary} instead:
-$\ell(y,\ f(x)) = (y - f(x))^2$
-
-
-Then, the Bayes' Classifier (the function that minimizes the Bayes Risk) is
-$$g_*(x) = f_*(x) = E[ Y \given X = x] = Pr(Y = 1 \given X)$$ 
-(recall that $f_* \in [0,1]$ is _still_ the regression function)
-
-In this case, our "class" will actually just be a probability. But this isn't a class, so it's a bit unsatisfying.
-
-How do we get a class prediction?
+**What will be the optimal classifier here?** (hint: think about regression)
 
 . . .
 
-Discretize the probability:
+The "Bayes' Classifier" (sort of...minimizes risk) is just the regression function!
+$$f_*(x) = \Pr(Y = 1 \given X=x) = E[ Y \given X = x] $$ 
+
+In this case, $0\leq f_*(x)\leq 1$ not discrete... How do we get a class prediction?
+
+. . .
+
+**Discretize the output**:
 
 $$g(x) = \begin{cases}0 & f_*(x) < 1/2\\1 & \textrm{else}\end{cases}$$
 
-## Estimating $g_*$
-
-### Approach 3:
-
-1. Estimate $f_*$ using any method we've learned so far. 
+1. Estimate $\hat f(x) = E[Y|X=x] = \Pr(Y=1|X=x)$ using any method we've learned so far. 
 2. Predict 0 if $\hat{f}(x)$ is less than 1/2, else predict 1.
-
-
-
 
 ## Claim: Classification is easier than regression
 
@@ -279,38 +297,21 @@ ggplot(tib) +
 
 ## How to find a classifier
 
-[Why did we go through that math?]{.hand}
+**Why did we go through that math?**
 
-Each of these approaches suggests a way to find a classifier
+Each of these approaches has strengths/drawbacks:
 
-* [Empirical risk minimization:]{.secondary} Choose a set
-of classifiers $\mathcal{G}$ and find $g \in \mathcal{G}$ that minimizes
-some estimate of $R_n(g)$
+* [Empirical risk minimization:]{.secondary} Minimize $R_n(g)$ in some family $\mathcal{G}$
     
-> (This can be quite challenging as, unlike in regression, the
-training error is nonconvex)
+> (This can be quite challenging as, unlike in regression, the training error is nonconvex)
 
 * [Density estimation:]{.secondary} Estimate $\pi$ and $p_k$
 
-* [Regression:]{.secondary} Find an
-estimate $\hat{f}$ of $f^*$ and compare the predicted value to 1/2
+> (We have to estimate class densities to classify. Too roundabout?)
 
+* [Regression:]{.secondary} Find an estimate $\hat{f}\approx E[Y|X=x]$ and compare the predicted value to 1/2
 
+> (Unnatural, estimates whole regression function when we'll just discretize anyway)
 
-
-##
-
-Easiest classifier when $y\in \{0,\ 1\}$:
-
-(stupidest version of the third case...)
-
-```{r eval=FALSE}
-ghat <- round(predict(lm(y ~ ., data = trainingdata)))
-```
-
-Think about why this may not be very good. (At least 2 reasons I can think of.)
-
-
-# Next time:
-
+# Next time...
 Estimating the densities
