@@ -398,7 +398,7 @@
 <h2>14 Classification</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 09 October 2023</p>
+<p>Last modified – 14 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,6 +424,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="an-overview-of-classification" class="slide level2">
@@ -436,9 +439,12 @@
 <div class="fragment">
 <p>These problems are <span class="secondary">not</span> regression problems. They are <span class="secondary">classification</span> problems.</p>
 </div>
+<div class="fragment">
+<p>Classification involves a <strong>categorical response variable</strong> (no notion of “order”/“distance”).</p>
+</div>
 </section>
-<section id="the-set-up" class="slide level2">
-<h2>The Set-up</h2>
+<section id="setup" class="slide level2">
+<h2>Setup</h2>
 <p>It begins just like regression: suppose we have observations <span class="math display">\[\{(x_1,y_1),\ldots,(x_n,y_n)\}\]</span></p>
 <p>Again, we want to estimate a function that maps <span class="math inline">\(X\)</span> to <span class="math inline">\(Y\)</span> to predict as yet observed data.</p>
 <p>(This function is known as a <span class="secondary">classifier</span>)</p>
@@ -450,10 +456,10 @@
 </section>
 <section id="how-do-we-measure-quality" class="slide level2">
 <h2>How do we measure quality?</h2>
-<p>Before in regression, we have <span class="math inline">\(y_i \in \mathbb{R}\)</span> and use squared error loss to measure accuracy: <span class="math inline">\((y - \hat{y})^2\)</span>.</p>
+<p>Before in regression, we have <span class="math inline">\(y_i \in \mathbb{R}\)</span> and use <span class="math inline">\((y - \hat{y})^2\)</span> loss to measure accuracy.</p>
 <p>Instead, let <span class="math inline">\(y \in \mathcal{K} = \{1,\ldots, K\}\)</span></p>
 <p>(This is arbitrary, sometimes other numbers, such as <span class="math inline">\(\{-1,1\}\)</span> will be used)</p>
-<p>We can always take “factors”: <span class="math inline">\(\{\textrm{cat},\textrm{dog}\}\)</span> and convert to integers, which is what we assume.</p>
+<p>We will usually convert categories/“factors” (e.g.&nbsp;<span class="math inline">\(\{\textrm{cat},\textrm{dog}\}\)</span>) to integers.</p>
 <p>We again make predictions <span class="math inline">\(\hat{y}=k\)</span> based on the data</p>
 <ul>
 <li>We get zero loss if we predict the right class</li>
@@ -462,32 +468,56 @@
 </section>
 <section id="how-do-we-measure-quality-1" class="slide level2">
 <h2>How do we measure quality?</h2>
-<p>Suppose you have a fever of 39º C. You get a rapid test on campus.</p>
+<p>Example: You’re trying to build a fun widget to classify images of cats and dogs.</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
 <th style="text-align: center;">Loss</th>
-<th style="text-align: center;">Test +</th>
-<th style="text-align: center;">Test -</th>
+<th style="text-align: center;">Predict Dog</th>
+<th style="text-align: center;">Predict Cat</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: center;">Are +</td>
+<td style="text-align: center;">Actual Dog</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">Infect others</td>
+<td style="text-align: center;">?</td>
 </tr>
 <tr class="even">
-<td style="text-align: center;">Are -</td>
-<td style="text-align: center;">Isolation</td>
+<td style="text-align: center;">Actual Cat</td>
+<td style="text-align: center;">?</td>
 <td style="text-align: center;">0</td>
 </tr>
 </tbody>
 </table>
+<div class="fragment">
+<p>Use the zero-one loss (1 if wrong, 0 if right). <em>Type of error doesn’t matter.</em></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Loss</th>
+<th style="text-align: center;">Predict Dog</th>
+<th style="text-align: center;">Predict Cat</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Actual Dog</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Actual Cat</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="how-do-we-measure-quality-2" class="slide level2">
 <h2>How do we measure quality?</h2>
-<p>Suppose you have a fever of 39º C. You get a rapid test on campus.</p>
+<p>Example: Suppose you have a fever of 39º C. You get a rapid test on campus.</p>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -500,7 +530,30 @@
 <tr class="odd">
 <td style="text-align: center;">Are +</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">1</td>
+<td style="text-align: center;">? (Infect others)</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">Are -</td>
+<td style="text-align: center;">? (Isolation)</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+<div class="fragment">
+<p>Use a weighted loss; <em>type of error matters!</em></p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Loss</th>
+<th style="text-align: center;">Test +</th>
+<th style="text-align: center;">Test -</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">Are +</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">(LARGE)</td>
 </tr>
 <tr class="even">
 <td style="text-align: center;">Are -</td>
@@ -509,34 +562,26 @@
 </tr>
 </tbody>
 </table>
+<p>Note that one class is “important”: we sometimes call that one <em>positive</em>. Errors are <em>false positive</em> and <em>false negative</em>.</p>
+<p>In practice, you have to design your loss (just like before) to reflect what you care about.</p>
+</div>
 </section>
 <section id="how-do-we-measure-quality-3" class="slide level2">
 <h2>How do we measure quality?</h2>
-<blockquote>
 <p>We’re going to use <span class="math inline">\(g(x)\)</span> to be our classifier. It takes values in <span class="math inline">\(\mathcal{K}\)</span>.</p>
-</blockquote>
+<p>Consider the risk <span class="math display">\[R_n(g) = E [\ell(Y,g(X))]\]</span> If we use the law of total probability, this can be written <span class="math display">\[R_n(g) = E\left[\sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)\right]\]</span> We minimize this over a class of options <span class="math inline">\(\mathcal{G}\)</span>, to produce <span class="math display">\[g_*(X) = \argmin_{g\in\mathcal{G}} E\left[\sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)\right]\]</span></p>
 </section>
 <section id="how-do-we-measure-quality-4" class="slide level2">
 <h2>How do we measure quality?</h2>
-<p>Again, we appeal to risk <span class="math display">\[R_n(g) = E [\ell(Y,g(X))]\]</span> If we use the law of total probability, this can be written <span class="math display">\[R_n(g) = E_X \sum_{y=1}^K \ell(y,\; g(X)) Pr(Y = y \given X)\]</span> We minimize this over a class of options <span class="math inline">\(\mathcal{G}\)</span>, to produce <span class="math display">\[g_*(X) = \argmin_{g\in\mathcal{G}} E_X \sum_{y=1}^K \ell(y,g(X)) Pr(Y = y \given X)\]</span></p>
-</section>
-<section id="how-do-we-measure-quality-5" class="slide level2">
-<h2>How do we measure quality?</h2>
 <p><span class="math inline">\(g_*\)</span> is named the <span class="secondary">Bayes’ classifier</span> for loss <span class="math inline">\(\ell\)</span> in class <span class="math inline">\(\mathcal{G}\)</span>.</p>
 <p><span class="math inline">\(R_n(g_*)\)</span> is the called the <span class="secondary">Bayes’ limit</span> or <span class="secondary">Bayes’ Risk</span>.</p>
-<p><span class="hand">It’s the best we could hope to do in terms of</span> <span class="math inline">\(\ell\)</span> <span class="hand">if we knew the distribution of the data.</span></p>
-<div class="fragment">
+<p>It’s the best we could hope to do <em>even if we knew the distribution of the data</em> (recall irreducible error!)</p>
 <p>But we don’t, so we’ll try to do our best to estimate <span class="math inline">\(g_*\)</span>.</p>
-</div>
 </section>
 <section id="best-classifier-overall" class="slide level2">
 <h2>Best classifier overall</h2>
-<p>(for now, we limit to 2 classes)</p>
-<p>Once we make a specific choice for <span class="math inline">\(\ell\)</span>, we can find <span class="math inline">\(g_*\)</span> exactly (pretending we know the distribution)</p>
-<p>Because <span class="math inline">\(Y\)</span> takes only a few values, <span class="secondary">zero-one</span> loss is natural (but not the only option) <span class="math display">\[\ell(y,\ g(x)) = \begin{cases}0 &amp; y=g(x)\\1 &amp; y\neq g(x) \end{cases} \Longrightarrow R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y),\]</span></p>
-</section>
-<section id="best-classifier-overall-1" class="slide level2">
-<h2>Best classifier overall</h2>
+<p>Suppose we actually <em>know</em> the distribution of everything, and we’ve picked <span class="math inline">\(\ell\)</span> to be the <span class="secondary">zero-one loss</span></p>
+<p><span class="math display">\[\ell(y,\ g(x)) = \begin{cases}0 &amp; y=g(x)\\1 &amp; y\neq g(x) \end{cases}\]</span></p>
 <table class="caption-top">
 <thead>
 <tr class="header">
@@ -558,70 +603,79 @@
 </tr>
 </tbody>
 </table>
+<p>Then</p>
+<p><span class="math display">\[R_n(g) = \Expect{\ell(Y,\ g(X))} = Pr(g(X) \neq Y)\]</span></p>
 </section>
-<section id="best-classifier-overall-2" class="slide level2">
+<section id="best-classifier-overall-1" class="slide level2">
 <h2>Best classifier overall</h2>
-<p>This means we want to classify a new observation <span class="math inline">\((x_0,y_0)\)</span> such that <span class="math inline">\(g(x_0) = y_0\)</span> as often as possible</p>
-<p>Under this loss, we have <span class="math display">\[
+<p>Want to classify a new observation <span class="math inline">\((X,Y)\)</span> such that <span class="math inline">\(g(X) = Y\)</span> with as high probability as possible. Under zero-one loss, we have</p>
+<p><span class="math display">\[g_* = \argmin_{g} Pr(g(X) \neq Y) = \argmin_g 1- \Pr(g(X) = Y) = \argmax_g \Pr(g(X) = Y)\]</span></p>
+<div class="fragment">
+<p><span class="math display">\[
 \begin{aligned}
-g_*(X) &amp;= \argmin_{g} Pr(g(X) \neq Y) \\
-&amp;= \argmin_{g} \left[ 1 - Pr(Y = g(x) | X=x)\right]  \\
-&amp;= \argmax_{g} Pr(Y = g(x) | X=x )
+g_* &amp;= \argmax_{g} E[\Pr(g(X) = Y | X)]\\
+&amp;= \argmax_{g} E\left[\sum_{k\in\mathcal{K}}1[g(X) = k]\Pr(Y=k | X)\right]
 \end{aligned}
 \]</span></p>
+</div>
+<div class="fragment">
+<p>For each <span class="math inline">\(x\)</span>, only one <span class="math inline">\(k\)</span> can satisfy <span class="math inline">\(g(x) = k\)</span>. So for each <span class="math inline">\(x\)</span>,</p>
+<p><span class="math display">\[
+g_*(x) = \argmax_{k\in\mathcal{K}} \Pr(Y = k | X = x).
+\]</span></p>
+</div>
 </section>
-<section id="estimating-g_" class="slide level2">
-<h2>Estimating <span class="math inline">\(g_*\)</span></h2>
-<h3 id="classifier-approach-1-empirical-risk-minimization">Classifier approach 1 (empirical risk minimization):</h3>
+<section id="estimating-g_-approach-1-empirical-risk-minimization" class="slide level2">
+<h2>Estimating <span class="math inline">\(g_*\)</span> Approach 1: Empirical risk minimization</h2>
 <ol type="1">
 <li><p>Choose some class of classifiers <span class="math inline">\(\mathcal{G}\)</span>.</p></li>
 <li><p>Find <span class="math inline">\(\argmin_{g\in\mathcal{G}} \sum_{i = 1}^n I(g(x_i) \neq y_i)\)</span></p></li>
 </ol>
 </section>
-<section id="bayes-classifier-and-class-densities-2-classes" class="slide level2">
-<h2>Bayes’ Classifier and class densities (2 classes)</h2>
-<p>Using <strong>Bayes’ theorem</strong>, and recalling that <span class="math inline">\(f_*(X) = E[Y \given X]\)</span></p>
+<section id="estimating-g_-approach-2-class-densities" class="slide level2">
+<h2>Estimating <span class="math inline">\(g_*\)</span> Approach 2: Class densities</h2>
+<p>Consider 2 classes <span class="math inline">\(\{0,1\}\)</span>: using <strong>Bayes’ theorem</strong> (and being loose with notation),</p>
 <p><span class="math display">\[\begin{aligned}
-f_*(X) &amp; = E[Y \given X] = Pr(Y = 1 \given X) \\
-&amp;= \frac{Pr(X\given Y=1) Pr(Y=1)}{Pr(X)}\\
-&amp; =\frac{Pr(X\given Y = 1) Pr(Y = 1)}{\sum_{k \in \{0,1\}} Pr(X\given Y = k) Pr(Y = k)} \\ &amp; = \frac{p_1(X) \pi}{ p_1(X)\pi + p_0(X)(1-\pi)}\end{aligned}\]</span></p>
+\Pr(Y=1 \given X=x) &amp;= \frac{\Pr(X=x\given Y=1) \Pr(Y=1)}{\Pr(X=x)}\\
+&amp;=\frac{\Pr(X=x\given Y = 1) \Pr(Y = 1)}{\sum_{k \in \{0,1\}} \Pr(X=x\given Y = k) \Pr(Y = k)} \\
+&amp;= \frac{p_1(x) \pi}{ p_1(x)\pi + p_0(x)(1-\pi)}\end{aligned}\]</span></p>
 <ul>
-<li><p>We call <span class="math inline">\(p_k(X)\)</span> the <span class="secondary">class (conditional) densities</span></p></li>
+<li><p>We call <span class="math inline">\(p_k(x)\)</span> the <span class="secondary">class (conditional) densities</span></p></li>
 <li><p><span class="math inline">\(\pi\)</span> is the <span class="secondary">marginal probability</span> <span class="math inline">\(P(Y=1)\)</span></p></li>
+<li><p>Similar formula for <span class="math inline">\(\Pr(Y=0\given X=x) = p_0(x)(1-\pi)/(\dots)\)</span></p></li>
 </ul>
 </section>
-<section id="bayes-classifier-and-class-densities-2-classes-1" class="slide level2">
-<h2>Bayes’ Classifier and class densities (2 classes)</h2>
-<p>The Bayes’ Classifier (best classifier for 0-1 loss) can be rewritten</p>
+<section id="estimating-g_-approach-2-class-densities-1" class="slide level2">
+<h2>Estimating <span class="math inline">\(g_*\)</span> Approach 2: Class densities</h2>
+<p>Recall <span class="math inline">\(g_*(x) = \argmax_k \Pr(Y=k|x)\)</span>; so we classify 1 if</p>
+<p><span class="math display">\[\frac{p_1(x) \pi}{ p_1(x)\pi + p_0(x)(1-\pi)} &gt; \frac{p_0(x) (1-\pi)}{ p_1(x)\pi + p_0(x)(1-\pi)}\]</span></p>
+<p>i.e., the <span class="secondary">Bayes’ Classifier</span> (best classifier for 0-1 loss) can be rewritten</p>
 <p><span class="math display">\[g_*(X) = \begin{cases}
 1 &amp; \textrm{ if } \frac{p_1(X)}{p_0(X)} &gt; \frac{1-\pi}{\pi} \\
 0  &amp;  \textrm{ otherwise}
 \end{cases}\]</span></p>
-<h3 id="approach-2-estimate-everything-in-the-expression-above.">Approach 2: estimate everything in the expression above.</h3>
+<h3 id="estimate-everything-in-the-expression-above.">Estimate everything in the expression above.</h3>
 <ul>
-<li>We need to estimate <span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span>, <span class="math inline">\(\pi\)</span>, <span class="math inline">\(1-\pi\)</span></li>
+<li>We need to estimate <span class="math inline">\(p_0\)</span>, <span class="math inline">\(p_1\)</span>, <span class="math inline">\(\pi\)</span>, <span class="math inline">\(1-\pi\)</span></li>
 <li>Easily extended to more than two classes</li>
 </ul>
 </section>
-<section id="an-alternative-easy-classifier" class="slide level2">
-<h2>An alternative easy classifier</h2>
-<p>Zero-One loss was natural, but try something else</p>
-<p>Let’s try using <span class="secondary">squared error loss</span> instead: <span class="math inline">\(\ell(y,\ f(x)) = (y - f(x))^2\)</span></p>
-<p>Then, the Bayes’ Classifier (the function that minimizes the Bayes Risk) is <span class="math display">\[g_*(x) = f_*(x) = E[ Y \given X = x] = Pr(Y = 1 \given X)\]</span> (recall that <span class="math inline">\(f_* \in [0,1]\)</span> is <em>still</em> the regression function)</p>
-<p>In this case, our “class” will actually just be a probability. But this isn’t a class, so it’s a bit unsatisfying.</p>
-<p>How do we get a class prediction?</p>
+<section id="estimating-g_-approach-3-regression-discretization" class="slide level2">
+<h2>Estimating <span class="math inline">\(g_*\)</span> Approach 3: Regression discretization</h2>
+<p>0-1 loss natural, but discrete. Let’s try using <span class="secondary">squared error</span>: <span class="math inline">\(\ell(y,\ f(x)) = (y - f(x))^2\)</span></p>
+<p><strong>What will be the optimal classifier here?</strong> (hint: think about regression)</p>
 <div class="fragment">
-<p>Discretize the probability:</p>
-<p><span class="math display">\[g(x) = \begin{cases}0 &amp; f_*(x) &lt; 1/2\\1 &amp; \textrm{else}\end{cases}\]</span></p>
+<p>The “Bayes’ Classifier” (sort of…minimizes risk) is just the regression function! <span class="math display">\[f_*(x) = \Pr(Y = 1 \given X=x) = E[ Y \given X = x] \]</span></p>
+<p>In this case, <span class="math inline">\(0\leq f_*(x)\leq 1\)</span> not discrete… How do we get a class prediction?</p>
 </div>
-</section>
-<section id="estimating-g_-1" class="slide level2">
-<h2>Estimating <span class="math inline">\(g_*\)</span></h2>
-<h3 id="approach-3">Approach 3:</h3>
+<div class="fragment">
+<p><strong>Discretize the output</strong>:</p>
+<p><span class="math display">\[g(x) = \begin{cases}0 &amp; f_*(x) &lt; 1/2\\1 &amp; \textrm{else}\end{cases}\]</span></p>
 <ol type="1">
-<li>Estimate <span class="math inline">\(f_*\)</span> using any method we’ve learned so far.</li>
+<li>Estimate <span class="math inline">\(\hat f(x) = E[Y|X=x] = \Pr(Y=1|X=x)\)</span> using any method we’ve learned so far.</li>
 <li>Predict 0 if <span class="math inline">\(\hat{f}(x)\)</span> is less than 1/2, else predict 1.</li>
 </ol>
+</div>
 </section>
 <section id="claim-classification-is-easier-than-regression" class="slide level2">
 <h2>Claim: Classification is easier than regression</h2>
@@ -686,30 +740,29 @@ f_*(X) &amp; = E[Y \given X] = Pr(Y = 1 \given X) \\
 <img data-src="14-classification-intro_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="how-to-find-a-classifier" class="slide level2">
 <h2>How to find a classifier</h2>
-<p><span class="hand">Why did we go through that math?</span></p>
-<p>Each of these approaches suggests a way to find a classifier</p>
+<p><strong>Why did we go through that math?</strong></p>
+<p>Each of these approaches has strengths/drawbacks:</p>
 <ul>
-<li><span class="secondary">Empirical risk minimization:</span> Choose a set of classifiers <span class="math inline">\(\mathcal{G}\)</span> and find <span class="math inline">\(g \in \mathcal{G}\)</span> that minimizes some estimate of <span class="math inline">\(R_n(g)\)</span></li>
+<li><span class="secondary">Empirical risk minimization:</span> Minimize <span class="math inline">\(R_n(g)\)</span> in some family <span class="math inline">\(\mathcal{G}\)</span></li>
 </ul>
 <blockquote>
 <p>(This can be quite challenging as, unlike in regression, the training error is nonconvex)</p>
 </blockquote>
 <ul>
-<li><p><span class="secondary">Density estimation:</span> Estimate <span class="math inline">\(\pi\)</span> and <span class="math inline">\(p_k\)</span></p></li>
-<li><p><span class="secondary">Regression:</span> Find an estimate <span class="math inline">\(\hat{f}\)</span> of <span class="math inline">\(f^*\)</span> and compare the predicted value to 1/2</p></li>
+<li><span class="secondary">Density estimation:</span> Estimate <span class="math inline">\(\pi\)</span> and <span class="math inline">\(p_k\)</span></li>
 </ul>
-</section>
-<section id="section-1" class="slide level2">
-<h2></h2>
-<p>Easiest classifier when <span class="math inline">\(y\in \{0,\ 1\}\)</span>:</p>
-<p>(stupidest version of the third case…)</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>ghat <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">predict</span>(<span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> trainingdata)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Think about why this may not be very good. (At least 2 reasons I can think of.)</p>
+<blockquote>
+<p>(We have to estimate class densities to classify. Too roundabout?)</p>
+</blockquote>
+<ul>
+<li><span class="secondary">Regression:</span> Find an estimate <span class="math inline">\(\hat{f}\approx E[Y|X=x]\)</span> and compare the predicted value to 1/2</li>
+</ul>
+<blockquote>
+<p>(Unnatural, estimates whole regression function when we’ll just discretize anyway)</p>
+</blockquote>
 </section>
 <section id="next-time" class="title-slide slide level1 center">
-<h1>Next time:</h1>
+<h1>Next time…</h1>
 <p>Estimating the densities</p>
 
 <div class="quarto-auto-generated-content">
