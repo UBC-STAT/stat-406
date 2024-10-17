@@ -1582,67 +1582,102 @@
     "text": "Dumb example\n\n\\(K = 3\\)\n\n\nkm &lt;- kmeans(clust_raw, 3, nstart = 20)\nnames(km)\n\n[1] \"cluster\"      \"centers\"      \"totss\"        \"withinss\"     \"tot.withinss\"\n[6] \"betweenss\"    \"size\"         \"iter\"         \"ifault\"      \n\ncenters &lt;- as_tibble(km$centers, .name_repair = \"unique\")"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#section",
-    "href": "schedule/slides/22-nnets-estimation.html#section",
+    "objectID": "schedule/slides/16-logistic-regression.html#section",
+    "href": "schedule/slides/16-logistic-regression.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "22 Neural nets - estimation",
-    "text": "22 Neural nets - estimation\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "16 Logistic regression",
+    "text": "16 Logistic regression\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
-    "href": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
+    "objectID": "schedule/slides/16-logistic-regression.html#last-time",
+    "href": "schedule/slides/16-logistic-regression.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "Neural Network terms again (T hidden layers, regression)",
-    "text": "Neural Network terms again (T hidden layers, regression)\n\n\n\\[\n\\begin{aligned}\nA_{k}^{(1)} &= g\\left(\\sum_{j=1}^p w^{(1)}_{k,j} x_j\\right)\\\\\nA_{\\ell}^{(t)} &= g\\left(\\sum_{k=1}^{K_{t-1}} w^{(t)}_{\\ell,k} A_{k}^{(t-1)} \\right)\\\\\n\\hat{Y} &= z_m = \\sum_{\\ell=1}^{K_T} \\beta_{m,\\ell} A_{\\ell}^{(T)}\\ \\ (M = 1)\n\\end{aligned}\n\\]\n\n\\(B \\in \\R^{M\\times K_T}\\).\n\\(M=1\\) for regression\n\n\\(\\mathbf{W}_t \\in \\R^{K_2\\times K_1}\\) \\(t=1,\\ldots,T\\)"
+    "section": "Last time",
+    "text": "Last time\n\nWe showed that with two classes, the Bayes’ classifier is\n\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere\n\n\\(p_1(X) = \\P(X \\given Y=1)\\)\n\\(p_0(X) = \\P(X \\given Y=0)\\)\n\\(\\pi = \\P(Y=1)\\)\n\n\nThis lecture\nHow do we estimate \\(p_1(X), p_0(X), \\pi\\)?"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
-    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
+    "objectID": "schedule/slides/16-logistic-regression.html#warmup-estimating-pi-pry1",
+    "href": "schedule/slides/16-logistic-regression.html#warmup-estimating-pi-pry1",
     "title": "UBC Stat406 2024W",
-    "section": "Training neural networks. First, choices",
-    "text": "Training neural networks. First, choices\n\nChoose the architecture: how many layers, units per layer, what connections?\nChoose the loss: common choices (for each data point \\(i\\))\n\n\nRegression\n\n\\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\) (the 1/2 just makes the derivative nice)\n\nClassification\n\n\\(\\hat{R}_i = I(y_i = m)\\log( 1 + \\exp(-z_{im}))\\)\n\n\n\nChoose the activation function \\(g\\)"
+    "section": "Warmup: estimating \\(\\pi = Pr(Y=1)\\)",
+    "text": "Warmup: estimating \\(\\pi = Pr(Y=1)\\)\nA good estimator:\n\\[\n\\hat \\pi = \\frac{1}{n} \\sum_{i=1}^n 1_{y_i = 1}\n\\]\n(I.e. count the number of \\(1\\)s in the training set)\nThis estimator is low bias/variance.\n\n\nAs we will soon see, it turns out we won’t have to use this estimator."
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
-    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
+    "objectID": "schedule/slides/16-logistic-regression.html#estimating-p_0-and-p_1-is-much-harder",
+    "href": "schedule/slides/16-logistic-regression.html#estimating-p_0-and-p_1-is-much-harder",
     "title": "UBC Stat406 2024W",
-    "section": "Training neural networks (intuition)",
-    "text": "Training neural networks (intuition)\n\nWe need to estimate \\(B\\), \\(\\mathbf{W}_t\\), \\(t=1,\\ldots,T\\)\nWe want to minimize \\(\\hat{R} = \\sum_{i=1}^n \\hat{R}_i\\) as a function of all this.\nWe use gradient descent, but in this dialect, we call it back propagation\n\n\n\nDerivatives via the chain rule: computed by a forward and backward sweep\nAll the \\(g(u)\\)’s that get used have \\(g'(u)\\) “nice”.\nIf \\(g\\) is ReLu:\n\n\\(g(u) = xI(x&gt;0)\\)\n\\(g'(u) = I(x&gt;0)\\)\n\n\n\nOnce we have derivatives from backprop,\n\\[\n\\begin{align}\n\\widetilde{B} &\\leftarrow B - \\gamma \\frac{\\partial \\widehat{R}}{\\partial B}\\\\\n\\widetilde{\\mathbf{W}_t} &\\leftarrow \\mathbf{W}_t - \\gamma \\frac{\\partial \\widehat{R}}{\\partial \\mathbf{W}_t}\n\\end{align}\n\\]"
+    "section": "Estimating \\(p_0\\) and \\(p_1\\) is much harder",
+    "text": "Estimating \\(p_0\\) and \\(p_1\\) is much harder\n\\(\\P(X=x \\mid Y = 1)\\) and \\(\\P(X=x \\mid Y = 0)\\) are \\(p\\)-dimensional distributions.\nRemember the curse of dimensionality?\n\nCan we simplify our estimation problem?"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#chain-rule",
-    "href": "schedule/slides/22-nnets-estimation.html#chain-rule",
+    "objectID": "schedule/slides/16-logistic-regression.html#sidestepping-the-hard-estimation-problem",
+    "href": "schedule/slides/16-logistic-regression.html#sidestepping-the-hard-estimation-problem",
     "title": "UBC Stat406 2024W",
-    "section": "Chain rule",
-    "text": "Chain rule\nWe want \\(\\frac{\\partial}{\\partial B} \\hat{R}_i\\) and \\(\\frac{\\partial}{\\partial W_{t}}\\hat{R}_i\\) for all \\(t\\).\nRegression: \\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\)\n\\[\\begin{aligned}\n\\frac{\\partial\\hat{R}_i}{\\partial B} &= -(y_i - \\hat{y}_i)\\frac{\\partial \\hat{y_i}}{\\partial B} =\\underbrace{-(y_i - \\hat{y}_i)}_{-r_i}  \\mathbf{A}^{(T)}\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_T} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_T} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_T}\\\\\n&= -\\left(r_i  B \\odot g'(\\mathbf{W}_T \\mathbf{A}^{(T)}) \\right) \\left(\\mathbf{A}^{(T-1)}\\right)^\\top\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_{T-1}} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_{T-1}} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n&= -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T}}\\frac{\\partial \\mathbf{W}_{T}}{\\partial \\mathbf{A}^{(T-1)}}\\frac{\\partial \\mathbf{A}^{(T-1)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n\\cdots &= \\cdots\n\\end{aligned}\\]"
+    "section": "Sidestepping the hard estimation problem",
+    "text": "Sidestepping the hard estimation problem\nRather than estimating \\(\\P(X=x \\mid Y = 1)\\) and \\(\\P(X=x \\mid Y = 0)\\), I claim we can instead estimate the simpler ratio\n\\[\n\\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)}\n\\] Why?\n\n\nRecall that \\(g_*(X)\\) ony depends on the ratio \\(\\P(X \\mid Y = 1) / \\P(X \\mid Y = 0)\\).\n\n\n\\[\n\\begin{align*}\n  \\frac{\\P(X=x \\mid Y = 1)}{\\P(X=x \\mid Y = 0)}\n  &=\n  \\frac{\n    \\tfrac{\\P(Y = 1 \\mid X=x) \\P(X=x)}{\\P(Y = 1)}\n  }{\n    \\tfrac{\\P(Y = 0 \\mid X=x) \\P(X=x)}{\\P(Y = 0)}\n  }\n  =\n  \\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)}\n  \\underbrace{\\left(\\frac{1-\\pi}{\\pi}\\right)}_{\\text{Easy to estimate with } \\hat \\pi}\n\\end{align*}\n\\]"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
-    "href": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
+    "objectID": "schedule/slides/16-logistic-regression.html#direct-model",
+    "href": "schedule/slides/16-logistic-regression.html#direct-model",
     "title": "UBC Stat406 2024W",
-    "section": "Mapping it out",
-    "text": "Mapping it out\nGiven current \\(\\mathbf{W}_t, B\\), we want to get new, \\(\\widetilde{\\mathbf{W}}_t,\\ \\widetilde B\\) for \\(t=1,\\ldots,T\\)\n\nSquared error for regression, cross-entropy for classification\n\n\n\nFeed forward \n\\[\\mathbf{A}^{(0)} = \\mathbf{X}  \\in \\R^{n\\times p}\\]\nRepeat, \\(t= 1,\\ldots, T\\)\n\n\\(\\mathbf{Z}_{t} = \\mathbf{A}^{(t-1)}\\mathbf{W}_t \\in \\R^{n\\times K_t}\\)\n\\(\\mathbf{A}^{(t)} = g(\\mathbf{Z}_{t})\\) (component wise)\n\\(\\dot{\\mathbf{A}}^{(t)} = g'(\\mathbf{Z}_t)\\)\n\n\\[\\begin{cases}\n\\hat{\\mathbf{y}} =\\mathbf{A}^{(T)} B \\in \\R^n \\\\\n\\hat{\\Pi} = \\left(1 + \\exp\\left(-\\mathbf{A}^{(T)}\\mathbf{B}\\right)\\right)^{-1} \\in \\R^{n \\times M}\\end{cases}\\]\n\n\nBack propogate \n\\[-r = \\begin{cases}\n-\\left(\\mathbf{y} - \\widehat{\\mathbf{y}}\\right) \\\\\n-\\left(1 - \\widehat{\\Pi}\\right)[y]\\end{cases}\\]\n\\[\n\\begin{aligned}\n\\frac{\\partial}{\\partial \\mathbf{B}} \\widehat{R} &= \\left(\\mathbf{A}^{(T)}\\right)^\\top \\mathbf{r}\\\\\n-\\boldsymbol{\\Gamma} &\\leftarrow -\\mathbf{r}\\\\\n\\mathbf{W}_{T+1} &\\leftarrow \\mathbf{B}\n\\end{aligned}\n\\]\nRepeat, \\(t = T,...,1\\),\n\n\\(-\\boldsymbol{\\Gamma} \\leftarrow -\\left(\\boldsymbol{\\Gamma} \\mathbf{W}_{t+1}\\right) \\odot\\dot{\\mathbf{A}}^{(t)}\\)\n\\(\\frac{\\partial R}{\\partial \\mathbf{W}_t} = -\\left(\\mathbf{A}^{(t)}\\right)^\\top \\Gamma\\)"
+    "section": "Direct model",
+    "text": "Direct model\nAs with regression, we’ll start with a simple model.\nAssume our data can be modelled by a distribution of the form\n\\[\n\\log\\left( \\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)} \\right) = \\beta_0 + \\beta^\\top x\n\\]\nWhy does it make sense to model the log ratio rather than the ratio?\n\nFrom this eq., we can recover an estimate of the ratio we need for the Bayes classifier:\n\\[\n\\begin{align*}\n\\log\\left( \\frac{\\P(X=x \\mid Y = 1)}{\\P(X=x \\mid Y = 0)} \\right)\n&=\n\\log\\left( \\frac{\\tfrac{\\P(X=x)}{\\P(Y = 1)}}{\\tfrac{\\P(X=x)}{\\P(Y = 0)}}  \\right) +\n\\log\\left( \\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)} \\right)\n\\\\\n&= \\underbrace{\\left( \\tfrac{1 - \\pi}{\\pi} + \\beta_0 \\right)}_{\\beta_0'} + \\beta^\\top x\n\\end{align*}\n\\]"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#deep-nets",
-    "href": "schedule/slides/22-nnets-estimation.html#deep-nets",
+    "objectID": "schedule/slides/16-logistic-regression.html#recovering-class-probabilities",
+    "href": "schedule/slides/16-logistic-regression.html#recovering-class-probabilities",
     "title": "UBC Stat406 2024W",
-    "section": "Deep nets",
-    "text": "Deep nets\nSome comments on adding layers:\n\nIt has been shown that one hidden layer is sufficient to approximate any bounded piecewise continuous function\nHowever, this may take a huge number of hidden units (i.e. \\(K_1 \\gg 1\\)).\nThis is what people mean when they say that NNets are “universal approximators”\nBy including multiple layers, we can have fewer hidden units per layer.\nAlso, we can encode (in)dependencies that can speed computations\nWe don’t have to connect everything the way we have been"
+    "section": "Recovering class probabilities",
+    "text": "Recovering class probabilities\n\\[\n\\text{Our model:}\\qquad\n\\log\\left( \\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)} \\right) = \\beta_0 + \\beta^\\top x\n\\]\n\n\nWe know that \\(\\P(Y = 1 \\mid X=x) + \\P(Y = 0 \\mid X=x) = 1\\). So…\n\\[\n\\frac{\\P(Y = 1 \\mid X=x)}{\\P(Y = 0 \\mid X=x)}\n=\n\\frac{\\P(Y = 1 \\mid X=x)}{1 - \\P(Y = 1 \\mid X=x)}\n=\n\\exp\\left( \\beta_0 + \\beta^\\top x \\right),\n\\]"
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#simple-example",
-    "href": "schedule/slides/22-nnets-estimation.html#simple-example",
+    "objectID": "schedule/slides/16-logistic-regression.html#logistic-regression",
+    "href": "schedule/slides/16-logistic-regression.html#logistic-regression",
     "title": "UBC Stat406 2024W",
-    "section": "Simple example",
-    "text": "Simple example\n\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestdata &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nnn_out &lt;- neuralnet(y ~ x, data = df, hidden = c(10, 5, 15), threshold = 0.01, rep = 3)\nnn_preds &lt;- map(1:3, ~ compute(nn_out, testdata, .x)$net.result)\nyhat &lt;- nn_preds |&gt; bind_cols() |&gt; rowMeans() # average over the runs\n\n\n\nCode\n# This code will reproduce the analysis, takes some time\nset.seed(406406406)\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestx &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nlibrary(splines)\nfstar &lt;- sin(1 / testx)\nspline_test_err &lt;- function(k) {\n  fit &lt;- lm(y ~ bs(x, df = k), data = df)\n  yhat &lt;- predict(fit, newdata = tibble(x = testx))\n  mean((yhat - fstar)^2)\n}\nKs &lt;- 1:15 * 10\nSplineErr &lt;- map_dbl(Ks, ~ spline_test_err(.x))\n\nJgrid &lt;- c(5, 10, 15)\nNNerr &lt;- double(length(Jgrid)^3)\nNNplot &lt;- character(length(Jgrid)^3)\nsweep &lt;- 0\nfor (J1 in Jgrid) {\n  for (J2 in Jgrid) {\n    for (J3 in Jgrid) {\n      sweep &lt;- sweep + 1\n      NNplot[sweep] &lt;- paste(J1, J2, J3, sep = \" \")\n      nn_out &lt;- neuralnet(y ~ x, df,\n        hidden = c(J1, J2, J3),\n        threshold = 0.01, rep = 3\n      )\n      nn_results &lt;- sapply(1:3, function(x) {\n        compute(nn_out, testx, x)$net.result\n      })\n      # Run them through the neural network\n      Yhat &lt;- rowMeans(nn_results)\n      NNerr[sweep] &lt;- mean((Yhat - fstar)^2)\n    }\n  }\n}\n\nbestK &lt;- Ks[which.min(SplineErr)]\nbestspline &lt;- predict(lm(y ~ bs(x, bestK), data = df), newdata = tibble(x = testx))\nbesthidden &lt;- as.numeric(unlist(strsplit(NNplot[which.min(NNerr)], \" \")))\nnn_out &lt;- neuralnet(y ~ x, df, hidden = besthidden, threshold = 0.01, rep = 3)\nnn_results &lt;- sapply(1:3, function(x) compute(nn_out, testdata, x)$net.result)\n# Run them through the neural network\nbestnn &lt;- rowMeans(nn_results)\nplotd &lt;- data.frame(\n  x = testdata, spline = bestspline, nnet = bestnn, truth = fstar\n)\nsave.image(file = \"data/nnet-example.Rdata\")"
+    "section": "Logistic Regression",
+    "text": "Logistic Regression\n\\[\\P(Y = 1 \\given X=x) = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\n= h\\left( \\beta_0 + \\beta^\\top x \\right),\\]\nwhere \\(h(z) = (1 + \\exp(-z))^{-1} =  \\exp(z) / (1+\\exp(z))\\) is the logistic function.\n\n\n\n\nThe “logistic” function is nice.\n\nIt’s symmetric: \\(1 - h(z) = h(-z)\\)\nHas a nice derivative: \\(h'(z) = \\frac{\\exp(z)}{(1 + \\exp(z))^2} = h(z)(1-h(z))\\).\nIt’s the inverse of the “log-odds” (logit): \\(\\log(p / (1-p))\\)."
   },
   {
-    "objectID": "schedule/slides/22-nnets-estimation.html#different-architectures",
-    "href": "schedule/slides/22-nnets-estimation.html#different-architectures",
+    "objectID": "schedule/slides/16-logistic-regression.html#logistic-regression-is-a-linear-classifier",
+    "href": "schedule/slides/16-logistic-regression.html#logistic-regression-is-a-linear-classifier",
     "title": "UBC Stat406 2024W",
-    "section": "Different architectures",
-    "text": "Different architectures"
+    "section": "Logistic regression is a Linear Classifier",
+    "text": "Logistic regression is a Linear Classifier\n\nLogistic regression is a linear classifier\n\n\n\\[\\log\\left( \\frac{\\P(Y = 1 \\given X=x)}{\\P(Y = 0 \\given X=x) } \\right) = \\beta_0 + \\beta^{\\top} x\\]\n\nIf the log-odds are \\(&gt;0\\), classify as 1\n(\\(Y=1\\) is more likely)\nIf the log-odds are \\(&lt;0\\), classify as a 0\n(\\(Y=0\\) is more likely)\n\n\nThe decision boundary is the hyperplane \\(\\{x : \\beta_0 + \\beta^{\\top} x = 0\\}\\)"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
+    "href": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
+    "title": "UBC Stat406 2024W",
+    "section": "Visualizing the classification boundary",
+    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(mvtnorm)\nlibrary(MASS)\ngenerate_lda_2d &lt;- function(\n    n, p = c(.5, .5),\n    mu = matrix(c(0, 0, 1, 1), 2),\n    Sigma = diag(2)) {\n  X &lt;- rmvnorm(n, sigma = Sigma)\n  tibble(\n    y = which(rmultinom(n, 1, p) == 1, TRUE)[, 1],\n    x1 = X[, 1] + mu[1, y],\n    x2 = X[, 2] + mu[2, y]\n  )\n}\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlogit &lt;- glm(y ~ ., dat1 |&gt; mutate(y = y - 1), family = \"binomial\")\n\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), \n                  x2 = seq(-2.5, 3, length.out = 100))\npts &lt;- predict(logit, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_steps2(n.breaks = 6, name = \"log odds\") \ng0"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#linear-classifier-ne-linear-smoother",
+    "href": "schedule/slides/16-logistic-regression.html#linear-classifier-ne-linear-smoother",
+    "title": "UBC Stat406 2024W",
+    "section": "Linear classifier \\(\\ne\\) linear smoother",
+    "text": "Linear classifier \\(\\ne\\) linear smoother\n\nWhile logistic regression produces linear decision boundaries, it is not a linear smoother\nAIC/BIC/Cp work if you use the likelihood correctly and count degrees-of-freedom correctly\n\n\\(\\mathrm{df} = p + 1\\) (Why?)\n\nMost people use CV"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#logistic-regression-in-r",
+    "href": "schedule/slides/16-logistic-regression.html#logistic-regression-in-r",
+    "title": "UBC Stat406 2024W",
+    "section": "Logistic regression in R",
+    "text": "Logistic regression in R\n\nlogistic &lt;- glm(y ~ ., dat, family = \"binomial\")\n\nOr we can use lasso or ridge regression or a GAM as before\n\nlasso_logit &lt;- cv.glmnet(x, y, family = \"binomial\")\nridge_logit &lt;- cv.glmnet(x, y, alpha = 0, family = \"binomial\")\ngam_logit &lt;- gam(y ~ s(x), data = dat, family = \"binomial\")\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nglm means generalized linear model"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#estimating-beta_0-beta",
+    "href": "schedule/slides/16-logistic-regression.html#estimating-beta_0-beta",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating \\(\\beta_0\\), \\(\\beta\\)",
+    "text": "Estimating \\(\\beta_0\\), \\(\\beta\\)\nFor regression…\n\\[\n\\text{Model:} \\qquad\n\\P(Y=y \\mid X=x) = \\mathcal N( y; \\:\\: \\beta^\\top x, \\:\\:\\sigma^2)\n\\]\n… recall that we motivated OLS with the principle of maximum likelihood\n\\[\n\\begin{align*}\n\\hat \\beta_\\mathrm{OLS}\n&= \\argmax_{\\beta} \\prod_{i=1}^n \\P(Y_i = y_i \\mid X_i = x_i)\n\\\\\n&= \\argmin_{\\beta} \\sum_{i=1}^n -\\log\\P(Y_i = y_i \\mid X_i = x_i)\n\\\\\n\\\\\n&= \\ldots (\\text{because regression is nice})\n\\\\\n&= \\textstyle \\left( \\sum_{i=1}^n x_i x_i^\\top \\right)^{-1}\\left( \\sum_{i=1}^n y_i x_i \\right)\n\\end{align*}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/16-logistic-regression.html#estimating-beta_0-beta-1",
+    "href": "schedule/slides/16-logistic-regression.html#estimating-beta_0-beta-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Estimating \\(\\beta_0\\), \\(\\beta\\)",
+    "text": "Estimating \\(\\beta_0\\), \\(\\beta\\)\nFor classification with logistic regression…\n\\[\n\\begin{align*}\n\\text{Model:} &\\qquad\n\\tfrac{\\P(Y=1 \\mid X=x)}{\\P(Y=0 \\mid X=x)} = \\exp\\left( \\beta_0 +\\beta^\\top x \\right)\n\\\\\n\\text{Or alternatively:} &\\qquad \\P(Y=1 \\mid X=x) = h\\left(\\beta_0 + \\beta^\\top x \\right)\n\\\\\n&\\qquad \\P(Y=0 \\mid X=x) = h\\left(-(\\beta_0 + \\beta^\\top x)\\right)\n\\end{align*}\n\\] … we can also apply the principle of maximum likelihood\n\\[\n\\begin{align*}\n\\hat \\beta_{0}, \\hat \\beta\n&= \\argmax_{\\beta_0, \\beta} \\prod_{i=1}^n \\P(Y_i \\mid X_i)\n\\\\\n&= \\argmin_{\\beta_0,\\beta} \\sum_{i=1}^n -\\log\\P(Y_i \\mid X_i)\n\\end{align*}\n\\]\n\nUnfortunately that’s as far as we can get with algebra alone."
   },
   {
     "objectID": "schedule/slides/04-bias-variance.html#section",
@@ -3465,116 +3500,67 @@
     "text": "How to find a classifier\nWhy did we go through that math?\nEach of these approaches has strengths/drawbacks:\n\nEmpirical risk minimization: Minimize \\(R_n(g)\\) in some family \\(\\mathcal{G}\\)\n\n\n(This can be quite challenging as, unlike in regression, the training error is nonconvex)\n\n\nDensity estimation: Estimate \\(\\pi\\) and \\(p_k\\)\n\n\n(We have to estimate class densities to classify. Too roundabout?)\n\n\nRegression: Find an estimate \\(\\hat{f}\\approx E[Y|X=x]\\) and compare the predicted value to 1/2\n\n\n(Unnatural, estimates whole regression function when we’ll just discretize anyway)"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#section",
-    "href": "schedule/slides/16-logistic-regression.html#section",
+    "objectID": "schedule/slides/22-nnets-estimation.html#section",
+    "href": "schedule/slides/22-nnets-estimation.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "16 Logistic regression",
-    "text": "16 Logistic regression\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 25 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "section": "22 Neural nets - estimation",
+    "text": "22 Neural nets - estimation\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#last-time",
-    "href": "schedule/slides/16-logistic-regression.html#last-time",
+    "objectID": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
+    "href": "schedule/slides/22-nnets-estimation.html#neural-network-terms-again-t-hidden-layers-regression",
     "title": "UBC Stat406 2024W",
-    "section": "Last time",
-    "text": "Last time\n\nWe showed that with two classes, the Bayes’ classifier is\n\n\\[g_*(X) = \\begin{cases}\n1 & \\textrm{ if } \\frac{p_1(X)}{p_0(X)} &gt; \\frac{1-\\pi}{\\pi} \\\\\n0  &  \\textrm{ otherwise}\n\\end{cases}\\]\nwhere \\(p_1(X) = Pr(X \\given Y=1)\\) and \\(p_0(X) = Pr(X \\given Y=0)\\)\n\nWe then looked at what happens if we assume \\(Pr(X \\given Y=y)\\) is Normally distributed.\n\nWe then used this distribution and the class prior \\(\\pi\\) to find the posterior \\(Pr(Y=1 \\given X=x)\\)."
+    "section": "Neural Network terms again (T hidden layers, regression)",
+    "text": "Neural Network terms again (T hidden layers, regression)\n\n\n\\[\n\\begin{aligned}\nA_{k}^{(1)} &= g\\left(\\sum_{j=1}^p w^{(1)}_{k,j} x_j\\right)\\\\\nA_{\\ell}^{(t)} &= g\\left(\\sum_{k=1}^{K_{t-1}} w^{(t)}_{\\ell,k} A_{k}^{(t-1)} \\right)\\\\\n\\hat{Y} &= z_m = \\sum_{\\ell=1}^{K_T} \\beta_{m,\\ell} A_{\\ell}^{(T)}\\ \\ (M = 1)\n\\end{aligned}\n\\]\n\n\\(B \\in \\R^{M\\times K_T}\\).\n\\(M=1\\) for regression\n\n\\(\\mathbf{W}_t \\in \\R^{K_2\\times K_1}\\) \\(t=1,\\ldots,T\\)"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#direct-model",
-    "href": "schedule/slides/16-logistic-regression.html#direct-model",
+    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
+    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks.-first-choices",
     "title": "UBC Stat406 2024W",
-    "section": "Direct model",
-    "text": "Direct model\nInstead, let’s directly model the posterior\n\\[\n\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\nPr(Y = 0 | X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\n\\end{aligned}\n\\]\nThis is logistic regression."
+    "section": "Training neural networks. First, choices",
+    "text": "Training neural networks. First, choices\n\nChoose the architecture: how many layers, units per layer, what connections?\nChoose the loss: common choices (for each data point \\(i\\))\n\n\nRegression\n\n\\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\) (the 1/2 just makes the derivative nice)\n\nClassification\n\n\\(\\hat{R}_i = I(y_i = m)\\log( 1 + \\exp(-z_{im}))\\)\n\n\n\nChoose the activation function \\(g\\)"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#why-this",
-    "href": "schedule/slides/16-logistic-regression.html#why-this",
+    "objectID": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
+    "href": "schedule/slides/22-nnets-estimation.html#training-neural-networks-intuition",
     "title": "UBC Stat406 2024W",
-    "section": "Why this?",
-    "text": "Why this?\n\\[Pr(Y = 1 \\given X=x) = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\]\n\nThere are lots of ways to map \\(\\R \\mapsto [0,1]\\).\nThe “logistic” function \\(z\\mapsto (1 + \\exp(-z))^{-1} =  \\exp(z) / (1+\\exp(z)) =:h(z)\\) is nice.\nIt’s symmetric: \\(1 - h(z) = h(-z)\\)\nHas a nice derivative: \\(h'(z) = \\frac{\\exp(z)}{(1 + \\exp(z))^2} = h(z)(1-h(z))\\).\nIt’s the inverse of the “log-odds” (logit): \\(\\log(p / (1-p))\\)."
+    "section": "Training neural networks (intuition)",
+    "text": "Training neural networks (intuition)\n\nWe need to estimate \\(B\\), \\(\\mathbf{W}_t\\), \\(t=1,\\ldots,T\\)\nWe want to minimize \\(\\hat{R} = \\sum_{i=1}^n \\hat{R}_i\\) as a function of all this.\nWe use gradient descent, but in this dialect, we call it back propagation\n\n\n\nDerivatives via the chain rule: computed by a forward and backward sweep\nAll the \\(g(u)\\)’s that get used have \\(g'(u)\\) “nice”.\nIf \\(g\\) is ReLu:\n\n\\(g(u) = xI(x&gt;0)\\)\n\\(g'(u) = I(x&gt;0)\\)\n\n\n\nOnce we have derivatives from backprop,\n\\[\n\\begin{align}\n\\widetilde{B} &\\leftarrow B - \\gamma \\frac{\\partial \\widehat{R}}{\\partial B}\\\\\n\\widetilde{\\mathbf{W}_t} &\\leftarrow \\mathbf{W}_t - \\gamma \\frac{\\partial \\widehat{R}}{\\partial \\mathbf{W}_t}\n\\end{align}\n\\]"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#another-linear-classifier",
-    "href": "schedule/slides/16-logistic-regression.html#another-linear-classifier",
+    "objectID": "schedule/slides/22-nnets-estimation.html#chain-rule",
+    "href": "schedule/slides/22-nnets-estimation.html#chain-rule",
     "title": "UBC Stat406 2024W",
-    "section": "Another linear classifier",
-    "text": "Another linear classifier\nLike LDA, logistic regression is a linear classifier\nThe logit (i.e.: log odds) transformation gives a linear decision boundary \\[\\log\\left( \\frac{\\P(Y = 1 \\given X=x)}{\\P(Y = 0 \\given X=x) } \\right) = \\beta_0 + \\beta^{\\top} x\\] The decision boundary is the hyperplane \\(\\{x : \\beta_0 + \\beta^{\\top} x = 0\\}\\)\nIf the log-odds are below 0, classify as 0, above 0 classify as a 1."
+    "section": "Chain rule",
+    "text": "Chain rule\nWe want \\(\\frac{\\partial}{\\partial B} \\hat{R}_i\\) and \\(\\frac{\\partial}{\\partial W_{t}}\\hat{R}_i\\) for all \\(t\\).\nRegression: \\(\\hat{R}_i = \\frac{1}{2}(y_i - \\hat{y}_i)^2\\)\n\\[\\begin{aligned}\n\\frac{\\partial\\hat{R}_i}{\\partial B} &= -(y_i - \\hat{y}_i)\\frac{\\partial \\hat{y_i}}{\\partial B} =\\underbrace{-(y_i - \\hat{y}_i)}_{-r_i}  \\mathbf{A}^{(T)}\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_T} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_T} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_T}\\\\\n&= -\\left(r_i  B \\odot g'(\\mathbf{W}_T \\mathbf{A}^{(T)}) \\right) \\left(\\mathbf{A}^{(T-1)}\\right)^\\top\\\\\n\\frac{\\partial}{\\partial \\mathbf{W}_{T-1}} \\hat{R}_i &= -(y_i - \\hat{y}_i)\\frac{\\partial\\hat{y_i}}{\\partial \\mathbf{W}_{T-1}} = -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n&= -r_i \\frac{\\partial \\hat{y}_i}{\\partial \\mathbf{A}^{(T)}} \\frac{\\partial \\mathbf{A}^{(T)}}{\\partial \\mathbf{W}_{T}}\\frac{\\partial \\mathbf{W}_{T}}{\\partial \\mathbf{A}^{(T-1)}}\\frac{\\partial \\mathbf{A}^{(T-1)}}{\\partial \\mathbf{W}_{T-1}}\\\\\n\\cdots &= \\cdots\n\\end{aligned}\\]"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#logistic-regression-is-also-easy-in-r",
-    "href": "schedule/slides/16-logistic-regression.html#logistic-regression-is-also-easy-in-r",
+    "objectID": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
+    "href": "schedule/slides/22-nnets-estimation.html#mapping-it-out",
     "title": "UBC Stat406 2024W",
-    "section": "Logistic regression is also easy in R",
-    "text": "Logistic regression is also easy in R\n\nlogistic &lt;- glm(y ~ ., dat, family = \"binomial\")\n\nOr we can use lasso or ridge regression or a GAM as before\n\nlasso_logit &lt;- cv.glmnet(x, y, family = \"binomial\")\nridge_logit &lt;- cv.glmnet(x, y, alpha = 0, family = \"binomial\")\ngam_logit &lt;- gam(y ~ s(x), data = dat, family = \"binomial\")\n\n\n\nglm means generalized linear model"
+    "section": "Mapping it out",
+    "text": "Mapping it out\nGiven current \\(\\mathbf{W}_t, B\\), we want to get new, \\(\\widetilde{\\mathbf{W}}_t,\\ \\widetilde B\\) for \\(t=1,\\ldots,T\\)\n\nSquared error for regression, cross-entropy for classification\n\n\n\nFeed forward \n\\[\\mathbf{A}^{(0)} = \\mathbf{X}  \\in \\R^{n\\times p}\\]\nRepeat, \\(t= 1,\\ldots, T\\)\n\n\\(\\mathbf{Z}_{t} = \\mathbf{A}^{(t-1)}\\mathbf{W}_t \\in \\R^{n\\times K_t}\\)\n\\(\\mathbf{A}^{(t)} = g(\\mathbf{Z}_{t})\\) (component wise)\n\\(\\dot{\\mathbf{A}}^{(t)} = g'(\\mathbf{Z}_t)\\)\n\n\\[\\begin{cases}\n\\hat{\\mathbf{y}} =\\mathbf{A}^{(T)} B \\in \\R^n \\\\\n\\hat{\\Pi} = \\left(1 + \\exp\\left(-\\mathbf{A}^{(T)}\\mathbf{B}\\right)\\right)^{-1} \\in \\R^{n \\times M}\\end{cases}\\]\n\n\nBack propogate \n\\[-r = \\begin{cases}\n-\\left(\\mathbf{y} - \\widehat{\\mathbf{y}}\\right) \\\\\n-\\left(1 - \\widehat{\\Pi}\\right)[y]\\end{cases}\\]\n\\[\n\\begin{aligned}\n\\frac{\\partial}{\\partial \\mathbf{B}} \\widehat{R} &= \\left(\\mathbf{A}^{(T)}\\right)^\\top \\mathbf{r}\\\\\n-\\boldsymbol{\\Gamma} &\\leftarrow -\\mathbf{r}\\\\\n\\mathbf{W}_{T+1} &\\leftarrow \\mathbf{B}\n\\end{aligned}\n\\]\nRepeat, \\(t = T,...,1\\),\n\n\\(-\\boldsymbol{\\Gamma} \\leftarrow -\\left(\\boldsymbol{\\Gamma} \\mathbf{W}_{t+1}\\right) \\odot\\dot{\\mathbf{A}}^{(t)}\\)\n\\(\\frac{\\partial R}{\\partial \\mathbf{W}_t} = -\\left(\\mathbf{A}^{(t)}\\right)^\\top \\Gamma\\)"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#baby-example-continued-from-last-time",
-    "href": "schedule/slides/16-logistic-regression.html#baby-example-continued-from-last-time",
+    "objectID": "schedule/slides/22-nnets-estimation.html#deep-nets",
+    "href": "schedule/slides/22-nnets-estimation.html#deep-nets",
     "title": "UBC Stat406 2024W",
-    "section": "Baby example (continued from last time)",
-    "text": "Baby example (continued from last time)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2))\nlogit &lt;- glm(y ~ ., dat1 |&gt; mutate(y = y - 1), family = \"binomial\")\nsummary(logit)\n\n\nCall:\nglm(formula = y ~ ., family = \"binomial\", data = mutate(dat1, \n    y = y - 1))\n\nCoefficients:\n            Estimate Std. Error z value Pr(&gt;|z|)    \n(Intercept)  -2.6649     0.6281  -4.243 2.21e-05 ***\nx1            2.5305     0.5995   4.221 2.43e-05 ***\nx2            1.6610     0.4365   3.805 0.000142 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\n(Dispersion parameter for binomial family taken to be 1)\n\n    Null deviance: 138.469  on 99  degrees of freedom\nResidual deviance:  68.681  on 97  degrees of freedom\nAIC: 74.681\n\nNumber of Fisher Scoring iterations: 6"
+    "section": "Deep nets",
+    "text": "Deep nets\nSome comments on adding layers:\n\nIt has been shown that one hidden layer is sufficient to approximate any bounded piecewise continuous function\nHowever, this may take a huge number of hidden units (i.e. \\(K_1 \\gg 1\\)).\nThis is what people mean when they say that NNets are “universal approximators”\nBy including multiple layers, we can have fewer hidden units per layer.\nAlso, we can encode (in)dependencies that can speed computations\nWe don’t have to connect everything the way we have been"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
-    "href": "schedule/slides/16-logistic-regression.html#visualizing-the-classification-boundary",
+    "objectID": "schedule/slides/22-nnets-estimation.html#simple-example",
+    "href": "schedule/slides/22-nnets-estimation.html#simple-example",
     "title": "UBC Stat406 2024W",
-    "section": "Visualizing the classification boundary",
-    "text": "Visualizing the classification boundary\n\n\nCode\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), \n                  x2 = seq(-2.5, 3, length.out = 100))\npts &lt;- predict(logit, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_steps2(n.breaks = 6, name = \"log odds\") \ng0"
+    "section": "Simple example",
+    "text": "Simple example\n\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestdata &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nnn_out &lt;- neuralnet(y ~ x, data = df, hidden = c(10, 5, 15), threshold = 0.01, rep = 3)\nnn_preds &lt;- map(1:3, ~ compute(nn_out, testdata, .x)$net.result)\nyhat &lt;- nn_preds |&gt; bind_cols() |&gt; rowMeans() # average over the runs\n\n\n\nCode\n# This code will reproduce the analysis, takes some time\nset.seed(406406406)\nn &lt;- 200\ndf &lt;- tibble(\n  x = seq(.05, 1, length = n),\n  y = sin(1 / x) + rnorm(n, 0, .1) # Doppler function\n)\ntestx &lt;- matrix(seq(.05, 1, length.out = 1e3), ncol = 1)\nlibrary(neuralnet)\nlibrary(splines)\nfstar &lt;- sin(1 / testx)\nspline_test_err &lt;- function(k) {\n  fit &lt;- lm(y ~ bs(x, df = k), data = df)\n  yhat &lt;- predict(fit, newdata = tibble(x = testx))\n  mean((yhat - fstar)^2)\n}\nKs &lt;- 1:15 * 10\nSplineErr &lt;- map_dbl(Ks, ~ spline_test_err(.x))\n\nJgrid &lt;- c(5, 10, 15)\nNNerr &lt;- double(length(Jgrid)^3)\nNNplot &lt;- character(length(Jgrid)^3)\nsweep &lt;- 0\nfor (J1 in Jgrid) {\n  for (J2 in Jgrid) {\n    for (J3 in Jgrid) {\n      sweep &lt;- sweep + 1\n      NNplot[sweep] &lt;- paste(J1, J2, J3, sep = \" \")\n      nn_out &lt;- neuralnet(y ~ x, df,\n        hidden = c(J1, J2, J3),\n        threshold = 0.01, rep = 3\n      )\n      nn_results &lt;- sapply(1:3, function(x) {\n        compute(nn_out, testx, x)$net.result\n      })\n      # Run them through the neural network\n      Yhat &lt;- rowMeans(nn_results)\n      NNerr[sweep] &lt;- mean((Yhat - fstar)^2)\n    }\n  }\n}\n\nbestK &lt;- Ks[which.min(SplineErr)]\nbestspline &lt;- predict(lm(y ~ bs(x, bestK), data = df), newdata = tibble(x = testx))\nbesthidden &lt;- as.numeric(unlist(strsplit(NNplot[which.min(NNerr)], \" \")))\nnn_out &lt;- neuralnet(y ~ x, df, hidden = besthidden, threshold = 0.01, rep = 3)\nnn_results &lt;- sapply(1:3, function(x) compute(nn_out, testdata, x)$net.result)\n# Run them through the neural network\nbestnn &lt;- rowMeans(nn_results)\nplotd &lt;- data.frame(\n  x = testdata, spline = bestspline, nnet = bestnn, truth = fstar\n)\nsave.image(file = \"data/nnet-example.Rdata\")"
   },
   {
-    "objectID": "schedule/slides/16-logistic-regression.html#calculation",
-    "href": "schedule/slides/16-logistic-regression.html#calculation",
+    "objectID": "schedule/slides/22-nnets-estimation.html#different-architectures",
+    "href": "schedule/slides/22-nnets-estimation.html#different-architectures",
     "title": "UBC Stat406 2024W",
-    "section": "Calculation",
-    "text": "Calculation\nWhile the R formula for logistic regression is straightforward, it’s not as easy to compute as OLS or LDA or QDA.\nLogistic regression for two classes simplifies to a likelihood:\nWrite \\(p_i(\\beta) = \\P(Y_i = 1 | X = x_i,\\beta)\\)\n\n\\(P(Y_i = y_i \\given X = x_i, \\beta) = p_i^{y_i}(1-p_i)^{1-y_i}\\) (…Bernoulli distribution)\n\\(P(\\mathbf{Y} \\given \\mathbf{X}, \\beta) = \\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}\\)."
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#calculation-1",
-    "href": "schedule/slides/16-logistic-regression.html#calculation-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Calculation",
-    "text": "Calculation\nWrite \\(p_i(\\beta) = \\P(Y_i = 1 | X = x_i,\\beta)\\)\n\\[\n\\begin{aligned}\n\\ell(\\beta)\n& = \\log \\left( \\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} \\right)\\\\\n&=\\sum_{i=1}^n \\left( y_i\\log(p_i(\\beta)) + (1-y_i)\\log(1-p_i(\\beta))\\right) \\\\\n& =\n\\sum_{i=1}^n \\left( y_i\\log(e^{\\beta^{\\top}x_i}/(1+e^{\\beta^{\\top}x_i})) - (1-y_i)\\log(1+e^{\\beta^{\\top}x_i})\\right) \\\\\n& =\n\\sum_{i=1}^n \\left( y_i\\beta^{\\top}x_i -\\log(1 + e^{\\beta^{\\top} x_i})\\right)\n\\end{aligned}\n\\]\nThis gets optimized via Newton-Raphson updates and iteratively reweighed least squares."
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#irwls-for-logistic-regression-skip-for-now",
-    "href": "schedule/slides/16-logistic-regression.html#irwls-for-logistic-regression-skip-for-now",
-    "title": "UBC Stat406 2024W",
-    "section": "IRWLS for logistic regression (skip for now)",
-    "text": "IRWLS for logistic regression (skip for now)\n(This is preparation for Neural Networks.)\n\nlogit_irwls &lt;- function(y, x, maxit = 100, tol = 1e-6) {\n  p &lt;- ncol(x)\n  beta &lt;- double(p) # initialize coefficients\n  beta0 &lt;- 0\n  conv &lt;- FALSE # hasn't converged\n  iter &lt;- 1 # first iteration\n  while (!conv && (iter &lt; maxit)) { # check loops\n    iter &lt;- iter + 1 # update first thing (so as not to forget)\n    eta &lt;- beta0 + x %*% beta\n    mu &lt;- 1 / (1 + exp(-eta))\n    gp &lt;- 1 / (mu * (1 - mu)) # inverse of derivative of logistic\n    z &lt;- eta + (y - mu) * gp # effective transformed response\n    beta_new &lt;- coef(lm(z ~ x, weights = 1 / gp)) # do Weighted Least Squares\n    conv &lt;- mean(abs(c(beta0, beta) - betaNew)) &lt; tol # check if the betas are \"moving\"\n    beta0 &lt;- betaNew[1] # update betas\n    beta &lt;- betaNew[-1]\n  }\n  return(c(beta0, beta))\n}"
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression",
-    "href": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression",
-    "title": "UBC Stat406 2024W",
-    "section": "Comparing LDA and Logistic regression",
-    "text": "Comparing LDA and Logistic regression\nBoth decision boundaries are linear in \\(x\\):\n\nLDA \\(\\longrightarrow \\alpha_0 + \\alpha_1^\\top x\\)\nLogit \\(\\longrightarrow \\beta_0 + \\beta_1^\\top x\\).\n\nBut the parameters are estimated differently."
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression-1",
-    "href": "schedule/slides/16-logistic-regression.html#comparing-lda-and-logistic-regression-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Comparing LDA and Logistic regression",
-    "text": "Comparing LDA and Logistic regression\nExamine the joint distribution of \\((X,\\ Y)\\) (not the posterior):\n\nLDA: \\(f(X_i,\\ Y_i) = \\underbrace{ f(X_i \\given Y_i)}_{\\textrm{Gaussian}}\\underbrace{ f(Y_i)}_{\\textrm{Bernoulli}}\\)\nLogistic Regression: \\(f(X_i,Y_i) = \\underbrace{ f(Y_i\\given X_i)}_{\\textrm{Logistic}}\\underbrace{ f(X_i)}_{\\textrm{Ignored}}\\)\nLDA estimates the joint, but Logistic estimates only the conditional (posterior) distribution. But this is really all we need.\nSo logistic requires fewer assumptions.\nBut if the two classes are perfectly separable, logistic crashes (and the MLE is undefined, too many solutions)\nLDA “works” even if the conditional isn’t normal, but works very poorly if any X is qualitative"
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#comparing-with-qda-2-classes",
-    "href": "schedule/slides/16-logistic-regression.html#comparing-with-qda-2-classes",
-    "title": "UBC Stat406 2024W",
-    "section": "Comparing with QDA (2 classes)",
-    "text": "Comparing with QDA (2 classes)\n\nRecall: this gives a “quadratic” decision boundary (it’s a curve).\nIf we have \\(p\\) columns in \\(X\\)\n\nLogistic estimates \\(p+1\\) parameters\nLDA estimates \\(2p + p(p+1)/2 + 1\\)\nQDA estimates \\(2p + p(p+1) + 1\\)\n\nIf \\(p=50\\),\n\nLogistic: 51\nLDA: 1376\nQDA: 2651\n\nQDA doesn’t get used much: there are better nonlinear versions with way fewer parameters"
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#bad-parameter-counting",
-    "href": "schedule/slides/16-logistic-regression.html#bad-parameter-counting",
-    "title": "UBC Stat406 2024W",
-    "section": "Bad parameter counting",
-    "text": "Bad parameter counting\nI’ve motivated LDA as needing \\(\\Sigma\\), \\(\\pi\\) and \\(\\mu_0\\), \\(\\mu_1\\)\nIn fact, we don’t need all of this to get the decision boundary.\nSo the “degrees of freedom” is much lower if we only want the classes and not the probabilities.\nThe decision boundary only really depends on\n\n\\(\\Sigma^{-1}(\\mu_1-\\mu_0)\\)\n\\((\\mu_1+\\mu_0)\\),\nso appropriate algorithms estimate \\(&lt;2p\\) parameters."
-  },
-  {
-    "objectID": "schedule/slides/16-logistic-regression.html#note-again",
-    "href": "schedule/slides/16-logistic-regression.html#note-again",
-    "title": "UBC Stat406 2024W",
-    "section": "Note again:",
-    "text": "Note again:\nwhile logistic regression and LDA produce linear decision boundaries, they are not linear smoothers\nAIC/BIC/Cp work if you use the likelihood correctly and count degrees-of-freedom correctly\nMust people use either test set or CV"
+    "section": "Different architectures",
+    "text": "Different architectures"
   },
   {
     "objectID": "schedule/slides/08-ridge-regression.html#section",
@@ -4589,14 +4575,21 @@
     "href": "schedule/slides/00-gradient-descent.html#section",
     "title": "UBC Stat406 2024W",
     "section": "00 Gradient descent",
-    "text": "00 Gradient descent\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 25 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "text": "00 Gradient descent\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/00-gradient-descent.html#simple-optimization-techniques",
-    "href": "schedule/slides/00-gradient-descent.html#simple-optimization-techniques",
+    "objectID": "schedule/slides/00-gradient-descent.html#motivation-maximum-likelihood-estimation-as-optimization",
+    "href": "schedule/slides/00-gradient-descent.html#motivation-maximum-likelihood-estimation-as-optimization",
     "title": "UBC Stat406 2024W",
-    "section": "Simple optimization techniques",
-    "text": "Simple optimization techniques\nWe’ll see “gradient descent” a few times:\n\nsolves logistic regression (simple version of IRWLS)\ngradient boosting\nNeural networks\n\nThis seems like a good time to explain it.\nSo what is it and how does it work?"
+    "section": "Motivation: maximum likelihood estimation as optimization",
+    "text": "Motivation: maximum likelihood estimation as optimization\nBy the principle of maximum likelihood, we have that\n\\[\n\\begin{align*}\n\\hat \\beta\n&= \\argmax_{\\beta} \\prod_{i=1}^n \\P(Y_i \\mid X_i)\n\\\\\n&= \\argmin_{\\beta} \\sum_{i=1}^n -\\log\\P(Y_i \\mid X_i)\n\\end{align*}\n\\]\nUnder the model we use for logistic regression… \\[\n\\begin{gathered}\n\\P(Y=1 \\mid X=x) = h(\\beta^\\top x), \\qquad \\P(Y=0 \\mid X=x) = h(-\\beta^\\top x),\n\\\\\nh(z) = \\tfrac{1}{1-e^{-z}}\n\\end{gathered}\n\\]\n… we can’t simply find the argmin with algebra."
+  },
+  {
+    "objectID": "schedule/slides/00-gradient-descent.html#gradient-descent-the-workhorse-optimization-algorithm",
+    "href": "schedule/slides/00-gradient-descent.html#gradient-descent-the-workhorse-optimization-algorithm",
+    "title": "UBC Stat406 2024W",
+    "section": "Gradient descent: the workhorse optimization algorithm",
+    "text": "Gradient descent: the workhorse optimization algorithm\nWe’ll see “gradient descent” a few times:\n\nsolves logistic regression\ngradient boosting\nNeural networks\n\nThis seems like a good time to explain it.\nSo what is it and how does it work?"
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#very-basic-example",
@@ -4687,7 +4680,7 @@
     "href": "schedule/slides/00-gradient-descent.html#stochastic-gradient-descent",
     "title": "UBC Stat406 2024W",
     "section": "Stochastic gradient descent",
-    "text": "Stochastic gradient descent\nSuppose \\(f(x) = \\frac{1}{n}\\sum_{i=1}^n f_i(x)\\)\nLike if \\(f(\\beta) = \\frac{1}{n}\\sum_{i=1}^n (y_i - x^\\top_i\\beta)^2\\).\nThen \\(f'(\\beta) = \\frac{1}{n}\\sum_{i=1}^n f'_i(\\beta) = \\frac{1}{n} \\sum_{i=1}^n -2x_i^\\top(y_i - x^\\top_i\\beta)\\)\nIf \\(n\\) is really big, it may take a long time to compute \\(f'\\)\nSo, just sample some partition our data into mini-batches \\(\\mathcal{M}_j\\)\nAnd approximate (imagine the Law of Large Numbers, use a sample to approximate the population) \\[f'(x) = \\frac{1}{n}\\sum_{i=1}^n f'_i(x) \\approx \\frac{1}{m}\\sum_{i\\in\\mathcal{M}_j}f'_{i}(x)\\]"
+    "text": "Stochastic gradient descent\nIf we’re optimizing \\(\\argmin_\\beta \\sum_{i=1}^n -\\log P_\\beta(Y_i \\mid X_i)\\) then our derivative will also have an additive form \\[\n\\sum_{i=1}^n \\frac{\\partial}{\\partial \\beta} \\left[-\\log P_\\beta(Y_i \\mid X_i) \\right]\n\\]\nIf \\(n\\) is really big, it may take a long time to compute this gradient\nSo, just sample some partition our data \\(\\mathcal{M} \\subset \\{ (X_i, Y_i)\\}_{i=1}^n\\) and approximate: \\[\\sum_{i=1}^n \\frac{\\partial}{\\partial \\beta} \\left[-\\log P_\\beta(Y_i \\mid X_i) \\right] \\approx \\frac{n}{\\vert \\mathcal M \\vert}\\sum_{i\\in\\mathcal{M}} \\left[-\\log P_\\beta(Y_i \\mid X_i) \\right]\\] (Justification: Law of Large Numbers. Use a sample to approximate the population.)"
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#sgd",
@@ -4701,56 +4694,21 @@
     "href": "schedule/slides/00-gradient-descent.html#gradient-descent-for-logistic-regression",
     "title": "UBC Stat406 2024W",
     "section": "Gradient descent for Logistic regression",
-    "text": "Gradient descent for Logistic regression\nSuppose \\(Y=1\\) with probability \\(p(x)\\) and \\(Y=0\\) with probability \\(1-p(x)\\), \\(x \\in \\R\\).\nI want to model \\(P(Y=1| X=x)\\).\nI’ll assume that \\(\\log\\left(\\frac{p(x)}{1-p(x)}\\right) = ax\\) for some scalar \\(a\\). This means that \\(p(x) = \\frac{\\exp(ax)}{1+\\exp(ax)} = \\frac{1}{1+\\exp(-ax)}\\)\n\n\n\nn &lt;- 100\na &lt;- 2\nx &lt;- runif(n, -5, 5)\nlogit &lt;- function(x) 1 / (1 + exp(-x))\np &lt;- logit(a * x)\ny &lt;- rbinom(n, 1, p)\ndf &lt;- tibble(x, y)\nggplot(df, aes(x, y)) +\n  geom_point(colour = \"cornflowerblue\") +\n  stat_function(fun = ~ logit(a * .x))"
+    "text": "Gradient descent for Logistic regression\n\\[\n\\begin{gathered}\n\\P(Y=1 \\mid X=x) = h(\\beta^\\top x), \\qquad \\P(Y=0 \\mid X=x) = h(-\\beta^\\top x),\n\\\\\n\\\\\nh(z) = \\tfrac{1}{1-e^{-z}}\n\\end{gathered}\n\\]\n\n\n\n\n\n\nn &lt;- 100\nbeta &lt;- 2\nx &lt;- runif(n, -5, 5)\nlogit &lt;- function(x) 1 / (1 + exp(-x))\np &lt;- logit(beta * x)\ny &lt;- rbinom(n, 1, p)\ndf &lt;- tibble(x, y)\nggplot(df, aes(x, y)) +\n  geom_point(colour = \"cornflowerblue\") +\n  stat_function(fun = ~ logit(beta * .x))"
   },
   {
-    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood",
-    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood",
+    "objectID": "schedule/slides/00-gradient-descent.html#finding-hatbeta-argmin_beta--ellbeta-with-gradient-descent",
+    "href": "schedule/slides/00-gradient-descent.html#finding-hatbeta-argmin_beta--ellbeta-with-gradient-descent",
     "title": "UBC Stat406 2024W",
-    "section": "Reminder: the likelihood",
-    "text": "Reminder: the likelihood\n\\[\nL(y | a, x) = \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n\\[\n\\begin{aligned}\n\\ell(y | a, x) &= \\log \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\n= \\sum_{i=1}^n y_i\\log p(x_i) + (1-y_i)\\log(1-p(x_i))\\\\\n&= \\sum_{i=1}^n\\log(1-p(x_i)) + y_i\\log\\left(\\frac{p(x_i)}{1-p(x_i)}\\right)\\\\\n&=\\sum_{i=1}^n ax_i y_i + \\log\\left(1-p(x_i)\\right)\\\\\n&=\\sum_{i=1}^n ax_i y_i + \\log\\left(\\frac{1}{1+\\exp(ax_i)}\\right)\n\\end{aligned}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-1",
-    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Reminder: the likelihood",
-    "text": "Reminder: the likelihood\n\\[\nL(y | a, x) = \\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\nNow, we want the negative of this. Why?\nWe would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood (and scale by \\(1/n\\))\n\\[-\\ell(y | a, x) = \\frac{1}{n}\\sum_{i=1}^n -ax_i y_i - \\log\\left(\\frac{1}{1+\\exp(ax_i)}\\right)\\]"
-  },
-  {
-    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-2",
-    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-2",
-    "title": "UBC Stat406 2024W",
-    "section": "Reminder: the likelihood",
-    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\nThis is, in the notation of our slides \\(f(a)\\).\nWe want to minimize it in \\(a\\) by gradient descent.\nSo we need the derivative with respect to \\(a\\): \\(f'(a)\\).\nNow, conveniently, this simplifies a lot.\n\\[\n\\begin{aligned}\n\\frac{d}{d a} f(a) &= \\frac{1}{n}\\sum_{i=1}^n -x_i y_i - \\left(-\\frac{x_i \\exp(ax_i)}{1+\\exp(ax_i)}\\right)\\\\\n&=\\frac{1}{n}\\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \\frac{1}{n}\\sum_{i=1}^n -x_i(y_i-p(x_i)).\n\\end{aligned}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-3",
-    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-3",
-    "title": "UBC Stat406 2024W",
-    "section": "Reminder: the likelihood",
-    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n(Simple) gradient descent to minimize \\(-\\ell(a)\\) or maximize \\(L(y|a,x)\\) is:\n\nInput \\(a_1,\\ \\gamma&gt;0,\\ j_\\max,\\ \\epsilon&gt;0,\\ \\frac{d}{da} -\\ell(a)\\).\nFor \\(j=1,\\ 2,\\ \\ldots,\\ j_\\max\\), \\[a_j = a_{j-1} - \\gamma \\frac{d}{da} (-\\ell(a_{j-1}))\\]\nStop if \\(\\epsilon &gt; |a_j - a_{j-1}|\\) or \\(|d / da\\  \\ell(a)| &lt; \\epsilon\\)."
-  },
-  {
-    "objectID": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-4",
-    "href": "schedule/slides/00-gradient-descent.html#reminder-the-likelihood-4",
-    "title": "UBC Stat406 2024W",
-    "section": "Reminder: the likelihood",
-    "text": "Reminder: the likelihood\n\\[\n\\frac{1}{n}L(y | a, x) = \\frac{1}{n}\\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\\textrm{ and }\np(x) = \\frac{1}{1+\\exp(-ax)}\n\\]\n\namle &lt;- function(x, y, a0, gam = 0.5, jmax = 50, eps = 1e-6) {\n  a &lt;- double(jmax) # place to hold stuff (always preallocate space)\n  a[1] &lt;- a0 # starting value\n  for (j in 2:jmax) { # avoid possibly infinite while loops\n    px &lt;- logit(a[j - 1] * x)\n    grad &lt;- mean(-x * (y - px))\n    a[j] &lt;- a[j - 1] - gam * grad\n    if (abs(grad) &lt; eps || abs(a[j] - a[j - 1]) &lt; eps) break\n  }\n  a[1:j]\n}"
+    "section": "Finding \\(\\hat\\beta = \\argmin_{\\beta} -\\ell(\\beta)\\) with gradient descent:",
+    "text": "Finding \\(\\hat\\beta = \\argmin_{\\beta} -\\ell(\\beta)\\) with gradient descent:\n\nInput \\(\\beta_0,\\ \\gamma&gt;0,\\ j_\\max,\\ \\epsilon&gt;0,\\ \\tfrac{d \\ell}{d\\beta}\\).\nFor \\(j=1,\\ 2,\\ \\ldots,\\ j_\\max\\), \\[\\beta_j = \\beta_{j-1} - \\gamma \\left(\\tfrac{d}{d\\beta}-\\!\\ell(\\beta_{j-1}) \\right)\\]\nStop if \\(\\epsilon &gt; |\\beta_j - \\beta_{j-1}|\\) or \\(|d\\ell / d\\beta\\ | &lt; \\epsilon\\).\n\n\nbeta.mle &lt;- function(x, y, beta0, gamma = 0.5, jmax = 50, eps = 1e-6) {\n  beta &lt;- double(jmax) # place to hold stuff (always preallocate space)\n  beta[1] &lt;- beta0 # starting value\n  for (j in 2:jmax) { # avoid possibly infinite while loops\n    px &lt;- logit(beta[j - 1] * x)\n    grad &lt;- mean(-x * (y - px))\n    beta[j] &lt;- beta[j - 1] - gamma * grad\n    if (abs(grad) &lt; eps || abs(beta[j] - beta[j - 1]) &lt; eps) break\n  }\n  beta[1:j]\n}"
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#try-it",
     "href": "schedule/slides/00-gradient-descent.html#try-it",
     "title": "UBC Stat406 2024W",
     "section": "Try it:",
-    "text": "Try it:\n\nround(too_big &lt;- amle(x, y, 5, 50), 3)\n\n [1] 5.000 3.360 2.019 1.815 2.059 1.782 2.113 1.746 2.180 1.711 2.250 1.684\n[13] 2.309 1.669 2.344 1.663 2.359 1.661 2.364 1.660 2.365 1.660 2.366 1.660\n[25] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660\n[37] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660\n[49] 2.366 1.660\n\nround(too_small &lt;- amle(x, y, 5, 1), 3)\n\n [1] 5.000 4.967 4.934 4.902 4.869 4.837 4.804 4.772 4.739 4.707 4.675 4.643\n[13] 4.611 4.579 4.547 4.515 4.483 4.451 4.420 4.388 4.357 4.326 4.294 4.263\n[25] 4.232 4.201 4.170 4.140 4.109 4.078 4.048 4.018 3.988 3.957 3.927 3.898\n[37] 3.868 3.838 3.809 3.779 3.750 3.721 3.692 3.663 3.635 3.606 3.578 3.550\n[49] 3.522 3.494\n\nround(just_right &lt;- amle(x, y, 5, 10), 3)\n\n [1] 5.000 4.672 4.351 4.038 3.735 3.445 3.171 2.917 2.688 2.488 2.322 2.191\n[13] 2.094 2.027 1.983 1.956 1.940 1.930 1.925 1.922 1.920 1.919 1.918 1.918\n[25] 1.918 1.918 1.918 1.917 1.917 1.917 1.917"
-  },
-  {
-    "objectID": "schedule/slides/00-gradient-descent.html#visual",
-    "href": "schedule/slides/00-gradient-descent.html#visual",
-    "title": "UBC Stat406 2024W",
-    "section": "Visual",
-    "text": "Visual\n\n\nnegll &lt;- function(a) {\n  -a * mean(x * y) -\n    rowMeans(log(1 / (1 + exp(outer(a, x)))))\n}\nblah &lt;- list_rbind(\n  map(\n    rlang::dots_list(\n      too_big, too_small, just_right, .named = TRUE\n    ), \n    as_tibble),\n  names_to = \"gamma\"\n) |&gt; mutate(negll = negll(value))\nggplot(blah, aes(value, negll)) +\n  geom_point(aes(colour = gamma)) +\n  facet_wrap(~gamma, ncol = 1) +\n  stat_function(fun = negll, xlim = c(-2.5, 5)) +\n  scale_y_log10() + \n  xlab(\"a\") + \n  ylab(\"negative log likelihood\") +\n  geom_vline(xintercept = tail(just_right, 1)) +\n  scale_colour_brewer(palette = \"Set1\") +\n  theme(legend.position = \"none\")"
+    "text": "Try it:\n\ntoo_big &lt;- beta.mle(x, y, beta0 = 5, gamma = 50)\ntoo_small &lt;- beta.mle(x, y, beta0 = 5, gamma = 1)\njust_right &lt;- beta.mle(x, y, beta0 = 5, gamma = 10)\n\n\n\nnegll &lt;- function(beta) {\n  -beta * mean(x * y) -\n    rowMeans(log(1 / (1 + exp(outer(beta, x)))))\n}\nblah &lt;- list_rbind(\n  map(\n    rlang::dots_list(\n      too_big, too_small, just_right, .named = TRUE\n    ), \n    as_tibble),\n  names_to = \"gamma\"\n) |&gt; mutate(negll = negll(value))\nggplot(blah, aes(value, negll)) +\n  geom_point(aes(colour = gamma)) +\n  facet_wrap(~gamma, ncol = 1) +\n  stat_function(fun = negll, xlim = c(-2.5, 5)) +\n  scale_y_log10() + \n  xlab(\"beta\") + \n  ylab(\"negative log likelihood\") +\n  geom_vline(xintercept = tail(just_right, 1)) +\n  scale_colour_brewer(palette = \"Set1\") +\n  theme(legend.position = \"none\")"
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#check-vs.-glm",

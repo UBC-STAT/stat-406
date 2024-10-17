@@ -398,7 +398,7 @@
 <h2>16 Logistic regression</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 25 October 2023</p>
+<p>Last modified – 16 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,6 +424,9 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
 <section id="last-time" class="slide level2">
@@ -435,216 +438,383 @@
 1 &amp; \textrm{ if } \frac{p_1(X)}{p_0(X)} &gt; \frac{1-\pi}{\pi} \\
 0  &amp;  \textrm{ otherwise}
 \end{cases}\]</span></p>
-<p>where <span class="math inline">\(p_1(X) = Pr(X \given Y=1)\)</span> and <span class="math inline">\(p_0(X) = Pr(X \given Y=0)\)</span></p>
+<p>where</p>
 <ul>
-<li>We then looked at what happens if we <strong>assume</strong> <span class="math inline">\(Pr(X \given Y=y)\)</span> is Normally distributed.</li>
+<li><span class="math inline">\(p_1(X) = \P(X \given Y=1)\)</span></li>
+<li><span class="math inline">\(p_0(X) = \P(X \given Y=0)\)</span></li>
+<li><span class="math inline">\(\pi = \P(Y=1)\)</span></li>
 </ul>
-<p>We then used this distribution and the class prior <span class="math inline">\(\pi\)</span> to find the <strong>posterior</strong> <span class="math inline">\(Pr(Y=1 \given X=x)\)</span>.</p>
+<div class="fragment">
+<h3 id="this-lecture">This lecture</h3>
+<p>How do we estimate <span class="math inline">\(p_1(X), p_0(X), \pi\)</span>?</p>
+</div>
+</section>
+<section id="warmup-estimating-pi-pry1" class="slide level2">
+<h2>Warmup: estimating <span class="math inline">\(\pi = Pr(Y=1)\)</span></h2>
+<p>A good estimator:</p>
+<p><span class="math display">\[
+\hat \pi = \frac{1}{n} \sum_{i=1}^n 1_{y_i = 1}
+\]</span></p>
+<p>(I.e. count the number of <span class="math inline">\(1\)</span>s in the training set)</p>
+<p>This estimator is low bias/variance.</p>
+<div class="fragment">
+<p><br>
+<em>As we will soon see, it turns out we won’t have to use this estimator.</em></p>
+<!-- * We then looked at what happens if we **assume** $Pr(X \given Y=y)$ is Normally distributed. -->
+<!-- We then used this distribution and the class prior $\pi$ to find the __posterior__ $Pr(Y=1 \given X=x)$. -->
+</div>
+</section>
+<section id="estimating-p_0-and-p_1-is-much-harder" class="slide level2">
+<h2>Estimating <span class="math inline">\(p_0\)</span> and <span class="math inline">\(p_1\)</span> is much harder</h2>
+<p><span class="math inline">\(\P(X=x \mid Y = 1)\)</span> and <span class="math inline">\(\P(X=x \mid Y = 0)\)</span> are <span class="math inline">\(p\)</span>-dimensional distributions.<br>
+<span class="small">Remember the <em>curse of dimensionality</em>?</span></p>
+<p><br>
+<span class="secondary">Can we simplify our estimation problem?</span></p>
+</section>
+<section id="sidestepping-the-hard-estimation-problem" class="slide level2">
+<h2>Sidestepping the hard estimation problem</h2>
+<p>Rather than estimating <span class="math inline">\(\P(X=x \mid Y = 1)\)</span> and <span class="math inline">\(\P(X=x \mid Y = 0)\)</span>, I claim we can instead estimate the simpler ratio</p>
+<p><span class="math display">\[
+\frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)}
+\]</span> Why?</p>
+<div class="fragment">
+<p><br>
+Recall that <span class="math inline">\(g_*(X)\)</span> ony depends on the <em>ratio</em> <span class="math inline">\(\P(X \mid Y = 1) / \P(X \mid Y = 0)\)</span>.</p>
+</div>
+<div class="fragment">
+<p><span class="math display">\[
+\begin{align*}
+  \frac{\P(X=x \mid Y = 1)}{\P(X=x \mid Y = 0)}
+  &amp;=
+  \frac{
+    \tfrac{\P(Y = 1 \mid X=x) \P(X=x)}{\P(Y = 1)}
+  }{
+    \tfrac{\P(Y = 0 \mid X=x) \P(X=x)}{\P(Y = 0)}
+  }
+  =
+  \frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)}
+  \underbrace{\left(\frac{1-\pi}{\pi}\right)}_{\text{Easy to estimate with } \hat \pi}
+\end{align*}
+\]</span></p>
+</div>
 </section>
 <section id="direct-model" class="slide level2">
 <h2>Direct model</h2>
-<p>Instead, let’s directly model the posterior</p>
+<p><span class="small">As with regression, we’ll start with a simple model.</span><br>
+Assume our data can be modelled by a distribution of the form</p>
 <p><span class="math display">\[
+\log\left( \frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)} \right) = \beta_0 + \beta^\top x
+\]</span></p>
+<p><span class="secondary">Why does it make sense to model the <em>log ratio</em> rather than the <em>ratio</em>?</span></p>
+<div class="fragment">
+<p>From this eq., we can recover an estimate of the ratio we need for the <span class="secondary">Bayes classifier</span>:</p>
+<p><span class="math display">\[
+\begin{align*}
+\log\left( \frac{\P(X=x \mid Y = 1)}{\P(X=x \mid Y = 0)} \right)
+&amp;=
+\log\left( \frac{\tfrac{\P(X=x)}{\P(Y = 1)}}{\tfrac{\P(X=x)}{\P(Y = 0)}}  \right) +
+\log\left( \frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)} \right)
+\\
+&amp;= \underbrace{\left( \tfrac{1 - \pi}{\pi} + \beta_0 \right)}_{\beta_0'} + \beta^\top x
+\end{align*}
+\]</span></p>
+</div>
+</section>
+<section id="recovering-class-probabilities" class="slide level2">
+<h2>Recovering class probabilities</h2>
+<p><span class="math display">\[
+\text{Our model:}\qquad
+\log\left( \frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)} \right) = \beta_0 + \beta^\top x
+\]</span></p>
+<div class="fragment">
+<p><br>
+We know that <span class="math inline">\(\P(Y = 1 \mid X=x) + \P(Y = 0 \mid X=x) = 1\)</span>. So…</p>
+<p><span class="math display">\[
+\frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)}
+=
+\frac{\P(Y = 1 \mid X=x)}{1 - \P(Y = 1 \mid X=x)}
+=
+\exp\left( \beta_0 + \beta^\top x \right),
+\]</span></p>
+</div>
+</section>
+<section class="slide level2">
+
+<p><span class="math display">\[
+\frac{\P(Y = 1 \mid X=x)}{\P(Y = 0 \mid X=x)}
+=
+\frac{\P(Y = 1 \mid X=x)}{1 - \P(Y = 1 \mid X=x)}
+=
+\exp\left( \beta_0 + \beta^\top x \right),
+\]</span></p>
+<p><span class="small">After algebra…</span> <span class="math display">\[
 \begin{aligned}
-Pr(Y = 1 \given X=x)  &amp; = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}} \\
-Pr(Y = 0 | X=x) &amp; = \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}=1-\frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}
+\P(Y = 1 \given X=x) &amp;= \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}},
+\\\
+\P(Y = 0 | X=x) &amp;= \frac{1}{1 + \exp\{\beta_0 + \beta^{\top}x\}}
 \end{aligned}
 \]</span></p>
 <p>This is logistic regression.</p>
 </section>
-<section id="why-this" class="slide level2">
-<h2>Why this?</h2>
-<p><span class="math display">\[Pr(Y = 1 \given X=x) = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}\]</span></p>
+<section id="logistic-regression" class="slide level2">
+<h2>Logistic Regression</h2>
+<p><span class="math display">\[\P(Y = 1 \given X=x) = \frac{\exp\{\beta_0 + \beta^{\top}x\}}{1 + \exp\{\beta_0 + \beta^{\top}x\}}
+= h\left( \beta_0 + \beta^\top x \right),\]</span></p>
+<p>where <span class="math inline">\(h(z) = (1 + \exp(-z))^{-1} =  \exp(z) / (1+\exp(z))\)</span> is the <span class="secondary">logistic function</span>.</p>
+<p><br>
+</p>
+<div class="flex">
+<section id="the-logistic-function-is-nice." class="w-60">
+<h3>The “logistic” function is nice.</h3>
 <ul>
-<li><p>There are lots of ways to map <span class="math inline">\(\R \mapsto [0,1]\)</span>.</p></li>
-<li><p>The “logistic” function <span class="math inline">\(z\mapsto (1 + \exp(-z))^{-1} =  \exp(z) / (1+\exp(z)) =:h(z)\)</span> is nice.</p></li>
 <li><p>It’s symmetric: <span class="math inline">\(1 - h(z) = h(-z)\)</span></p></li>
 <li><p>Has a nice derivative: <span class="math inline">\(h'(z) = \frac{\exp(z)}{(1 + \exp(z))^2} = h(z)(1-h(z))\)</span>.</p></li>
 <li><p>It’s the inverse of the “log-odds” (logit): <span class="math inline">\(\log(p / (1-p))\)</span>.</p></li>
 </ul>
 </section>
-<section id="another-linear-classifier" class="slide level2">
-<h2>Another linear classifier</h2>
-<p>Like LDA, logistic regression is a linear classifier</p>
-<p>The <em>logit</em> (i.e.: log odds) transformation gives a linear decision boundary <span class="math display">\[\log\left( \frac{\P(Y = 1 \given X=x)}{\P(Y = 0 \given X=x) } \right) = \beta_0 + \beta^{\top} x\]</span> The decision boundary is the hyperplane <span class="math inline">\(\{x : \beta_0 + \beta^{\top} x = 0\}\)</span></p>
-<p>If the log-odds are below 0, classify as 0, above 0 classify as a 1.</p>
+<div class="w-35">
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="16-logistic-regression_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
-<section id="logistic-regression-is-also-easy-in-r" class="slide level2">
-<h2>Logistic regression is also easy in R</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>logistic <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Or we can use lasso or ridge regression or a GAM as before</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>lasso_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb2-2"><a></a>ridge_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb2-3"><a></a>gam_logit <span class="ot">&lt;-</span> <span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(x), <span class="at">data =</span> dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-
-<aside><div>
-<p>glm means generalized linear model</p>
-</div></aside></section>
-<section id="baby-example-continued-from-last-time" class="slide level2">
-<h2>Baby example (continued from last time)</h2>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>))</span>
-<span id="cb3-2"><a></a>logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat1 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">-</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb3-3"><a></a><span class="fu">summary</span>(logit)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-glm(formula = y ~ ., family = "binomial", data = mutate(dat1, 
-    y = y - 1))
-
-Coefficients:
-            Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)  -2.6649     0.6281  -4.243 2.21e-05 ***
-x1            2.5305     0.5995   4.221 2.43e-05 ***
-x2            1.6610     0.4365   3.805 0.000142 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 138.469  on 99  degrees of freedom
-Residual deviance:  68.681  on 97  degrees of freedom
-AIC: 74.681
-
-Number of Fisher Scoring iterations: 6</code></pre>
-</div>
-</div>
+<section id="logistic-regression-is-a-linear-classifier" class="slide level2">
+<h2>Logistic regression is a Linear Classifier</h2>
+<!-- Like LDA, -->
+<p>Logistic regression is a <span class="secondary">linear classifier</span></p>
+<!-- The _logit_ (i.e.: log odds) transformation -->
+<!-- gives a linear decision boundary -->
+<p><span class="math display">\[\log\left( \frac{\P(Y = 1 \given X=x)}{\P(Y = 0 \given X=x) } \right) = \beta_0 + \beta^{\top} x\]</span></p>
+<ul>
+<li><p>If the log-odds are <span class="math inline">\(&gt;0\)</span>, classify as 1<br>
+<span class="small">(<span class="math inline">\(Y=1\)</span> is more likely)</span></p></li>
+<li><p>If the log-odds are <span class="math inline">\(&lt;0\)</span>, classify as a 0<br>
+<span class="small">(<span class="math inline">\(Y=0\)</span> is more likely)</span></p></li>
+</ul>
+<p><br>
+The <span class="secondary">decision boundary</span> is the hyperplane <span class="math inline">\(\{x : \beta_0 + \beta^{\top} x = 0\}\)</span></p>
 </section>
 <section id="visualizing-the-classification-boundary" class="slide level2">
 <h2>Visualizing the classification boundary</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), </span>
-<span id="cb5-2"><a></a>                  <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
-<span id="cb5-3"><a></a>pts <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit, gr)</span>
-<span id="cb5-4"><a></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
-<span id="cb5-5"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
-<span id="cb5-7"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
-<span id="cb5-8"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
-<span id="cb5-9"><a></a>  <span class="fu">scale_fill_steps2</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) </span>
-<span id="cb5-10"><a></a>g0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-2"><a></a><span class="fu">library</span>(MASS)</span>
+<span id="cb1-3"><a></a>generate_lda_2d <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb1-4"><a></a>    n, <span class="at">p =</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">5</span>),</span>
+<span id="cb1-5"><a></a>    <span class="at">mu =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="dv">2</span>),</span>
+<span id="cb1-6"><a></a>    <span class="at">Sigma =</span> <span class="fu">diag</span>(<span class="dv">2</span>)) {</span>
+<span id="cb1-7"><a></a>  X <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(n, <span class="at">sigma =</span> Sigma)</span>
+<span id="cb1-8"><a></a>  <span class="fu">tibble</span>(</span>
+<span id="cb1-9"><a></a>    <span class="at">y =</span> <span class="fu">which</span>(<span class="fu">rmultinom</span>(n, <span class="dv">1</span>, p) <span class="sc">==</span> <span class="dv">1</span>, <span class="cn">TRUE</span>)[, <span class="dv">1</span>],</span>
+<span id="cb1-10"><a></a>    <span class="at">x1 =</span> X[, <span class="dv">1</span>] <span class="sc">+</span> mu[<span class="dv">1</span>, y],</span>
+<span id="cb1-11"><a></a>    <span class="at">x2 =</span> X[, <span class="dv">2</span>] <span class="sc">+</span> mu[<span class="dv">2</span>, y]</span>
+<span id="cb1-12"><a></a>  )</span>
+<span id="cb1-13"><a></a>}</span>
+<span id="cb1-14"><a></a></span>
+<span id="cb1-15"><a></a>dat1 <span class="ot">&lt;-</span> <span class="fu">generate_lda_2d</span>(<span class="dv">100</span>, <span class="at">Sigma =</span> .<span class="dv">5</span> <span class="sc">*</span> <span class="fu">diag</span>(<span class="dv">2</span>))</span>
+<span id="cb1-16"><a></a>logit <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat1 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">y =</span> y <span class="sc">-</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb1-17"><a></a></span>
+<span id="cb1-18"><a></a>gr <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">x1 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>), </span>
+<span id="cb1-19"><a></a>                  <span class="at">x2 =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>))</span>
+<span id="cb1-20"><a></a>pts <span class="ot">&lt;-</span> <span class="fu">predict</span>(logit, gr)</span>
+<span id="cb1-21"><a></a>g0 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(dat1, <span class="fu">aes</span>(x1, x2)) <span class="sc">+</span></span>
+<span id="cb1-22"><a></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span>, <span class="st">"1"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb1-23"><a></a>  <span class="fu">geom_raster</span>(<span class="at">data =</span> <span class="fu">tibble</span>(gr, <span class="at">disc =</span> pts), <span class="fu">aes</span>(x1, x2, <span class="at">fill =</span> disc)) <span class="sc">+</span></span>
+<span id="cb1-24"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> <span class="fu">as.factor</span>(y)), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb1-25"><a></a>  <span class="fu">coord_cartesian</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb1-26"><a></a>  <span class="fu">scale_fill_steps2</span>(<span class="at">n.breaks =</span> <span class="dv">6</span>, <span class="at">name =</span> <span class="st">"log odds"</span>) </span>
+<span id="cb1-27"><a></a>g0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
 <img data-src="16-logistic-regression_files/figure-revealjs/plot-d1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="calculation" class="slide level2">
-<h2>Calculation</h2>
-<p>While the <code>R</code> formula for logistic regression is straightforward, it’s not as easy to compute as OLS or LDA or QDA.</p>
-<p>Logistic regression for two classes simplifies to a likelihood:</p>
-<p>Write <span class="math inline">\(p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)\)</span></p>
+<section id="linear-classifier-ne-linear-smoother" class="slide level2">
+<h2>Linear classifier <span class="math inline">\(\ne\)</span> linear smoother</h2>
 <ul>
-<li><p><span class="math inline">\(P(Y_i = y_i \given X = x_i, \beta) = p_i^{y_i}(1-p_i)^{1-y_i}\)</span> (…Bernoulli distribution)</p></li>
-<li><p><span class="math inline">\(P(\mathbf{Y} \given \mathbf{X}, \beta) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}\)</span>.</p></li>
+<li><p>While logistic regression produces linear decision boundaries, it is <strong>not</strong> a linear smoother</p></li>
+<li><p>AIC/BIC/Cp work if you use the likelihood correctly and count degrees-of-freedom correctly</p>
+<ul>
+<li><span class="math inline">\(\mathrm{df} = p + 1\)</span> (<span class="secondary">Why?</span>)</li>
+</ul></li>
+<li><p>Most people use CV</p></li>
 </ul>
 </section>
-<section id="calculation-1" class="slide level2">
-<h2>Calculation</h2>
-<p>Write <span class="math inline">\(p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)\)</span></p>
-<p><span class="math display">\[
-\begin{aligned}
-\ell(\beta)
-&amp; = \log \left( \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} \right)\\
-&amp;=\sum_{i=1}^n \left( y_i\log(p_i(\beta)) + (1-y_i)\log(1-p_i(\beta))\right) \\
-&amp; =
-\sum_{i=1}^n \left( y_i\log(e^{\beta^{\top}x_i}/(1+e^{\beta^{\top}x_i})) - (1-y_i)\log(1+e^{\beta^{\top}x_i})\right) \\
-&amp; =
-\sum_{i=1}^n \left( y_i\beta^{\top}x_i -\log(1 + e^{\beta^{\top} x_i})\right)
-\end{aligned}
-\]</span></p>
-<p>This gets optimized via Newton-Raphson updates and iteratively reweighed least squares.</p>
-</section>
-<section id="irwls-for-logistic-regression-skip-for-now" class="slide level2">
-<h2>IRWLS for logistic regression (skip for now)</h2>
-<p>(This is preparation for Neural Networks.)</p>
+<section id="logistic-regression-in-r" class="slide level2">
+<h2>Logistic regression in R</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>logit_irwls <span class="ot">&lt;-</span> <span class="cf">function</span>(y, x, <span class="at">maxit =</span> <span class="dv">100</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
-<span id="cb6-2"><a></a>  p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(x)</span>
-<span id="cb6-3"><a></a>  beta <span class="ot">&lt;-</span> <span class="fu">double</span>(p) <span class="co"># initialize coefficients</span></span>
-<span id="cb6-4"><a></a>  beta0 <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb6-5"><a></a>  conv <span class="ot">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># hasn't converged</span></span>
-<span id="cb6-6"><a></a>  iter <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="co"># first iteration</span></span>
-<span id="cb6-7"><a></a>  <span class="cf">while</span> (<span class="sc">!</span>conv <span class="sc">&amp;&amp;</span> (iter <span class="sc">&lt;</span> maxit)) { <span class="co"># check loops</span></span>
-<span id="cb6-8"><a></a>    iter <span class="ot">&lt;-</span> iter <span class="sc">+</span> <span class="dv">1</span> <span class="co"># update first thing (so as not to forget)</span></span>
-<span id="cb6-9"><a></a>    eta <span class="ot">&lt;-</span> beta0 <span class="sc">+</span> x <span class="sc">%*%</span> beta</span>
-<span id="cb6-10"><a></a>    mu <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>eta))</span>
-<span id="cb6-11"><a></a>    gp <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (mu <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> mu)) <span class="co"># inverse of derivative of logistic</span></span>
-<span id="cb6-12"><a></a>    z <span class="ot">&lt;-</span> eta <span class="sc">+</span> (y <span class="sc">-</span> mu) <span class="sc">*</span> gp <span class="co"># effective transformed response</span></span>
-<span id="cb6-13"><a></a>    beta_new <span class="ot">&lt;-</span> <span class="fu">coef</span>(<span class="fu">lm</span>(z <span class="sc">~</span> x, <span class="at">weights =</span> <span class="dv">1</span> <span class="sc">/</span> gp)) <span class="co"># do Weighted Least Squares</span></span>
-<span id="cb6-14"><a></a>    conv <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(<span class="fu">c</span>(beta0, beta) <span class="sc">-</span> betaNew)) <span class="sc">&lt;</span> tol <span class="co"># check if the betas are "moving"</span></span>
-<span id="cb6-15"><a></a>    beta0 <span class="ot">&lt;-</span> betaNew[<span class="dv">1</span>] <span class="co"># update betas</span></span>
-<span id="cb6-16"><a></a>    beta <span class="ot">&lt;-</span> betaNew[<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb6-17"><a></a>  }</span>
-<span id="cb6-18"><a></a>  <span class="fu">return</span>(<span class="fu">c</span>(beta0, beta))</span>
-<span id="cb6-19"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>logistic <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> ., dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Or we can use lasso or ridge regression or a GAM as before</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>lasso_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb3-2"><a></a>ridge_logit <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(x, y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb3-3"><a></a>gam_logit <span class="ot">&lt;-</span> <span class="fu">gam</span>(y <span class="sc">~</span> <span class="fu">s</span>(x), <span class="at">data =</span> dat, <span class="at">family =</span> <span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<!-- ## Baby example (continued from last time) -->
+<!-- ```{r simple-lda, echo=FALSE} -->
+<!-- library(mvtnorm) -->
+<!-- library(MASS) -->
+<!-- generate_lda_2d <- function( -->
+<!--     n, p = c(.5, .5), -->
+<!--     mu = matrix(c(0, 0, 1, 1), 2), -->
+<!--     Sigma = diag(2)) { -->
+<!--   X <- rmvnorm(n, sigma = Sigma) -->
+<!--   tibble( -->
+<!--     y = which(rmultinom(n, 1, p) == 1, TRUE)[, 1], -->
+<!--     x1 = X[, 1] + mu[1, y], -->
+<!--     x2 = X[, 2] + mu[2, y] -->
+<!--   ) -->
+<!-- } -->
+<!-- dat1 <- generate_lda_2d(100, Sigma = .5 * diag(2)) -->
+<!-- logit <- glm(y ~ ., dat1 |> mutate(y = y - 1), family = "binomial") -->
+<!-- summary(logit) -->
+<!-- ``` -->
+<!-- ## Calculation -->
+<!-- While the `R` formula for logistic regression is straightforward, it's not as easy to compute as OLS or LDA or QDA. -->
+<!-- Logistic regression for two classes simplifies to a likelihood: -->
+<!-- Write $p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)$ -->
+<!-- * $P(Y_i = y_i \given X = x_i, \beta) = p_i^{y_i}(1-p_i)^{1-y_i}$ (...Bernoulli distribution) -->
+<!-- * $P(\mathbf{Y} \given \mathbf{X}, \beta) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}$.  -->
+<!-- ## Calculation -->
+<!-- Write $p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)$ -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \ell(\beta)  -->
+<!-- & = \log \left( \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} \right)\\ -->
+<!-- &=\sum_{i=1}^n \left( y_i\log(p_i(\beta)) + (1-y_i)\log(1-p_i(\beta))\right) \\ -->
+<!-- & =  -->
+<!-- \sum_{i=1}^n \left( y_i\log(e^{\beta^{\top}x_i}/(1+e^{\beta^{\top}x_i})) - (1-y_i)\log(1+e^{\beta^{\top}x_i})\right) \\ -->
+<!-- & =  -->
+<!-- \sum_{i=1}^n \left( y_i\beta^{\top}x_i -\log(1 + e^{\beta^{\top} x_i})\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- This gets optimized via Newton-Raphson updates and iteratively reweighed -->
+<!-- least squares. -->
+<!-- ## IRWLS for logistic regression (skip for now) -->
+<!-- (This is preparation for Neural Networks.) -->
+<!-- ```{r} -->
+<!-- logit_irwls <- function(y, x, maxit = 100, tol = 1e-6) { -->
+<!--   p <- ncol(x) -->
+<!--   beta <- double(p) # initialize coefficients -->
+<!--   beta0 <- 0 -->
+<!--   conv <- FALSE # hasn't converged -->
+<!--   iter <- 1 # first iteration -->
+<!--   while (!conv && (iter < maxit)) { # check loops -->
+<!--     iter <- iter + 1 # update first thing (so as not to forget) -->
+<!--     eta <- beta0 + x %*% beta -->
+<!--     mu <- 1 / (1 + exp(-eta)) -->
+<!--     gp <- 1 / (mu * (1 - mu)) # inverse of derivative of logistic -->
+<!--     z <- eta + (y - mu) * gp # effective transformed response -->
+<!--     beta_new <- coef(lm(z ~ x, weights = 1 / gp)) # do Weighted Least Squares -->
+<!--     conv <- mean(abs(c(beta0, beta) - betaNew)) < tol # check if the betas are "moving" -->
+<!--     beta0 <- betaNew[1] # update betas -->
+<!--     beta <- betaNew[-1] -->
+<!--   } -->
+<!--   return(c(beta0, beta)) -->
+<!-- } -->
+<!-- ``` -->
+<!-- ## Comparing LDA and Logistic regression -->
+<!-- Both decision boundaries are linear in $x$:   -->
+<!-- - LDA $\longrightarrow \alpha_0 + \alpha_1^\top x$  -->
+<!-- - Logit $\longrightarrow \beta_0 + \beta_1^\top x$. -->
+<!-- But the parameters are estimated differently. -->
+<!-- ## Comparing LDA and Logistic regression -->
+<!-- Examine the joint distribution of $(X,\ Y)$ [(not the posterior)]{.f3}:   -->
+<!-- - LDA: $f(X_i,\ Y_i) = \underbrace{ f(X_i \given Y_i)}_{\textrm{Gaussian}}\underbrace{ f(Y_i)}_{\textrm{Bernoulli}}$ -->
+<!-- - Logistic Regression: $f(X_i,Y_i) = \underbrace{ f(Y_i\given X_i)}_{\textrm{Logistic}}\underbrace{ f(X_i)}_{\textrm{Ignored}}$ -->
+<!-- * LDA estimates the joint, but Logistic estimates only the conditional (posterior) distribution. [But this is really all we need.]{.hand} -->
+<!-- * So logistic requires fewer assumptions. -->
+<!-- * But if the two classes are perfectly separable, logistic crashes (and the MLE is undefined, too many solutions) -->
+<!-- * LDA "works" even if the conditional isn't normal, but works very poorly if any X is qualitative -->
+<!-- ## Comparing with QDA (2 classes) -->
+<!-- * Recall: this gives a "quadratic" decision boundary (it's a curve). -->
+<!-- * If we have $p$ columns in $X$ -->
+<!--     - Logistic estimates $p+1$ parameters -->
+<!--     - LDA estimates $2p + p(p+1)/2 + 1$ -->
+<!--     - QDA estimates $2p + p(p+1) + 1$ -->
+<!-- * If $p=50$, -->
+<!--     - Logistic: 51 -->
+<!--     - LDA: 1376 -->
+<!--     - QDA: 2651 -->
+<!-- * QDA doesn't get used much: there are better nonlinear versions with way fewer parameters -->
+<!-- ## Bad parameter counting -->
+<!-- I've motivated LDA as needing $\Sigma$, $\pi$ and $\mu_0$, $\mu_1$ -->
+<!-- In fact, we don't _need_ all of this to get the decision boundary. -->
+<!-- So the "degrees of freedom" is much lower if we only want the _classes_ and not -->
+<!-- the _probabilities_. -->
+<!-- The decision boundary only really depends on -->
+<!-- * $\Sigma^{-1}(\mu_1-\mu_0)$  -->
+<!-- * $(\mu_1+\mu_0)$,  -->
+<!-- * so appropriate algorithms estimate $<2p$ parameters. -->
+<aside><div>
+<p>glm means <span class="secondary">generalized linear model</span></p>
+</div></aside></section>
+<section id="estimating-beta_0-beta" class="slide level2">
+<h2>Estimating <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta\)</span></h2>
+<p>For regression…</p>
+<p><span class="math display">\[
+\text{Model:} \qquad
+\P(Y=y \mid X=x) = \mathcal N( y; \:\: \beta^\top x, \:\:\sigma^2)
+\]</span></p>
+<p>… recall that we motivated OLS with the <span class="secondary">principle of maximum likelihood</span></p>
+<p><span class="math display">\[
+\begin{align*}
+\hat \beta_\mathrm{OLS}
+&amp;= \argmax_{\beta} \prod_{i=1}^n \P(Y_i = y_i \mid X_i = x_i)
+\\
+&amp;= \argmin_{\beta} \sum_{i=1}^n -\log\P(Y_i = y_i \mid X_i = x_i)
+\\
+\\
+&amp;= \ldots (\text{because regression is nice})
+\\
+&amp;= \textstyle \left( \sum_{i=1}^n x_i x_i^\top \right)^{-1}\left( \sum_{i=1}^n y_i x_i \right)
+\end{align*}
+\]</span></p>
 </section>
-<section id="comparing-lda-and-logistic-regression" class="slide level2">
-<h2>Comparing LDA and Logistic regression</h2>
-<p>Both decision boundaries are linear in <span class="math inline">\(x\)</span>:</p>
-<ul>
-<li>LDA <span class="math inline">\(\longrightarrow \alpha_0 + \alpha_1^\top x\)</span></li>
-<li>Logit <span class="math inline">\(\longrightarrow \beta_0 + \beta_1^\top x\)</span>.</li>
-</ul>
-<p>But the parameters are estimated differently.</p>
-</section>
-<section id="comparing-lda-and-logistic-regression-1" class="slide level2">
-<h2>Comparing LDA and Logistic regression</h2>
-<p>Examine the joint distribution of <span class="math inline">\((X,\ Y)\)</span> <span class="f3">(not the posterior)</span>:</p>
-<ul>
-<li><p>LDA: <span class="math inline">\(f(X_i,\ Y_i) = \underbrace{ f(X_i \given Y_i)}_{\textrm{Gaussian}}\underbrace{ f(Y_i)}_{\textrm{Bernoulli}}\)</span></p></li>
-<li><p>Logistic Regression: <span class="math inline">\(f(X_i,Y_i) = \underbrace{ f(Y_i\given X_i)}_{\textrm{Logistic}}\underbrace{ f(X_i)}_{\textrm{Ignored}}\)</span></p></li>
-<li><p>LDA estimates the joint, but Logistic estimates only the conditional (posterior) distribution. <span class="hand">But this is really all we need.</span></p></li>
-<li><p>So logistic requires fewer assumptions.</p></li>
-<li><p>But if the two classes are perfectly separable, logistic crashes (and the MLE is undefined, too many solutions)</p></li>
-<li><p>LDA “works” even if the conditional isn’t normal, but works very poorly if any X is qualitative</p></li>
-</ul>
-</section>
-<section id="comparing-with-qda-2-classes" class="slide level2">
-<h2>Comparing with QDA (2 classes)</h2>
-<ul>
-<li><p>Recall: this gives a “quadratic” decision boundary (it’s a curve).</p></li>
-<li><p>If we have <span class="math inline">\(p\)</span> columns in <span class="math inline">\(X\)</span></p>
-<ul>
-<li>Logistic estimates <span class="math inline">\(p+1\)</span> parameters</li>
-<li>LDA estimates <span class="math inline">\(2p + p(p+1)/2 + 1\)</span></li>
-<li>QDA estimates <span class="math inline">\(2p + p(p+1) + 1\)</span></li>
-</ul></li>
-<li><p>If <span class="math inline">\(p=50\)</span>,</p>
-<ul>
-<li>Logistic: 51</li>
-<li>LDA: 1376</li>
-<li>QDA: 2651</li>
-</ul></li>
-<li><p>QDA doesn’t get used much: there are better nonlinear versions with way fewer parameters</p></li>
-</ul>
-</section>
-<section id="bad-parameter-counting" class="slide level2">
-<h2>Bad parameter counting</h2>
-<p>I’ve motivated LDA as needing <span class="math inline">\(\Sigma\)</span>, <span class="math inline">\(\pi\)</span> and <span class="math inline">\(\mu_0\)</span>, <span class="math inline">\(\mu_1\)</span></p>
-<p>In fact, we don’t <em>need</em> all of this to get the decision boundary.</p>
-<p>So the “degrees of freedom” is much lower if we only want the <em>classes</em> and not the <em>probabilities</em>.</p>
-<p>The decision boundary only really depends on</p>
-<ul>
-<li><span class="math inline">\(\Sigma^{-1}(\mu_1-\mu_0)\)</span></li>
-<li><span class="math inline">\((\mu_1+\mu_0)\)</span>,</li>
-<li>so appropriate algorithms estimate <span class="math inline">\(&lt;2p\)</span> parameters.</li>
-</ul>
-</section>
-<section id="note-again" class="slide level2">
-<h2>Note again:</h2>
-<p>while logistic regression and LDA produce linear decision boundaries, they are <strong>not</strong> linear smoothers</p>
-<p>AIC/BIC/Cp work if you use the likelihood correctly and count degrees-of-freedom correctly</p>
-<p>Must people use either test set or CV</p>
+<section id="estimating-beta_0-beta-1" class="slide level2">
+<h2>Estimating <span class="math inline">\(\beta_0\)</span>, <span class="math inline">\(\beta\)</span></h2>
+<p>For classification with logistic regression…</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{Model:} &amp;\qquad
+\tfrac{\P(Y=1 \mid X=x)}{\P(Y=0 \mid X=x)} = \exp\left( \beta_0 +\beta^\top x \right)
+\\
+\text{Or alternatively:} &amp;\qquad \P(Y=1 \mid X=x) = h\left(\beta_0 + \beta^\top x \right)
+\\
+&amp;\qquad \P(Y=0 \mid X=x) = h\left(-(\beta_0 + \beta^\top x)\right)
+\end{align*}
+\]</span> … we can also apply the <span class="secondary">principle of maximum likelihood</span></p>
+<p><span class="math display">\[
+\begin{align*}
+\hat \beta_{0}, \hat \beta
+&amp;= \argmax_{\beta_0, \beta} \prod_{i=1}^n \P(Y_i \mid X_i)
+\\
+&amp;= \argmin_{\beta_0,\beta} \sum_{i=1}^n -\log\P(Y_i \mid X_i)
+\end{align*}
+\]</span></p>
+<div class="fragment">
+<p>Unfortunately that’s as far as we can get with algebra alone.</p>
+<!-- ## Calculation -->
+<!-- While the `R` formula for logistic regression is straightforward, it's not as easy to compute as OLS or LDA or QDA. -->
+<!-- Logistic regression for two classes simplifies to a likelihood: -->
+<!-- Write $p_i(\beta) = \P(Y_i = 1 | X = x_i,\beta)$ -->
+<!-- * $P(Y_i = y_i \given X = x_i, \beta) = p_i^{y_i}(1-p_i)^{1-y_i}$ (...Bernoulli distribution) -->
+<!-- * $P(\mathbf{Y} \given \mathbf{X}, \beta) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}$.  -->
+</div>
 </section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time:</h1>
-<p>Nonlinear classifiers</p>
+<p>The workhorse algorithm for obtaining <span class="math inline">\(\hat \beta_0\)</span>, <span class="math inline">\(\hat \beta\)</span></p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">

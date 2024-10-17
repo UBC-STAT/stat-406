@@ -398,7 +398,7 @@
 <h2>00 Gradient descent</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 25 October 2023</p>
+<p>Last modified – 16 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -424,13 +424,36 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="simple-optimization-techniques" class="slide level2">
-<h2>Simple optimization techniques</h2>
+<section id="motivation-maximum-likelihood-estimation-as-optimization" class="slide level2">
+<h2>Motivation: maximum likelihood estimation as optimization</h2>
+<p>By the principle of maximum likelihood, we have that</p>
+<p><span class="math display">\[
+\begin{align*}
+\hat \beta
+&amp;= \argmax_{\beta} \prod_{i=1}^n \P(Y_i \mid X_i)
+\\
+&amp;= \argmin_{\beta} \sum_{i=1}^n -\log\P(Y_i \mid X_i)
+\end{align*}
+\]</span></p>
+<p>Under the model we use for logistic regression… <span class="math display">\[
+\begin{gathered}
+\P(Y=1 \mid X=x) = h(\beta^\top x), \qquad \P(Y=0 \mid X=x) = h(-\beta^\top x),
+\\
+h(z) = \tfrac{1}{1-e^{-z}}
+\end{gathered}
+\]</span></p>
+<p>… we can’t simply find the argmin with algebra.</p>
+</section>
+<section id="gradient-descent-the-workhorse-optimization-algorithm" class="slide level2">
+<h2>Gradient descent: the workhorse optimization algorithm</h2>
 <p>We’ll see “gradient descent” a few times:</p>
 <ol type="1">
-<li>solves logistic regression (simple version of IRWLS)</li>
+<li>solves logistic regression</li>
 <li>gradient boosting</li>
 <li>Neural networks</li>
 </ol>
@@ -574,12 +597,11 @@ f(x) \approx f(x_0) + \nabla f(x_0)^{\top}(x-x_0) + \frac{1}{2}(x-x_0)^\top H(x_
 </section>
 <section id="stochastic-gradient-descent" class="slide level2">
 <h2>Stochastic gradient descent</h2>
-<p>Suppose <span class="math inline">\(f(x) = \frac{1}{n}\sum_{i=1}^n f_i(x)\)</span></p>
-<p>Like if <span class="math inline">\(f(\beta) = \frac{1}{n}\sum_{i=1}^n (y_i - x^\top_i\beta)^2\)</span>.</p>
-<p>Then <span class="math inline">\(f'(\beta) = \frac{1}{n}\sum_{i=1}^n f'_i(\beta) = \frac{1}{n} \sum_{i=1}^n -2x_i^\top(y_i - x^\top_i\beta)\)</span></p>
-<p>If <span class="math inline">\(n\)</span> is really big, it may take a long time to compute <span class="math inline">\(f'\)</span></p>
-<p>So, just sample some partition our data into mini-batches <span class="math inline">\(\mathcal{M}_j\)</span></p>
-<p>And approximate (imagine the Law of Large Numbers, use a sample to approximate the population) <span class="math display">\[f'(x) = \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}_j}f'_{i}(x)\]</span></p>
+<p>If we’re optimizing <span class="math inline">\(\argmin_\beta \sum_{i=1}^n -\log P_\beta(Y_i \mid X_i)\)</span> then our derivative will also have an additive form <span class="math display">\[
+\sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right]
+\]</span></p>
+<p>If <span class="math inline">\(n\)</span> is really big, it may take a long time to compute this gradient</p>
+<p>So, just sample some partition our data <span class="math inline">\(\mathcal{M} \subset \{ (X_i, Y_i)\}_{i=1}^n\)</span> and approximate: <span class="math display">\[\sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right] \approx \frac{n}{\vert \mathcal M \vert}\sum_{i\in\mathcal{M}} \left[-\log P_\beta(Y_i \mid X_i) \right]\]</span> <span class="secondary">(Justification: Law of Large Numbers. Use a sample to approximate the population.)</span></p>
 </section>
 <section id="sgd" class="slide level2">
 <h2>SGD</h2>
@@ -603,22 +625,30 @@ f'(x) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathc
 </section>
 <section id="gradient-descent-for-logistic-regression" class="slide level2">
 <h2>Gradient descent for Logistic regression</h2>
-<p>Suppose <span class="math inline">\(Y=1\)</span> with probability <span class="math inline">\(p(x)\)</span> and <span class="math inline">\(Y=0\)</span> with probability <span class="math inline">\(1-p(x)\)</span>, <span class="math inline">\(x \in \R\)</span>.</p>
-<p>I want to model <span class="math inline">\(P(Y=1| X=x)\)</span>.</p>
-<p>I’ll assume that <span class="math inline">\(\log\left(\frac{p(x)}{1-p(x)}\right) = ax\)</span> for some scalar <span class="math inline">\(a\)</span>. This means that <span class="math inline">\(p(x) = \frac{\exp(ax)}{1+\exp(ax)} = \frac{1}{1+\exp(-ax)}\)</span></p>
+<p><span class="math display">\[
+\begin{gathered}
+\P(Y=1 \mid X=x) = h(\beta^\top x), \qquad \P(Y=0 \mid X=x) = h(-\beta^\top x),
+\\
+\\
+h(z) = \tfrac{1}{1-e^{-z}}
+\end{gathered}
+\]</span></p>
+<!-- I want to model $P(Y=1| X=x)$.  -->
+<!-- I'll assume that $\log\left(\frac{p(x)}{1-p(x)}\right) = ax$ for some scalar $a$. This means that -->
+<!-- $p(x) = \frac{\exp(ax)}{1+\exp(ax)} = \frac{1}{1+\exp(-ax)}$ -->
 <div class="fragment">
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb7-2"><a></a>a <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb7-2"><a></a>beta <span class="ot">&lt;-</span> <span class="dv">2</span></span>
 <span id="cb7-3"><a></a>x <span class="ot">&lt;-</span> <span class="fu">runif</span>(n, <span class="sc">-</span><span class="dv">5</span>, <span class="dv">5</span>)</span>
 <span id="cb7-4"><a></a>logit <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>x))</span>
-<span id="cb7-5"><a></a>p <span class="ot">&lt;-</span> <span class="fu">logit</span>(a <span class="sc">*</span> x)</span>
+<span id="cb7-5"><a></a>p <span class="ot">&lt;-</span> <span class="fu">logit</span>(beta <span class="sc">*</span> x)</span>
 <span id="cb7-6"><a></a>y <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p)</span>
 <span id="cb7-7"><a></a>df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(x, y)</span>
 <span id="cb7-8"><a></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
 <span id="cb7-9"><a></a>  <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"cornflowerblue"</span>) <span class="sc">+</span></span>
-<span id="cb7-10"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="sc">~</span> <span class="fu">logit</span>(a <span class="sc">*</span> .x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-10"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="sc">~</span> <span class="fu">logit</span>(beta <span class="sc">*</span> .x))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -630,135 +660,130 @@ f'(x) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathc
 </div></div>
 </div>
 </section>
-<section id="reminder-the-likelihood" class="slide level2">
-<h2>Reminder: the likelihood</h2>
+<section class="slide level2">
+
 <p><span class="math display">\[
-L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
-p(x) = \frac{1}{1+\exp(-ax)}
+\P(Y=1 \mid X=x) = h(\beta^\top x), \qquad \P(Y=0 \mid X=x) = h(-\beta^\top x)
 \]</span></p>
+<p>Under maximum likelihood</p>
 <p><span class="math display">\[
-\begin{aligned}
-\ell(y | a, x) &amp;= \log \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}
-= \sum_{i=1}^n y_i\log p(x_i) + (1-y_i)\log(1-p(x_i))\\
-&amp;= \sum_{i=1}^n\log(1-p(x_i)) + y_i\log\left(\frac{p(x_i)}{1-p(x_i)}\right)\\
-&amp;=\sum_{i=1}^n ax_i y_i + \log\left(1-p(x_i)\right)\\
-&amp;=\sum_{i=1}^n ax_i y_i + \log\left(\frac{1}{1+\exp(ax_i)}\right)
-\end{aligned}
+\hat \beta = \argmin_{\beta} \underbrace{
+  \textstyle{\sum_{i=1}^n - \log( \P_\beta(Y_i=y_i \mid X_i=x_i) )}
+}_{:= -\ell(\beta)}
 \]</span></p>
 </section>
-<section id="reminder-the-likelihood-1" class="slide level2">
-<h2>Reminder: the likelihood</h2>
+<section class="slide level2">
+
 <p><span class="math display">\[
-L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
-p(x) = \frac{1}{1+\exp(-ax)}
+\begin{align*}
+\P_\beta(Y_i=y_i \mid X_i=X_i) &amp;= h\left( [-1]^{1 - y_i} \beta^\top x_i \right)
+\\
+\\
+-\ell(\beta) &amp;= \sum_{i=1}^n -\log\left( \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
+\\
+&amp;= \sum_{i=1}^n \log\left( 1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right) \right)
+\\
+\\
+-\frac{\partial \ell}{\partial \beta}
+&amp;= \sum_{i=1}^n x_i \frac{\exp\left( [-1]^{y_i} \beta^\top x_i \right)}{1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right)}
+\\
+&amp;= \sum_{i=1}^n x_i \left( y_i - \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
+\end{align*}
 \]</span></p>
-<p>Now, we want the negative of this. Why?</p>
-<p>We would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood (and scale by <span class="math inline">\(1/n\)</span>)</p>
-<p><span class="math display">\[-\ell(y | a, x) = \frac{1}{n}\sum_{i=1}^n -ax_i y_i - \log\left(\frac{1}{1+\exp(ax_i)}\right)\]</span></p>
+<!-- $$ -->
+<!-- L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and } -->
+<!-- p(x) = \frac{1}{1+\exp(-ax)} -->
+<!-- $$ -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \ell(y | a, x) &= \log \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}  -->
+<!-- = \sum_{i=1}^n y_i\log p(x_i) + (1-y_i)\log(1-p(x_i))\\ -->
+<!-- &= \sum_{i=1}^n\log(1-p(x_i)) + y_i\log\left(\frac{p(x_i)}{1-p(x_i)}\right)\\ -->
+<!-- &=\sum_{i=1}^n ax_i y_i + \log\left(1-p(x_i)\right)\\ -->
+<!-- &=\sum_{i=1}^n ax_i y_i + \log\left(\frac{1}{1+\exp(ax_i)}\right) -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- ## Reminder: the likelihood -->
+<!-- $$ -->
+<!-- L(y | a, x) = \prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and } -->
+<!-- p(x) = \frac{1}{1+\exp(-ax)} -->
+<!-- $$ -->
+<!-- Now, we want the negative of this. Why?  -->
+<!-- We would maximize the likelihood/log-likelihood, so we minimize the negative likelihood/log-likelihood (and scale by $1/n$) -->
+<!-- $$-\ell(y | a, x) = \frac{1}{n}\sum_{i=1}^n -ax_i y_i - \log\left(\frac{1}{1+\exp(ax_i)}\right)$$ -->
+<!-- ## Reminder: the likelihood -->
+<!-- $$ -->
+<!-- \frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and } -->
+<!-- p(x) = \frac{1}{1+\exp(-ax)} -->
+<!-- $$ -->
+<!-- This is, in the notation of our slides $f(a)$.  -->
+<!-- We want to minimize it in $a$ by gradient descent.  -->
+<!-- So we need the derivative with respect to $a$: $f'(a)$.  -->
+<!-- Now, conveniently, this simplifies a lot.  -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \frac{d}{d a} f(a) &= \frac{1}{n}\sum_{i=1}^n -x_i y_i - \left(-\frac{x_i \exp(ax_i)}{1+\exp(ax_i)}\right)\\ -->
+<!-- &=\frac{1}{n}\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \frac{1}{n}\sum_{i=1}^n -x_i(y_i-p(x_i)). -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+<!-- ## Reminder: the likelihood -->
+<!-- $$ -->
+<!-- \frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and } -->
+<!-- p(x) = \frac{1}{1+\exp(-ax)} -->
+<!-- $$ -->
 </section>
-<section id="reminder-the-likelihood-2" class="slide level2">
-<h2>Reminder: the likelihood</h2>
-<p><span class="math display">\[
-\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
-p(x) = \frac{1}{1+\exp(-ax)}
-\]</span></p>
-<p>This is, in the notation of our slides <span class="math inline">\(f(a)\)</span>.</p>
-<p>We want to minimize it in <span class="math inline">\(a\)</span> by gradient descent.</p>
-<p>So we need the derivative with respect to <span class="math inline">\(a\)</span>: <span class="math inline">\(f'(a)\)</span>.</p>
-<p>Now, conveniently, this simplifies a lot.</p>
-<p><span class="math display">\[
-\begin{aligned}
-\frac{d}{d a} f(a) &amp;= \frac{1}{n}\sum_{i=1}^n -x_i y_i - \left(-\frac{x_i \exp(ax_i)}{1+\exp(ax_i)}\right)\\
-&amp;=\frac{1}{n}\sum_{i=1}^n -x_i y_i + p(x_i)x_i = \frac{1}{n}\sum_{i=1}^n -x_i(y_i-p(x_i)).
-\end{aligned}
-\]</span></p>
-</section>
-<section id="reminder-the-likelihood-3" class="slide level2">
-<h2>Reminder: the likelihood</h2>
-<p><span class="math display">\[
-\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
-p(x) = \frac{1}{1+\exp(-ax)}
-\]</span></p>
-<p>(Simple) gradient descent to minimize <span class="math inline">\(-\ell(a)\)</span> or maximize <span class="math inline">\(L(y|a,x)\)</span> is:</p>
+<section id="finding-hatbeta-argmin_beta--ellbeta-with-gradient-descent" class="slide level2">
+<h2>Finding <span class="math inline">\(\hat\beta = \argmin_{\beta} -\ell(\beta)\)</span> with gradient descent:</h2>
 <ol type="1">
-<li>Input <span class="math inline">\(a_1,\ \gamma&gt;0,\ j_\max,\ \epsilon&gt;0,\ \frac{d}{da} -\ell(a)\)</span>.</li>
-<li>For <span class="math inline">\(j=1,\ 2,\ \ldots,\ j_\max\)</span>, <span class="math display">\[a_j = a_{j-1} - \gamma \frac{d}{da} (-\ell(a_{j-1}))\]</span></li>
-<li>Stop if <span class="math inline">\(\epsilon &gt; |a_j - a_{j-1}|\)</span> or <span class="math inline">\(|d / da\  \ell(a)| &lt; \epsilon\)</span>.</li>
+<li>Input <span class="math inline">\(\beta_0,\ \gamma&gt;0,\ j_\max,\ \epsilon&gt;0,\ \tfrac{d \ell}{d\beta}\)</span>.</li>
+<li>For <span class="math inline">\(j=1,\ 2,\ \ldots,\ j_\max\)</span>, <span class="math display">\[\beta_j = \beta_{j-1} - \gamma \left(\tfrac{d}{d\beta}-\!\ell(\beta_{j-1}) \right)\]</span></li>
+<li>Stop if <span class="math inline">\(\epsilon &gt; |\beta_j - \beta_{j-1}|\)</span> or <span class="math inline">\(|d\ell / d\beta\ | &lt; \epsilon\)</span>.</li>
 </ol>
-</section>
-<section id="reminder-the-likelihood-4" class="slide level2">
-<h2>Reminder: the likelihood</h2>
-<p><span class="math display">\[
-\frac{1}{n}L(y | a, x) = \frac{1}{n}\prod_{i=1}^n p(x_i)^{y_i}(1-p(x_i))^{1-y_i}\textrm{ and }
-p(x) = \frac{1}{1+\exp(-ax)}
-\]</span></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8" data-code-line-numbers="1,10-11|2-3|4-9|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>amle <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, a0, <span class="at">gam =</span> <span class="fl">0.5</span>, <span class="at">jmax =</span> <span class="dv">50</span>, <span class="at">eps =</span> <span class="fl">1e-6</span>) {</span>
-<span id="cb8-2"><a></a>  a <span class="ot">&lt;-</span> <span class="fu">double</span>(jmax) <span class="co"># place to hold stuff (always preallocate space)</span></span>
-<span id="cb8-3"><a></a>  a[<span class="dv">1</span>] <span class="ot">&lt;-</span> a0 <span class="co"># starting value</span></span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>beta.mle <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, beta0, <span class="at">gamma =</span> <span class="fl">0.5</span>, <span class="at">jmax =</span> <span class="dv">50</span>, <span class="at">eps =</span> <span class="fl">1e-6</span>) {</span>
+<span id="cb8-2"><a></a>  beta <span class="ot">&lt;-</span> <span class="fu">double</span>(jmax) <span class="co"># place to hold stuff (always preallocate space)</span></span>
+<span id="cb8-3"><a></a>  beta[<span class="dv">1</span>] <span class="ot">&lt;-</span> beta0 <span class="co"># starting value</span></span>
 <span id="cb8-4"><a></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>jmax) { <span class="co"># avoid possibly infinite while loops</span></span>
-<span id="cb8-5"><a></a>    px <span class="ot">&lt;-</span> <span class="fu">logit</span>(a[j <span class="sc">-</span> <span class="dv">1</span>] <span class="sc">*</span> x)</span>
+<span id="cb8-5"><a></a>    px <span class="ot">&lt;-</span> <span class="fu">logit</span>(beta[j <span class="sc">-</span> <span class="dv">1</span>] <span class="sc">*</span> x)</span>
 <span id="cb8-6"><a></a>    grad <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="sc">-</span>x <span class="sc">*</span> (y <span class="sc">-</span> px))</span>
-<span id="cb8-7"><a></a>    a[j] <span class="ot">&lt;-</span> a[j <span class="sc">-</span> <span class="dv">1</span>] <span class="sc">-</span> gam <span class="sc">*</span> grad</span>
-<span id="cb8-8"><a></a>    <span class="cf">if</span> (<span class="fu">abs</span>(grad) <span class="sc">&lt;</span> eps <span class="sc">||</span> <span class="fu">abs</span>(a[j] <span class="sc">-</span> a[j <span class="sc">-</span> <span class="dv">1</span>]) <span class="sc">&lt;</span> eps) <span class="cf">break</span></span>
+<span id="cb8-7"><a></a>    beta[j] <span class="ot">&lt;-</span> beta[j <span class="sc">-</span> <span class="dv">1</span>] <span class="sc">-</span> gamma <span class="sc">*</span> grad</span>
+<span id="cb8-8"><a></a>    <span class="cf">if</span> (<span class="fu">abs</span>(grad) <span class="sc">&lt;</span> eps <span class="sc">||</span> <span class="fu">abs</span>(beta[j] <span class="sc">-</span> beta[j <span class="sc">-</span> <span class="dv">1</span>]) <span class="sc">&lt;</span> eps) <span class="cf">break</span></span>
 <span id="cb8-9"><a></a>  }</span>
-<span id="cb8-10"><a></a>  a[<span class="dv">1</span><span class="sc">:</span>j]</span>
+<span id="cb8-10"><a></a>  beta[<span class="dv">1</span><span class="sc">:</span>j]</span>
 <span id="cb8-11"><a></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="try-it" class="slide level2">
 <h2>Try it:</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a><span class="fu">round</span>(too_big <span class="ot">&lt;-</span> <span class="fu">amle</span>(x, y, <span class="dv">5</span>, <span class="dv">50</span>), <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] 5.000 3.360 2.019 1.815 2.059 1.782 2.113 1.746 2.180 1.711 2.250 1.684
-[13] 2.309 1.669 2.344 1.663 2.359 1.661 2.364 1.660 2.365 1.660 2.366 1.660
-[25] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660
-[37] 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660 2.366 1.660
-[49] 2.366 1.660</code></pre>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>too_big <span class="ot">&lt;-</span> <span class="fu">beta.mle</span>(x, y, <span class="at">beta0 =</span> <span class="dv">5</span>, <span class="at">gamma =</span> <span class="dv">50</span>)</span>
+<span id="cb9-2"><a></a>too_small <span class="ot">&lt;-</span> <span class="fu">beta.mle</span>(x, y, <span class="at">beta0 =</span> <span class="dv">5</span>, <span class="at">gamma =</span> <span class="dv">1</span>)</span>
+<span id="cb9-3"><a></a>just_right <span class="ot">&lt;-</span> <span class="fu">beta.mle</span>(x, y, <span class="at">beta0 =</span> <span class="dv">5</span>, <span class="at">gamma =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">round</span>(too_small <span class="ot">&lt;-</span> <span class="fu">amle</span>(x, y, <span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] 5.000 4.967 4.934 4.902 4.869 4.837 4.804 4.772 4.739 4.707 4.675 4.643
-[13] 4.611 4.579 4.547 4.515 4.483 4.451 4.420 4.388 4.357 4.326 4.294 4.263
-[25] 4.232 4.201 4.170 4.140 4.109 4.078 4.048 4.018 3.988 3.957 3.927 3.898
-[37] 3.868 3.838 3.809 3.779 3.750 3.721 3.692 3.663 3.635 3.606 3.578 3.550
-[49] 3.522 3.494</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">round</span>(just_right <span class="ot">&lt;-</span> <span class="fu">amle</span>(x, y, <span class="dv">5</span>, <span class="dv">10</span>), <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] 5.000 4.672 4.351 4.038 3.735 3.445 3.171 2.917 2.688 2.488 2.322 2.191
-[13] 2.094 2.027 1.983 1.956 1.940 1.930 1.925 1.922 1.920 1.919 1.918 1.918
-[25] 1.918 1.918 1.918 1.917 1.917 1.917 1.917</code></pre>
-</div>
-</div>
-</section>
-<section id="visual" class="slide level2">
-<h2>Visual</h2>
 <div class="cell columns column-output-location" data-layout-align="center">
 <div class="column">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a>negll <span class="ot">&lt;-</span> <span class="cf">function</span>(a) {</span>
-<span id="cb15-2"><a></a>  <span class="sc">-</span>a <span class="sc">*</span> <span class="fu">mean</span>(x <span class="sc">*</span> y) <span class="sc">-</span></span>
-<span id="cb15-3"><a></a>    <span class="fu">rowMeans</span>(<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="fu">outer</span>(a, x)))))</span>
-<span id="cb15-4"><a></a>}</span>
-<span id="cb15-5"><a></a>blah <span class="ot">&lt;-</span> <span class="fu">list_rbind</span>(</span>
-<span id="cb15-6"><a></a>  <span class="fu">map</span>(</span>
-<span id="cb15-7"><a></a>    rlang<span class="sc">::</span><span class="fu">dots_list</span>(</span>
-<span id="cb15-8"><a></a>      too_big, too_small, just_right, <span class="at">.named =</span> <span class="cn">TRUE</span></span>
-<span id="cb15-9"><a></a>    ), </span>
-<span id="cb15-10"><a></a>    as_tibble),</span>
-<span id="cb15-11"><a></a>  <span class="at">names_to =</span> <span class="st">"gamma"</span></span>
-<span id="cb15-12"><a></a>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">negll =</span> <span class="fu">negll</span>(value))</span>
-<span id="cb15-13"><a></a><span class="fu">ggplot</span>(blah, <span class="fu">aes</span>(value, negll)) <span class="sc">+</span></span>
-<span id="cb15-14"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> gamma)) <span class="sc">+</span></span>
-<span id="cb15-15"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>gamma, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb15-16"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> negll, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
-<span id="cb15-17"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
-<span id="cb15-18"><a></a>  <span class="fu">xlab</span>(<span class="st">"a"</span>) <span class="sc">+</span> </span>
-<span id="cb15-19"><a></a>  <span class="fu">ylab</span>(<span class="st">"negative log likelihood"</span>) <span class="sc">+</span></span>
-<span id="cb15-20"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">tail</span>(just_right, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb15-21"><a></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>) <span class="sc">+</span></span>
-<span id="cb15-22"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a>negll <span class="ot">&lt;-</span> <span class="cf">function</span>(beta) {</span>
+<span id="cb10-2"><a></a>  <span class="sc">-</span>beta <span class="sc">*</span> <span class="fu">mean</span>(x <span class="sc">*</span> y) <span class="sc">-</span></span>
+<span id="cb10-3"><a></a>    <span class="fu">rowMeans</span>(<span class="fu">log</span>(<span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="fu">outer</span>(beta, x)))))</span>
+<span id="cb10-4"><a></a>}</span>
+<span id="cb10-5"><a></a>blah <span class="ot">&lt;-</span> <span class="fu">list_rbind</span>(</span>
+<span id="cb10-6"><a></a>  <span class="fu">map</span>(</span>
+<span id="cb10-7"><a></a>    rlang<span class="sc">::</span><span class="fu">dots_list</span>(</span>
+<span id="cb10-8"><a></a>      too_big, too_small, just_right, <span class="at">.named =</span> <span class="cn">TRUE</span></span>
+<span id="cb10-9"><a></a>    ), </span>
+<span id="cb10-10"><a></a>    as_tibble),</span>
+<span id="cb10-11"><a></a>  <span class="at">names_to =</span> <span class="st">"gamma"</span></span>
+<span id="cb10-12"><a></a>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">negll =</span> <span class="fu">negll</span>(value))</span>
+<span id="cb10-13"><a></a><span class="fu">ggplot</span>(blah, <span class="fu">aes</span>(value, negll)) <span class="sc">+</span></span>
+<span id="cb10-14"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> gamma)) <span class="sc">+</span></span>
+<span id="cb10-15"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>gamma, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb10-16"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> negll, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">2.5</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb10-17"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> </span>
+<span id="cb10-18"><a></a>  <span class="fu">xlab</span>(<span class="st">"beta"</span>) <span class="sc">+</span> </span>
+<span id="cb10-19"><a></a>  <span class="fu">ylab</span>(<span class="st">"negative log likelihood"</span>) <span class="sc">+</span></span>
+<span id="cb10-20"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">tail</span>(just_right, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb10-21"><a></a>  <span class="fu">scale_colour_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>) <span class="sc">+</span></span>
+<span id="cb10-22"><a></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div><div class="column">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -772,7 +797,7 @@ p(x) = \frac{1}{1+\exp(-ax)}
 <section id="check-vs.-glm" class="slide level2">
 <h2>Check vs.&nbsp;<code>glm()</code></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="fu">summary</span>(<span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">"binomial"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">summary</span>(<span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">-</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">"binomial"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
