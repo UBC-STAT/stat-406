@@ -299,41 +299,58 @@ Check any / all of
 1. $|f(x^{(k)}) - f(x^{(k-1)})| < \epsilon$
 
 
-## Stochastic gradient descent
+## Stochastic gradient descent (SGD)
 
-If we're optimizing
+If optimizing
 $\argmin_\beta \sum_{i=1}^n -\log P_\beta(Y_i \mid X_i)$
-then our derivative will also have an additive form
+then derivative also additive:
 $$
 \sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right]
 $$
 
-If $n$ is really big, it may take a long time to compute this gradient
+If $n$ is really big, it may take a long time to compute this
 
-So, just sample some partition our data $\mathcal{M} \subset \{ (X_i, Y_i)\}_{i=1}^n$
+So, just sample a subset of data $\mathcal{M} \subset \{ (X_i, Y_i)\}_{i=1}^n$
 and approximate:
 $$\sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right] \approx \frac{n}{\vert \mathcal M \vert}\sum_{i\in\mathcal{M}} \left[-\log P_\beta(Y_i \mid X_i) \right]$$
-[(Justification: Law of Large Numbers. Use a sample to approximate the population.)]{.secondary}
+
+For SGD need:
+
+* the gradient estimates to be unbiased (are they?)
+* decaying step size $\gamma$  (why?)
 
 ## SGD
 
 $$
 \begin{aligned}
-f'(\beta) &= \frac{1}{n}\sum_{i=1}^n f'_i(\beta) = \frac{1}{n} \sum_{i=1}^n -2x_i^\top(y_i - x^\top_i\beta)\\
-f'(x) &= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}_j}f'_{i}(x)
+f'(\beta) &= \frac{1}{n}\sum_{i=1}^n f'_i(\beta) \approx \frac{1}{|\mathcal{M}_j|}\sum_{i\in\mathcal{M}_j}f'_{i}(\beta)
 \end{aligned}
 $$
 
+Instead of drawing samples independently, better to:
 
-Usually cycle through "mini-batches":
+* Randomly order the whole dataset (N points), then iterate:
+    * grab the next M points
+    * compute a gradient estimate based on those points, take a step
+    * once you exhaust all the data, that's an "epoch"; start from the beginning again
 
-* Use a different mini-batch at each iteration of GD
-* Cycle through until we see all the data
-
+Gradient estimates are still marginally unbiased (why?)
 
 This is the workhorse for neural network optimization
 
+## When do we stop SGD?
 
+For $\epsilon>0$, small
+
+**Can we** check any / all of
+
+1. $|f'(x)| < \epsilon$ ?
+1. $|x^{(k)} - x^{(k-1)}| < \epsilon$ ?
+1. $|f(x^{(k)}) - f(x^{(k-1)})| < \epsilon$ ?
+
+. . .
+
+None of this works due to the stochasticity. Knowing when to terminate SGD is *hard*.
 
 # Practice with GD and Logistic regression
 
@@ -345,7 +362,7 @@ $$
 \P(Y=1 \mid X=x) = h(\beta^\top x), \qquad \P(Y=0 \mid X=x) = h(-\beta^\top x),
 \\
 \\
-h(z) = \tfrac{1}{1-e^{-z}}
+h(z) = \tfrac{1}{1+e^{-z}}
 \end{gathered}
 $$
 
@@ -401,9 +418,9 @@ $$
 \\
 \\
 -\frac{\partial \ell}{\partial \beta}
-&= \sum_{i=1}^n x_i \frac{\exp\left( [-1]^{y_i} \beta^\top x_i \right)}{1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right)}
+&= \sum_{i=1}^n x_i[-1]^{y_i} \frac{\exp\left( [-1]^{y_i} \beta^\top x_i \right)}{1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right)}
 \\
-&= \sum_{i=1}^n x_i \left( y_i - \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
+%&= \sum_{i=1}^n x_i \left( y_i - \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
 \end{align*}
 $$
 
@@ -471,10 +488,10 @@ $$
 
 ## Finding $\hat\beta = \argmin_{\beta} -\ell(\beta)$ with gradient descent:
 
-1. Input $\beta_0,\ \gamma>0,\ j_\max,\ \epsilon>0,\ \tfrac{d \ell}{d\beta}$.
-2. For $j=1,\ 2,\ \ldots,\ j_\max$,
-$$\beta_j = \beta_{j-1} - \gamma \left(\tfrac{d}{d\beta}-\!\ell(\beta_{j-1}) \right)$$
-3. Stop if $\epsilon > |\beta_j - \beta_{j-1}|$ or $|d\ell / d\beta\ | < \epsilon$.
+1. Input $\beta_0,\ \gamma>0,\ \epsilon>0,\ \tfrac{d \ell}{d\beta}$.
+2. For $j=1,\ 2,\ \ldots$,
+$$\beta_j = \beta_{j-1} - \gamma \tfrac{d}{d\beta}\left(-\!\ell(\beta_{j-1}) \right)$$
+3. Stop if $|\beta_j - \beta_{j-1}| < \epsilon$ or $|d\ell / d\beta\ | < \epsilon$.
 
 
 ```{r betamle}
