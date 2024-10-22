@@ -398,7 +398,7 @@
 <h2>00 Gradient descent</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 16 October 2024</p>
+<p>Last modified – 21 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -595,28 +595,50 @@ f(x) \approx f(x_0) + \nabla f(x_0)^{\top}(x-x_0) + \frac{1}{2}(x-x_0)^\top H(x_
 <li><span class="math inline">\(|f(x^{(k)}) - f(x^{(k-1)})| &lt; \epsilon\)</span></li>
 </ol>
 </section>
-<section id="stochastic-gradient-descent" class="slide level2">
-<h2>Stochastic gradient descent</h2>
-<p>If we’re optimizing <span class="math inline">\(\argmin_\beta \sum_{i=1}^n -\log P_\beta(Y_i \mid X_i)\)</span> then our derivative will also have an additive form <span class="math display">\[
+<section id="stochastic-gradient-descent-sgd" class="slide level2">
+<h2>Stochastic gradient descent (SGD)</h2>
+<p>If optimizing <span class="math inline">\(\argmin_\beta \sum_{i=1}^n -\log P_\beta(Y_i \mid X_i)\)</span> then derivative also additive: <span class="math display">\[
 \sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right]
 \]</span></p>
-<p>If <span class="math inline">\(n\)</span> is really big, it may take a long time to compute this gradient</p>
-<p>So, just sample some partition our data <span class="math inline">\(\mathcal{M} \subset \{ (X_i, Y_i)\}_{i=1}^n\)</span> and approximate: <span class="math display">\[\sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right] \approx \frac{n}{\vert \mathcal M \vert}\sum_{i\in\mathcal{M}} \left[-\log P_\beta(Y_i \mid X_i) \right]\]</span> <span class="secondary">(Justification: Law of Large Numbers. Use a sample to approximate the population.)</span></p>
+<p>If <span class="math inline">\(n\)</span> is really big, it may take a long time to compute this</p>
+<p>So, just sample a subset of data <span class="math inline">\(\mathcal{M} \subset \{ (X_i, Y_i)\}_{i=1}^n\)</span> and approximate: <span class="math display">\[\sum_{i=1}^n \frac{\partial}{\partial \beta} \left[-\log P_\beta(Y_i \mid X_i) \right] \approx \frac{n}{\vert \mathcal M \vert}\sum_{i\in\mathcal{M}} \left[-\log P_\beta(Y_i \mid X_i) \right]\]</span></p>
+<p>For SGD need:</p>
+<ul>
+<li>the gradient estimates to be unbiased (are they?)</li>
+<li>decaying step size <span class="math inline">\(\gamma\)</span> (why?)</li>
+</ul>
 </section>
 <section id="sgd" class="slide level2">
 <h2>SGD</h2>
 <p><span class="math display">\[
 \begin{aligned}
-f'(\beta) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(\beta) = \frac{1}{n} \sum_{i=1}^n -2x_i^\top(y_i - x^\top_i\beta)\\
-f'(x) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathcal{M}_j}f'_{i}(x)
+f'(\beta) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(\beta) \approx \frac{1}{|\mathcal{M}_j|}\sum_{i\in\mathcal{M}_j}f'_{i}(\beta)
 \end{aligned}
 \]</span></p>
-<p>Usually cycle through “mini-batches”:</p>
+<p>Instead of drawing samples independently, better to:</p>
 <ul>
-<li>Use a different mini-batch at each iteration of GD</li>
-<li>Cycle through until we see all the data</li>
+<li>Randomly order the whole dataset (N points), then iterate:
+<ul>
+<li>grab the next M points</li>
+<li>compute a gradient estimate based on those points, take a step</li>
+<li>once you exhaust all the data, that’s an “epoch”; start from the beginning again</li>
+</ul></li>
 </ul>
+<p>Gradient estimates are still marginally unbiased (why?)</p>
 <p>This is the workhorse for neural network optimization</p>
+</section>
+<section id="when-do-we-stop-sgd" class="slide level2">
+<h2>When do we stop SGD?</h2>
+<p>For <span class="math inline">\(\epsilon&gt;0\)</span>, small</p>
+<p><strong>Can we</strong> check any / all of</p>
+<ol type="1">
+<li><span class="math inline">\(|f'(x)| &lt; \epsilon\)</span> ?</li>
+<li><span class="math inline">\(|x^{(k)} - x^{(k-1)}| &lt; \epsilon\)</span> ?</li>
+<li><span class="math inline">\(|f(x^{(k)}) - f(x^{(k-1)})| &lt; \epsilon\)</span> ?</li>
+</ol>
+<div class="fragment">
+<p>None of this works due to the stochasticity. Knowing when to terminate SGD is <em>hard</em>.</p>
+</div>
 </section>
 <section>
 <section id="practice-with-gd-and-logistic-regression" class="title-slide slide level1 center">
@@ -630,7 +652,7 @@ f'(x) &amp;= \frac{1}{n}\sum_{i=1}^n f'_i(x) \approx \frac{1}{m}\sum_{i\in\mathc
 \P(Y=1 \mid X=x) = h(\beta^\top x), \qquad \P(Y=0 \mid X=x) = h(-\beta^\top x),
 \\
 \\
-h(z) = \tfrac{1}{1-e^{-z}}
+h(z) = \tfrac{1}{1+e^{-z}}
 \end{gathered}
 \]</span></p>
 <!-- I want to model $P(Y=1| X=x)$.  -->
@@ -685,9 +707,9 @@ h(z) = \tfrac{1}{1-e^{-z}}
 \\
 \\
 -\frac{\partial \ell}{\partial \beta}
-&amp;= \sum_{i=1}^n x_i \frac{\exp\left( [-1]^{y_i} \beta^\top x_i \right)}{1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right)}
+&amp;= \sum_{i=1}^n x_i[-1]^{y_i} \frac{\exp\left( [-1]^{y_i} \beta^\top x_i \right)}{1 + \exp\left( [-1]^{y_i} \beta^\top x_i \right)}
 \\
-&amp;= \sum_{i=1}^n x_i \left( y_i - \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
+%&amp;= \sum_{i=1}^n x_i \left( y_i - \P_\beta(Y_i=y_i \mid X_i=X_i) \right)
 \end{align*}
 \]</span></p>
 <!-- $$ -->
@@ -735,9 +757,9 @@ h(z) = \tfrac{1}{1-e^{-z}}
 <section id="finding-hatbeta-argmin_beta--ellbeta-with-gradient-descent" class="slide level2">
 <h2>Finding <span class="math inline">\(\hat\beta = \argmin_{\beta} -\ell(\beta)\)</span> with gradient descent:</h2>
 <ol type="1">
-<li>Input <span class="math inline">\(\beta_0,\ \gamma&gt;0,\ j_\max,\ \epsilon&gt;0,\ \tfrac{d \ell}{d\beta}\)</span>.</li>
-<li>For <span class="math inline">\(j=1,\ 2,\ \ldots,\ j_\max\)</span>, <span class="math display">\[\beta_j = \beta_{j-1} - \gamma \left(\tfrac{d}{d\beta}-\!\ell(\beta_{j-1}) \right)\]</span></li>
-<li>Stop if <span class="math inline">\(\epsilon &gt; |\beta_j - \beta_{j-1}|\)</span> or <span class="math inline">\(|d\ell / d\beta\ | &lt; \epsilon\)</span>.</li>
+<li>Input <span class="math inline">\(\beta_0,\ \gamma&gt;0,\ \epsilon&gt;0,\ \tfrac{d \ell}{d\beta}\)</span>.</li>
+<li>For <span class="math inline">\(j=1,\ 2,\ \ldots\)</span>, <span class="math display">\[\beta_j = \beta_{j-1} - \gamma \tfrac{d}{d\beta}\left(-\!\ell(\beta_{j-1}) \right)\]</span></li>
+<li>Stop if <span class="math inline">\(|\beta_j - \beta_{j-1}| &lt; \epsilon\)</span> or <span class="math inline">\(|d\ell / d\beta\ | &lt; \epsilon\)</span>.</li>
 </ol>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>beta.mle <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, beta0, <span class="at">gamma =</span> <span class="fl">0.5</span>, <span class="at">jmax =</span> <span class="dv">50</span>, <span class="at">eps =</span> <span class="fl">1e-6</span>) {</span>
