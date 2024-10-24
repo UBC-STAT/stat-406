@@ -322,144 +322,102 @@
     "text": "What about random forests?\nWhat if we just did random forests instead? Takes a good bit less effort.\n\nlibrary(ranger) # faster version of randomForests\ntrain_images &lt;- t(apply(train_images, 1, c)) # flatten\ntest_images &lt;- t(apply(test_images, 1, c))\ntrain_images &lt;- cbind(train_labels, train_images) |&gt; as_tibble()\n\nWarning: The `x` argument of `as_tibble.matrix()` must have unique column names if\n`.name_repair` is omitted as of tibble 2.0.0.\nℹ Using compatibility `.name_repair`.\n\ntest_images &lt;- cbind(test_labels, test_images) |&gt; as_tibble()\nnames(train_images) &lt;- c(\"cl\", paste0(\"x\", 1:(ncol(train_images) - 1)))\nnames(test_images) &lt;- names(train_images)\ntrain_images$cl &lt;- as.factor(train_images$cl)\ntest_images$cl &lt;- as.factor(test_images$cl)\nrf &lt;- ranger(cl ~ ., data = train_images, num.trees = 100)\npreds &lt;- predict(rf, data = test_images)\n\nThe Test Set accuracy from Random Forests is 88%.\nSlightly better than the Neural Net for my run, but reasonably close."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#section",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "1) The Bias of OLS",
-    "text": "1) The Bias of OLS\nIn last class’ clicker question, we were trying to predict income from a \\(p=2\\), \\(n=50000\\) dataset. I claimed that the OLS predictor is high bias in this example.\n\n\nBut Trevor proved that the OLS predictor is unbiased (via the following proof):\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\nB. Then \\(E[\\hat \\beta_\\mathrm{ols}] = E[ E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] ]\\)\nC. \\(E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top E[ \\mathbf y \\mid \\mathbf X]\\)\nD. \\(E[ \\mathbf y \\mid \\mathbf X] = \\mathbf X \\beta\\)\nE. So \\(E[\\hat \\beta_\\mathrm{ols}] - \\beta = E[(\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf X \\beta] - \\beta = \\beta - \\beta = 0\\).\n\nWhy did this proof not apply to the clicker question?\n(Which step of this proof breaks down?)"
+    "section": "17 Nonlinear classifiers",
+    "text": "17 Nonlinear classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
     "title": "UBC Stat406 2024W",
-    "section": "1) The Bias of OLS",
-    "text": "1) The Bias of OLS\nWhich step did the proof break down?\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\n\nThis assumption does not hold.\nIt is (almost certainly) not the case that Income ~ Age + Education.\n\n\nIn reality, \\(y \\sim f(x) + \\epsilon\\) where \\(f(x)\\) is some potentially nonlinear function. So\n\\[\n\\begin{align}\nE[\\hat \\beta_\\mathrm{ols}] = E[E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X ]]\n= E[ (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X f(\\mathbf X) ] \\ne \\beta\n\\end{align}\n\\]\nIn statistics speak, our model is misspecified.\nRidge/lasso will always increase bias and decrease variance, even under misspecification."
+    "section": "Two lectures ago",
+    "text": "Two lectures ago\nWe discussed logistic regression\n\\[\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\nPr(Y = 0 \\given X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\end{aligned}\\]"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
-    "href": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
     "title": "UBC Stat406 2024W",
-    "section": "2) Why does ridge regression shrink varinace?",
-    "text": "2) Why does ridge regression shrink varinace?\nMathematically\n\nVariance of OLS: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X)^{-1} ]\\)\nVariance of ridge regression: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X + \\lambda \\mathbf I)^{-1} ]\\)\n\n\n\nIntuitively…\nThink about the constrained optimization problem pictorally.\nWhat happens if we had a different dataset?"
+    "section": "Make it nonlinear",
+    "text": "Make it nonlinear\nWe can make logistic regression have non-linear decision boundaries by mapping the features to a higher dimension (just like with linear regression)\nSay:\nPolynomials\n\\((x_1, x_2) \\mapsto \\left(1,\\ x_1,\\ x_1^2,\\ x_2,\\ x_2^2,\\ x_1 x_2\\right)\\)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2)) |&gt; mutate(y = as.factor(y))\nlogit_poly &lt;- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = \"binomial\")"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#section",
-    "href": "schedule/slides/11-kernel-smoothers.html#section",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
     "title": "UBC Stat406 2024W",
-    "section": "11 Local methods",
-    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 08 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "Visualizing the classification boundary",
+    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(cowplot)\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), x2 = seq(-2.5, 3, length.out = 100))\npts_logit &lt;- predict(logit_poly, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_logit), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = \"log odds\") +\n  ggtitle(\"Polynomial logit\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\nplot_grid(g0)\n\n\n\nA linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
-    "href": "schedule/slides/11-kernel-smoothers.html#last-time",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
     "title": "UBC Stat406 2024W",
-    "section": "Last time…",
-    "text": "Last time…\nWe looked at feature maps as a way to do nonlinear regression.\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNow we examine a nonparametric alternative\nSuppose I just look at the “neighbours” of some point (based on the \\(x\\)-values)\nI just average the \\(y\\)’s at those locations together"
+    "section": "KNN classifiers",
+    "text": "KNN classifiers"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
-    "href": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
     "title": "UBC Stat406 2024W",
-    "section": "Let’s use 3 neighbours",
-    "text": "Let’s use 3 neighbours\n\n\nCode\nlibrary(cowplot)\ndata(arcuate, package = \"Stat406\")\nset.seed(406406)\narcuate_unif &lt;- arcuate |&gt; slice_sample(n = 40) |&gt; arrange(position)\npt &lt;- 15\nnn &lt;-  3\nseq_range &lt;- function(x, n = 101) seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = n)\nneibs &lt;- sort.int(abs(arcuate_unif$position - arcuate_unif$position[pt]), index.return = TRUE)$ix[1:nn]\narcuate_unif$neighbours = seq_len(40) %in% neibs\ng1 &lt;- ggplot(arcuate_unif, aes(position, fa, colour = neighbours)) + \n  geom_point() +\n  scale_colour_manual(values = c(blue, red)) + \n  geom_vline(xintercept = arcuate_unif$position[pt], colour = red) + \n  annotate(\"rect\", fill = red, alpha = .25, ymin = -Inf, ymax = Inf,\n           xmin = min(arcuate_unif$position[neibs]), \n           xmax = max(arcuate_unif$position[neibs])\n  ) +\n  theme(legend.position = \"none\")\ng2 &lt;- ggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(\n    data = tibble(\n      position = seq_range(arcuate_unif$position),\n      fa = FNN::knn.reg(\n        arcuate_unif$position, matrix(position, ncol = 1),\n        y = arcuate_unif$fa\n      )$pred\n    ),\n    colour = orange, linewidth = 2\n  )\nplot_grid(g1, g2, ncol = 2)"
+    "section": "Choosing \\(k\\) is very important",
+    "text": "Choosing \\(k\\) is very important\n\n\nCode\nset.seed(406406406)\nks &lt;- c(1, 2, 5, 10, 20)\nnn &lt;- map(ks, ~ as_tibble(knn(dat1[, -1], gr[, 1:2], dat1$y, .x)) |&gt; \n  set_names(sprintf(\"k = %02s\", .x))) |&gt;\n  list_cbind() |&gt;\n  bind_cols(gr)\npg &lt;- pivot_longer(nn, starts_with(\"k =\"), names_to = \"k\", values_to = \"knn\")\n\nggplot(pg, aes(x1, x2)) +\n  geom_raster(aes(fill = knn), alpha = .6) +\n  facet_wrap(~ k) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  geom_point(data = dat1, mapping = aes(x1, x2, shape = as.factor(y)), size = 4) +\n  theme_bw(base_size = 18) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  theme(\n    legend.title = element_blank(),\n    legend.key.height = unit(3, \"cm\")\n  )\n\n\n\n\nHow should we choose \\(k\\)?\nScaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.\nIf there are ties, break randomly. So even \\(k\\) is strange."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#knn",
-    "href": "schedule/slides/11-kernel-smoothers.html#knn",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
     "title": "UBC Stat406 2024W",
-    "section": "KNN",
-    "text": "KNN\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata(arcuate, package = \"Stat406\")\nlibrary(FNN)\narcuate_unif &lt;- arcuate |&gt; \n  slice_sample(n = 40) |&gt; \n  arrange(position) \n\nnew_position &lt;- seq(\n  min(arcuate_unif$position), \n  max(arcuate_unif$position),\n  length.out = 101\n)\n\nknn3 &lt;- knn.reg(\n  train = arcuate_unif$position, \n  test = matrix(arcuate_unif$position, ncol = 1), \n  y = arcuate_unif$fa, \n  k = 3\n)"
+    "section": "knn.cv() (leave one out)",
+    "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
-    "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#final-version",
     "title": "UBC Stat406 2024W",
-    "section": "This method is \\(K\\)-nearest neighbours.",
-    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\n\nWhat is the degrees of freedom of KNN, and how does it depend on \\(k\\)?\nHow does \\(k\\) affect the bias/variance?\n\n\n\n\\(\\mathrm{df} = \\tr{\\mathbf S} = n/k\\).\n\\(k = n\\) produces a constant predictor (highest bias, lowest variance).\n\\(k = 1\\) produces a low bias but extremely high variance predictor."
+    "section": "Final version",
+    "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42\n\n\n\n\n\n\n\n\n\n\n\n1c36b39 (Update last of classification slides) ## Trees\n\n\n\n\n\n\n\n\n\nWe saw regression trees last module\nClassification trees are\n\nMore natural\nSlightly different computationally\n\nEverything else is pretty much the same"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
-    "href": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
     "title": "UBC Stat406 2024W",
-    "section": "Local averages (soft KNN)",
-    "text": "Local averages (soft KNN)\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours.\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\nThe boxes have width 30."
+    "section": "Axis-parallel splits",
+    "text": "Axis-parallel splits\nLike with regression trees, classification trees operate by greedily splitting the predictor space\n\n\n\nnames(bakeoff)\n\n [1] \"winners\"                  \n [2] \"series\"                   \n [3] \"age\"                      \n [4] \"occupation\"               \n [5] \"hometown\"                 \n [6] \"percent_star\"             \n [7] \"percent_technical_wins\"   \n [8] \"percent_technical_bottom3\"\n [9] \"percent_technical_top3\"   \n[10] \"technical_highest\"        \n[11] \"technical_lowest\"         \n[12] \"technical_median\"         \n[13] \"judge1\"                   \n[14] \"judge2\"                   \n[15] \"viewers_7day\"             \n[16] \"viewers_28day\"            \n\n\n\nsmalltree &lt;- tree(\n  winners ~ technical_median + percent_star,\n  data = bakeoff\n)\n\n\n\n\n\nCode\npar(mar = c(5, 5, 0, 0) + .1)\nplot(bakeoff$technical_median, bakeoff$percent_star,\n  pch = c(\"-\", \"+\")[bakeoff$winners + 1], cex = 2, bty = \"n\", las = 1,\n  ylab = \"% star baker\", xlab = \"times above median in technical\",\n  col = orange, cex.axis = 2, cex.lab = 2\n)\npartition.tree(smalltree,\n  add = TRUE, col = blue,\n  ordvars = c(\"technical_median\", \"percent_star\")\n)"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
-    "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
     "title": "UBC Stat406 2024W",
-    "section": "What is a “kernel” smoother?",
-    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\),\n\n\\(K(u) \\geq 0\\),\n\\(\\int K(u) du = 1\\),\n\\(\\int uK(u) du = 0\\).\n\n\n\nThe idea: a kernel takes weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
+    "section": "When do trees do well?",
+    "text": "When do trees do well?\n\n\n\n\n\n2D example\nTop Row:\ntrue decision boundary is linear\n🍎 linear classifier\n👎 tree with axis-parallel splits\nBottom Row:\ntrue decision boundary is non-linear\n🤮 A linear classifier can’t capture the true decision boundary\n🍎 decision tree is successful."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
     "title": "UBC Stat406 2024W",
-    "section": "Smoothing with the boxcar",
-    "text": "Smoothing with the boxcar\n\n\nCode\ntestpts &lt;- seq(0, 200, length.out = 101)\ndmat &lt;- abs(outer(testpts, arcuate_unif$position, \"-\"))\nS &lt;- (dmat &lt; 15)\nS &lt;- S / rowSums(S)\nboxcar &lt;- tibble(position = testpts, fa = S %*% arcuate_unif$fa)\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(data = boxcar, colour = orange)\n\n\n\nThis one gives the same non-zero weight to all points within \\(\\pm 15\\) range."
+    "section": "How do we build a tree?",
+    "text": "How do we build a tree?\n\nDivide the predictor space into \\(J\\) non-overlapping regions \\(R_1, \\ldots, R_J\\)\n\n\nthis is done via greedy, recursive binary splitting\n\n\nEvery observation that falls into a given region \\(R_j\\) is given the same prediction\n\n\ndetermined by majority (or plurality) vote in that region.\n\nImportant:\n\nTrees can only make rectangular regions that are aligned with the coordinate axis.\nWe use a greedy (not optimal) algorithm to fit the tree"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels",
-    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
     "title": "UBC Stat406 2024W",
-    "section": "Other kernels",
-    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird.\nIdeally we would like closer points to have more weight.\n\n\nA more common kernel: the Gaussian kernel\n\\[\nK(u) = \\frac{1}{\\sqrt{2 \\pi \\sigma^2}} \\exp\\left(-\\frac{u^2}{2\\sigma^2}\\right)\n\\]\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting.\n(but all nonzero!!)\n\n\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)"
+    "section": "Flashback: Constructing Trees for Regression",
+    "text": "Flashback: Constructing Trees for Regression\n\nWhile (\\(\\mathtt{depth} \\ne \\mathtt{max.depth}\\)):\n\nFor each existing region \\(R_k\\)\n\nFor a given splitting variable \\(j\\) and split value \\(s\\), define \\[\n\\begin{align}\nR_k^&gt; &= \\{x \\in R_k : x^{(j)} &gt; s\\} \\\\\nR_k^&lt; &= \\{x \\in R_k : x^{(j)} &gt; s\\}\n\\end{align}\n\\]\nChoose \\(j\\) and \\(s\\) to maximize quality of fit; i.e. \\[\\min |R_k^&gt;| \\cdot \\widehat{Var}(R_k^&gt;) + |R_k^&lt;| \\cdot  \\widehat{Var}(R_k^&lt;)\\]\n\n\n\n\nWe have to change this last line for classification"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
     "title": "UBC Stat406 2024W",
-    "section": "Other kernels",
-    "text": "Other kernels\nWhat if I made \\(\\sigma=15\\)?\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 15) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nBefore, points far from \\(x_{15}\\) got very small weights, now they have more influence.\nFor the Gaussian kernel, \\(\\sigma\\) determines something like the “range” of the smoother."
+    "section": "How do we measure quality of fit?",
+    "text": "How do we measure quality of fit?\nLet \\(p_{mk}\\) be the proportion of training observations in the \\(m^{th}\\) region that are from the \\(k^{th}\\) class.\n\n\n\n\n\n\n\nclassification error rate:\n\\(E = 1 - \\max_k (\\widehat{p}_{mk})\\)\n\n\nGini index:\n\\(G = \\sum_k \\widehat{p}_{mk}(1-\\widehat{p}_{mk})\\)\n\n\ncross-entropy:\n\\(D = -\\sum_k \\widehat{p}_{mk}\\log(\\widehat{p}_{mk})\\)\n\n\n\nBoth Gini and cross-entropy measure the purity of the classifier (small if all \\(p_{mk}\\) are near zero or 1).\nClassification error is hard to optimize.\nWe build a classifier by growing a tree that minimizes \\(G\\) or \\(D\\)."
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
-    "href": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
     "title": "UBC Stat406 2024W",
-    "section": "Many Gaussians",
-    "text": "Many Gaussians\nThe following code creates \\(\\mathbf{S}\\) for Gaussian kernel smoothers with different \\(\\sigma\\)\n\ndmat &lt;- as.matrix(dist(x))\nSgauss &lt;- function(sigma) {\n  gg &lt;- dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg), \"/\") # make the rows sum to 1.\n}\n\n\n\nCode\nSgauss &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.\n}\nboxcar$S15 = with(arcuate_unif, Sgauss(15) %*% fa)\nboxcar$S08 = with(arcuate_unif, Sgauss(8) %*% fa)\nboxcar$S30 = with(arcuate_unif, Sgauss(30) %*% fa)\nbc = boxcar %&gt;% select(position, S15, S08, S30) %&gt;% \n  pivot_longer(-position, names_to = \"Sigma\")\nggplot(arcuate_unif, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_line(data = bc, aes(position, value, colour = Sigma), linewidth = 1.5) +\n  scale_colour_brewer(palette = \"Set1\")"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
-    "title": "UBC Stat406 2024W",
-    "section": "The bandwidth",
-    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
-    "href": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
-    "title": "UBC Stat406 2024W",
-    "section": "Choosing the bandwidth",
-    "text": "Choosing the bandwidth\nAs we have discussed, kernel smoothing (and KNN) are linear smoothers\n\\[\\widehat{\\mathbf{y}} = \\mathbf{S}\\mathbf{y}\\]\nThe degrees of freedom is \\(\\textrm{tr}(\\mathbf{S})\\)\nTherefore we can use our model selection criteria from before\n\nUnfortunately, these don’t satisfy the “technical condition”, so cv_nice() doesn’t give LOO-CV"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing the full Lidar data",
-    "text": "Smoothing the full Lidar data\n\nar &lt;- arcuate |&gt; slice_sample(n = 200)\n\ngcv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )\n}\n\nfake_loocv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - diag(S))^2 )\n}\n\ndmat &lt;- as.matrix(dist(ar$position))\nsigmas &lt;- 10^(seq(log10(300), log10(.3), length = 100))\n\ngcvs &lt;- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))\nflcvs &lt;- map_dbl(sigmas, ~ fake_loocv(ar$fa, Sgauss(.x)))\nbest_s &lt;- sigmas[which.min(gcvs)]\nother_s &lt;- sigmas[which.min(flcvs)]\n\nar$smoothed &lt;- Sgauss(best_s) %*% ar$fa\nar$other &lt;- Sgauss(other_s) %*% ar$fa"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing the full Lidar data",
-    "text": "Smoothing the full Lidar data\n\n\nCode\ng3 &lt;- ggplot(data.frame(sigma = sigmas, gcv = gcvs), aes(sigma, gcv)) +\n  geom_point(colour = blue) +\n  geom_vline(xintercept = best_s, colour = red) +\n  scale_x_log10() +\n  xlab(sprintf(\"Sigma, best is sig = %.2f\", best_s))\ng4 &lt;- ggplot(ar, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(aes(y = smoothed), colour = orange, linewidth = 2)\nplot_grid(g3, g4, nrow = 1)\n\n\n\nI considered \\(\\sigma \\in [0.3,\\ 300]\\) and used \\(3.97\\).\nIt’s too wiggly, to my eye. Typical for GCV."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing manually",
-    "text": "Smoothing manually\nI did Kernel Smoothing “manually”\n\nFor a fixed bandwidth\nCompute the smoothing matrix\nMake the predictions\nRepeat and compute GCV\n\nThe point is to “show how it works”. It’s also really easy."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
-    "href": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
-    "title": "UBC Stat406 2024W",
-    "section": "R functions / packages",
-    "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
+    "section": "Advantages and disadvantages of trees (again)",
+    "text": "Advantages and disadvantages of trees (again)\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Trees are highly variable. Small changes in training data \\(\\Longrightarrow\\) big changes in the tree.\nTo fix these last two, we can try to grow many trees and average their performance.\n\nWe do this next module\n\n\n\nUBC Stat 406 - 2024"
   },
   {
     "objectID": "schedule/slides/09-l1-penalties.html#section",
@@ -1323,172 +1281,158 @@
     "text": "Issues with nonlinear techniques\n\n\n\nNeed to choose \\(M\\) (also with linear)\nAlso other tuning parameters.\nThese others can have huge effects\nThe difference between the data lying on the manifold and the data lying near the manifold is important\n\n\n\n\n\nCode\nelephant &lt;- function(eye = TRUE) {\n  tib &lt;- tibble(\n    tt = -100:500 / 100,\n    y = -(12 * cos(3 * tt) - 14 * cos(5 * tt) + 50 * sin(tt) + 18 * sin(2 * tt)),\n    x = -30 * sin(tt) + 8 * sin(2 * tt) - 10 * sin(3 * tt) - 60 * cos(tt)\n  )\n  if (eye) tib &lt;- add_row(tib, y = 20, x = 20)\n  tib\n}\nele &lt;- elephant(FALSE)\nnoisy_ele &lt;- ele |&gt;\n  mutate(y = y + rnorm(n(), 0, 5), x = x + rnorm(n(), 0, 5))\nggplot(noisy_ele, aes(x, y, colour = tt)) +\n  geom_point() +\n  scale_color_viridis_c() +\n  theme(legend.position = \"none\") +\n  geom_path(data = ele, colour = \"black\", linewidth = 2)"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#section",
-    "href": "schedule/slides/00-classification-losses.html#section",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#section",
+    "href": "schedule/slides/00-quiz-0-wrap.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "00 Evaluating classifiers",
-    "text": "00 Evaluating classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 October 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "section": "00 Quiz 0 fun",
+    "text": "00 Quiz 0 fun\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 10 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
-    "href": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#why-this-class",
+    "href": "schedule/slides/00-quiz-0-wrap.html#why-this-class",
     "title": "UBC Stat406 2024W",
-    "section": "How do we measure accuracy?",
-    "text": "How do we measure accuracy?\nSo far — 0-1 loss. If correct class, lose 0 else lose 1.\nAsymmetric classification loss — If correct class, lose 0 else lose something.\nFor example, consider facial recognition. Goal is “person OK”, “person has expired passport”, “person is a known terrorist”\n\nIf classify OK, but was terrorist, lose 1,000,000\nIf classify OK, but expired passport, lose 2\nIf classify terrorist, but was OK, lose 100\nIf classify terrorist, but was expired passport, lose 10\netc.\n\n\nResults in a 3x3 matrix of losses with 0 on the diagonal.\n\n\n        [,1]  [,2] [,3]\n[1,]       0     2   30\n[2,]      10     0  100\n[3,] 1000000 50000    0"
+    "section": "Why this class?",
+    "text": "Why this class?\n\n“This is a required course”\n“Heard it’s fun!”\n“I want to graduate”\n“8am!” (/s)\n“I want to learn a lot about ML.”\n“I want to dig deeper after taking 306.”\n“I want to get… more comfortable with R.”\n“At first it was because everyone I knew was taking it.”\n“Practical skills in preperation for future careers”"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#deviance-loss",
-    "href": "schedule/slides/00-classification-losses.html#deviance-loss",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#syllabus-q",
+    "href": "schedule/slides/00-quiz-0-wrap.html#syllabus-q",
     "title": "UBC Stat406 2024W",
-    "section": "Deviance loss",
-    "text": "Deviance loss\nSometimes we output probabilities as well as class labels.\nFor example, logistic regression returns the probability that an observation is in class 1. \\(P(Y_i = 1 \\given x_i) = 1 / (1 + \\exp\\{-x'_i \\hat\\beta\\})\\)\nLDA and QDA produce probabilities as well. So do Neural Networks (typically)\n(Trees “don’t”, neither does KNN, though you could fake it)\n\n\n\nDeviance loss for 2-class classification is \\(-2\\textrm{loglikelihood}(y, \\hat{p}) = -2 (y_i x'_i\\hat{\\beta} - \\log (1-\\hat{p}))\\)\n\n(Technically, it’s the difference between this and the loss of the null model, but people play fast and loose)\n\nCould also use cross entropy or Gini index."
+    "section": "Syllabus Q",
+    "text": "Syllabus Q"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#calibration",
-    "href": "schedule/slides/00-classification-losses.html#calibration",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#programming-languages",
+    "href": "schedule/slides/00-quiz-0-wrap.html#programming-languages",
     "title": "UBC Stat406 2024W",
-    "section": "Calibration",
-    "text": "Calibration\nSuppose we predict some probabilities for our data, how often do those events happen?\nIn principle, if we predict \\(\\hat{p}(x_i)=0.2\\) for a bunch of events observations \\(i\\), we’d like to see about 20% 1 and 80% 0. (In training set and test set)\nThe same goes for the other probabilities. If we say “20% chance of rain” it should rain 20% of such days.\nOf course, we didn’t predict exactly \\(\\hat{p}(x_i)=0.2\\) ever, so lets look at \\([.15, .25]\\).\n\nn &lt;- 250\ndat &lt;- tibble(\n  x = seq(-5, 5, length.out = n),\n  p = 1 / (1 + exp(-x)),\n  y = rbinom(n, 1, p)\n)\nfit &lt;- glm(y ~ x, family = binomial, data = dat)\ndat$phat &lt;- predict(fit, type = \"response\") # predicted probabilities\ndat |&gt;\n  filter(phat &gt; .15, phat &lt; .25) |&gt;\n  summarize(target = .2, obs = mean(y))\n\n\n\n# A tibble: 1 × 2\n  target   obs\n   &lt;dbl&gt; &lt;dbl&gt;\n1    0.2 0.222"
+    "section": "Programming languages",
+    "text": "Programming languages"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#calibration-plot",
-    "href": "schedule/slides/00-classification-losses.html#calibration-plot",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#plans",
+    "href": "schedule/slides/00-quiz-0-wrap.html#plans",
     "title": "UBC Stat406 2024W",
-    "section": "Calibration plot",
-    "text": "Calibration plot\n\nbinary_calibration_plot &lt;- function(y, phat, nbreaks = 10) {\n  dat &lt;- tibble(y = y, phat = phat) |&gt;\n    mutate(bins = cut_number(phat, n = nbreaks))\n  midpts &lt;- quantile(dat$phat, seq(0, 1, length.out = nbreaks + 1), na.rm = TRUE)\n  midpts &lt;- midpts[-length(midpts)] + diff(midpts) / 2\n  sum_dat &lt;- dat |&gt;\n    group_by(bins) |&gt;\n    summarise(\n      p = mean(y, na.rm = TRUE),\n      se = sqrt(p * (1 - p) / n())\n    ) |&gt;\n    arrange(p)\n  sum_dat$x &lt;- midpts\n\n  ggplot(sum_dat, aes(x = x)) +\n    geom_errorbar(aes(ymin = pmax(p - 1.96 * se, 0), ymax = pmin(p + 1.96 * se, 1))) +\n    geom_point(aes(y = p), colour = blue) +\n    geom_abline(slope = 1, intercept = 0, colour = orange) +\n    ylab(\"observed frequency\") +\n    xlab(\"average predicted probability\") +\n    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +\n    geom_rug(data = dat, aes(x = phat), sides = \"b\")\n}"
+    "section": "Plans",
+    "text": "Plans"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
-    "href": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
+    "objectID": "schedule/slides/00-quiz-0-wrap.html#grade-predictions",
+    "href": "schedule/slides/00-quiz-0-wrap.html#grade-predictions",
     "title": "UBC Stat406 2024W",
-    "section": "Amazingly well-calibrated",
-    "text": "Amazingly well-calibrated\n\nbinary_calibration_plot(dat$y, dat$phat, 20L)"
+    "section": "Grade predictions",
+    "text": "Grade predictions\n\n\n5 people say 100%\n18 say 90%\n20 say 85%\n41 say 80%\n\n\n\n\nUBC Stat 406 - 2024"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#less-well-calibrated",
-    "href": "schedule/slides/00-classification-losses.html#less-well-calibrated",
+    "objectID": "schedule/slides/08-ridge-regression.html#section",
+    "href": "schedule/slides/08-ridge-regression.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "Less well-calibrated",
-    "text": "Less well-calibrated"
+    "section": "08 Ridge regression",
+    "text": "08 Ridge regression\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 29 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
-    "href": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
+    "objectID": "schedule/slides/08-ridge-regression.html#recap",
+    "href": "schedule/slides/08-ridge-regression.html#recap",
     "title": "UBC Stat406 2024W",
-    "section": "True positive, false negative, sensitivity, specificity",
-    "text": "True positive, false negative, sensitivity, specificity\n\nTrue positive rate\n\n# correct predict positive / # actual positive (1 - FNR)\n\nFalse negative rate\n\n# incorrect predict negative / # actual positive (1 - TPR), Type II Error\n\nTrue negative rate\n\n# correct predict negative / # actual negative\n\nFalse positive rate\n\n# incorrect predict positive / # actual negative (1 - TNR), Type I Error\n\nSensitivity\n\nTPR, 1 - Type II error\n\nSpecificity\n\nTNR, 1 - Type I error"
+    "section": "Recap",
+    "text": "Recap\nGeneral idea:\n\nPick a model (a family of distributions).\nPick a loss function (measures how wrong predictions are).\nDesign a predictor/estimator that minimizes the prediction/estimation risk.\n\nRisk includes bias, variance, and irreducible error.\nSo far, trade bias/variance via variable selection using a risk estimate.\n\nToday: trade bias/variance via regularization\n\nuse all predictors\nshrink \\(\\hat\\beta\\) towards 0 (increase bias, reduce variance)\n\n\\[\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
-    "href": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
+    "objectID": "schedule/slides/08-ridge-regression.html#ols-bias-and-variance",
+    "href": "schedule/slides/08-ridge-regression.html#ols-bias-and-variance",
     "title": "UBC Stat406 2024W",
-    "section": "ROC and thresholds",
-    "text": "ROC and thresholds\n\nROC (Receiver Operating Characteristic) Curve\n\nTPR (sensitivity) vs. FPR (1 - specificity)\n\nAUC (Area under the curve)\n\nIntegral of ROC. Closer to 1 is better.\n\n\nSo far, we’ve been thresholding at 0.5, though you shouldn’t always do that.\nWith unbalanced data (say 10% 0 and 90% 1), if you care equally about predicting both classes, you might want to choose a different cutoff (like in LDA).\nTo make the ROC we look at our errors as we vary the cutoff"
+    "section": "OLS: bias and variance",
+    "text": "OLS: bias and variance\nMinimize\n\\[\\min_\\beta \\frac{1}{n}\\sum_i (y_i - x_i^T\\beta)^2 \\quad \\mbox{ subject to } \\quad \\beta \\in \\R^p\\]\n\nCan rewrite using matrix-vector notation:\n\\[\\min_\\beta \\frac{1}{n}\\| \\y - \\X\\beta\\|_2^2\\quad \\mbox{ subject to } \\quad \\beta \\in \\R^p\\]\n\n\nSolve by setting derivative to 0: \\(\\bls = (\\X^\\top\\X)^{-1}\\X^\\top\\y\\)\n\nunbiased: \\(\\E[\\bls] = \\E[\\E[\\bls \\mid \\X]] = \\E[(\\X^\\top\\X)^{-1}\\X^\\top\\X\\beta] = \\beta\\)\nvariance: \\(\\Var{\\bls} =  \\sigma^2(\\X^\\top \\X)^{-1}\\) ??"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#roc-curve",
-    "href": "schedule/slides/00-classification-losses.html#roc-curve",
+    "objectID": "schedule/slides/08-ridge-regression.html#singular-value-decomposition-svd",
+    "href": "schedule/slides/08-ridge-regression.html#singular-value-decomposition-svd",
     "title": "UBC Stat406 2024W",
-    "section": "ROC curve",
-    "text": "ROC curve\n\n\nroc &lt;- function(prediction, y) {\n  op &lt;- order(prediction, decreasing = TRUE)\n  preds &lt;- prediction[op]\n  y &lt;- y[op]\n  noty &lt;- 1 - y\n  if (any(duplicated(preds))) {\n    y &lt;- rev(tapply(y, preds, sum))\n    noty &lt;- rev(tapply(noty, preds, sum))\n  }\n  tibble(\n    FPR = cumsum(noty) / sum(noty),\n    TPR = cumsum(y) / sum(y)\n  )\n}\n\nggplot(roc(dat$phat, dat$y), aes(FPR, TPR)) +\n  geom_step(colour = blue, size = 2) +\n  geom_abline(slope = 1, intercept = 0)"
+    "section": "Singular Value Decomposition (SVD)",
+    "text": "Singular Value Decomposition (SVD)\nA rectangular \\(n \\times p\\) matrix \\(X\\) has singular value decomposition \\(X = U D V^\\top\\)\n\n\\(U\\) is \\(n\\times n\\), orthonormal: \\(U^\\top U = UU^\\top = I\\)\n\\(V\\) is \\(p\\times p\\), orthonormal: \\(V^\\top V = VV^\\top = I\\)\n\\(D\\) is rectangular \\(n\\times p\\), diagonal and nonnegative (singular values)\n\n\ne.g. \\(n = 4, p = 2\\), singular values \\(d_1, d_2\\):\n\\[D = \\left[\\begin{array} dd_1 & 0 \\\\ 0 & d_2 \\\\ 0 & 0 \\\\ 0 & 0 \\end{array}\\right] \\qquad D^\\top D = \\left[\\begin{array} dd_1^2 & 0 \\\\ 0 & d_2^2\\end{array}\\right].\\]\n\n\nIf \\(X\\) has (almost) linearly dependent columns, some singular values in \\(D\\) are (near) zero\n\\(X\\) is (nearly) rank-deficient or ill-conditioned"
   },
   {
-    "objectID": "schedule/slides/00-classification-losses.html#other-stuff",
-    "href": "schedule/slides/00-classification-losses.html#other-stuff",
+    "objectID": "schedule/slides/08-ridge-regression.html#the-variance-of-ols",
+    "href": "schedule/slides/08-ridge-regression.html#the-variance-of-ols",
     "title": "UBC Stat406 2024W",
-    "section": "Other stuff",
-    "text": "Other stuff\n\n\nSource: worth exploring Wikipedia\n\n\n\n\nUBC Stat 406 - 2024"
+    "section": "The variance of OLS",
+    "text": "The variance of OLS\nLet’s use the SVD \\(X = UDV^T\\) to examine the OLS variance \\(\\Var{\\bls} =  \\sigma^2(\\X^\\top \\X)^{-1}\\):\n\\[(\\X^\\top \\X)^{-1} = (VD^\\top U^\\top UDV^\\top)^{-1} = V (D^\\top D)^{-1}V^\\top =  V\\left[\\begin{array}dd_1^{-2} & 0 & 0\\\\ 0 & \\ddots & 0 \\\\ 0 & 0 & d_p^{-2}\\end{array}\\right]V^\\top\\]\n\nMulticollinearity: a linear combination of variables is nearly equal to another variable.\n\nso \\(\\X\\) is ill-conditioned\nso some singular values \\(d_j\\approx 0\\)\nso \\(d^{-2}_j\\) is large\nso \\(\\bls\\) has large, unstable values; i.e., large variance"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#section",
-    "href": "schedule/slides/20-boosting.html#section",
+    "objectID": "schedule/slides/08-ridge-regression.html#how-to-stop-large-unstable-values-of-widehatbeta",
+    "href": "schedule/slides/08-ridge-regression.html#how-to-stop-large-unstable-values-of-widehatbeta",
     "title": "UBC Stat406 2024W",
-    "section": "20 Boosting",
-    "text": "20 Boosting\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 02 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "How to stop large, unstable values of \\(\\widehat{\\beta}\\)?",
+    "text": "How to stop large, unstable values of \\(\\widehat{\\beta}\\)?\nIdea: constrain the values of \\(\\beta\\) to be small. For \\(s &gt; 0\\): \\[\n\\minimize_\\beta \\underbrace{\\frac{1}{n}\\|\\y - \\X\\beta\\|_2^2}_{\\text{objective function}} \\quad \\st \\underbrace{\\|\\beta\\|_2^2 &lt; s}_{\\text{constraint}}.\n\\]\nRecall, for a vector \\(\\beta \\in \\R^p\\)\n\n\\(\\ell_2\\)-norm\n\n\\(\\|\\beta\\|_2 = \\sqrt{\\beta_1^2 + \\beta_2^2 + \\dots + \\beta_p^2} = \\left(\\sum_{j=1}^p |\\beta_j|^2\\right)^{1/2}\\) (so \\(\\|\\beta\\|_2^2 = \\sum_j \\beta_j^2\\))\n\n\n\nCompare this to ordinary least squares:\n\\[\n\\minimize_\\beta \\underbrace{\\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2}_{\\text{same objective}}\n\\quad \\st \\underbrace{\\beta \\in \\R^p}_{\\textbf{no constraint}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#last-time",
-    "href": "schedule/slides/20-boosting.html#last-time",
+    "objectID": "schedule/slides/08-ridge-regression.html#geometry-of-constrained-regression-contours",
+    "href": "schedule/slides/08-ridge-regression.html#geometry-of-constrained-regression-contours",
     "title": "UBC Stat406 2024W",
-    "section": "Last time",
-    "text": "Last time\nWe learned about bagging, for averaging low-bias / high-variance estimators.\nToday, we examine it’s opposite: Boosting.\nBoosting also combines estimators, but it combines high-bias / low-variance estimators.\nBoosting has a number of flavours. And if you Google descriptions, most are wrong.\nFor a deep (and accurate) treatment, see [ESL] Chapter 10\n\nWe’ll discuss 2 flavours: AdaBoost and Gradient Boosting\nNeither requires a tree, but that’s the typical usage.\nBoosting needs a “weak learner”, so small trees (stumps) are natural."
+    "section": "Geometry of constrained regression (contours)",
+    "text": "Geometry of constrained regression (contours)\n\n\nCode\nlibrary(mvtnorm)\nnorm_ball &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- tibble(x = cos(tg), b = (1 - abs(x)^q)^(1 / q), bm = -b) |&gt;\n    pivot_longer(-x, values_to = \"y\")\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipse_data &lt;- function(\n  n = 75, xlim = c(-2, 3), ylim = c(-2, 3),\n  mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  expand_grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)) |&gt;\n    rowwise() |&gt;\n    mutate(z = dmvnorm(c(x, y), mean, Sigma))\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6, niter = 20) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  feasible &lt;- (ed$x^q + ed$y^q)^(1 / q) &lt;= 1\n  best &lt;- ed[feasible, ]\n  best[which.max(best$z), ]\n}\n\n\nnb &lt;- norm_ball(2)\ned &lt;- ellipse_data()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 2)\nggplot(nb, aes(x, y)) +\n  xlim(-2, 2) +\n  ylim(-2, 2) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal() +\n  geom_label(\n    data = bols,\n    mapping = aes(label = bquote(\"hat(beta)[ols]\")),\n    parse = TRUE, \n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  theme_bw(base_size = 24) +\n  geom_label(\n    data = bhat,\n    mapping = aes(label = bquote(\"hat(beta)[s]^R\")),\n    parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
-    "href": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression",
     "title": "UBC Stat406 2024W",
-    "section": "AdaBoost intuition (for classification)",
-    "text": "AdaBoost intuition (for classification)\nAt each iteration, we weight the observations.\nObservations that are currently misclassified, get higher weights.\nSo on the next iteration, we’ll try harder to correctly classify our mistakes.\nThe number of iterations must be chosen."
+    "section": "Ridge regression",
+    "text": "Ridge regression\nAn equivalent way to write\n\\[\\brt = \\argmin_{\\beta} \\frac{1}{n}\\|\\y - \\X\\beta\\|_2^2 \\st  || \\beta ||_2^2 \\leq s\\]\nis as a regularized (or penalized) optimization with regularization weight \\(\\lambda\\):\n\\[\\brl = \\argmin_{ \\beta} \\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2 + \\lambda || \\beta ||_2^2.\\]\nFor every \\(\\lambda\\) there is a unique \\(s\\) (and vice versa) that makes \\(\\brt = \\brl\\). We will work with \\(\\lambda\\)."
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
-    "href": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-1",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-1",
     "title": "UBC Stat406 2024W",
-    "section": "AdaBoost (Freund and Schapire, generic)",
-    "text": "AdaBoost (Freund and Schapire, generic)\nLet \\(G(x, \\theta)\\) be any weak learner\n⛭ imagine a tree with one split: then \\(\\theta=\\) (feature, split point)\nAlgorithm (AdaBoost) 🛠️\n\nSet observation weights \\(w_i=1/n\\).\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nEstimate the classifier \\(G(x,\\theta_m)\\) using weights \\(w_i\\)\nCalculate it’s weighted error \\(\\textrm{err}_m = \\sum_{i=1}^n w_i I(y_i \\neq G(x_i, \\theta_m)) / \\sum w_i\\)\nSet \\(\\alpha_m = \\log((1-\\textrm{err}_m)/\\text{err}_m)\\)\nUpdate \\(w_i \\leftarrow w_i \\exp(\\alpha_m I(y_i \\neq G(x_i,\\theta_m)))\\)\n\nFinal classifier is \\(G(x) = \\textrm{sign}\\left( \\sum_{m=1}^M \\alpha_m G(x, \\theta_m)\\right)\\)"
+    "section": "Ridge regression",
+    "text": "Ridge regression\n\\[\\brl = \\argmin_{ \\beta} \\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2 + \\lambda || \\beta ||_2^2\\]\nObserve:\n\n\\(\\lambda = 0\\) makes \\(\\brl = \\bls\\)\n\\(\\lambda \\to\\infty\\) makes \\(\\brl \\to 0\\)\nAny \\(0 &lt; \\lambda &lt; \\infty\\) penalizes larger values of \\(\\beta\\), effectively shrinking them.\n\\(\\lambda\\) is a tuning parameter: we need to pick it"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#using-mobility-data-again",
-    "href": "schedule/slides/20-boosting.html#using-mobility-data-again",
+    "objectID": "schedule/slides/08-ridge-regression.html#example-data",
+    "href": "schedule/slides/08-ridge-regression.html#example-data",
     "title": "UBC Stat406 2024W",
-    "section": "Using mobility data again",
-    "text": "Using mobility data again\n\n\nCode\nlibrary(kableExtra)\nlibrary(randomForest)\nmob &lt;- Stat406::mobility |&gt;\n  mutate(mobile = as.factor(Mobility &gt; .1)) |&gt;\n  select(-ID, -Name, -Mobility, -State) |&gt;\n  drop_na()\nn &lt;- nrow(mob)\ntrainidx &lt;- sample.int(n, floor(n * .75))\ntestidx &lt;- setdiff(1:n, trainidx)\ntrain &lt;- mob[trainidx, ]\ntest &lt;- mob[testidx, ]\nrf &lt;- randomForest(mobile ~ ., data = train)\nbag &lt;- randomForest(mobile ~ ., data = train, mtry = ncol(mob) - 1)\npreds &lt;- tibble(truth = test$mobile, rf = predict(rf, test), bag = predict(bag, test))\n\n\n\n\nlibrary(gbm)\ntrain_boost &lt;- train |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\n# needs {0, 1} responses\ntest_boost &lt;- test |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\nadab &lt;- gbm(\n  mobile ~ .,\n  data = train_boost,\n  n.trees = 500,\n  distribution = \"adaboost\"\n)\npreds$adab &lt;- as.numeric(\n  predict(adab, test_boost) &gt; 0\n)\npar(mar = c(5, 11, 0, 1))\ns &lt;- summary(adab, las = 1)"
+    "section": "Example data",
+    "text": "Example data\nprostate data from [ESL]\n\ndata(prostate, package = \"ElemStatLearn\")\nprostate |&gt; as_tibble()\n\n# A tibble: 97 × 10\n   lcavol lweight   age   lbph   svi   lcp gleason pgg45   lpsa train\n    &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;lgl&gt;\n 1 -0.580    2.77    50 -1.39      0 -1.39       6     0 -0.431 TRUE \n 2 -0.994    3.32    58 -1.39      0 -1.39       6     0 -0.163 TRUE \n 3 -0.511    2.69    74 -1.39      0 -1.39       7    20 -0.163 TRUE \n 4 -1.20     3.28    58 -1.39      0 -1.39       6     0 -0.163 TRUE \n 5  0.751    3.43    62 -1.39      0 -1.39       6     0  0.372 TRUE \n 6 -1.05     3.23    50 -1.39      0 -1.39       6     0  0.765 TRUE \n 7  0.737    3.47    64  0.615     0 -1.39       6     0  0.765 FALSE\n 8  0.693    3.54    58  1.54      0 -1.39       6     0  0.854 TRUE \n 9 -0.777    3.54    47 -1.39      0 -1.39       6     0  1.05  FALSE\n10  0.223    3.24    63 -1.39      0 -1.39       6     0  1.05  FALSE\n# ℹ 87 more rows\n\n\n\nUse lpsa as response."
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
-    "href": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-path",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-path",
     "title": "UBC Stat406 2024W",
-    "section": "Forward stagewise additive modeling (FSAM, completely generic)",
-    "text": "Forward stagewise additive modeling (FSAM, completely generic)\nAlgorithm 🛠️\n\nSet initial predictor \\(f_0(x)=0\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute \\((\\beta_m, \\theta_m) = \\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i,\\ \\theta)\\right)\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\beta_m G(x,\\ \\theta_m)\\)\n\nFinal classifier is \\(G(x, \\theta_M) = \\textrm{sign}\\left( f_M(x) \\right)\\)\n\nHere, \\(L\\) is a loss function that measures prediction accuracy\n\n\nIf (1) \\(L(y,\\ f(x))= \\exp(-y f(x))\\), (2) \\(G\\) is a classifier, and WLOG \\(y \\in \\{-1, 1\\}\\)\n\nFSAM is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000)."
+    "section": "Ridge regression path",
+    "text": "Ridge regression path\nWe can look at coefficients as we vary \\(\\lambda\\) (a “path” or “coefficient trace”)\n\nY &lt;- prostate$lpsa\nX &lt;- model.matrix(~ ., data = prostate |&gt; dplyr::select(-train, -lpsa))\nlibrary(glmnet)\nridge &lt;- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)\nplot(ridge, xvar = \"lambda\", lwd = 3)\n\n\nModel selection: choose some \\(\\lambda\\) (a vertical line on this plot)"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#so-what",
-    "href": "schedule/slides/20-boosting.html#so-what",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-closed-form",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-closed-form",
     "title": "UBC Stat406 2024W",
-    "section": "So what?",
-    "text": "So what?\nIt turns out that “exponential loss” \\(L(y,\\ f(x))= \\exp(-y f(x))\\) is not very robust.\nHere are some other loss functions for 2-class classification\n\n\nWant losses which penalize negative margin, but not positive margins.\nRobust means don’t over-penalize large negatives"
+    "section": "Ridge regression: closed-form",
+    "text": "Ridge regression: closed-form\nRidge regression has a closed-form solution like OLS (set the derivative in \\(\\beta\\) to 0):\n\\[\\brl = (\\X^\\top\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top \\y\\]\nCompare to OLS:\n\\[\\bls = (\\X^\\top \\X)^{-1}\\X^\\top \\y\\]\n\nWhat does the \\(+\\lambda I\\) do?\nWhat about bias and variance?\nIs \\(\\brl\\) faster/slower/neither to compute?\nIs \\(\\brl\\) more/less numerically stable to compute?"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#gradient-boosting",
-    "href": "schedule/slides/20-boosting.html#gradient-boosting",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-bias-and-variance",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-bias-and-variance",
     "title": "UBC Stat406 2024W",
-    "section": "Gradient boosting",
-    "text": "Gradient boosting\nIn the forward stagewise algorithm, we solved a minimization and then made an update:\n\\[f_m(x) = f_{m-1}(x) + \\beta_m G(x, \\theta_m)\\]\nFor most loss functions \\(L\\) / procedures \\(G\\) this optimization is difficult: \\[\\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i, \\theta)\\right)\\]\n💡 Just take one gradient step toward the minimum 💡\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nThis is called Gradient boosting\nNotice how similar the update steps look."
+    "section": "Ridge regression: bias and variance",
+    "text": "Ridge regression: bias and variance\nRidge regression has a closed-form solution like OLS (set the derivative in \\(\\beta\\) to 0):\n\\[\\brl = (\\X^\\top\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top \\y\\]\n\nbias: \\(\\E[\\brl | \\X] = (\\X^\\top\\X + \\lambda I)^{-1}\\X^\\top \\X\\beta \\neq \\beta\\)\nvariance: \\(\\Var{\\brl \\mid \\X} = \\sigma^2 (\\X^\\top\\X + \\lambda I)^{-1}\\X^\\top \\X(\\X^\\top\\X + \\lambda I)^{-1}\\)\n\n\nUsing the SVD \\(\\X = UDV^T\\), \\(\\Var{\\brl \\mid \\X} = \\sigma^2 VG V^\\top\\) where \\(G\\) is diagonal with entries\n\\[ g_j = \\frac{d_j^2}{(d_j^2 + \\lambda)^2} \\qquad \\left(\\text{compare to OLS:} \\quad g_j = \\frac{1}{d_j^{2}} \\right)\\]\nMitigates the issue of multicollinearity (ill-conditioned \\(\\X\\))!"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-1",
-    "href": "schedule/slides/20-boosting.html#gradient-boosting-1",
+    "objectID": "schedule/slides/08-ridge-regression.html#tuning-the-regularization-weight-lambda",
+    "href": "schedule/slides/08-ridge-regression.html#tuning-the-regularization-weight-lambda",
     "title": "UBC Stat406 2024W",
-    "section": "Gradient boosting",
-    "text": "Gradient boosting\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nGradient boosting goes only part of the way toward the minimum at each \\(m\\).\nThis has two advantages:\n\nSince we’re not fitting \\(\\beta, \\theta\\) to the data as “hard”, the learner is weaker.\nThis procedure is computationally much simpler.\n\nSimpler because we only require the gradient at one value, don’t have to fully optimize."
+    "section": "Tuning the regularization weight \\(\\lambda\\)",
+    "text": "Tuning the regularization weight \\(\\lambda\\)\nUse cross-validation (it’s built into glmnet if you use cv.glmnet!)\nplot shows mean CV estimate \\(\\pm\\) standard error\nLeft line is minimum risk estimate; right is the largest \\(\\lambda\\) within 1\\(\\sigma\\)\n\nridge &lt;- cv.glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)\nplot(ridge, main = \"Ridge\")"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
-    "href": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
+    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-summary",
+    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-summary",
     "title": "UBC Stat406 2024W",
-    "section": "Gradient boosting – Algorithm 🛠️",
-    "text": "Gradient boosting – Algorithm 🛠️\n\nSet initial predictor \\(f_0(x)=\\overline{\\y}\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute pseudo-residuals (what is the gradient of \\(L(y,f)=(y-f(x))^2\\)?) \\[r_i = -\\frac{\\partial L(y_i,f(x_i))}{\\partial f(x_i)}\\bigg|_{f(x_i)=f_{m-1}(x_i)}\\]\nEstimate weak learner, \\(G(x, \\theta_m)\\), with the training set \\(\\{r_i, x_i\\}\\).\nFind the step size \\(\\gamma_m = \\argmin_\\gamma \\sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \\gamma G(x_i, \\theta_m))\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\gamma_m G(x, \\theta_m)\\)\n\nFinal predictor is \\(f_M(x)\\)."
+    "section": "Ridge regression: summary",
+    "text": "Ridge regression: summary\nRidge regression addresses multicollinearity by preventing division by near-zero numbers\n\nConclusion\n\n\\(\\bls = (\\X^{\\top}\\X)^{-1}\\X^\\top \\y\\) can be unstable, while \\(\\brl=(\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top\\y\\) is not.\n\nAside\n\nEngineering approach to solving linear systems is to always do this with small \\(\\lambda\\). The thinking is about the numerics rather than the statistics.\n\n\nWhich \\(\\lambda\\) to use?\n\nComputational\n\nUse CV and pick the \\(\\lambda\\) that makes this smallest (maybe within \\(1\\sigma\\)).\n\nIntuition (bias)\n\nAs \\(\\lambda\\rightarrow\\infty\\), bias ⬆\n\nIntuition (variance)\n\nAs \\(\\lambda\\rightarrow\\infty\\), variance ⬇"
   },
   {
-    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
-    "href": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
+    "objectID": "schedule/slides/08-ridge-regression.html#regularization-for-variable-selection",
+    "href": "schedule/slides/08-ridge-regression.html#regularization-for-variable-selection",
     "title": "UBC Stat406 2024W",
-    "section": "Gradient boosting modifications",
-    "text": "Gradient boosting modifications\n\ngrad_boost &lt;- gbm(mobile ~ ., data = train_boost, n.trees = 500, distribution = \"bernoulli\")\n\n\nTypically done with “small” trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)\nUsually modify the gradient step to \\(f_m(x) = f_{m-1}(x) + \\gamma_m \\alpha G(x,\\theta_m)\\) with \\(0&lt;\\alpha&lt;1\\). Helps to keep from fitting too hard.\nOften combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.\nThere are many other extensions, notably XGBoost."
-  },
-  {
-    "objectID": "schedule/slides/20-boosting.html#results-for-mobility",
-    "href": "schedule/slides/20-boosting.html#results-for-mobility",
-    "title": "UBC Stat406 2024W",
-    "section": "Results for mobility",
-    "text": "Results for mobility\n\n\nCode\nlibrary(cowplot)\nboost_preds &lt;- tibble(\n  adaboost = predict(adab, test_boost),\n  gbm = predict(grad_boost, test_boost),\n  truth = test$mobile\n)\ng1 &lt;- ggplot(boost_preds, aes(adaboost, gbm, color = as.factor(truth))) +\n  geom_text(aes(label = as.integer(truth) - 1)) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  xlab(\"adaboost margin\") +\n  ylab(\"gbm margin\") +\n  theme(legend.position = \"none\") +\n  scale_color_manual(values = c(\"orange\", \"blue\")) +\n  annotate(\"text\",\n    x = -4, y = 5, color = red,\n    label = paste(\n      \"gbm error\\n\",\n      round(with(boost_preds, mean((gbm &gt; 0) != truth)), 2)\n    )\n  ) +\n  annotate(\"text\",\n    x = 4, y = -5, color = red,\n    label = paste(\"adaboost error\\n\", round(with(boost_preds, mean((adaboost &gt; 0) != truth)), 2))\n  )\nboost_oob &lt;- tibble(\n  adaboost = adab$oobag.improve, gbm = grad_boost$oobag.improve,\n  ntrees = 1:500\n)\ng2 &lt;- boost_oob %&gt;%\n  pivot_longer(-ntrees, values_to = \"OOB_Error\") %&gt;%\n  ggplot(aes(x = ntrees, y = OOB_Error, color = name)) +\n  geom_line() +\n  scale_color_manual(values = c(orange, blue)) +\n  theme(legend.title = element_blank())\nplot_grid(g1, g2, rel_widths = c(.4, .6))"
-  },
-  {
-    "objectID": "schedule/slides/20-boosting.html#major-takeaways",
-    "href": "schedule/slides/20-boosting.html#major-takeaways",
-    "title": "UBC Stat406 2024W",
-    "section": "Major takeaways",
-    "text": "Major takeaways\n\nTwo flavours of Boosting\n\nAdaBoost (the original) and\ngradient boosting (easier and more computationally friendly)\n\nThe connection is “Forward stagewise additive modelling” (AdaBoost is a special case)\nThe connection reveals that AdaBoost “isn’t robust because it uses exponential loss” (squared error is even worse)\nGradient boosting is a computationally easier version of FSAM\nAll use weak learners (compare to Bagging)\nThink about the Bias-Variance implications\nYou can use these for regression or classification\nYou can do this with other weak learners besides trees."
+    "section": "Regularization for variable selection?",
+    "text": "Regularization for variable selection?\nRidge regression is a regularized approach to prediction.\n\nnice bias/variance tradeoff\nclosed-form / easy-to-compute solution\nno predictor variable selection.\n\n(NB: picking a \\(\\lambda\\) is still model selection)\n\n\nIs there a regularization approach to variable selection?\n\n\ne.g., best (in-sample) linear regression model of size \\(s\\):\n\n\\(\\minimize \\frac{1}{n}||\\y-\\X\\beta||_2^2 \\ \\st\\ (\\text{\\# of nonzero $\\beta_j$}) \\leq s\\)\n\n\nThat is a super nasty optimization. What to do?…"
   },
   {
     "objectID": "schedule/slides/27-kmeans.html#section",
@@ -2790,14 +2734,14 @@
     "href": "schedule/index.html#classification",
     "title": " Schedule",
     "section": "3 Classification",
-    "text": "3 Classification\n\nTopics\n\nlogistic regression; LDA/QDA; naive bayes; trees\n\nRequired reading\n\n[ISLR] Ch 2.2.3, 5.1.5, 4-4.5, 8.1.2\n\nOptional reading\n\n[ESL] 4-4.4, 9.2, 13.3\n\n\n\n\n\nDate\nSlides\nDeadlines\n\n\n\n\n15 Oct 24\nClassification, LDA and QDA\n\n\n\n17 Oct 24\nLogistic regression, Gradient descent\nHW 2 due\n\n\n22 Oct 24\nNonlinear, Other losses\n\n\n\n24 Oct 24\nThe bootstrap"
+    "text": "3 Classification\n\nTopics\n\nlogistic regression; LDA/QDA; naive bayes; trees\n\nRequired reading\n\n[ISLR] Ch 2.2.3, 5.1.5, 4-4.5, 8.1.2\n\nOptional reading\n\n[ESL] 4-4.4, 9.2, 13.3\n\n\n\n\n\nDate\nSlides\nDeadlines\n\n\n\n\n15 Oct 24\nClassification\n\n\n\n17 Oct 24\nLogistic regression, Gradient descent\nHW 2 due\n\n\n22 Oct 24\nLDA and QDA\n\n\n\n24 Oct 24\nNonlinear, Other losses"
   },
   {
     "objectID": "schedule/index.html#modern-techniques",
     "href": "schedule/index.html#modern-techniques",
     "title": " Schedule",
     "section": "4 Modern techniques",
-    "text": "4 Modern techniques\n\nTopics\n\nbagging; boosting; random forests; neural networks\n\nRequired reading\n\n[ISLR] 5.2, 8.2, 10.1, 10.2, 10.6, 10.7\n\nOptional reading\n\n[ESL] 10.1-10.10 (skip 10.7), 11.1, 11.3, 11.4, 11.7\n\n\n\n\n\nDate\nSlides\nDeadlines\n\n\n\n\n29 Oct 24\nBagging and random forests, Boosting\n\n\n\n31 Oct 24\nIntro to neural nets\nHW 3 due\n\n\n5 Nov 24\nEstimating neural nets\n\n\n\n7 Nov 24\nMore neural nets (TBD), Optional NNet handout\n\n\n\n12 Nov 24\nNo class. (Midterm break)\n\n\n\n14 Nov 24\nNeural nets wrapup"
+    "text": "4 Modern techniques\n\nTopics\n\nbagging; boosting; random forests; neural networks\n\nRequired reading\n\n[ISLR] 5.2, 8.2, 10.1, 10.2, 10.6, 10.7\n\nOptional reading\n\n[ESL] 10.1-10.10 (skip 10.7), 11.1, 11.3, 11.4, 11.7\n\n\n\n\n\nDate\nSlides\nDeadlines\n\n\n\n\n29 Oct 24\nThe bootstrap, Bagging and random forests\n\n\n\n31 Oct 24\nBoosting\nHW 3 due\n\n\n5 Nov 24\nIntro to neural nets\n\n\n\n7 Nov 24\nEstimating neural nets, Optional NNet handout\n\n\n\n12 Nov 24\nNo class. (Midterm break)\n\n\n\n14 Nov 24\nNeural nets wrapup"
   },
   {
     "objectID": "schedule/index.html#unsupervised-learning",
@@ -3563,158 +3507,172 @@
     "text": "Different architectures"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#section",
-    "href": "schedule/slides/08-ridge-regression.html#section",
+    "objectID": "schedule/slides/00-classification-losses.html#section",
+    "href": "schedule/slides/00-classification-losses.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "08 Ridge regression",
-    "text": "08 Ridge regression\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 29 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "00 Evaluating classifiers",
+    "text": "00 Evaluating classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#recap",
-    "href": "schedule/slides/08-ridge-regression.html#recap",
+    "objectID": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
+    "href": "schedule/slides/00-classification-losses.html#how-do-we-measure-accuracy",
     "title": "UBC Stat406 2024W",
-    "section": "Recap",
-    "text": "Recap\nGeneral idea:\n\nPick a model (a family of distributions).\nPick a loss function (measures how wrong predictions are).\nDesign a predictor/estimator that minimizes the prediction/estimation risk.\n\nRisk includes bias, variance, and irreducible error.\nSo far, trade bias/variance via variable selection using a risk estimate.\n\nToday: trade bias/variance via regularization\n\nuse all predictors\nshrink \\(\\hat\\beta\\) towards 0 (increase bias, reduce variance)\n\n\\[\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\]"
+    "section": "How do we measure accuracy?",
+    "text": "How do we measure accuracy?\nSo far — 0-1 loss. If correct class, lose 0 else lose 1.\n\nGeneralization: Asymmetric classification loss — If correct class, lose 0 else lose something.\n\nE.g. MRI screening. Goal is “person OK”, “person has a disease”\n\nIf classify OK, but was disease, lose 1,000,000\nIf classify disease, but was OK, lose 10\netc.\n\n\n\nResults in a 2x2 matrix of losses with 0 on the diagonal.\n\n\n     [,1]    [,2]\n[1,]    0 1000000\n[2,]   10       0"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ols-bias-and-variance",
-    "href": "schedule/slides/08-ridge-regression.html#ols-bias-and-variance",
+    "objectID": "schedule/slides/00-classification-losses.html#deviance-loss",
+    "href": "schedule/slides/00-classification-losses.html#deviance-loss",
     "title": "UBC Stat406 2024W",
-    "section": "OLS: bias and variance",
-    "text": "OLS: bias and variance\nMinimize\n\\[\\min_\\beta \\frac{1}{n}\\sum_i (y_i - x_i^T\\beta)^2 \\quad \\mbox{ subject to } \\quad \\beta \\in \\R^p\\]\n\nCan rewrite using matrix-vector notation:\n\\[\\min_\\beta \\frac{1}{n}\\| \\y - \\X\\beta\\|_2^2\\quad \\mbox{ subject to } \\quad \\beta \\in \\R^p\\]\n\n\nSolve by setting derivative to 0: \\(\\bls = (\\X^\\top\\X)^{-1}\\X^\\top\\y\\)\n\nunbiased: \\(\\E[\\bls] = \\E[\\E[\\bls \\mid \\X]] = \\E[(\\X^\\top\\X)^{-1}\\X^\\top\\X\\beta] = \\beta\\)\nvariance: \\(\\Var{\\bls} =  \\sigma^2(\\X^\\top \\X)^{-1}\\) ??"
+    "section": "Deviance loss",
+    "text": "Deviance loss\nSometimes we output probabilities as well as class labels.\nFor example, logistic regression returns the probability that an observation is in class 1. \\(P(Y_i = 1 \\given x_i) = 1 / (1 + \\exp\\{-x'_i \\hat\\beta\\})\\)\nLDA and QDA produce probabilities as well. So do Neural Networks (typically)\n(Trees “don’t”, neither does KNN, though you could fake it)\n\n\n\nDeviance loss for 2-class classification is \\(-2\\textrm{loglikelihood}(y, \\hat{p}) = -2 (y_i x'_i\\hat{\\beta} - \\log (1-\\hat{p}))\\)\n\n\n\nCould also use cross entropy or Gini index."
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#singular-value-decomposition-svd",
-    "href": "schedule/slides/08-ridge-regression.html#singular-value-decomposition-svd",
+    "objectID": "schedule/slides/00-classification-losses.html#calibration",
+    "href": "schedule/slides/00-classification-losses.html#calibration",
     "title": "UBC Stat406 2024W",
-    "section": "Singular Value Decomposition (SVD)",
-    "text": "Singular Value Decomposition (SVD)\nA rectangular \\(n \\times p\\) matrix \\(X\\) has singular value decomposition \\(X = U D V^\\top\\)\n\n\\(U\\) is \\(n\\times n\\), orthonormal: \\(U^\\top U = UU^\\top = I\\)\n\\(V\\) is \\(p\\times p\\), orthonormal: \\(V^\\top V = VV^\\top = I\\)\n\\(D\\) is rectangular \\(n\\times p\\), diagonal and nonnegative (singular values)\n\n\ne.g. \\(n = 4, p = 2\\), singular values \\(d_1, d_2\\):\n\\[D = \\left[\\begin{array} dd_1 & 0 \\\\ 0 & d_2 \\\\ 0 & 0 \\\\ 0 & 0 \\end{array}\\right] \\qquad D^\\top D = \\left[\\begin{array} dd_1^2 & 0 \\\\ 0 & d_2^2\\end{array}\\right].\\]\n\n\nIf \\(X\\) has (almost) linearly dependent columns, some singular values in \\(D\\) are (near) zero\n\\(X\\) is (nearly) rank-deficient or ill-conditioned"
+    "section": "Calibration",
+    "text": "Calibration\nSuppose we predict some probabilities for our data, how often do those events happen?\nIn principle, if we predict \\(\\hat{p}(x_i)=0.2\\) for a bunch of events observations \\(i\\), we’d like to see about 20% 1 and 80% 0. (In training set and test set)\nThe same goes for the other probabilities. If we say “20% chance of rain” it should rain 20% of such days.\nOf course, we didn’t predict exactly \\(\\hat{p}(x_i)=0.2\\) ever, so lets look at \\([.15, .25]\\)."
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#the-variance-of-ols",
-    "href": "schedule/slides/08-ridge-regression.html#the-variance-of-ols",
+    "objectID": "schedule/slides/00-classification-losses.html#calibration-plot",
+    "href": "schedule/slides/00-classification-losses.html#calibration-plot",
     "title": "UBC Stat406 2024W",
-    "section": "The variance of OLS",
-    "text": "The variance of OLS\nLet’s use the SVD \\(X = UDV^T\\) to examine the OLS variance \\(\\Var{\\bls} =  \\sigma^2(\\X^\\top \\X)^{-1}\\):\n\\[(\\X^\\top \\X)^{-1} = (VD^\\top U^\\top UDV^\\top)^{-1} = V (D^\\top D)^{-1}V^\\top =  V\\left[\\begin{array}dd_1^{-2} & 0 & 0\\\\ 0 & \\ddots & 0 \\\\ 0 & 0 & d_p^{-2}\\end{array}\\right]V^\\top\\]\n\nMulticollinearity: a linear combination of variables is nearly equal to another variable.\n\nso \\(\\X\\) is ill-conditioned\nso some singular values \\(d_j\\approx 0\\)\nso \\(d^{-2}_j\\) is large\nso \\(\\bls\\) has large, unstable values; i.e., large variance"
+    "section": "Calibration plot",
+    "text": "Calibration plot\n\nn &lt;- 250\ndat &lt;- tibble(\n  x = seq(-5, 5, length.out = n),\n  p = 1 / (1 + exp(-x)),\n  y = rbinom(n, 1, p)\n)\nfit &lt;- glm(y ~ x, family = binomial, data = dat)\ndat$phat &lt;- predict(fit, type = \"response\") # predicted probabilities\nbinary_calibration_plot &lt;- function(y, phat, nbreaks = 10) {\n  dat &lt;- tibble(y = y, phat = phat) |&gt;\n    mutate(bins = cut_number(phat, n = nbreaks))\n  midpts &lt;- quantile(dat$phat, seq(0, 1, length.out = nbreaks + 1), na.rm = TRUE)\n  midpts &lt;- midpts[-length(midpts)] + diff(midpts) / 2\n  sum_dat &lt;- dat |&gt;\n    group_by(bins) |&gt;\n    summarise(\n      p = mean(y, na.rm = TRUE),\n      se = sqrt(p * (1 - p) / n())\n    ) |&gt;\n    arrange(p)\n  sum_dat$x &lt;- midpts\n\n  ggplot(sum_dat, aes(x = x)) +\n    geom_errorbar(aes(ymin = pmax(p - 1.96 * se, 0), ymax = pmin(p + 1.96 * se, 1))) +\n    geom_point(aes(y = p), colour = blue) +\n    geom_abline(slope = 1, intercept = 0, colour = orange) +\n    ylab(\"observed frequency\") +\n    xlab(\"average predicted probability\") +\n    coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +\n    geom_rug(data = dat, aes(x = phat), sides = \"b\")\n}"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#how-to-stop-large-unstable-values-of-widehatbeta",
-    "href": "schedule/slides/08-ridge-regression.html#how-to-stop-large-unstable-values-of-widehatbeta",
+    "objectID": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
+    "href": "schedule/slides/00-classification-losses.html#amazingly-well-calibrated",
     "title": "UBC Stat406 2024W",
-    "section": "How to stop large, unstable values of \\(\\widehat{\\beta}\\)?",
-    "text": "How to stop large, unstable values of \\(\\widehat{\\beta}\\)?\nIdea: constrain the values of \\(\\beta\\) to be small. For \\(s &gt; 0\\): \\[\n\\minimize_\\beta \\underbrace{\\frac{1}{n}\\|\\y - \\X\\beta\\|_2^2}_{\\text{objective function}} \\quad \\st \\underbrace{\\|\\beta\\|_2^2 &lt; s}_{\\text{constraint}}.\n\\]\nRecall, for a vector \\(\\beta \\in \\R^p\\)\n\n\\(\\ell_2\\)-norm\n\n\\(\\|\\beta\\|_2 = \\sqrt{\\beta_1^2 + \\beta_2^2 + \\dots + \\beta_p^2} = \\left(\\sum_{j=1}^p |\\beta_j|^2\\right)^{1/2}\\) (so \\(\\|\\beta\\|_2^2 = \\sum_j \\beta_j^2\\))\n\n\n\nCompare this to ordinary least squares:\n\\[\n\\minimize_\\beta \\underbrace{\\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2}_{\\text{same objective}}\n\\quad \\st \\underbrace{\\beta \\in \\R^p}_{\\textbf{no constraint}}\n\\]"
+    "section": "Amazingly well-calibrated",
+    "text": "Amazingly well-calibrated\n\nbinary_calibration_plot(dat$y, dat$phat, 20L)"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#geometry-of-constrained-regression-contours",
-    "href": "schedule/slides/08-ridge-regression.html#geometry-of-constrained-regression-contours",
+    "objectID": "schedule/slides/00-classification-losses.html#less-well-calibrated",
+    "href": "schedule/slides/00-classification-losses.html#less-well-calibrated",
     "title": "UBC Stat406 2024W",
-    "section": "Geometry of constrained regression (contours)",
-    "text": "Geometry of constrained regression (contours)\n\n\nCode\nlibrary(mvtnorm)\nnorm_ball &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- tibble(x = cos(tg), b = (1 - abs(x)^q)^(1 / q), bm = -b) |&gt;\n    pivot_longer(-x, values_to = \"y\")\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipse_data &lt;- function(\n  n = 75, xlim = c(-2, 3), ylim = c(-2, 3),\n  mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  expand_grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)) |&gt;\n    rowwise() |&gt;\n    mutate(z = dmvnorm(c(x, y), mean, Sigma))\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6, niter = 20) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  feasible &lt;- (ed$x^q + ed$y^q)^(1 / q) &lt;= 1\n  best &lt;- ed[feasible, ]\n  best[which.max(best$z), ]\n}\n\n\nnb &lt;- norm_ball(2)\ned &lt;- ellipse_data()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 2)\nggplot(nb, aes(x, y)) +\n  xlim(-2, 2) +\n  ylim(-2, 2) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal() +\n  geom_label(\n    data = bols,\n    mapping = aes(label = bquote(\"hat(beta)[ols]\")),\n    parse = TRUE, \n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  theme_bw(base_size = 24) +\n  geom_label(\n    data = bhat,\n    mapping = aes(label = bquote(\"hat(beta)[s]^R\")),\n    parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )"
+    "section": "Less well-calibrated",
+    "text": "Less well-calibrated"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression",
+    "objectID": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
+    "href": "schedule/slides/00-classification-losses.html#true-positive-false-negative-sensitivity-specificity",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression",
-    "text": "Ridge regression\nAn equivalent way to write\n\\[\\brt = \\argmin_{\\beta} \\frac{1}{n}\\|\\y - \\X\\beta\\|_2^2 \\st  || \\beta ||_2^2 \\leq s\\]\nis as a regularized (or penalized) optimization with regularization weight \\(\\lambda\\):\n\\[\\brl = \\argmin_{ \\beta} \\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2 + \\lambda || \\beta ||_2^2.\\]\nFor every \\(\\lambda\\) there is a unique \\(s\\) (and vice versa) that makes \\(\\brt = \\brl\\). We will work with \\(\\lambda\\)."
+    "section": "True positive, false negative, sensitivity, specificity",
+    "text": "True positive, false negative, sensitivity, specificity\n\nTrue positive rate\n\n# correct predict positive / # actual positive (1 - FNR)\n\nFalse negative rate\n\n# incorrect predict negative / # actual positive (1 - TPR), Type II Error\n\nTrue negative rate\n\n# correct predict negative / # actual negative\n\nFalse positive rate\n\n# incorrect predict positive / # actual negative (1 - TNR), Type I Error\n\nSensitivity\n\nTPR, 1 - Type II error\n\nSpecificity\n\nTNR, 1 - Type I error"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-1",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-1",
+    "objectID": "schedule/slides/00-classification-losses.html#decision-making",
+    "href": "schedule/slides/00-classification-losses.html#decision-making",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression",
-    "text": "Ridge regression\n\\[\\brl = \\argmin_{ \\beta} \\frac{1}{n}\\|\\y-\\X\\beta\\|_2^2 + \\lambda || \\beta ||_2^2\\]\nObserve:\n\n\\(\\lambda = 0\\) makes \\(\\brl = \\bls\\)\n\\(\\lambda \\to\\infty\\) makes \\(\\brl \\to 0\\)\nAny \\(0 &lt; \\lambda &lt; \\infty\\) penalizes larger values of \\(\\beta\\), effectively shrinking them.\n\\(\\lambda\\) is a tuning parameter: we need to pick it"
+    "section": "Decision making",
+    "text": "Decision making\nGiven a logistic regression output \\(\\hat P(Y \\mid X) = 0.56\\), should we assign \\(\\hat Y = 1\\) or \\(\\hat Y = 0\\)?\nE.g. \\(P(Y=1 \\mid X)\\) is predicted probability that email \\(X\\) is spam.\nDo we send it to the spam folder (\\(\\hat Y=1\\)) or the inbox (\\(\\hat Y=0\\))?\n\nSo far we’ve been making the “decision” \\(\\hat Y=1\\) if \\(\\hat P(Y=1 \\mid X) &gt; \\hat P(Y=0 \\mid X)\\)\ni.e. \\(\\hat Y = \\begin{cases} 1 & \\hat P(Y=1 \\mid X) &gt; 0.5 \\\\ 0 & \\mathrm{o.w.} \\end{cases}\\).\nBut maybe (for our application) a “better” decision is \\[\\hat Y = \\begin{cases} 1 & \\hat P(Y=1 \\mid X) &gt; t \\\\ 0 & \\mathrm{o.w.} \\end{cases}\\]"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#example-data",
-    "href": "schedule/slides/08-ridge-regression.html#example-data",
+    "objectID": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
+    "href": "schedule/slides/00-classification-losses.html#roc-and-thresholds",
     "title": "UBC Stat406 2024W",
-    "section": "Example data",
-    "text": "Example data\nprostate data from [ESL]\n\ndata(prostate, package = \"ElemStatLearn\")\nprostate |&gt; as_tibble()\n\n# A tibble: 97 × 10\n   lcavol lweight   age   lbph   svi   lcp gleason pgg45   lpsa train\n    &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;lgl&gt;\n 1 -0.580    2.77    50 -1.39      0 -1.39       6     0 -0.431 TRUE \n 2 -0.994    3.32    58 -1.39      0 -1.39       6     0 -0.163 TRUE \n 3 -0.511    2.69    74 -1.39      0 -1.39       7    20 -0.163 TRUE \n 4 -1.20     3.28    58 -1.39      0 -1.39       6     0 -0.163 TRUE \n 5  0.751    3.43    62 -1.39      0 -1.39       6     0  0.372 TRUE \n 6 -1.05     3.23    50 -1.39      0 -1.39       6     0  0.765 TRUE \n 7  0.737    3.47    64  0.615     0 -1.39       6     0  0.765 FALSE\n 8  0.693    3.54    58  1.54      0 -1.39       6     0  0.854 TRUE \n 9 -0.777    3.54    47 -1.39      0 -1.39       6     0  1.05  FALSE\n10  0.223    3.24    63 -1.39      0 -1.39       6     0  1.05  FALSE\n# ℹ 87 more rows\n\n\n\nUse lpsa as response."
+    "section": "ROC and thresholds",
+    "text": "ROC and thresholds\n\nROC (Receiver Operating Characteristic) Curve\n\nTPR (sensitivity) vs. FPR (1 - specificity)\n\n\nEach point corresponds to a different \\(0 \\leq t \\leq 1\\).\n\nAUC (Area under the curve)\n\nIntegral of ROC. Closer to 1 is better.\n\n\n\n\nroc &lt;- function(prediction, y) {\n  op &lt;- order(prediction, decreasing = TRUE)\n  preds &lt;- prediction[op]\n  y &lt;- y[op]\n  noty &lt;- 1 - y\n  if (any(duplicated(preds))) {\n    y &lt;- rev(tapply(y, preds, sum))\n    noty &lt;- rev(tapply(noty, preds, sum))\n  }\n  tibble(\n    FPR = cumsum(noty) / sum(noty),\n    TPR = cumsum(y) / sum(y)\n  )\n}\n\nggplot(roc(dat$phat, dat$y), aes(FPR, TPR)) +\n  geom_step(colour = blue, size = 2) +\n  geom_abline(slope = 1, intercept = 0)"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-path",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-path",
+    "objectID": "schedule/slides/00-classification-losses.html#other-stuff",
+    "href": "schedule/slides/00-classification-losses.html#other-stuff",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression path",
-    "text": "Ridge regression path\nWe can look at coefficients as we vary \\(\\lambda\\) (a “path” or “coefficient trace”)\n\nY &lt;- prostate$lpsa\nX &lt;- model.matrix(~ ., data = prostate |&gt; dplyr::select(-train, -lpsa))\nlibrary(glmnet)\nridge &lt;- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)\nplot(ridge, xvar = \"lambda\", lwd = 3)\n\n\nModel selection: choose some \\(\\lambda\\) (a vertical line on this plot)"
+    "section": "Other stuff",
+    "text": "Other stuff\n\n\nSource: worth exploring Wikipedia"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-closed-form",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-closed-form",
+    "objectID": "schedule/slides/20-boosting.html#section",
+    "href": "schedule/slides/20-boosting.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression: closed-form",
-    "text": "Ridge regression: closed-form\nRidge regression has a closed-form solution like OLS (set the derivative in \\(\\beta\\) to 0):\n\\[\\brl = (\\X^\\top\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top \\y\\]\nCompare to OLS:\n\\[\\bls = (\\X^\\top \\X)^{-1}\\X^\\top \\y\\]\n\nWhat does the \\(+\\lambda I\\) do?\nWhat about bias and variance?\nIs \\(\\brl\\) faster/slower/neither to compute?\nIs \\(\\brl\\) more/less numerically stable to compute?"
+    "section": "20 Boosting",
+    "text": "20 Boosting\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 02 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-bias-and-variance",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-bias-and-variance",
+    "objectID": "schedule/slides/20-boosting.html#last-time",
+    "href": "schedule/slides/20-boosting.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression: bias and variance",
-    "text": "Ridge regression: bias and variance\nRidge regression has a closed-form solution like OLS (set the derivative in \\(\\beta\\) to 0):\n\\[\\brl = (\\X^\\top\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top \\y\\]\n\nbias: \\(\\E[\\brl | \\X] = (\\X^\\top\\X + \\lambda I)^{-1}\\X^\\top \\X\\beta \\neq \\beta\\)\nvariance: \\(\\Var{\\brl \\mid \\X} = \\sigma^2 (\\X^\\top\\X + \\lambda I)^{-1}\\X^\\top \\X(\\X^\\top\\X + \\lambda I)^{-1}\\)\n\n\nUsing the SVD \\(\\X = UDV^T\\), \\(\\Var{\\brl \\mid \\X} = \\sigma^2 VG V^\\top\\) where \\(G\\) is diagonal with entries\n\\[ g_j = \\frac{d_j^2}{(d_j^2 + \\lambda)^2} \\qquad \\left(\\text{compare to OLS:} \\quad g_j = \\frac{1}{d_j^{2}} \\right)\\]\nMitigates the issue of multicollinearity (ill-conditioned \\(\\X\\))!"
+    "section": "Last time",
+    "text": "Last time\nWe learned about bagging, for averaging low-bias / high-variance estimators.\nToday, we examine it’s opposite: Boosting.\nBoosting also combines estimators, but it combines high-bias / low-variance estimators.\nBoosting has a number of flavours. And if you Google descriptions, most are wrong.\nFor a deep (and accurate) treatment, see [ESL] Chapter 10\n\nWe’ll discuss 2 flavours: AdaBoost and Gradient Boosting\nNeither requires a tree, but that’s the typical usage.\nBoosting needs a “weak learner”, so small trees (stumps) are natural."
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#tuning-the-regularization-weight-lambda",
-    "href": "schedule/slides/08-ridge-regression.html#tuning-the-regularization-weight-lambda",
+    "objectID": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
+    "href": "schedule/slides/20-boosting.html#adaboost-intuition-for-classification",
     "title": "UBC Stat406 2024W",
-    "section": "Tuning the regularization weight \\(\\lambda\\)",
-    "text": "Tuning the regularization weight \\(\\lambda\\)\nUse cross-validation (it’s built into glmnet if you use cv.glmnet!)\nplot shows mean CV estimate \\(\\pm\\) standard error\nLeft line is minimum risk estimate; right is the largest \\(\\lambda\\) within 1\\(\\sigma\\)\n\nridge &lt;- cv.glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)\nplot(ridge, main = \"Ridge\")"
+    "section": "AdaBoost intuition (for classification)",
+    "text": "AdaBoost intuition (for classification)\nAt each iteration, we weight the observations.\nObservations that are currently misclassified, get higher weights.\nSo on the next iteration, we’ll try harder to correctly classify our mistakes.\nThe number of iterations must be chosen."
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#ridge-regression-summary",
-    "href": "schedule/slides/08-ridge-regression.html#ridge-regression-summary",
+    "objectID": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
+    "href": "schedule/slides/20-boosting.html#adaboost-freund-and-schapire-generic",
     "title": "UBC Stat406 2024W",
-    "section": "Ridge regression: summary",
-    "text": "Ridge regression: summary\nRidge regression addresses multicollinearity by preventing division by near-zero numbers\n\nConclusion\n\n\\(\\bls = (\\X^{\\top}\\X)^{-1}\\X^\\top \\y\\) can be unstable, while \\(\\brl=(\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1}\\X^\\top\\y\\) is not.\n\nAside\n\nEngineering approach to solving linear systems is to always do this with small \\(\\lambda\\). The thinking is about the numerics rather than the statistics.\n\n\nWhich \\(\\lambda\\) to use?\n\nComputational\n\nUse CV and pick the \\(\\lambda\\) that makes this smallest (maybe within \\(1\\sigma\\)).\n\nIntuition (bias)\n\nAs \\(\\lambda\\rightarrow\\infty\\), bias ⬆\n\nIntuition (variance)\n\nAs \\(\\lambda\\rightarrow\\infty\\), variance ⬇"
+    "section": "AdaBoost (Freund and Schapire, generic)",
+    "text": "AdaBoost (Freund and Schapire, generic)\nLet \\(G(x, \\theta)\\) be any weak learner\n⛭ imagine a tree with one split: then \\(\\theta=\\) (feature, split point)\nAlgorithm (AdaBoost) 🛠️\n\nSet observation weights \\(w_i=1/n\\).\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nEstimate the classifier \\(G(x,\\theta_m)\\) using weights \\(w_i\\)\nCalculate it’s weighted error \\(\\textrm{err}_m = \\sum_{i=1}^n w_i I(y_i \\neq G(x_i, \\theta_m)) / \\sum w_i\\)\nSet \\(\\alpha_m = \\log((1-\\textrm{err}_m)/\\text{err}_m)\\)\nUpdate \\(w_i \\leftarrow w_i \\exp(\\alpha_m I(y_i \\neq G(x_i,\\theta_m)))\\)\n\nFinal classifier is \\(G(x) = \\textrm{sign}\\left( \\sum_{m=1}^M \\alpha_m G(x, \\theta_m)\\right)\\)"
   },
   {
-    "objectID": "schedule/slides/08-ridge-regression.html#regularization-for-variable-selection",
-    "href": "schedule/slides/08-ridge-regression.html#regularization-for-variable-selection",
+    "objectID": "schedule/slides/20-boosting.html#using-mobility-data-again",
+    "href": "schedule/slides/20-boosting.html#using-mobility-data-again",
     "title": "UBC Stat406 2024W",
-    "section": "Regularization for variable selection?",
-    "text": "Regularization for variable selection?\nRidge regression is a regularized approach to prediction.\n\nnice bias/variance tradeoff\nclosed-form / easy-to-compute solution\nno predictor variable selection.\n\n(NB: picking a \\(\\lambda\\) is still model selection)\n\n\nIs there a regularization approach to variable selection?\n\n\ne.g., best (in-sample) linear regression model of size \\(s\\):\n\n\\(\\minimize \\frac{1}{n}||\\y-\\X\\beta||_2^2 \\ \\st\\ (\\text{\\# of nonzero $\\beta_j$}) \\leq s\\)\n\n\nThat is a super nasty optimization. What to do?…"
+    "section": "Using mobility data again",
+    "text": "Using mobility data again\n\n\nCode\nlibrary(kableExtra)\nlibrary(randomForest)\nmob &lt;- Stat406::mobility |&gt;\n  mutate(mobile = as.factor(Mobility &gt; .1)) |&gt;\n  select(-ID, -Name, -Mobility, -State) |&gt;\n  drop_na()\nn &lt;- nrow(mob)\ntrainidx &lt;- sample.int(n, floor(n * .75))\ntestidx &lt;- setdiff(1:n, trainidx)\ntrain &lt;- mob[trainidx, ]\ntest &lt;- mob[testidx, ]\nrf &lt;- randomForest(mobile ~ ., data = train)\nbag &lt;- randomForest(mobile ~ ., data = train, mtry = ncol(mob) - 1)\npreds &lt;- tibble(truth = test$mobile, rf = predict(rf, test), bag = predict(bag, test))\n\n\n\n\nlibrary(gbm)\ntrain_boost &lt;- train |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\n# needs {0, 1} responses\ntest_boost &lt;- test |&gt;\n  mutate(mobile = as.integer(mobile) - 1)\nadab &lt;- gbm(\n  mobile ~ .,\n  data = train_boost,\n  n.trees = 500,\n  distribution = \"adaboost\"\n)\npreds$adab &lt;- as.numeric(\n  predict(adab, test_boost) &gt; 0\n)\npar(mar = c(5, 11, 0, 1))\ns &lt;- summary(adab, las = 1)"
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#section",
-    "href": "schedule/slides/00-quiz-0-wrap.html#section",
+    "objectID": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
+    "href": "schedule/slides/20-boosting.html#forward-stagewise-additive-modeling-fsam-completely-generic",
     "title": "UBC Stat406 2024W",
-    "section": "00 Quiz 0 fun",
-    "text": "00 Quiz 0 fun\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 10 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "Forward stagewise additive modeling (FSAM, completely generic)",
+    "text": "Forward stagewise additive modeling (FSAM, completely generic)\nAlgorithm 🛠️\n\nSet initial predictor \\(f_0(x)=0\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute \\((\\beta_m, \\theta_m) = \\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i,\\ \\theta)\\right)\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\beta_m G(x,\\ \\theta_m)\\)\n\nFinal classifier is \\(G(x, \\theta_M) = \\textrm{sign}\\left( f_M(x) \\right)\\)\n\nHere, \\(L\\) is a loss function that measures prediction accuracy\n\n\nIf (1) \\(L(y,\\ f(x))= \\exp(-y f(x))\\), (2) \\(G\\) is a classifier, and WLOG \\(y \\in \\{-1, 1\\}\\)\n\nFSAM is equivalent to AdaBoost. Proven 5 years later (Friedman, Hastie, and Tibshirani 2000)."
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#why-this-class",
-    "href": "schedule/slides/00-quiz-0-wrap.html#why-this-class",
+    "objectID": "schedule/slides/20-boosting.html#so-what",
+    "href": "schedule/slides/20-boosting.html#so-what",
     "title": "UBC Stat406 2024W",
-    "section": "Why this class?",
-    "text": "Why this class?\n\n“This is a required course”\n“Heard it’s fun!”\n“I want to graduate”\n“8am!” (/s)\n“I want to learn a lot about ML.”\n“I want to dig deeper after taking 306.”\n“I want to get… more comfortable with R.”\n“At first it was because everyone I knew was taking it.”\n“Practical skills in preperation for future careers”"
+    "section": "So what?",
+    "text": "So what?\nIt turns out that “exponential loss” \\(L(y,\\ f(x))= \\exp(-y f(x))\\) is not very robust.\nHere are some other loss functions for 2-class classification\n\n\nWant losses which penalize negative margin, but not positive margins.\nRobust means don’t over-penalize large negatives"
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#syllabus-q",
-    "href": "schedule/slides/00-quiz-0-wrap.html#syllabus-q",
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting",
     "title": "UBC Stat406 2024W",
-    "section": "Syllabus Q",
-    "text": "Syllabus Q"
+    "section": "Gradient boosting",
+    "text": "Gradient boosting\nIn the forward stagewise algorithm, we solved a minimization and then made an update:\n\\[f_m(x) = f_{m-1}(x) + \\beta_m G(x, \\theta_m)\\]\nFor most loss functions \\(L\\) / procedures \\(G\\) this optimization is difficult: \\[\\argmin_{\\beta, \\theta} \\sum_{i=1}^n L\\left(y_i,\\ f_{m-1}(x_i) + \\beta G(x_i, \\theta)\\right)\\]\n💡 Just take one gradient step toward the minimum 💡\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nThis is called Gradient boosting\nNotice how similar the update steps look."
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#programming-languages",
-    "href": "schedule/slides/00-quiz-0-wrap.html#programming-languages",
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-1",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-1",
     "title": "UBC Stat406 2024W",
-    "section": "Programming languages",
-    "text": "Programming languages"
+    "section": "Gradient boosting",
+    "text": "Gradient boosting\n\\[f_m(x) = f_{m-1}(x) -\\gamma_m \\nabla L(y,f_{m-1}(x)) = f_{m-1}(x) +\\gamma_m \\left(-\\nabla L(y,f_{m-1}(x))\\right)\\]\nGradient boosting goes only part of the way toward the minimum at each \\(m\\).\nThis has two advantages:\n\nSince we’re not fitting \\(\\beta, \\theta\\) to the data as “hard”, the learner is weaker.\nThis procedure is computationally much simpler.\n\nSimpler because we only require the gradient at one value, don’t have to fully optimize."
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#plans",
-    "href": "schedule/slides/00-quiz-0-wrap.html#plans",
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-algorithm",
     "title": "UBC Stat406 2024W",
-    "section": "Plans",
-    "text": "Plans"
+    "section": "Gradient boosting – Algorithm 🛠️",
+    "text": "Gradient boosting – Algorithm 🛠️\n\nSet initial predictor \\(f_0(x)=\\overline{\\y}\\)\nUntil we quit ( \\(m&lt;M\\) iterations )\n\nCompute pseudo-residuals (what is the gradient of \\(L(y,f)=(y-f(x))^2\\)?) \\[r_i = -\\frac{\\partial L(y_i,f(x_i))}{\\partial f(x_i)}\\bigg|_{f(x_i)=f_{m-1}(x_i)}\\]\nEstimate weak learner, \\(G(x, \\theta_m)\\), with the training set \\(\\{r_i, x_i\\}\\).\nFind the step size \\(\\gamma_m = \\argmin_\\gamma \\sum_{i=1}^n L(y_i, f_{m-1}(x_i) + \\gamma G(x_i, \\theta_m))\\)\nSet \\(f_m(x) = f_{m-1}(x) + \\gamma_m G(x, \\theta_m)\\)\n\nFinal predictor is \\(f_M(x)\\)."
   },
   {
-    "objectID": "schedule/slides/00-quiz-0-wrap.html#grade-predictions",
-    "href": "schedule/slides/00-quiz-0-wrap.html#grade-predictions",
+    "objectID": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
+    "href": "schedule/slides/20-boosting.html#gradient-boosting-modifications",
     "title": "UBC Stat406 2024W",
-    "section": "Grade predictions",
-    "text": "Grade predictions\n\n\n5 people say 100%\n18 say 90%\n20 say 85%\n41 say 80%\n\n\n\n\nUBC Stat 406 - 2024"
+    "section": "Gradient boosting modifications",
+    "text": "Gradient boosting modifications\n\ngrad_boost &lt;- gbm(mobile ~ ., data = train_boost, n.trees = 500, distribution = \"bernoulli\")\n\n\nTypically done with “small” trees, not stumps because of the gradient. You can specify the size. Usually 4-8 terminal nodes is recommended (more gives more interactions between predictors)\nUsually modify the gradient step to \\(f_m(x) = f_{m-1}(x) + \\gamma_m \\alpha G(x,\\theta_m)\\) with \\(0&lt;\\alpha&lt;1\\). Helps to keep from fitting too hard.\nOften combined with Bagging so that each step is fit using a bootstrap resample of the data. Gives us out-of-bag options.\nThere are many other extensions, notably XGBoost."
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#results-for-mobility",
+    "href": "schedule/slides/20-boosting.html#results-for-mobility",
+    "title": "UBC Stat406 2024W",
+    "section": "Results for mobility",
+    "text": "Results for mobility\n\n\nCode\nlibrary(cowplot)\nboost_preds &lt;- tibble(\n  adaboost = predict(adab, test_boost),\n  gbm = predict(grad_boost, test_boost),\n  truth = test$mobile\n)\ng1 &lt;- ggplot(boost_preds, aes(adaboost, gbm, color = as.factor(truth))) +\n  geom_text(aes(label = as.integer(truth) - 1)) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  xlab(\"adaboost margin\") +\n  ylab(\"gbm margin\") +\n  theme(legend.position = \"none\") +\n  scale_color_manual(values = c(\"orange\", \"blue\")) +\n  annotate(\"text\",\n    x = -4, y = 5, color = red,\n    label = paste(\n      \"gbm error\\n\",\n      round(with(boost_preds, mean((gbm &gt; 0) != truth)), 2)\n    )\n  ) +\n  annotate(\"text\",\n    x = 4, y = -5, color = red,\n    label = paste(\"adaboost error\\n\", round(with(boost_preds, mean((adaboost &gt; 0) != truth)), 2))\n  )\nboost_oob &lt;- tibble(\n  adaboost = adab$oobag.improve, gbm = grad_boost$oobag.improve,\n  ntrees = 1:500\n)\ng2 &lt;- boost_oob %&gt;%\n  pivot_longer(-ntrees, values_to = \"OOB_Error\") %&gt;%\n  ggplot(aes(x = ntrees, y = OOB_Error, color = name)) +\n  geom_line() +\n  scale_color_manual(values = c(orange, blue)) +\n  theme(legend.title = element_blank())\nplot_grid(g1, g2, rel_widths = c(.4, .6))"
+  },
+  {
+    "objectID": "schedule/slides/20-boosting.html#major-takeaways",
+    "href": "schedule/slides/20-boosting.html#major-takeaways",
+    "title": "UBC Stat406 2024W",
+    "section": "Major takeaways",
+    "text": "Major takeaways\n\nTwo flavours of Boosting\n\nAdaBoost (the original) and\ngradient boosting (easier and more computationally friendly)\n\nThe connection is “Forward stagewise additive modelling” (AdaBoost is a special case)\nThe connection reveals that AdaBoost “isn’t robust because it uses exponential loss” (squared error is even worse)\nGradient boosting is a computationally easier version of FSAM\nAll use weak learners (compare to Bagging)\nThink about the Bias-Variance implications\nYou can use these for regression or classification\nYou can do this with other weak learners besides trees."
   },
   {
     "objectID": "schedule/slides/15-LDA-and-QDA.html#section",
@@ -4459,116 +4417,144 @@
     "text": "How do we decide which model is better?\n\n\n\nGoodness of fit versus prediction power\n\n\nmap( # smaller AIC is better\n  list(full = full, reduced = reduced),\n  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq)\n)\n\n$full\n          aic           rsq \n-1482.5981023     0.7807509 \n\n$reduced\n         aic          rsq \n-1466.088492     0.718245 \n\n\n\nUse both models to predict Mobility\nCompare both sets of predictions\n\n\n\n\nmses &lt;- function(preds, obs) round(mean((obs - preds)^2), 5)\nc(\n  full = mses(\n    predict(full, newdata = test),\n    test$Mobility\n  ),\n  reduced = mses(\n    predict(reduced, newdata = test),\n    test$Mobility\n  )\n)\n\n   full reduced \n0.00072 0.00084 \n\n\n\n\nCode\ntest$full &lt;- predict(full, newdata = test)\ntest$reduced &lt;- predict(reduced, newdata = test)\ntest |&gt;\n  select(Mobility, full, reduced) |&gt;\n  pivot_longer(-Mobility) |&gt;\n  ggplot(aes(Mobility, value)) +\n  geom_point(color = \"orange\") +\n  facet_wrap(~name, 2) +\n  xlab(\"observed mobility\") +\n  ylab(\"predicted mobility\") +\n  geom_abline(slope = 1, intercept = 0, colour = \"darkblue\")"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#section",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#section",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
     "title": "UBC Stat406 2024W",
-    "section": "17 Nonlinear classifiers",
-    "text": "17 Nonlinear classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 21 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nIn last class’ clicker question, we were trying to predict income from a \\(p=2\\), \\(n=50000\\) dataset. I claimed that the OLS predictor is high bias in this example.\n\n\nBut Trevor proved that the OLS predictor is unbiased (via the following proof):\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\nB. Then \\(E[\\hat \\beta_\\mathrm{ols}] = E[ E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] ]\\)\nC. \\(E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top E[ \\mathbf y \\mid \\mathbf X]\\)\nD. \\(E[ \\mathbf y \\mid \\mathbf X] = \\mathbf X \\beta\\)\nE. So \\(E[\\hat \\beta_\\mathrm{ols}] - \\beta = E[(\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf X \\beta] - \\beta = \\beta - \\beta = 0\\).\n\nWhy did this proof not apply to the clicker question?\n(Which step of this proof breaks down?)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#last-time",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#last-time",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
     "title": "UBC Stat406 2024W",
-    "section": "Last time",
-    "text": "Last time\nWe reviewed logistic regression\n\\[\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\nPr(Y = 0 \\given X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\end{aligned}\\]"
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nWhich step did the proof break down?\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\n\nThis assumption does not hold.\nIt is (almost certainly) not the case that Income ~ Age + Education.\n\n\nIn reality, \\(y \\sim f(x) + \\epsilon\\) where \\(f(x)\\) is some potentially nonlinear function. So\n\\[\n\\begin{align}\nE[\\hat \\beta_\\mathrm{ols}] = E[E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X ]]\n= E[ (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X f(\\mathbf X) ] \\ne \\beta\n\\end{align}\n\\]\nIn statistics speak, our model is misspecified.\nRidge/lasso will always increase bias and decrease variance, even under misspecification."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
+    "href": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
     "title": "UBC Stat406 2024W",
-    "section": "Make it nonlinear",
-    "text": "Make it nonlinear\nWe can make LDA or logistic regression have non-linear decision boundaries by mapping the features to a higher dimension (just like with regular regression)\nSay:\nPolynomials\n\\((x_1, x_2) \\mapsto \\left(1,\\ x_1,\\ x_1^2,\\ x_2,\\ x_2^2,\\ x_1 x_2\\right)\\)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2)) |&gt; mutate(y = as.factor(y))\nlogit_poly &lt;- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = \"binomial\")\nlda_poly &lt;- lda(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1)"
+    "section": "2) Why does ridge regression shrink varinace?",
+    "text": "2) Why does ridge regression shrink varinace?\nMathematically\n\nVariance of OLS: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X)^{-1} ]\\)\nVariance of ridge regression: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X + \\lambda \\mathbf I)^{-1} ]\\)\n\n\n\nIntuitively…\nThink about the constrained optimization problem pictorally.\nWhat happens if we had a different dataset?"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#section",
+    "href": "schedule/slides/11-kernel-smoothers.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "Visualizing the classification boundary",
-    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(cowplot)\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), x2 = seq(-2.5, 3, length.out = 100))\npts_logit &lt;- predict(logit_poly, gr)\npts_lda &lt;- predict(lda_poly, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_logit), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = \"log odds\") +\n  ggtitle(\"Polynomial logit\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\ng1 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_lda$x), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = bquote(delta[1] - delta[0])) +\n  ggtitle(\"Polynomial lda\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\nplot_grid(g0, g1)\n\n\n\nA linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions."
+    "section": "11 Local methods",
+    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 08 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#trees",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#trees",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
+    "href": "schedule/slides/11-kernel-smoothers.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "Trees",
-    "text": "Trees\n\n\nWe saw regression trees last module\nClassification trees are\n\nMore natural\nSlightly different computationally\n\nEverything else is pretty much the same"
+    "section": "Last time…",
+    "text": "Last time…\nWe looked at feature maps as a way to do nonlinear regression.\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNow we examine a nonparametric alternative\nSuppose I just look at the “neighbours” of some point (based on the \\(x\\)-values)\nI just average the \\(y\\)’s at those locations together"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
+    "href": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
     "title": "UBC Stat406 2024W",
-    "section": "Axis-parallel splits",
-    "text": "Axis-parallel splits\nLike with regression trees, classification trees operate by greedily splitting the predictor space\n\n\n\nnames(bakeoff)\n\n [1] \"winners\"                  \n [2] \"series\"                   \n [3] \"age\"                      \n [4] \"occupation\"               \n [5] \"hometown\"                 \n [6] \"percent_star\"             \n [7] \"percent_technical_wins\"   \n [8] \"percent_technical_bottom3\"\n [9] \"percent_technical_top3\"   \n[10] \"technical_highest\"        \n[11] \"technical_lowest\"         \n[12] \"technical_median\"         \n[13] \"judge1\"                   \n[14] \"judge2\"                   \n[15] \"viewers_7day\"             \n[16] \"viewers_28day\"            \n\n\n\nsmalltree &lt;- tree(\n  winners ~ technical_median + percent_star,\n  data = bakeoff\n)\n\n\n\n\n\nCode\npar(mar = c(5, 5, 0, 0) + .1)\nplot(bakeoff$technical_median, bakeoff$percent_star,\n  pch = c(\"-\", \"+\")[bakeoff$winners + 1], cex = 2, bty = \"n\", las = 1,\n  ylab = \"% star baker\", xlab = \"times above median in technical\",\n  col = orange, cex.axis = 2, cex.lab = 2\n)\npartition.tree(smalltree,\n  add = TRUE, col = blue,\n  ordvars = c(\"technical_median\", \"percent_star\")\n)"
+    "section": "Let’s use 3 neighbours",
+    "text": "Let’s use 3 neighbours\n\n\nCode\nlibrary(cowplot)\ndata(arcuate, package = \"Stat406\")\nset.seed(406406)\narcuate_unif &lt;- arcuate |&gt; slice_sample(n = 40) |&gt; arrange(position)\npt &lt;- 15\nnn &lt;-  3\nseq_range &lt;- function(x, n = 101) seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = n)\nneibs &lt;- sort.int(abs(arcuate_unif$position - arcuate_unif$position[pt]), index.return = TRUE)$ix[1:nn]\narcuate_unif$neighbours = seq_len(40) %in% neibs\ng1 &lt;- ggplot(arcuate_unif, aes(position, fa, colour = neighbours)) + \n  geom_point() +\n  scale_colour_manual(values = c(blue, red)) + \n  geom_vline(xintercept = arcuate_unif$position[pt], colour = red) + \n  annotate(\"rect\", fill = red, alpha = .25, ymin = -Inf, ymax = Inf,\n           xmin = min(arcuate_unif$position[neibs]), \n           xmax = max(arcuate_unif$position[neibs])\n  ) +\n  theme(legend.position = \"none\")\ng2 &lt;- ggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(\n    data = tibble(\n      position = seq_range(arcuate_unif$position),\n      fa = FNN::knn.reg(\n        arcuate_unif$position, matrix(position, ncol = 1),\n        y = arcuate_unif$fa\n      )$pred\n    ),\n    colour = orange, linewidth = 2\n  )\nplot_grid(g1, g2, ncol = 2)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#knn",
     "title": "UBC Stat406 2024W",
-    "section": "When do trees do well?",
-    "text": "When do trees do well?\n\n\n\n\n\n2D example\nTop Row:\ntrue decision boundary is linear\n🍎 linear classifier\n👎 tree with axis-parallel splits\nBottom Row:\ntrue decision boundary is non-linear\n🤮 A linear classifier can’t capture the true decision boundary\n🍎 decision tree is successful."
+    "section": "KNN",
+    "text": "KNN\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata(arcuate, package = \"Stat406\")\nlibrary(FNN)\narcuate_unif &lt;- arcuate |&gt; \n  slice_sample(n = 40) |&gt; \n  arrange(position) \n\nnew_position &lt;- seq(\n  min(arcuate_unif$position), \n  max(arcuate_unif$position),\n  length.out = 101\n)\n\nknn3 &lt;- knn.reg(\n  train = arcuate_unif$position, \n  test = matrix(arcuate_unif$position, ncol = 1), \n  y = arcuate_unif$fa, \n  k = 3\n)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
+    "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
     "title": "UBC Stat406 2024W",
-    "section": "How do we build a tree?",
-    "text": "How do we build a tree?\n\nDivide the predictor space into \\(J\\) non-overlapping regions \\(R_1, \\ldots, R_J\\)\n\n\nthis is done via greedy, recursive binary splitting\n\n\nEvery observation that falls into a given region \\(R_j\\) is given the same prediction\n\n\ndetermined by majority (or plurality) vote in that region.\n\nImportant:\n\nTrees can only make rectangular regions that are aligned with the coordinate axis.\nThe fit is greedy, which means that after a split is made, all further decisions are conditional on that split."
+    "section": "This method is \\(K\\)-nearest neighbours.",
+    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\n\nWhat is the degrees of freedom of KNN, and how does it depend on \\(k\\)?\nHow does \\(k\\) affect the bias/variance?\n\n\n\n\\(\\mathrm{df} = \\tr{\\mathbf S} = n/k\\).\n\\(k = n\\) produces a constant predictor (highest bias, lowest variance).\n\\(k = 1\\) produces a low bias but extremely high variance predictor."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
     "title": "UBC Stat406 2024W",
-    "section": "How do we measure quality of fit?",
-    "text": "How do we measure quality of fit?\nLet \\(p_{mk}\\) be the proportion of training observations in the \\(m^{th}\\) region that are from the \\(k^{th}\\) class.\n\n\n\n\n\n\n\nclassification error rate:\n\\(E = 1 - \\max_k (\\widehat{p}_{mk})\\)\n\n\nGini index:\n\\(G = \\sum_k \\widehat{p}_{mk}(1-\\widehat{p}_{mk})\\)\n\n\ncross-entropy:\n\\(D = -\\sum_k \\widehat{p}_{mk}\\log(\\widehat{p}_{mk})\\)\n\n\n\nBoth Gini and cross-entropy measure the purity of the classifier (small if all \\(p_{mk}\\) are near zero or 1).\nThese are preferred over the classification error rate.\nClassification error is hard to optimize.\nWe build a classifier by growing a tree that minimizes \\(G\\) or \\(D\\)."
+    "section": "Local averages (soft KNN)",
+    "text": "Local averages (soft KNN)\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours.\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\nThe boxes have width 30."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#pruning-the-tree",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#pruning-the-tree",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
+    "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
     "title": "UBC Stat406 2024W",
-    "section": "Pruning the tree",
-    "text": "Pruning the tree\n\nCross-validation can be used to directly prune the tree,\nBut it is computationally expensive (combinatorial complexity).\nInstead, we use weakest link pruning, (Gini version)\n\n\\[\\sum_{m=1}^{|T|} \\sum_{k \\in R_m} \\widehat{p}_{mk}(1-\\widehat{p}_{mk}) + \\alpha |T|\\]\n\n\\(|T|\\) is the number of terminal nodes.\nEssentially, we are trading training fit (first term) with model complexity (second) term (compare to lasso).\nNow, cross-validation can be used to pick \\(\\alpha\\)."
+    "section": "What is a “kernel” smoother?",
+    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\),\n\n\\(K(u) \\geq 0\\),\n\\(\\int K(u) du = 1\\),\n\\(\\int uK(u) du = 0\\).\n\n\n\nThe idea: a kernel takes weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
     "title": "UBC Stat406 2024W",
-    "section": "Advantages and disadvantages of trees (again)",
-    "text": "Advantages and disadvantages of trees (again)\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Trees are highly variable. Small changes in training data \\(\\Longrightarrow\\) big changes in the tree.\nTo fix these last two, we can try to grow many trees and average their performance.\n\nWe do this next module"
+    "section": "Smoothing with the boxcar",
+    "text": "Smoothing with the boxcar\n\n\nCode\ntestpts &lt;- seq(0, 200, length.out = 101)\ndmat &lt;- abs(outer(testpts, arcuate_unif$position, \"-\"))\nS &lt;- (dmat &lt; 15)\nS &lt;- S / rowSums(S)\nboxcar &lt;- tibble(position = testpts, fa = S %*% arcuate_unif$fa)\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(data = boxcar, colour = orange)\n\n\n\nThis one gives the same non-zero weight to all points within \\(\\pm 15\\) range."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
     "title": "UBC Stat406 2024W",
-    "section": "KNN classifiers",
-    "text": "KNN classifiers\n\nWe saw \\(k\\)-nearest neighbors in the last module.\n\n\nlibrary(class)\nknn3 &lt;- knn(dat1[, -1], gr, dat1$y, k = 3)\n\n\n\nCode\ngr$nn03 &lt;- knn3\nggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = knn3), aes(x1, x2, fill = disc), alpha = .5) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, blue), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )"
+    "section": "Other kernels",
+    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird.\nIdeally we would like closer points to have more weight.\n\n\nA more common kernel: the Gaussian kernel\n\\[\nK(u) = \\frac{1}{\\sqrt{2 \\pi \\sigma^2}} \\exp\\left(-\\frac{u^2}{2\\sigma^2}\\right)\n\\]\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting.\n(but all nonzero!!)\n\n\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
     "title": "UBC Stat406 2024W",
-    "section": "Choosing \\(k\\) is very important",
-    "text": "Choosing \\(k\\) is very important\n\n\nCode\nset.seed(406406406)\nks &lt;- c(1, 2, 5, 10, 20)\nnn &lt;- map(ks, ~ as_tibble(knn(dat1[, -1], gr[, 1:2], dat1$y, .x)) |&gt; \n  set_names(sprintf(\"k = %02s\", .x))) |&gt;\n  list_cbind() |&gt;\n  bind_cols(gr)\npg &lt;- pivot_longer(nn, starts_with(\"k =\"), names_to = \"k\", values_to = \"knn\")\n\nggplot(pg, aes(x1, x2)) +\n  geom_raster(aes(fill = knn), alpha = .6) +\n  facet_wrap(~ k) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  geom_point(data = dat1, mapping = aes(x1, x2, shape = as.factor(y)), size = 4) +\n  theme_bw(base_size = 18) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  theme(\n    legend.title = element_blank(),\n    legend.key.height = unit(3, \"cm\")\n  )\n\n\n\n\nHow should we choose \\(k\\)?\nScaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.\nIf there are ties, break randomly. So even \\(k\\) is strange."
+    "section": "Other kernels",
+    "text": "Other kernels\nWhat if I made \\(\\sigma=15\\)?\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 15) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nBefore, points far from \\(x_{15}\\) got very small weights, now they have more influence.\nFor the Gaussian kernel, \\(\\sigma\\) determines something like the “range” of the smoother."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
+    "href": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
     "title": "UBC Stat406 2024W",
-    "section": "knn.cv() (leave one out)",
-    "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
+    "section": "Many Gaussians",
+    "text": "Many Gaussians\nThe following code creates \\(\\mathbf{S}\\) for Gaussian kernel smoothers with different \\(\\sigma\\)\n\ndmat &lt;- as.matrix(dist(x))\nSgauss &lt;- function(sigma) {\n  gg &lt;- dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg), \"/\") # make the rows sum to 1.\n}\n\n\n\nCode\nSgauss &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.\n}\nboxcar$S15 = with(arcuate_unif, Sgauss(15) %*% fa)\nboxcar$S08 = with(arcuate_unif, Sgauss(8) %*% fa)\nboxcar$S30 = with(arcuate_unif, Sgauss(30) %*% fa)\nbc = boxcar %&gt;% select(position, S15, S08, S30) %&gt;% \n  pivot_longer(-position, names_to = \"Sigma\")\nggplot(arcuate_unif, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_line(data = bc, aes(position, value, colour = Sigma), linewidth = 1.5) +\n  scale_colour_brewer(palette = \"Set1\")"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#alternative-using-deviance-loss-i-think-this-is-right",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#alternative-using-deviance-loss-i-think-this-is-right",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
     "title": "UBC Stat406 2024W",
-    "section": "Alternative (using deviance loss, I think this is right)",
-    "text": "Alternative (using deviance loss, I think this is right)\n\n\nCode\ndev &lt;- function(y, prob, prob_min = 1e-5) {\n  y &lt;- as.numeric(as.factor(y)) - 1 # 0/1 valued\n  m &lt;- mean(y)\n  prob_max &lt;- 1 - prob_min\n  prob &lt;- pmin(pmax(prob, prob_min), prob_max)\n  lp &lt;- (1 - y) * log(1 - prob) + y * log(prob)\n  ly &lt;- (1 - y) * log(1 - m) + y * log(m)\n  2 * (ly - lp)\n}\nknn.cv_probs &lt;- function(train, cl, k = 1) {\n  o &lt;- knn.cv(train, cl, k = k, prob = TRUE)\n  p &lt;- attr(o, \"prob\")\n  o &lt;- as.numeric(as.factor(o)) - 1\n  p[o == 0] &lt;- 1 - p[o == 0]\n  p\n}\ndev_err &lt;- map_dbl(1:kmax, ~ mean(dev(dat1$y, knn.cv_probs(dat1[, -1], dat1$y, k = .x))))"
+    "section": "The bandwidth",
+    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
     "title": "UBC Stat406 2024W",
-    "section": "Final version",
-    "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42"
+    "section": "Choosing the bandwidth",
+    "text": "Choosing the bandwidth\nAs we have discussed, kernel smoothing (and KNN) are linear smoothers\n\\[\\widehat{\\mathbf{y}} = \\mathbf{S}\\mathbf{y}\\]\nThe degrees of freedom is \\(\\textrm{tr}(\\mathbf{S})\\)\nTherefore we can use our model selection criteria from before\n\nUnfortunately, these don’t satisfy the “technical condition”, so cv_nice() doesn’t give LOO-CV"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
+    "title": "UBC Stat406 2024W",
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\nar &lt;- arcuate |&gt; slice_sample(n = 200)\n\ngcv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )\n}\n\nfake_loocv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - diag(S))^2 )\n}\n\ndmat &lt;- as.matrix(dist(ar$position))\nsigmas &lt;- 10^(seq(log10(300), log10(.3), length = 100))\n\ngcvs &lt;- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))\nflcvs &lt;- map_dbl(sigmas, ~ fake_loocv(ar$fa, Sgauss(.x)))\nbest_s &lt;- sigmas[which.min(gcvs)]\nother_s &lt;- sigmas[which.min(flcvs)]\n\nar$smoothed &lt;- Sgauss(best_s) %*% ar$fa\nar$other &lt;- Sgauss(other_s) %*% ar$fa"
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
+    "title": "UBC Stat406 2024W",
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\n\nCode\ng3 &lt;- ggplot(data.frame(sigma = sigmas, gcv = gcvs), aes(sigma, gcv)) +\n  geom_point(colour = blue) +\n  geom_vline(xintercept = best_s, colour = red) +\n  scale_x_log10() +\n  xlab(sprintf(\"Sigma, best is sig = %.2f\", best_s))\ng4 &lt;- ggplot(ar, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(aes(y = smoothed), colour = orange, linewidth = 2)\nplot_grid(g3, g4, nrow = 1)\n\n\n\nI considered \\(\\sigma \\in [0.3,\\ 300]\\) and used \\(3.97\\).\nIt’s too wiggly, to my eye. Typical for GCV."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
+    "title": "UBC Stat406 2024W",
+    "section": "Smoothing manually",
+    "text": "Smoothing manually\nI did Kernel Smoothing “manually”\n\nFor a fixed bandwidth\nCompute the smoothing matrix\nMake the predictions\nRepeat and compute GCV\n\nThe point is to “show how it works”. It’s also really easy."
+  },
+  {
+    "objectID": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
+    "href": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
+    "title": "UBC Stat406 2024W",
+    "section": "R functions / packages",
+    "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#section",
