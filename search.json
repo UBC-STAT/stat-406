@@ -322,396 +322,368 @@
     "text": "What about random forests?\nWhat if we just did random forests instead? Takes a good bit less effort.\n\nlibrary(ranger) # faster version of randomForests\ntrain_images &lt;- t(apply(train_images, 1, c)) # flatten\ntest_images &lt;- t(apply(test_images, 1, c))\ntrain_images &lt;- cbind(train_labels, train_images) |&gt; as_tibble()\n\nWarning: The `x` argument of `as_tibble.matrix()` must have unique column names if\n`.name_repair` is omitted as of tibble 2.0.0.\nℹ Using compatibility `.name_repair`.\n\ntest_images &lt;- cbind(test_labels, test_images) |&gt; as_tibble()\nnames(train_images) &lt;- c(\"cl\", paste0(\"x\", 1:(ncol(train_images) - 1)))\nnames(test_images) &lt;- names(train_images)\ntrain_images$cl &lt;- as.factor(train_images$cl)\ntest_images$cl &lt;- as.factor(test_images$cl)\nrf &lt;- ranger(cl ~ ., data = train_images, num.trees = 100)\npreds &lt;- predict(rf, data = test_images)\n\nThe Test Set accuracy from Random Forests is 88%.\nSlightly better than the Neural Net for my run, but reasonably close."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#section",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#section",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
     "title": "UBC Stat406 2024W",
-    "section": "17 Nonlinear classifiers",
-    "text": "17 Nonlinear classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nIn last class’ clicker question, we were trying to predict income from a \\(p=2\\), \\(n=50000\\) dataset. I claimed that the OLS predictor is high bias in this example.\n\n\nBut Trevor proved that the OLS predictor is unbiased (via the following proof):\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\nB. Then \\(E[\\hat \\beta_\\mathrm{ols}] = E[ E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] ]\\)\nC. \\(E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top E[ \\mathbf y \\mid \\mathbf X]\\)\nD. \\(E[ \\mathbf y \\mid \\mathbf X] = \\mathbf X \\beta\\)\nE. So \\(E[\\hat \\beta_\\mathrm{ols}] - \\beta = E[(\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf X \\beta] - \\beta = \\beta - \\beta = 0\\).\n\nWhy did this proof not apply to the clicker question?\n(Which step of this proof breaks down?)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
     "title": "UBC Stat406 2024W",
-    "section": "Two lectures ago",
-    "text": "Two lectures ago\nWe discussed logistic regression\n\\[\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\nPr(Y = 0 \\given X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\end{aligned}\\]"
+    "section": "1) The Bias of OLS",
+    "text": "1) The Bias of OLS\nWhich step did the proof break down?\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\n\nThis assumption does not hold.\nIt is (almost certainly) not the case that Income ~ Age + Education.\n\n\nIn reality, \\(y \\sim f(x) + \\epsilon\\) where \\(f(x)\\) is some potentially nonlinear function. So\n\\[\n\\begin{align}\nE[\\hat \\beta_\\mathrm{ols}] = E[E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X ]]\n= E[ (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X f(\\mathbf X) ] \\ne \\beta\n\\end{align}\n\\]\nIn statistics speak, our model is misspecified.\nRidge/lasso will always increase bias and decrease variance, even under misspecification."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
+    "href": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
     "title": "UBC Stat406 2024W",
-    "section": "Make it nonlinear",
-    "text": "Make it nonlinear\nWe can make logistic regression have non-linear decision boundaries by mapping the features to a higher dimension (just like with linear regression)\nSay:\nPolynomials\n\\((x_1, x_2) \\mapsto \\left(1,\\ x_1,\\ x_1^2,\\ x_2,\\ x_2^2,\\ x_1 x_2\\right)\\)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2)) |&gt; mutate(y = as.factor(y))\nlogit_poly &lt;- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = \"binomial\")"
+    "section": "2) Why does ridge regression shrink varinace?",
+    "text": "2) Why does ridge regression shrink varinace?\nMathematically\n\nVariance of OLS: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X)^{-1} ]\\)\nVariance of ridge regression: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X + \\lambda \\mathbf I)^{-1} ]\\)\n\n\n\nIntuitively…\nThink about the constrained optimization problem pictorally.\nWhat happens if we had a different dataset?"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#section",
+    "href": "schedule/slides/11-kernel-smoothers.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "Visualizing the classification boundary",
-    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(cowplot)\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), x2 = seq(-2.5, 3, length.out = 100))\npts_logit &lt;- predict(logit_poly, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_logit), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = \"log odds\") +\n  ggtitle(\"Polynomial logit\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\nplot_grid(g0)\n\n\n\nA linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions."
+    "section": "11 Local methods",
+    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 08 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
+    "href": "schedule/slides/11-kernel-smoothers.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "KNN classifiers",
-    "text": "KNN classifiers"
+    "section": "Last time…",
+    "text": "Last time…\nWe looked at feature maps as a way to do nonlinear regression.\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNow we examine a nonparametric alternative\nSuppose I just look at the “neighbours” of some point (based on the \\(x\\)-values)\nI just average the \\(y\\)’s at those locations together"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
+    "href": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
     "title": "UBC Stat406 2024W",
-    "section": "Choosing \\(k\\) is very important",
-    "text": "Choosing \\(k\\) is very important\n\n\nCode\nset.seed(406406406)\nks &lt;- c(1, 2, 5, 10, 20)\nnn &lt;- map(ks, ~ as_tibble(knn(dat1[, -1], gr[, 1:2], dat1$y, .x)) |&gt; \n  set_names(sprintf(\"k = %02s\", .x))) |&gt;\n  list_cbind() |&gt;\n  bind_cols(gr)\npg &lt;- pivot_longer(nn, starts_with(\"k =\"), names_to = \"k\", values_to = \"knn\")\n\nggplot(pg, aes(x1, x2)) +\n  geom_raster(aes(fill = knn), alpha = .6) +\n  facet_wrap(~ k) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  geom_point(data = dat1, mapping = aes(x1, x2, shape = as.factor(y)), size = 4) +\n  theme_bw(base_size = 18) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  theme(\n    legend.title = element_blank(),\n    legend.key.height = unit(3, \"cm\")\n  )\n\n\n\n\nHow should we choose \\(k\\)?\nScaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.\nIf there are ties, break randomly. So even \\(k\\) is strange."
+    "section": "Let’s use 3 neighbours",
+    "text": "Let’s use 3 neighbours\n\n\nCode\nlibrary(cowplot)\ndata(arcuate, package = \"Stat406\")\nset.seed(406406)\narcuate_unif &lt;- arcuate |&gt; slice_sample(n = 40) |&gt; arrange(position)\npt &lt;- 15\nnn &lt;-  3\nseq_range &lt;- function(x, n = 101) seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = n)\nneibs &lt;- sort.int(abs(arcuate_unif$position - arcuate_unif$position[pt]), index.return = TRUE)$ix[1:nn]\narcuate_unif$neighbours = seq_len(40) %in% neibs\ng1 &lt;- ggplot(arcuate_unif, aes(position, fa, colour = neighbours)) + \n  geom_point() +\n  scale_colour_manual(values = c(blue, red)) + \n  geom_vline(xintercept = arcuate_unif$position[pt], colour = red) + \n  annotate(\"rect\", fill = red, alpha = .25, ymin = -Inf, ymax = Inf,\n           xmin = min(arcuate_unif$position[neibs]), \n           xmax = max(arcuate_unif$position[neibs])\n  ) +\n  theme(legend.position = \"none\")\ng2 &lt;- ggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(\n    data = tibble(\n      position = seq_range(arcuate_unif$position),\n      fa = FNN::knn.reg(\n        arcuate_unif$position, matrix(position, ncol = 1),\n        y = arcuate_unif$fa\n      )$pred\n    ),\n    colour = orange, linewidth = 2\n  )\nplot_grid(g1, g2, ncol = 2)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#knn",
     "title": "UBC Stat406 2024W",
-    "section": "knn.cv() (leave one out)",
-    "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
+    "section": "KNN",
+    "text": "KNN\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata(arcuate, package = \"Stat406\")\nlibrary(FNN)\narcuate_unif &lt;- arcuate |&gt; \n  slice_sample(n = 40) |&gt; \n  arrange(position) \n\nnew_position &lt;- seq(\n  min(arcuate_unif$position), \n  max(arcuate_unif$position),\n  length.out = 101\n)\n\nknn3 &lt;- knn.reg(\n  train = arcuate_unif$position, \n  test = matrix(arcuate_unif$position, ncol = 1), \n  y = arcuate_unif$fa, \n  k = 3\n)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
+    "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
     "title": "UBC Stat406 2024W",
-    "section": "Final version",
-    "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42\n\n\n\n\n\n\n\n\n\n\n\n1c36b39 (Update last of classification slides) ## Trees\n\n\n\n\n\n\n\n\n\nWe saw regression trees last module\nClassification trees are\n\nMore natural\nSlightly different computationally\n\nEverything else is pretty much the same"
+    "section": "This method is \\(K\\)-nearest neighbours.",
+    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\n\nWhat is the degrees of freedom of KNN, and how does it depend on \\(k\\)?\nHow does \\(k\\) affect the bias/variance?\n\n\n\n\\(\\mathrm{df} = \\tr{\\mathbf S} = n/k\\).\n\\(k = n\\) produces a constant predictor (highest bias, lowest variance).\n\\(k = 1\\) produces a low bias but extremely high variance predictor."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
+    "href": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
     "title": "UBC Stat406 2024W",
-    "section": "Axis-parallel splits",
-    "text": "Axis-parallel splits\nLike with regression trees, classification trees operate by greedily splitting the predictor space\n\n\n\nnames(bakeoff)\n\n [1] \"winners\"                  \n [2] \"series\"                   \n [3] \"age\"                      \n [4] \"occupation\"               \n [5] \"hometown\"                 \n [6] \"percent_star\"             \n [7] \"percent_technical_wins\"   \n [8] \"percent_technical_bottom3\"\n [9] \"percent_technical_top3\"   \n[10] \"technical_highest\"        \n[11] \"technical_lowest\"         \n[12] \"technical_median\"         \n[13] \"judge1\"                   \n[14] \"judge2\"                   \n[15] \"viewers_7day\"             \n[16] \"viewers_28day\"            \n\n\n\nsmalltree &lt;- tree(\n  winners ~ technical_median + percent_star,\n  data = bakeoff\n)\n\n\n\n\n\nCode\npar(mar = c(5, 5, 0, 0) + .1)\nplot(bakeoff$technical_median, bakeoff$percent_star,\n  pch = c(\"-\", \"+\")[bakeoff$winners + 1], cex = 2, bty = \"n\", las = 1,\n  ylab = \"% star baker\", xlab = \"times above median in technical\",\n  col = orange, cex.axis = 2, cex.lab = 2\n)\npartition.tree(smalltree,\n  add = TRUE, col = blue,\n  ordvars = c(\"technical_median\", \"percent_star\")\n)"
+    "section": "Local averages (soft KNN)",
+    "text": "Local averages (soft KNN)\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours.\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\nThe boxes have width 30."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
+    "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
     "title": "UBC Stat406 2024W",
-    "section": "When do trees do well?",
-    "text": "When do trees do well?\n\n\n\n\n\n2D example\nTop Row:\ntrue decision boundary is linear\n🍎 linear classifier\n👎 tree with axis-parallel splits\nBottom Row:\ntrue decision boundary is non-linear\n🤮 A linear classifier can’t capture the true decision boundary\n🍎 decision tree is successful."
+    "section": "What is a “kernel” smoother?",
+    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\),\n\n\\(K(u) \\geq 0\\),\n\\(\\int K(u) du = 1\\),\n\\(\\int uK(u) du = 0\\).\n\n\n\nThe idea: a kernel takes weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
     "title": "UBC Stat406 2024W",
-    "section": "How do we build a tree?",
-    "text": "How do we build a tree?\n\nDivide the predictor space into \\(J\\) non-overlapping regions \\(R_1, \\ldots, R_J\\)\n\n\nthis is done via greedy, recursive binary splitting\n\n\nEvery observation that falls into a given region \\(R_j\\) is given the same prediction\n\n\ndetermined by majority (or plurality) vote in that region.\n\nImportant:\n\nTrees can only make rectangular regions that are aligned with the coordinate axis.\nWe use a greedy (not optimal) algorithm to fit the tree"
+    "section": "Smoothing with the boxcar",
+    "text": "Smoothing with the boxcar\n\n\nCode\ntestpts &lt;- seq(0, 200, length.out = 101)\ndmat &lt;- abs(outer(testpts, arcuate_unif$position, \"-\"))\nS &lt;- (dmat &lt; 15)\nS &lt;- S / rowSums(S)\nboxcar &lt;- tibble(position = testpts, fa = S %*% arcuate_unif$fa)\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(data = boxcar, colour = orange)\n\n\n\nThis one gives the same non-zero weight to all points within \\(\\pm 15\\) range."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
     "title": "UBC Stat406 2024W",
-    "section": "Flashback: Constructing Trees for Regression",
-    "text": "Flashback: Constructing Trees for Regression\n\nWhile (\\(\\mathtt{depth} \\ne \\mathtt{max.depth}\\)):\n\nFor each existing region \\(R_k\\)\n\nFor a given splitting variable \\(j\\) and split value \\(s\\), define \\[\n\\begin{align}\nR_k^&gt; &= \\{x \\in R_k : x^{(j)} &gt; s\\} \\\\\nR_k^&lt; &= \\{x \\in R_k : x^{(j)} &gt; s\\}\n\\end{align}\n\\]\nChoose \\(j\\) and \\(s\\) to maximize quality of fit; i.e. \\[\\min |R_k^&gt;| \\cdot \\widehat{Var}(R_k^&gt;) + |R_k^&lt;| \\cdot  \\widehat{Var}(R_k^&lt;)\\]\n\n\n\n\nWe have to change this last line for classification"
+    "section": "Other kernels",
+    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird.\nIdeally we would like closer points to have more weight.\n\n\nA more common kernel: the Gaussian kernel\n\\[\nK(u) = \\frac{1}{\\sqrt{2 \\pi \\sigma^2}} \\exp\\left(-\\frac{u^2}{2\\sigma^2}\\right)\n\\]\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting.\n(but all nonzero!!)\n\n\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)"
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
     "title": "UBC Stat406 2024W",
-    "section": "How do we measure quality of fit?",
-    "text": "How do we measure quality of fit?\nLet \\(p_{mk}\\) be the proportion of training observations in the \\(m^{th}\\) region that are from the \\(k^{th}\\) class.\n\n\n\n\n\n\n\nclassification error rate:\n\\(E = 1 - \\max_k (\\widehat{p}_{mk})\\)\n\n\nGini index:\n\\(G = \\sum_k \\widehat{p}_{mk}(1-\\widehat{p}_{mk})\\)\n\n\ncross-entropy:\n\\(D = -\\sum_k \\widehat{p}_{mk}\\log(\\widehat{p}_{mk})\\)\n\n\n\nBoth Gini and cross-entropy measure the purity of the classifier (small if all \\(p_{mk}\\) are near zero or 1).\nClassification error is hard to optimize.\nWe build a classifier by growing a tree that minimizes \\(G\\) or \\(D\\)."
+    "section": "Other kernels",
+    "text": "Other kernels\nWhat if I made \\(\\sigma=15\\)?\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 15) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nBefore, points far from \\(x_{15}\\) got very small weights, now they have more influence.\nFor the Gaussian kernel, \\(\\sigma\\) determines something like the “range” of the smoother."
   },
   {
-    "objectID": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
-    "href": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
+    "href": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
     "title": "UBC Stat406 2024W",
-    "section": "Advantages and disadvantages of trees (again)",
-    "text": "Advantages and disadvantages of trees (again)\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Trees are highly variable. Small changes in training data \\(\\Longrightarrow\\) big changes in the tree.\nTo fix these last two, we can try to grow many trees and average their performance.\n\nWe do this next module\n\n\n\nUBC Stat 406 - 2024"
+    "section": "Many Gaussians",
+    "text": "Many Gaussians\nThe following code creates \\(\\mathbf{S}\\) for Gaussian kernel smoothers with different \\(\\sigma\\)\n\ndmat &lt;- as.matrix(dist(x))\nSgauss &lt;- function(sigma) {\n  gg &lt;- dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg), \"/\") # make the rows sum to 1.\n}\n\n\n\nCode\nSgauss &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.\n}\nboxcar$S15 = with(arcuate_unif, Sgauss(15) %*% fa)\nboxcar$S08 = with(arcuate_unif, Sgauss(8) %*% fa)\nboxcar$S30 = with(arcuate_unif, Sgauss(30) %*% fa)\nbc = boxcar %&gt;% select(position, S15, S08, S30) %&gt;% \n  pivot_longer(-position, names_to = \"Sigma\")\nggplot(arcuate_unif, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_line(data = bc, aes(position, value, colour = Sigma), linewidth = 1.5) +\n  scale_colour_brewer(palette = \"Set1\")"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#section",
-    "href": "schedule/slides/09-l1-penalties.html#section",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
     "title": "UBC Stat406 2024W",
-    "section": "09 L1 penalties",
-    "text": "09 L1 penalties\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 29 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "The bandwidth",
+    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use."
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#last-time",
-    "href": "schedule/slides/09-l1-penalties.html#last-time",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
+    "href": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
     "title": "UBC Stat406 2024W",
-    "section": "Last time",
-    "text": "Last time\n\nRidge regression\n\n\\(\\min \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 \\st \\snorm{\\beta}_2^2 \\leq s\\)\n\nBest (in sample) linear regression model of size \\(s\\)\n\n\\(\\min \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 \\st \\snorm{\\beta}_0 \\leq s\\)\n\n\n\n\\(\\snorm{\\beta}_0\\) is the number of nonzero elements in \\(\\beta\\)\nFinding the “best” linear model (of size \\(s\\), among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)\nRidge regression is convex (easy to solve), but doesn’t do variable selection\nCan we somehow “interpolate” to get both?"
+    "section": "Choosing the bandwidth",
+    "text": "Choosing the bandwidth\nAs we have discussed, kernel smoothing (and KNN) are linear smoothers\n\\[\\widehat{\\mathbf{y}} = \\mathbf{S}\\mathbf{y}\\]\nThe degrees of freedom is \\(\\textrm{tr}(\\mathbf{S})\\)\nTherefore we can use our model selection criteria from before\n\nUnfortunately, these don’t satisfy the “technical condition”, so cv_nice() doesn’t give LOO-CV"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#brief-aside-on-norms",
-    "href": "schedule/slides/09-l1-penalties.html#brief-aside-on-norms",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
     "title": "UBC Stat406 2024W",
-    "section": "Brief aside on norms",
-    "text": "Brief aside on norms\nRecall, for a vector \\(z \\in \\R^p\\)\n\n\\(\\ell_2\\)-norm\n\n\\(\\|z\\|_2 = \\sqrt{z_1^2 + z_2^2 + \\dots + z_p^2} = \\left(\\sum_{j=1}^p |z_j|^2\\right)^{1/2}\\) (so \\(\\|z\\|_2^2 = \\sum_j z_j^2\\))\n\n\nOther norms:\n\n\\(\\ell_q\\)-norm\n\n\\(\\|z\\|_q = \\left(\\sum_{j=1}^p |z_j|^q\\right)^{1/q}\\)\n\n\\(\\ell_1\\)-norm (special case)\n\n\\(\\|z\\|_1 = \\sum_{j=1}^p |z_j|\\)\n\n\\(\\ell_0\\)-norm\n\n\\(\\|z\\|_0 = \\sum_{j=1}^p I(z_j \\neq 0 ) = \\lvert \\{j : z_j \\neq 0 \\}\\rvert\\)\n\n\\(\\ell_\\infty\\)-norm\n\n\\(\\|z\\|_\\infty = \\max_{1\\leq j \\leq p} |z_j|\\)\n\n\nSee https://en.wikipedia.org/wiki/Norm_(mathematics)"
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\nar &lt;- arcuate |&gt; slice_sample(n = 200)\n\ngcv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )\n}\n\nfake_loocv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - diag(S))^2 )\n}\n\ndmat &lt;- as.matrix(dist(ar$position))\nsigmas &lt;- 10^(seq(log10(300), log10(.3), length = 100))\n\ngcvs &lt;- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))\nflcvs &lt;- map_dbl(sigmas, ~ fake_loocv(ar$fa, Sgauss(.x)))\nbest_s &lt;- sigmas[which.min(gcvs)]\nother_s &lt;- sigmas[which.min(flcvs)]\n\nar$smoothed &lt;- Sgauss(best_s) %*% ar$fa\nar$other &lt;- Sgauss(other_s) %*% ar$fa"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#geometry-of-convexity",
-    "href": "schedule/slides/09-l1-penalties.html#geometry-of-convexity",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
     "title": "UBC Stat406 2024W",
-    "section": "Geometry of convexity",
-    "text": "Geometry of convexity\n\n\nCode\nlibrary(mvtnorm)\nnormBall &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- data.frame(x = cos(tg)) %&gt;%\n    mutate(b = (1 - abs(x)^q)^(1 / q), bm = -b) %&gt;%\n    gather(key = \"lab\", value = \"y\", -x)\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipseData &lt;- function(n = 100, xlim = c(-2, 3), ylim = c(-2, 3),\n                        mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  df &lt;- expand.grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)\n  )\n  df$z &lt;- dmvnorm(df, mean, Sigma)\n  df\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  for (i in 1:20) {\n    ff &lt;- abs((ed$x^q + ed$y^q)^(1 / q) - 1) &lt; tol\n    if (sum(ff) &gt; 0) break\n    tol &lt;- 2 * tol\n  }\n  best &lt;- ed[ff, ]\n  best[which.max(best$z), ]\n}\n\nnbs &lt;- list()\nnbs[[1]] &lt;- normBall(0, 1)\nqs &lt;- c(.5, .75, 1, 1.5, 2)\nfor (ii in 2:6) nbs[[ii]] &lt;- normBall(qs[ii - 1])\nnbs[[1]]$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[0.0]\")\nnbs[[4]]$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[1.0]\")\nnbs &lt;- bind_rows(nbs)\nnbs$lab &lt;- factor(nbs$lab, levels = unique(nbs$lab))\nseg &lt;- data.frame(\n  lab = levels(nbs$lab)[1],\n  x0 = c(-1, 0), x1 = c(1, 0), y0 = c(0, -1), y1 = c(0, 1)\n)\nlevels(seg$lab) &lt;- levels(nbs$lab)\nggplot(nbs, aes(x, y)) +\n  geom_path(size = 1.2) +\n  facet_grid(.~lab, labeller = label_parsed) +\n  geom_segment(data = seg, aes(x = x0, xend = x1, y = y0, yend = y1), size = 1.2) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  coord_equal() +\n  scale_x_continuous(breaks = c(-1, 0, 1)) +\n  scale_y_continuous(breaks = c(-1, 0, 1)) +\n  geom_vline(xintercept = 0, size = .5) +\n  geom_hline(yintercept = 0, size = .5) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2]))\n\n\n\n\nWant a convex constraint / regularizer for easy optimization (\\(\\ell_q\\) convex for \\(q \\geq 1\\))\nWant “corners” to perform variable selection (\\(\\ell_q\\) has “corners” for \\(q \\leq 1\\))"
+    "section": "Smoothing the full Lidar data",
+    "text": "Smoothing the full Lidar data\n\n\nCode\ng3 &lt;- ggplot(data.frame(sigma = sigmas, gcv = gcvs), aes(sigma, gcv)) +\n  geom_point(colour = blue) +\n  geom_vline(xintercept = best_s, colour = red) +\n  scale_x_log10() +\n  xlab(sprintf(\"Sigma, best is sig = %.2f\", best_s))\ng4 &lt;- ggplot(ar, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(aes(y = smoothed), colour = orange, linewidth = 2)\nplot_grid(g3, g4, nrow = 1)\n\n\n\nI considered \\(\\sigma \\in [0.3,\\ 300]\\) and used \\(3.97\\).\nIt’s too wiggly, to my eye. Typical for GCV."
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#the-best-of-both-worlds",
-    "href": "schedule/slides/09-l1-penalties.html#the-best-of-both-worlds",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
+    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
     "title": "UBC Stat406 2024W",
-    "section": "The best of both worlds",
-    "text": "The best of both worlds\n\n\nCode\nnb &lt;- normBall(1)\ned &lt;- ellipseData()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 1)\nggplot(nb, aes(x, y)) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal(xlim = c(-2, 2), ylim = c(-2, 2)) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  geom_label(\n    data = bols, mapping = aes(label = bquote(\"hat(beta)[ols]\")), parse = TRUE,\n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  geom_label(\n    data = bhat, mapping = aes(label = bquote(\"hat(beta)[s]^L\")), parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )\n\n\n\nThis regularization set with \\(q = 1\\)…\n\n… is convex (computationally efficient to optimize)\n… has corners (performs variable selection)"
+    "section": "Smoothing manually",
+    "text": "Smoothing manually\nI did Kernel Smoothing “manually”\n\nFor a fixed bandwidth\nCompute the smoothing matrix\nMake the predictions\nRepeat and compute GCV\n\nThe point is to “show how it works”. It’s also really easy."
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#ell_1-regularized-regression",
-    "href": "schedule/slides/09-l1-penalties.html#ell_1-regularized-regression",
+    "objectID": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
+    "href": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
     "title": "UBC Stat406 2024W",
-    "section": "\\(\\ell_1\\)-regularized regression",
-    "text": "\\(\\ell_1\\)-regularized regression\nKnown as\n\n“lasso”\n“basis pursuit”\n\nThe estimator is given by the constrained optimization\n\\[\\blt = \\argmin_{\\beta}  \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 \\st  \\snorm{\\beta}_1 \\leq s\\]\nAs with ridge regression, we will use the unconstrained, regularized form (Lagrangian):\n\\[\\bll = \\argmin_{\\beta} \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1\\]"
+    "section": "R functions / packages",
+    "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#lasso",
-    "href": "schedule/slides/09-l1-penalties.html#lasso",
+    "objectID": "schedule/slides/02-lm-example.html#section",
+    "href": "schedule/slides/02-lm-example.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "Lasso",
-    "text": "Lasso\nWhile the ridge regression estimate can be easily computed:\n\\[\\brl = \\argmin_{\\beta} \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_2^2 = (\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1} \\X^{\\top}\\y\\]\nthe lasso estimate does not have a closed form:\n\\[\\bll = \\argmin_{\\beta} \\frac 1n\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1 = \\; ??\\]\nBut the optimization problem is convex, so there are efficient algorithms to compute it!\n\n\nThe best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice."
+    "section": "02 Linear model example",
+    "text": "02 Linear model example\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
-    "href": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
+    "objectID": "schedule/slides/02-lm-example.html#economic-mobility",
+    "href": "schedule/slides/02-lm-example.html#economic-mobility",
     "title": "UBC Stat406 2024W",
-    "section": "Coefficient path: ridge vs lasso",
-    "text": "Coefficient path: ridge vs lasso\n\n\nCode\nlibrary(glmnet)\ndata(prostate, package = \"ElemStatLearn\")\nX &lt;- prostate |&gt; dplyr::select(-train, -lpsa) |&gt;  as.matrix()\nY &lt;- prostate$lpsa\nlasso &lt;- glmnet(x = X, y = Y) # alpha = 1 by default\nridge &lt;- glmnet(x = X, y = Y, alpha = 0)\nop &lt;- par()\n\n\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\", xvar = \"lambda\")\nplot(ridge, main = \"Ridge\", xvar = \"lambda\")"
+    "section": "Economic mobility",
+    "text": "Economic mobility\n\ndata(\"mobility\", package = \"Stat406\")\nmobility\n\n# A tibble: 741 × 43\n      ID Name        Mobility State Population Urban Black Seg_racial Seg_income\n   &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;\n 1   100 Johnson Ci…   0.0622 TN        576081     1 0.021      0.09       0.035\n 2   200 Morristown    0.0537 TN        227816     1 0.02       0.093      0.026\n 3   301 Middlesbor…   0.0726 TN         66708     0 0.015      0.064      0.024\n 4   302 Knoxville     0.0563 TN        727600     1 0.056      0.21       0.092\n 5   401 Winston-Sa…   0.0448 NC        493180     1 0.174      0.262      0.072\n 6   402 Martinsvil…   0.0518 VA         92753     0 0.224      0.137      0.024\n 7   500 Greensboro    0.0474 NC       1055133     1 0.218      0.22       0.068\n 8   601 North Wilk…   0.0517 NC         90016     0 0.032      0.114      0.012\n 9   602 Galax         0.0796 VA         64676     0 0.029      0.131      0.005\n10   700 Spartanburg   0.0431 SC        354533     1 0.207      0.139      0.045\n# ℹ 731 more rows\n# ℹ 34 more variables: Seg_poverty &lt;dbl&gt;, Seg_affluence &lt;dbl&gt;, Commute &lt;dbl&gt;,\n#   Income &lt;dbl&gt;, Gini &lt;dbl&gt;, Share01 &lt;dbl&gt;, Gini_99 &lt;dbl&gt;, Middle_class &lt;dbl&gt;,\n#   Local_tax_rate &lt;dbl&gt;, Local_gov_spending &lt;dbl&gt;, Progressivity &lt;dbl&gt;,\n#   EITC &lt;dbl&gt;, School_spending &lt;dbl&gt;, Student_teacher_ratio &lt;dbl&gt;,\n#   Test_scores &lt;dbl&gt;, HS_dropout &lt;dbl&gt;, Colleges &lt;dbl&gt;, Tuition &lt;dbl&gt;,\n#   Graduation &lt;dbl&gt;, Labor_force_participation &lt;dbl&gt;, Manufacturing &lt;dbl&gt;, …\n\n\n\nNote how many observations and predictors it has.\nWe’ll use Mobility as the response"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#same-path-versus-ell_1-norm",
-    "href": "schedule/slides/09-l1-penalties.html#same-path-versus-ell_1-norm",
+    "objectID": "schedule/slides/02-lm-example.html#a-linear-model",
+    "href": "schedule/slides/02-lm-example.html#a-linear-model",
     "title": "UBC Stat406 2024W",
-    "section": "Same path versus \\(\\ell_1\\) norm",
-    "text": "Same path versus \\(\\ell_1\\) norm\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\")\nplot(ridge, main = \"Ridge\")"
+    "section": "A linear model",
+    "text": "A linear model\n\\[\\mbox{Mobility}_i = \\beta_0 + \\beta_1 \\, \\mbox{State}_i + \\beta_2 \\, \\mbox{Urban}_i + \\cdots + \\epsilon_i\\]\nor equivalently\n\\[E \\left[ \\biggl. \\mbox{mobility} \\, \\biggr| \\, \\mbox{State}, \\mbox{Urban},\n    \\ldots \\right]  = \\beta_0 + \\beta_1 \\, \\mbox{State} +\n    \\beta_2 \\, \\mbox{Urban} + \\cdots\\]"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
-    "href": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
+    "objectID": "schedule/slides/02-lm-example.html#analysis",
+    "href": "schedule/slides/02-lm-example.html#analysis",
     "title": "UBC Stat406 2024W",
-    "section": "Additional intuition for why Lasso selects variables",
-    "text": "Additional intuition for why Lasso selects variables\nSuppose, for a particular \\(\\lambda\\), I have solutions for \\(\\widehat{\\beta}_k\\), \\(k = 1,\\ldots,j-1, j+1,\\ldots,p\\).\nLet \\(\\widehat{\\y}_{-j} = \\X_{-j}\\widehat{\\beta}_{-j}\\), and assume WLOG \\(\\overline{\\X}_k = 0\\), \\(\\X_k^\\top\\X_k = 1\\ \\forall k\\)\nOne can show that:\n\\[\n\\widehat{\\beta}_j = S\\left(\\mathbf{X}^\\top_j(\\y - \\widehat{\\y}_{-j}),\\ \\lambda\\right).\n\\]\n\\[\nS(z, \\lambda) = \\begin{cases} z - \\lambda & z &gt; \\lambda \\\\\nz + \\lambda & z &lt; -\\lambda \\\\ 0 & |z| \\leq \\lambda \\end{cases}\n%= \\textrm{sign}(z)(|z| - \\lambda)_+\n\\]\n\nIterating over this is called coordinate descent and gives the solution\n\n\n\n\nIf I were told all the other coefficient estimates.\nThen to find this one, I’d shrink when the gradient is big, or set to 0 if it gets too small.\n\n\n\nSee for example, https://doi.org/10.18637/jss.v033.i01"
+    "section": "Analysis",
+    "text": "Analysis\n\nRandomly split into a training (say 3/4) and a test set (1/4)\nUse training set to fit a model\nFit the “full” model\n“Look” at the fit\n\n\n\nset.seed(20220914)\nmob &lt;- mobility[complete.cases(mobility), ] |&gt;\n    select(-Name, -ID, -State)\nn &lt;- nrow(mob)\nset &lt;- sample.int(n, floor(n * .75), FALSE)\ntrain &lt;- mob[set, ]\ntest &lt;- mob[setdiff(1:n, set), ]\nfull &lt;- lm(Mobility ~ ., data = train)\n\n\nWhy don’t we include Name or ID?"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#packages",
-    "href": "schedule/slides/09-l1-penalties.html#packages",
+    "objectID": "schedule/slides/02-lm-example.html#results",
+    "href": "schedule/slides/02-lm-example.html#results",
     "title": "UBC Stat406 2024W",
-    "section": "Packages",
-    "text": "Packages\nThere are two main R implementations for finding lasso\n{glmnet}: lasso = glmnet(X, Y, alpha=1).\n\nSetting alpha = 0 gives ridge regression (as does lm.ridge in the MASS package)\nSetting alpha \\(\\in (0,1)\\) gives a method called the “elastic net” which combines ridge regression and lasso (regularization \\(\\alpha \\|\\beta\\|_1 + (1-\\alpha)\\|\\beta\\|^2_2\\)). More on that later.\nDefault alpha = 1 (it does lasso)\n\n{lars}: lars = lars(X, Y)\n\nlars() also does other things called “Least angle” and “forward stagewise” in addition to “forward stepwise” regression\nThe path returned by lars() is more useful than that returned by glmnet().\n\n\nBut you should use {glmnet}."
+    "section": "Results",
+    "text": "Results\n(dispatch happening here!)\n\nsummary(full)\n\n\nCall:\nlm(formula = Mobility ~ ., data = train)\n\nResiduals:\n      Min        1Q    Median        3Q       Max \n-0.072092 -0.010256 -0.001452  0.009170  0.090428 \n\nCoefficients:\n                            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)                1.849e-01  8.083e-02   2.288 0.022920 *  \nPopulation                 3.378e-09  2.478e-09   1.363 0.173916    \nUrban                      2.853e-03  3.892e-03   0.733 0.464202    \nBlack                      7.807e-02  2.859e-02   2.731 0.006735 ** \nSeg_racial                -5.626e-02  1.780e-02  -3.160 0.001754 ** \nSeg_income                 8.677e-01  9.355e-01   0.928 0.354453    \nSeg_poverty               -7.416e-01  5.014e-01  -1.479 0.140316    \nSeg_affluence             -2.224e-01  4.763e-01  -0.467 0.640874    \nCommute                    6.313e-02  2.838e-02   2.225 0.026915 *  \nIncome                     4.207e-07  6.997e-07   0.601 0.548112    \nGini                       3.592e+00  3.357e+00   1.070 0.285578    \nShare01                   -3.635e-02  3.357e-02  -1.083 0.279925    \nGini_99                   -3.657e+00  3.356e+00  -1.090 0.276704    \nMiddle_class               1.031e-01  4.835e-02   2.133 0.033828 *  \nLocal_tax_rate             2.268e-01  2.620e-01   0.866 0.387487    \nLocal_gov_spending         1.273e-07  3.016e-06   0.042 0.966374    \nProgressivity              4.983e-03  1.324e-03   3.764 0.000205 ***\nEITC                      -3.324e-04  4.528e-04  -0.734 0.463549    \nSchool_spending           -9.019e-04  2.272e-03  -0.397 0.691658    \nStudent_teacher_ratio     -1.639e-03  1.123e-03  -1.459 0.145748    \nTest_scores                2.487e-04  3.137e-04   0.793 0.428519    \nHS_dropout                -1.698e-01  9.352e-02  -1.816 0.070529 .  \nColleges                  -2.811e-02  7.661e-02  -0.367 0.713942    \nTuition                    3.459e-07  4.362e-07   0.793 0.428417    \nGraduation                -1.702e-02  1.425e-02  -1.194 0.233650    \nLabor_force_participation -7.850e-02  5.405e-02  -1.452 0.147564    \nManufacturing             -1.605e-01  2.816e-02  -5.700  3.1e-08 ***\nChinese_imports           -5.165e-04  1.004e-03  -0.514 0.607378    \nTeenage_labor             -1.019e+00  2.111e+00  -0.483 0.629639    \nMigration_in               4.490e-02  3.480e-01   0.129 0.897436    \nMigration_out             -4.475e-01  4.093e-01  -1.093 0.275224    \nForeign_born               9.137e-02  5.494e-02   1.663 0.097454 .  \nSocial_capital            -1.114e-03  2.728e-03  -0.408 0.683245    \nReligious                  4.570e-02  1.298e-02   3.520 0.000506 ***\nViolent_crime             -3.393e+00  1.622e+00  -2.092 0.037373 *  \nSingle_mothers            -3.590e-01  9.442e-02  -3.802 0.000177 ***\nDivorced                   1.707e-02  1.603e-01   0.107 0.915250    \nMarried                   -5.894e-02  7.246e-02  -0.813 0.416720    \nLongitude                 -4.239e-05  2.239e-04  -0.189 0.850001    \nLatitude                   6.725e-04  5.687e-04   1.182 0.238037    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 0.02128 on 273 degrees of freedom\nMultiple R-squared:  0.7808,    Adjusted R-squared:  0.7494 \nF-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
-    "href": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
+    "objectID": "schedule/slides/02-lm-example.html#diagnostic-plots",
+    "href": "schedule/slides/02-lm-example.html#diagnostic-plots",
     "title": "UBC Stat406 2024W",
-    "section": "Choosing the \\(\\lambda\\)",
-    "text": "Choosing the \\(\\lambda\\)\nYou have to choose \\(\\lambda\\) in lasso or in ridge regression\nlasso selects variables (by setting coefficients to zero), but the value of \\(\\lambda\\) determines how many/which.\nAll of these packages come with CV built in.\nHowever, the way to do it differs from package to package"
+    "section": "Diagnostic plots",
+    "text": "Diagnostic plots\nNB: the line in the QQ plot isn’t right for either geom_qq_line or plot.lm…\n\n\nstuff &lt;- tibble(\n  residuals = residuals(full),\n  fitted = fitted(full),\n  stdresiduals = rstandard(full)\n)\nggplot(stuff, aes(fitted, residuals)) +\n  geom_point() +\n  geom_smooth(\n    se = FALSE,\n    colour = \"steelblue\",\n    linewidth = 2\n  ) +\n  ggtitle(\"Residuals vs Fitted\")\n\n\n\n\n\n\n\n\n\n\n\nggplot(stuff, aes(sample = stdresiduals)) +\n  geom_qq(size = 2) +\n  geom_qq_line(linewidth = 2, color = \"steelblue\") +\n  labs(\n    x = \"Theoretical quantiles\",\n    y = \"Standardized residuals\",\n    title = \"Normal Q-Q\"\n  )"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
-    "href": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
+    "objectID": "schedule/slides/02-lm-example.html#can-also-just-use-dispatched-plot",
+    "href": "schedule/slides/02-lm-example.html#can-also-just-use-dispatched-plot",
     "title": "UBC Stat406 2024W",
-    "section": "{glmnet} version (same procedure for lasso or ridge)",
-    "text": "{glmnet} version (same procedure for lasso or ridge)\n\nlasso &lt;- cv.glmnet(X, Y) # estimate full model and CV no good reason to call glmnet() itself\n# 2. Look at the CV curve. If the dashed lines are at the boundaries, redo and adjust lambda\nlambda_min &lt;- lasso$lambda.min # the value, not the location (or use lasso$lambda.1se)\ncoeffs &lt;- coefficients(lasso, s = \"lambda.min\") # s can be string or a number\npreds &lt;- predict(lasso, newx = X, s = \"lambda.1se\") # must supply `newx`\n\n\n\\(\\widehat{R}_{CV}\\) is an estimator of \\(R_n\\), it has bias and variance\nBecause we did CV, we actually have 10 \\(\\widehat{R}\\) values, 1 per split.\nCalculate the mean (that’s what we’ve been using), but what about SE?"
+    "section": "Can also just use dispatched plot",
+    "text": "Can also just use dispatched plot\n\n\nplot(full, 1)\n\n\n\n\n\n\n\n\n\n\n\nplot(full, 2)"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#section-1",
-    "href": "schedule/slides/09-l1-penalties.html#section-1",
+    "objectID": "schedule/slides/02-lm-example.html#fit-a-reduced-model",
+    "href": "schedule/slides/02-lm-example.html#fit-a-reduced-model",
+    "title": "UBC Stat406 2024W",
+    "section": "Fit a reduced model",
+    "text": "Fit a reduced model\n\nreduced &lt;- lm(\n  Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +\n    Manufacturing + Migration_in + Religious + Single_mothers,\n  data = train\n)\n\nsummary(reduced)$coefficients \n\n                    Estimate  Std. Error   t value     Pr(&gt;|t|)\n(Intercept)     0.1663344179 0.017769995  9.360409 1.829270e-18\nCommute         0.0637329409 0.014926382  4.269819 2.618234e-05\nGini_99        -0.1086058241 0.038958986 -2.787696 5.642726e-03\nTest_scores     0.0004997645 0.000256038  1.951915 5.186618e-02\nHS_dropout     -0.2162067301 0.082003195 -2.636565 8.805228e-03\nManufacturing  -0.1594229237 0.020215791 -7.886059 5.647668e-14\nMigration_in   -0.3891567027 0.171839168 -2.264657 2.423771e-02\nReligious       0.0435673365 0.010463920  4.163577 4.084854e-05\nSingle_mothers -0.2864269552 0.046578928 -6.149282 2.444903e-09\n\nreduced |&gt;\n  broom::glance() |&gt;\n  print(width = 120)\n\n# A tibble: 1 × 12\n  r.squared adj.r.squared  sigma statistic  p.value    df logLik    AIC    BIC\n      &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;\n1     0.718         0.711 0.0229      96.9 5.46e-79     8   743. -1466. -1429.\n  deviance df.residual  nobs\n     &lt;dbl&gt;       &lt;int&gt; &lt;int&gt;\n1    0.159         304   313"
+  },
+  {
+    "objectID": "schedule/slides/02-lm-example.html#diagnostic-plots-for-reduced-model",
+    "href": "schedule/slides/02-lm-example.html#diagnostic-plots-for-reduced-model",
+    "title": "UBC Stat406 2024W",
+    "section": "Diagnostic plots for reduced model",
+    "text": "Diagnostic plots for reduced model\n\n\nplot(reduced, 1)\n\n\n\n\n\n\n\n\n\n\n\nplot(reduced, 2)"
+  },
+  {
+    "objectID": "schedule/slides/02-lm-example.html#how-do-we-decide-which-model-is-better",
+    "href": "schedule/slides/02-lm-example.html#how-do-we-decide-which-model-is-better",
+    "title": "UBC Stat406 2024W",
+    "section": "How do we decide which model is better?",
+    "text": "How do we decide which model is better?\n\n\n\nGoodness of fit versus prediction power\n\n\nmap( # smaller AIC is better\n  list(full = full, reduced = reduced),\n  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq)\n)\n\n$full\n          aic           rsq \n-1482.5981023     0.7807509 \n\n$reduced\n         aic          rsq \n-1466.088492     0.718245 \n\n\n\nUse both models to predict Mobility\nCompare both sets of predictions\n\n\n\n\nmses &lt;- function(preds, obs) round(mean((obs - preds)^2), 5)\nc(\n  full = mses(\n    predict(full, newdata = test),\n    test$Mobility\n  ),\n  reduced = mses(\n    predict(reduced, newdata = test),\n    test$Mobility\n  )\n)\n\n   full reduced \n0.00072 0.00084 \n\n\n\n\nCode\ntest$full &lt;- predict(full, newdata = test)\ntest$reduced &lt;- predict(reduced, newdata = test)\ntest |&gt;\n  select(Mobility, full, reduced) |&gt;\n  pivot_longer(-Mobility) |&gt;\n  ggplot(aes(Mobility, value)) +\n  geom_point(color = \"orange\") +\n  facet_wrap(~name, 2) +\n  xlab(\"observed mobility\") +\n  ylab(\"predicted mobility\") +\n  geom_abline(slope = 1, intercept = 0, colour = \"darkblue\")"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#section",
+    "href": "schedule/slides/07-greedy-selection.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "07 practical model/variable selection",
+    "text": "07 practical model/variable selection\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 25 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#model-selection",
+    "href": "schedule/slides/07-greedy-selection.html#model-selection",
+    "title": "UBC Stat406 2024W",
+    "section": "Model Selection",
+    "text": "Model Selection\nModel Selection means select the best distributions to describe your data.\n(I.e. the model with the smallest risk \\(R_n\\).)\n\nThe procedure\n\nGenerate a list of (comparable) candidate models (\\(\\mathcal M = \\{ \\mathcal P_1, \\mathcal P_2, \\ldots \\}\\))\nChoose a procedure for estimating risk (e.g. \\(C_p\\))\nTrain each model and estimate its risk\nChoose the model with the lowest risk (e.g. \\(\\argmin_{\\mathcal P \\in \\mathcal M} C_p(\\mathcal P)\\))"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#example",
+    "href": "schedule/slides/07-greedy-selection.html#example",
+    "title": "UBC Stat406 2024W",
+    "section": "Example",
+    "text": "Example\nThe truth:\n\ndat &lt;- tibble(\n  x1 = rnorm(100), \n  x2 = rnorm(100),\n  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)\n)\n\nModel 1: y ~ x1 + x2\nModel 2: y ~ x1 + x2 + x1*x2\nModel 3: y ~ x2 + sin(x1 * x2)\n\nThe models above are written in short hand. In full statistical glory…\n\\[\n\\text{Model 1} = \\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} + \\beta_2X^{(2)}), \\: \\sigma^2 \\right) \\quad \\text{for some } \\beta_0, \\beta_1, \\beta_2, \\sigma \\right\\}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#fit-each-model-and-estimate-r_n",
+    "href": "schedule/slides/07-greedy-selection.html#fit-each-model-and-estimate-r_n",
+    "title": "UBC Stat406 2024W",
+    "section": "Fit each model and estimate \\(R_n\\)",
+    "text": "Fit each model and estimate \\(R_n\\)\n\nforms &lt;- list(\"y ~ x1 + x2\", \"y ~ x1 * x2\", \"y ~ x2 + sin(x1*x2)\") |&gt; \n  map(as.formula)\nfits &lt;- map(forms, ~ lm(.x, data = dat))\nmap(fits, ~ tibble(\n  R2 = summary(.x)$r.sq,\n  training_error = mean(residuals(.x)^2),\n  loocv = mean( (residuals(.x) / (1 - hatvalues(.x)))^2 ),\n  AIC = AIC(.x),\n  BIC = BIC(.x)\n)) |&gt; list_rbind()\n\n# A tibble: 3 × 5\n     R2 training_error loocv   AIC   BIC\n  &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n1 0.589           21.3  22.9  598.  608.\n2 0.595           21.0  23.4  598.  611.\n3 0.586           21.4  23.0  598.  609."
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#model-selection-vs.-variable-selection",
+    "href": "schedule/slides/07-greedy-selection.html#model-selection-vs.-variable-selection",
+    "title": "UBC Stat406 2024W",
+    "section": "Model Selection vs. Variable Selection",
+    "text": "Model Selection vs. Variable Selection\nVariable selection is a subset of model selection.\n\nAssume we have 2 predictors (x1, x2) and we’re trying to choose which to include in a linear regressor:\nModel 1: y ~ x1 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} ), \\: \\sigma^2 \\right) \\right\\}\\))\nModel 2: y ~ x2 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1X^{(2)}), \\: \\sigma^2 \\right)  \\right\\}\\))\nModel 3: y ~ x1 + x2 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} + \\beta_2X^{(2)}), \\: \\sigma^2 \\right)  \\right\\}\\))\n\nChoosing which predictors to include is implicitly selecting a model.\n\n\n\n\n\n\n\nNote\n\n\nNote that \\(\\mathrm{Model 1}, \\mathrm{Model 2} \\subset \\mathrm{Model 3}\\)\nWe say that these models are nested."
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#selecting-variables-predictors-with-linear-methods",
+    "href": "schedule/slides/07-greedy-selection.html#selecting-variables-predictors-with-linear-methods",
+    "title": "UBC Stat406 2024W",
+    "section": "Selecting variables / predictors with linear methods",
+    "text": "Selecting variables / predictors with linear methods\n\n\nSuppose we have a set of predictors.\nWe estimate models with different subsets of predictors and use CV / Cp / AIC / BIC to decide which is preferred.\nHow do we choose which variable subsets to consider?\n\n\n\nAll subsets\n\nestimate model based on every possible subset of size \\(|\\mathcal{S}| \\leq \\min\\{n, p\\}\\), use one with lowest risk estimate\n\nForward selection\n\nstart with \\(\\mathcal{S}=\\varnothing\\), add predictors greedily\n\nBackward selection\n\nstart with \\(\\mathcal{S}=\\{1,\\ldots,p\\}\\), remove greedily\n\nHybrid\n\ncombine forward and backward smartly\n\n\n\n\n\n\n\n\n\n\n\nCaution\n\n\nWithin each procedure, we’re comparing nested models. This is important."
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
+    "href": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
+    "title": "UBC Stat406 2024W",
+    "section": "Costs and benefits",
+    "text": "Costs and benefits\n\nAll subsets\n\n👍 estimates each subset\n💣 takes \\(2^p\\) model fits when \\(p&lt;n\\). If \\(p=50\\), this is about \\(10^{15}\\) models.\n\n\n\n\nForward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n\nBackward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n💣 doesn’t work if \\(p&gt;n\\)\n\n\n\n\n\nHybrid\n\n👍 visits more models than forward/backward\n💣 slower"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#synthetic-example",
+    "href": "schedule/slides/07-greedy-selection.html#synthetic-example",
+    "title": "UBC Stat406 2024W",
+    "section": "Synthetic example",
+    "text": "Synthetic example\n\nset.seed(123)\nn &lt;- 406\ndf &lt;- tibble( # like data.frame, but columns can be functions of preceding\n  x1 = rnorm(n),\n  x2 = rnorm(n, mean = 2, sd = 1),\n  x3 = rexp(n, rate = 1),\n  x4 = x2 + rnorm(n, sd = .1), # correlated with x2\n  x5 = x1 + rnorm(n, sd = .1), # correlated with x1\n  x6 = x1 - x2 + rnorm(n, sd = .1), # correlated with x2 and x1 (and others)\n  x7 = x1 + x3 + rnorm(n, sd = .1), # correlated with x1 and x3 (and others)\n  y = x1 * 3 + x2 / 3 + rnorm(n, sd = 2.2) # function of x1 and x2 only\n)\n\n\n\\(\\mathbf{x}_1\\) and \\(\\mathbf{x}_2\\) are the true predictors\nBut the rest are correlated with them"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#full-model",
+    "href": "schedule/slides/07-greedy-selection.html#full-model",
+    "title": "UBC Stat406 2024W",
+    "section": "Full model",
+    "text": "Full model\n\nfull &lt;- lm(y ~ ., data = df)\nsummary(full)\n\n\nCall:\nlm(formula = y ~ ., data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.7739 -1.4283 -0.0929  1.4257  7.5869 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)   \n(Intercept)  0.03383    0.27700   0.122  0.90287   \nx1           6.70481    2.06743   3.243  0.00128 **\nx2          -0.43945    1.71650  -0.256  0.79807   \nx3           1.37293    1.11524   1.231  0.21903   \nx4          -1.19911    1.17850  -1.017  0.30954   \nx5          -0.53918    1.07089  -0.503  0.61490   \nx6          -1.88547    1.21652  -1.550  0.12196   \nx7          -1.25245    1.10743  -1.131  0.25876   \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.231 on 398 degrees of freedom\nMultiple R-squared:  0.6411,    Adjusted R-squared:  0.6347 \nF-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#true-model",
+    "href": "schedule/slides/07-greedy-selection.html#true-model",
+    "title": "UBC Stat406 2024W",
+    "section": "True model",
+    "text": "True model\n\ntruth &lt;- lm(y ~ x1 + x2, data = df)\nsummary(truth)\n\n\nCall:\nlm(formula = y ~ x1 + x2, data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.4519 -1.3873 -0.1941  1.3498  7.5533 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)   0.1676     0.2492   0.673   0.5015    \nx1            3.0316     0.1146  26.447   &lt;2e-16 ***\nx2            0.2447     0.1109   2.207   0.0279 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.233 on 403 degrees of freedom\nMultiple R-squared:  0.6357,    Adjusted R-squared:  0.6339 \nF-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#all-subsets",
+    "href": "schedule/slides/07-greedy-selection.html#all-subsets",
+    "title": "UBC Stat406 2024W",
+    "section": "All subsets",
+    "text": "All subsets\n\nlibrary(leaps)\ntrythemall &lt;- regsubsets(y ~ ., data = df)\nsummary(trythemall)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df)\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: exhaustive\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp",
+    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp",
+    "title": "UBC Stat406 2024W",
+    "section": "BIC and Cp",
+    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(trythemall)$bic, \n  Cp = summary(trythemall)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) + \n  geom_point() + \n  geom_line() + \n  facet_wrap(~name, scales = \"free_y\") + \n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange), \n    guide = \"none\"\n  )"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#forward-stepwise",
+    "href": "schedule/slides/07-greedy-selection.html#forward-stepwise",
+    "title": "UBC Stat406 2024W",
+    "section": "Forward stepwise",
+    "text": "Forward stepwise\n\nstepup &lt;- regsubsets(y ~ ., data = df, method = \"forward\")\nsummary(stepup)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df, method = \"forward\")\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: forward\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp-1",
+    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp-1",
+    "title": "UBC Stat406 2024W",
+    "section": "BIC and Cp",
+    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(stepup)$bic,\n  Cp = summary(stepup)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) +\n  geom_point() +\n  geom_line() +\n  facet_wrap(~name, scales = \"free_y\") +\n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange),\n    guide = \"none\"\n  )"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#backward-selection",
+    "href": "schedule/slides/07-greedy-selection.html#backward-selection",
+    "title": "UBC Stat406 2024W",
+    "section": "Backward selection",
+    "text": "Backward selection\n\nstepdown &lt;- regsubsets(y ~ ., data = df, method = \"backward\")\nsummary(stepdown)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df, method = \"backward\")\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: backward\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp-2",
+    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp-2",
+    "title": "UBC Stat406 2024W",
+    "section": "BIC and Cp",
+    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(stepdown)$bic,\n  Cp = summary(stepdown)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) +\n  geom_point() +\n  geom_line() +\n  facet_wrap(~name, scales = \"free_y\") +\n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange), \n    guide = \"none\"\n  )"
+  },
+  {
+    "objectID": "schedule/slides/07-greedy-selection.html#section-1",
+    "href": "schedule/slides/07-greedy-selection.html#section-1",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "par(mfrow = c(1, 2), mar = c(5, 3, 3, 0))\nplot(lasso) # a plot method for the cv fit\nplot(lasso$glmnet.fit) # the glmnet.fit == glmnet(X,Y)\nabline(v = colSums(abs(coef(lasso$glmnet.fit)[-1, drop(lasso$index)])), lty = 2)"
+    "text": "for this dataset, everything is the same"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
-    "href": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
+    "objectID": "schedule/slides/07-greedy-selection.html#what-algorithm-should-you-use-in-practice",
+    "href": "schedule/slides/07-greedy-selection.html#what-algorithm-should-you-use-in-practice",
     "title": "UBC Stat406 2024W",
-    "section": "Paths with chosen lambda",
-    "text": "Paths with chosen lambda\n\nridge &lt;- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum\npar(mfrow = c(1, 4))\nplot(ridge, main = \"Ridge\")\nplot(lasso, main = \"Lasso\")\nplot(ridge$glmnet.fit, main = \"Ridge\")\nabline(v = sum(abs(coef(ridge)))) # defaults to `lambda.1se`\nplot(lasso$glmnet.fit, main = \"Lasso\")\nabline(v = sum(abs(coef(lasso)))) # again, `lambda.1se` unless told otherwise"
+    "section": "What algorithm should you use in practice?",
+    "text": "What algorithm should you use in practice?\nEach algorithm (forward selection, backward selection, etc.) produces a series of models.\nFor a given algorithm, we know how to choose amongst the models in a principled way (model selection!)\nHow do we choose which algorithm to use?\n\nAs a practicioner\nDetermine how big your computational budget is, make an educated guess.\nAs a researcher\nWe can systematically compare the different algorithms by simulating multiple data sets and comparing the prediction error of the models produced by each algorithm."
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
-    "href": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
+    "objectID": "schedule/slides/07-greedy-selection.html#comparing-algorithms-through-simulation",
+    "href": "schedule/slides/07-greedy-selection.html#comparing-algorithms-through-simulation",
     "title": "UBC Stat406 2024W",
-    "section": "Degrees of freedom",
-    "text": "Degrees of freedom\nLasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{\\y} = \\mathbf{S}\\y\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{\\mathbf{S}} = \\textrm{df}\\) because there is no \\(\\mathbf{S}\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is shown on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
+    "section": "Comparing algorithms through simulation",
+    "text": "Comparing algorithms through simulation\n\n\n\n\n\n\nNote\n\n\n\nFor each algorithm (forward selection, backward selection, all subsets), do:\n\nFor \\(i \\in [1, 100]\\), do\n\nGenerate a samples of training data\nSelected a model (e.g. based on \\(C_p\\)) generated by the algorithm\nMake predictions on held-out set data\nExamine prediction MSE (on held-out set)\n\n\n\nCompare the average MSE (across the 100 simulations) for each algorithm.\n\n\n\n\nWhy are we using held-out MSE to compare forward selection vs. backward selection vs. all subsets? Why not use \\(C_p\\) of the selected model?"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#other-flavours",
-    "href": "schedule/slides/09-l1-penalties.html#other-flavours",
+    "objectID": "schedule/slides/07-greedy-selection.html#code-for-simulation",
+    "href": "schedule/slides/07-greedy-selection.html#code-for-simulation",
     "title": "UBC Stat406 2024W",
-    "section": "Other flavours",
-    "text": "Other flavours\n\nThe elastic net\n\ngenerally used for correlated variables that combines a ridge/lasso penalty. Use glmnet(..., alpha = a) (0 &lt; a &lt; 1).\n\nGrouped lasso\n\nwhere variables are included or excluded in groups. Required for factors (1-hot encoding)\n\nRelaxed lasso\n\nTakes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Use glmnet(..., relax = TRUE).\n\nDantzig selector\n\na slightly modified version of the lasso"
+    "section": "Code for simulation",
+    "text": "Code for simulation\n… Annoyingly, no predict method for regsubsets, so we make one.\n\npredict.regsubsets &lt;- function(object, newdata, risk_estimate = c(\"cp\", \"bic\"), ...) {\n  risk_estimate &lt;- match.arg(risk_estimate)\n  chosen &lt;- coef(object, which.min(summary(object)[[risk_estimate]]))\n  predictors &lt;- names(chosen)\n  if (object$intercept) predictors &lt;- predictors[-1]\n  X &lt;- newdata[, predictors]\n  if (object$intercept) X &lt;- cbind2(1, X)\n  drop(as.matrix(X) %*% chosen)\n}"
   },
   {
-    "objectID": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
-    "href": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
-    "title": "UBC Stat406 2024W",
-    "section": "Lasso cinematic universe",
-    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(\\Vert\\cdot\\Vert_2\\) instead of \\(\\Vert\\cdot\\Vert_1\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (e.g. \\(\\Vert D\\beta\\Vert_1\\)).\n\nArbitrary combinations\n\ncombine the above penalties in your favourite combinations"
-  },
-  {
-    "objectID": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
-    "href": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
-    "title": "UBC Stat406 2024W",
-    "section": "Warnings on regularized regression",
-    "text": "Warnings on regularized regression\n\nThis isn’t a method unless you say how to choose \\(\\lambda\\).\nThe intercept is never penalized. Adds an extra degree-of-freedom.\nPredictor scaling is very important.\nDiscrete predictors need groupings.\nCentering the predictors is important\n(These all work with other likelihoods.)\n\n\nSoftware handles most of these automatically, but not always. (No Lasso with factor predictors.)"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#section",
-    "href": "schedule/slides/18-the-bootstrap.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "18 The bootstrap",
-    "text": "18 The bootstrap\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 02 November 2023\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#a-small-detour",
-    "href": "schedule/slides/18-the-bootstrap.html#a-small-detour",
-    "title": "UBC Stat406 2024W",
-    "section": "A small detour…",
-    "text": "A small detour…"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics",
-    "href": "schedule/slides/18-the-bootstrap.html#in-statistics",
-    "title": "UBC Stat406 2024W",
-    "section": "In statistics…",
-    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nYou usually get these “second-level” properties from “the sampling distribution of an estimator”"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics-1",
-    "href": "schedule/slides/18-the-bootstrap.html#in-statistics-1",
-    "title": "UBC Stat406 2024W",
-    "section": "In statistics…",
-    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nBut what if you don’t know the sampling distribution? Or you’re skeptical of the CLT argument?"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#in-statistics-2",
-    "href": "schedule/slides/18-the-bootstrap.html#in-statistics-2",
-    "title": "UBC Stat406 2024W",
-    "section": "In statistics…",
-    "text": "In statistics…\nThe “bootstrap” works. And well.\nIt’s good for “second-level” analysis.\n\n“First-level” analyses are things like \\(\\hat\\beta\\), \\(\\hat \\y\\), an estimator of the center (a median), etc.\n“Second-level” are things like \\(\\Var{\\hat\\beta}\\), a confidence interval for \\(\\hat \\y\\), or a median, etc.\n\n\nSampling distributions\n\nIf \\(X_i\\) are iid Normal \\((0,\\sigma^2)\\), then \\(\\Var{\\overline{X}} = \\sigma^2 / n\\).\nIf \\(X_i\\) are iid and \\(n\\) is big, then \\(\\Var{\\overline{X}} \\approx \\Var{X_1} / n\\).\nIf \\(X_i\\) are iid Binomial \\((m, p)\\), then \\(\\Var{\\overline{X}} = mp(1-p) / n\\)"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#example-of-unknown-sampling-distribution",
-    "href": "schedule/slides/18-the-bootstrap.html#example-of-unknown-sampling-distribution",
-    "title": "UBC Stat406 2024W",
-    "section": "Example of unknown sampling distribution",
-    "text": "Example of unknown sampling distribution\nI estimate a LDA on some data.\nI get a new \\(x_0\\) and produce \\(\\widehat{Pr}(y_0 =1 \\given x_0)\\).\nCan I get a 95% confidence interval for \\(Pr(y_0=1 \\given x_0)\\)?\n\nThe bootstrap gives this to you."
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#bootstrap-procedure",
-    "href": "schedule/slides/18-the-bootstrap.html#bootstrap-procedure",
-    "title": "UBC Stat406 2024W",
-    "section": "Bootstrap procedure",
-    "text": "Bootstrap procedure\n\nResample your training data w/ replacement.\nCalculate LDA on this sample.\nProduce a new prediction, call it \\(\\widehat{Pr}_b(y_0 =1 \\given x_0)\\).\nRepeat 1-3 \\(b = 1,\\ldots,B\\) times.\nCI: \\(\\left[2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(1-\\alpha/2),\\ 2\\widehat{Pr}(y_0 =1 \\given x_0) - \\widehat{F}_{boot}(\\alpha/2)\\right]\\)\n\n\n\\(\\hat{F}\\) is the “empirical” distribution of the bootstraps."
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
-    "href": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
-    "title": "UBC Stat406 2024W",
-    "section": "Empirical distribution",
-    "text": "Empirical distribution\n\n\nCode\nr &lt;- rexp(50, 1 / 5)\nggplot(tibble(r = r), aes(r)) + \n  stat_ecdf(colour = orange) +\n  geom_vline(xintercept = quantile(r, probs = c(.05, .95))) +\n  geom_hline(yintercept = c(.05, .95), linetype = \"dashed\") +\n  annotate(\n    \"label\", x = c(5, 12), y = c(.25, .75), \n    label = c(\"hat(F)[boot](.05)\", \"hat(F)[boot](.95)\"), \n    parse = TRUE\n  )"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#very-basic-example",
-    "href": "schedule/slides/18-the-bootstrap.html#very-basic-example",
-    "title": "UBC Stat406 2024W",
-    "section": "Very basic example",
-    "text": "Very basic example\n\nLet \\(X_i\\sim \\textrm{Exponential}(1/5)\\). The pdf is \\(f(x) = \\frac{1}{5}e^{-x/5}\\)\nI know if I estimate the mean with \\(\\bar{X}\\), then by the CLT (if \\(n\\) is big),\n\n\\[\\frac{\\sqrt{n}(\\bar{X}-E[X])}{s} \\approx N(0, 1).\\]\n\nThis gives me a 95% confidence interval like \\[\\bar{X} \\pm 2s/\\sqrt{n}\\]\nBut I don’t want to estimate the mean, I want to estimate the median."
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#section-2",
-    "href": "schedule/slides/18-the-bootstrap.html#section-2",
+    "objectID": "schedule/slides/07-greedy-selection.html#section-2",
+    "href": "schedule/slides/07-greedy-selection.html#section-2",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "Code\nggplot(data.frame(x = c(0, 12)), aes(x)) +\n  stat_function(fun = function(x) dexp(x, 1 / 5), color = orange) +\n  geom_vline(xintercept = 5, color = blue) + # mean\n  geom_vline(xintercept = qexp(.5, 1 / 5), color = red) + # median\n  annotate(\"label\",\n    x = c(2.5, 5.5, 10), y = c(.15, .15, .05),\n    label = c(\"median\", \"bar(x)\", \"pdf\"), parse = TRUE,\n    color = c(red, blue, orange), size = 6\n  )"
+    "text": "simulate_and_estimate_them_all &lt;- function(n = 406) {\n  N &lt;- 2 * n # generate 2x the amount of data (half train, half test)\n  df &lt;- tibble( # generate data\n    x1 = rnorm(N), \n    x2 = rnorm(N, mean = 2), \n    x3 = rexp(N),\n    x4 = x2 + rnorm(N, sd = .1), \n    x5 = x1 + rnorm(N, sd = .1),\n    x6 = x1 - x2 + rnorm(N, sd = .1), \n    x7 = x1 + x3 + rnorm(N, sd = .1),\n    y = x1 * 3 + x2 / 3 + rnorm(N, sd = 2.2)\n  )\n  train &lt;- df[1:n, ] # half the data for training\n  test &lt;- df[(n + 1):N, ] # half the data for evaluation\n  \n  oracle &lt;- lm(y ~ x1 + x2 - 1, data = train) # knowing the right model, not the coefs\n  full &lt;- lm(y ~ ., data = train)\n  stepup &lt;- regsubsets(y ~ ., data = train, method = \"forward\")\n  stepdown &lt;- regsubsets(y ~ ., data = train, method = \"backward\")\n  \n  tibble(\n    y = test$y,\n    oracle = predict(oracle, newdata = test),\n    full = predict(full, newdata = test),\n    stepup = predict(stepup, newdata = test),\n    stepdown = predict(stepdown, newdata = test),\n    truth = drop(as.matrix(test[, c(\"x1\", \"x2\")]) %*% c(3, 1/3))\n  )\n}\n\nset.seed(12345)\nour_sim &lt;- map(1:50, ~ simulate_and_estimate_them_all(406)) |&gt;\n  list_rbind(names_to = \"sim\")"
   },
   {
-    "objectID": "schedule/slides/18-the-bootstrap.html#now-what",
-    "href": "schedule/slides/18-the-bootstrap.html#now-what",
+    "objectID": "schedule/slides/07-greedy-selection.html#results",
+    "href": "schedule/slides/07-greedy-selection.html#results",
     "title": "UBC Stat406 2024W",
-    "section": "Now what…",
-    "text": "Now what…\n\nI give you a sample of size 500, you give me the sample median.\nHow do you get a CI?\nYou can use the bootstrap!\n\n\nset.seed(406406406)\nx &lt;- rexp(n, 1 / 5)\n(med &lt;- median(x)) # sample median\n\n[1] 3.611615\n\nB &lt;- 100\nalpha &lt;- 0.05\nFhat &lt;- map_dbl(1:B, ~ median(sample(x, replace = TRUE))) # repeat B times, \"empirical distribution\"\nCI &lt;- 2 * med - quantile(Fhat, probs = c(1 - alpha / 2, alpha / 2))"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#section-3",
-    "href": "schedule/slides/18-the-bootstrap.html#section-3",
-    "title": "UBC Stat406 2024W",
-    "section": "",
-    "text": "Code\nggplot(data.frame(Fhat), aes(Fhat)) +\n  geom_density(color = orange) +\n  geom_vline(xintercept = CI, color = orange, linetype = 2) +\n  geom_vline(xintercept = med, col = blue) +\n  geom_vline(xintercept = qexp(.5, 1 / 5), col = red) +\n  annotate(\"label\",\n    x = c(3.15, 3.5, 3.75), y = c(.5, .5, 1),\n    color = c(orange, red, blue),\n    label = c(\"widehat(F)\", \"true~median\", \"widehat(median)\"),\n    parse = TRUE\n  ) +\n  xlab(\"x\") +\n  geom_rug(aes(2 * med - Fhat))"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
-    "href": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
-    "title": "UBC Stat406 2024W",
-    "section": "How does this work?",
-    "text": "How does this work?"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#approximations",
-    "href": "schedule/slides/18-the-bootstrap.html#approximations",
-    "title": "UBC Stat406 2024W",
-    "section": "Approximations",
-    "text": "Approximations"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
-    "href": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
-    "title": "UBC Stat406 2024W",
-    "section": "Slightly harder example",
-    "text": "Slightly harder example\n\n\n\nggplot(fatcats, aes(Bwt, Hwt)) +\n  geom_point(color = blue) +\n  xlab(\"Cat body weight (Kg)\") +\n  ylab(\"Cat heart weight (g)\")\n\n\n\n\n\n\n\n\n\n\n\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nsummary(cats.lm)\n\n\nCall:\nlm(formula = Hwt ~ 0 + Bwt, data = fatcats)\n\nResiduals:\n     Min       1Q   Median       3Q      Max \n-11.2353  -0.7932  -0.1407   0.5968  11.1026 \n\nCoefficients:\n    Estimate Std. Error t value Pr(&gt;|t|)    \nBwt  3.95424    0.06294   62.83   &lt;2e-16 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.089 on 143 degrees of freedom\nMultiple R-squared:  0.965, Adjusted R-squared:  0.9648 \nF-statistic:  3947 on 1 and 143 DF,  p-value: &lt; 2.2e-16\n\nconfint(cats.lm)\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
-    "href": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
-    "title": "UBC Stat406 2024W",
-    "section": "When we fit models, we examine diagnostics",
-    "text": "When we fit models, we examine diagnostics\n\n\n\nqqnorm(residuals(cats.lm), pch = 16, col = blue)\nqqline(residuals(cats.lm), col = orange, lwd = 2)\n\n\n\n\n\n\n\n\nThe tails are too fat. So I don’t believe that CI…\n\n\nWe bootstrap\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.826735 4.084322 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#an-alternative",
-    "href": "schedule/slides/18-the-bootstrap.html#an-alternative",
-    "title": "UBC Stat406 2024W",
-    "section": "An alternative",
-    "text": "An alternative\n\nSo far, I didn’t use any information about the data-generating process.\nWe’ve done the non-parametric bootstrap\nThis is easiest, and most common for the methods in this module\n\n\nBut there’s another version\n\nYou could try a “parametric bootstrap”\nThis assumes knowledge about the DGP"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#same-data",
-    "href": "schedule/slides/18-the-bootstrap.html#same-data",
-    "title": "UBC Stat406 2024W",
-    "section": "Same data",
-    "text": "Same data\n\n\nNon-parametric bootstrap\nSame as before\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # NP Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.832907 4.070232 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.829836 4.078652\n\n\n\n\nParametric bootstrap\n\nAssume that the linear model is TRUE.\nThen, \\(\\texttt{Hwt}_i = \\widehat{\\beta}\\times \\texttt{Bwt}_i + \\widehat{e}_i\\), \\(\\widehat{e}_i \\approx \\epsilon_i\\)\nThe \\(\\epsilon_i\\) is random \\(\\longrightarrow\\) just resample \\(\\widehat{e}_i\\).\n\n\nB &lt;- 500\nbhats &lt;- double(B)\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nr &lt;- residuals(cats.lm)\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt; mutate(\n    Hwt = predict(cats.lm) +\n      sample(r, n(), replace = TRUE)\n  )\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Parametric Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.815162 4.065045"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
-    "href": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
-    "title": "UBC Stat406 2024W",
-    "section": "Bootstrap error sources",
-    "text": "Bootstrap error sources\n\n\nSimulation error\n\nusing only \\(B\\) samples to estimate \\(F\\) with \\(\\hat{F}\\).\n\nStatistical error\n\nour data depended on a sample from the population. We don’t have the whole population so we make an error by using a sample (Note: this part is what always happens with data, and what the science of statistics analyzes.)\n\nSpecification error\n\nIf we use the parametric bootstrap, and our model is wrong, then we are overconfident."
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
-    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
-    "title": "UBC Stat406 2024W",
-    "section": "Types of intervals",
-    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\nOur interval is\n\\[\n[2\\hat{\\theta} - \\theta^*_{1-\\alpha/2},\\ 2\\hat{\\theta} - \\theta^*_{\\alpha/2}]\n\\]\nwhere \\(\\theta^*_q\\) is the \\(q\\) quantile of \\(\\hat{\\Theta}\\).\n\n\nCalled the “Pivotal Interval”\nHas the correct \\(1-\\alpha\\)% coverage under very mild conditions on \\(\\hat{\\theta}\\)"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
-    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Types of intervals",
-    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\hat{\\theta} - z_{\\alpha/2}\\hat{s},\\ \\hat{\\theta} + z_{\\alpha/2}\\hat{s}]\n\\]\nwhere \\(\\hat{s} = \\sqrt{\\Var{\\hat{\\Theta}}}\\)\n\n\nCalled the “Normal Interval”\nOnly works if the distribution of \\(\\hat{\\Theta}\\) is approximately Normal.\nUnlikely to work well\nDon’t do this"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
-    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
-    "title": "UBC Stat406 2024W",
-    "section": "Types of intervals",
-    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat{\\Theta}\\) be the resamples\n\\[\n[\\theta^*_{\\alpha/2},\\ \\theta^*_{1-\\alpha/2}]\n\\]\nwhere \\(\\theta^*_q\\) is the \\(q\\) quantile of \\(\\hat{\\Theta}\\).\n\n\nCalled the “Percentile Interval”\nWorks if \\(\\exists\\) monotone \\(m\\) so that \\(m(\\hat\\Theta) \\sim N(m(\\theta), c^2)\\)\nBetter than the Normal Interval\nMore assumptions than the Pivotal Interval"
-  },
-  {
-    "objectID": "schedule/slides/18-the-bootstrap.html#more-details",
-    "href": "schedule/slides/18-the-bootstrap.html#more-details",
-    "title": "UBC Stat406 2024W",
-    "section": "More details",
-    "text": "More details\n\nSee “All of Statistics” by Larry Wasserman, Chapter 8.3\n\nThere’s a handout with the proofs on Canvas (under Modules)"
+    "section": "Results",
+    "text": "Results\n\n\nour_sim |&gt; \n  group_by(sim) %&gt;%\n  summarise(\n    across(oracle:truth, ~ mean((y - .)^2)), \n    .groups = \"drop\"\n  ) %&gt;%\n  transmute(across(oracle:stepdown, ~ . / truth - 1)) |&gt; \n  pivot_longer(\n    everything(), \n    names_to = \"method\", \n    values_to = \"mse\"\n  ) |&gt; \n  ggplot(aes(method, mse, fill = method)) +\n  geom_boxplot(notch = TRUE) +\n  geom_hline(yintercept = 0, linewidth = 2) +\n  scale_fill_viridis_d() +\n  theme(legend.position = \"none\") +\n  scale_y_continuous(\n    labels = scales::label_percent()\n  ) +\n  ylab(\"% increase in mse relative\\n to the truth\")"
   },
   {
     "objectID": "schedule/slides/23-nnets-other.html#section",
@@ -4193,368 +4165,375 @@
     "text": "Distances\nNote how all the methods depend on the distance function\nCan do lots of things besides Euclidean\nThis is very important"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#section",
-    "href": "schedule/slides/07-greedy-selection.html#section",
+    "objectID": "schedule/slides/09-l1-penalties.html#section",
+    "href": "schedule/slides/09-l1-penalties.html#section",
     "title": "UBC Stat406 2024W",
-    "section": "07 practical model/variable selection",
-    "text": "07 practical model/variable selection\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 25 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "09 L1 penalties",
+    "text": "09 L1 penalties\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 29 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#model-selection",
-    "href": "schedule/slides/07-greedy-selection.html#model-selection",
+    "objectID": "schedule/slides/09-l1-penalties.html#last-time",
+    "href": "schedule/slides/09-l1-penalties.html#last-time",
     "title": "UBC Stat406 2024W",
-    "section": "Model Selection",
-    "text": "Model Selection\nModel Selection means select the best distributions to describe your data.\n(I.e. the model with the smallest risk \\(R_n\\).)\n\nThe procedure\n\nGenerate a list of (comparable) candidate models (\\(\\mathcal M = \\{ \\mathcal P_1, \\mathcal P_2, \\ldots \\}\\))\nChoose a procedure for estimating risk (e.g. \\(C_p\\))\nTrain each model and estimate its risk\nChoose the model with the lowest risk (e.g. \\(\\argmin_{\\mathcal P \\in \\mathcal M} C_p(\\mathcal P)\\))"
+    "section": "Last time",
+    "text": "Last time\n\nRidge regression\n\n\\(\\min \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 \\st \\snorm{\\beta}_2^2 \\leq s\\)\n\nBest (in sample) linear regression model of size \\(s\\)\n\n\\(\\min \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 \\st \\snorm{\\beta}_0 \\leq s\\)\n\n\n\n\\(\\snorm{\\beta}_0\\) is the number of nonzero elements in \\(\\beta\\)\nFinding the “best” linear model (of size \\(s\\), among these predictors, in sample) is a nonconvex optimization problem (In fact, it is NP-hard)\nRidge regression is convex (easy to solve), but doesn’t do variable selection\nCan we somehow “interpolate” to get both?"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#example",
-    "href": "schedule/slides/07-greedy-selection.html#example",
+    "objectID": "schedule/slides/09-l1-penalties.html#brief-aside-on-norms",
+    "href": "schedule/slides/09-l1-penalties.html#brief-aside-on-norms",
     "title": "UBC Stat406 2024W",
-    "section": "Example",
-    "text": "Example\nThe truth:\n\ndat &lt;- tibble(\n  x1 = rnorm(100), \n  x2 = rnorm(100),\n  y = 3 + x1 - 5 * x2 + sin(x1 * x2 / (2 * pi)) + rnorm(100, sd = 5)\n)\n\nModel 1: y ~ x1 + x2\nModel 2: y ~ x1 + x2 + x1*x2\nModel 3: y ~ x2 + sin(x1 * x2)\n\nThe models above are written in short hand. In full statistical glory…\n\\[\n\\text{Model 1} = \\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} + \\beta_2X^{(2)}), \\: \\sigma^2 \\right) \\quad \\text{for some } \\beta_0, \\beta_1, \\beta_2, \\sigma \\right\\}\n\\]"
+    "section": "Brief aside on norms",
+    "text": "Brief aside on norms\nRecall, for a vector \\(z \\in \\R^p\\)\n\n\\(\\ell_2\\)-norm\n\n\\(\\|z\\|_2 = \\sqrt{z_1^2 + z_2^2 + \\dots + z_p^2} = \\left(\\sum_{j=1}^p |z_j|^2\\right)^{1/2}\\) (so \\(\\|z\\|_2^2 = \\sum_j z_j^2\\))\n\n\nOther norms:\n\n\\(\\ell_q\\)-norm\n\n\\(\\|z\\|_q = \\left(\\sum_{j=1}^p |z_j|^q\\right)^{1/q}\\)\n\n\\(\\ell_1\\)-norm (special case)\n\n\\(\\|z\\|_1 = \\sum_{j=1}^p |z_j|\\)\n\n\\(\\ell_0\\)-norm\n\n\\(\\|z\\|_0 = \\sum_{j=1}^p I(z_j \\neq 0 ) = \\lvert \\{j : z_j \\neq 0 \\}\\rvert\\)\n\n\\(\\ell_\\infty\\)-norm\n\n\\(\\|z\\|_\\infty = \\max_{1\\leq j \\leq p} |z_j|\\)\n\n\nSee https://en.wikipedia.org/wiki/Norm_(mathematics)"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#fit-each-model-and-estimate-r_n",
-    "href": "schedule/slides/07-greedy-selection.html#fit-each-model-and-estimate-r_n",
+    "objectID": "schedule/slides/09-l1-penalties.html#geometry-of-convexity",
+    "href": "schedule/slides/09-l1-penalties.html#geometry-of-convexity",
     "title": "UBC Stat406 2024W",
-    "section": "Fit each model and estimate \\(R_n\\)",
-    "text": "Fit each model and estimate \\(R_n\\)\n\nforms &lt;- list(\"y ~ x1 + x2\", \"y ~ x1 * x2\", \"y ~ x2 + sin(x1*x2)\") |&gt; \n  map(as.formula)\nfits &lt;- map(forms, ~ lm(.x, data = dat))\nmap(fits, ~ tibble(\n  R2 = summary(.x)$r.sq,\n  training_error = mean(residuals(.x)^2),\n  loocv = mean( (residuals(.x) / (1 - hatvalues(.x)))^2 ),\n  AIC = AIC(.x),\n  BIC = BIC(.x)\n)) |&gt; list_rbind()\n\n# A tibble: 3 × 5\n     R2 training_error loocv   AIC   BIC\n  &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n1 0.589           21.3  22.9  598.  608.\n2 0.595           21.0  23.4  598.  611.\n3 0.586           21.4  23.0  598.  609."
+    "section": "Geometry of convexity",
+    "text": "Geometry of convexity\n\n\nCode\nlibrary(mvtnorm)\nnormBall &lt;- function(q = 1, len = 1000) {\n  tg &lt;- seq(0, 2 * pi, length = len)\n  out &lt;- data.frame(x = cos(tg)) %&gt;%\n    mutate(b = (1 - abs(x)^q)^(1 / q), bm = -b) %&gt;%\n    gather(key = \"lab\", value = \"y\", -x)\n  out$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[\", signif(q, 2), \"]\")\n  return(out)\n}\n\nellipseData &lt;- function(n = 100, xlim = c(-2, 3), ylim = c(-2, 3),\n                        mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {\n  df &lt;- expand.grid(\n    x = seq(xlim[1], xlim[2], length.out = n),\n    y = seq(ylim[1], ylim[2], length.out = n)\n  )\n  df$z &lt;- dmvnorm(df, mean, Sigma)\n  df\n}\n\nlballmax &lt;- function(ed, q = 1, tol = 1e-6) {\n  ed &lt;- filter(ed, x &gt; 0, y &gt; 0)\n  for (i in 1:20) {\n    ff &lt;- abs((ed$x^q + ed$y^q)^(1 / q) - 1) &lt; tol\n    if (sum(ff) &gt; 0) break\n    tol &lt;- 2 * tol\n  }\n  best &lt;- ed[ff, ]\n  best[which.max(best$z), ]\n}\n\nnbs &lt;- list()\nnbs[[1]] &lt;- normBall(0, 1)\nqs &lt;- c(.5, .75, 1, 1.5, 2)\nfor (ii in 2:6) nbs[[ii]] &lt;- normBall(qs[ii - 1])\nnbs[[1]]$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[0.0]\")\nnbs[[4]]$lab &lt;- paste0('\"||\" * beta * \"||\"', \"[1.0]\")\nnbs &lt;- bind_rows(nbs)\nnbs$lab &lt;- factor(nbs$lab, levels = unique(nbs$lab))\nseg &lt;- data.frame(\n  lab = levels(nbs$lab)[1],\n  x0 = c(-1, 0), x1 = c(1, 0), y0 = c(0, -1), y1 = c(0, 1)\n)\nlevels(seg$lab) &lt;- levels(nbs$lab)\nggplot(nbs, aes(x, y)) +\n  geom_path(size = 1.2) +\n  facet_grid(.~lab, labeller = label_parsed) +\n  geom_segment(data = seg, aes(x = x0, xend = x1, y = y0, yend = y1), size = 1.2) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  coord_equal() +\n  scale_x_continuous(breaks = c(-1, 0, 1)) +\n  scale_y_continuous(breaks = c(-1, 0, 1)) +\n  geom_vline(xintercept = 0, size = .5) +\n  geom_hline(yintercept = 0, size = .5) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2]))\n\n\n\n\nWant a convex constraint / regularizer for easy optimization (\\(\\ell_q\\) convex for \\(q \\geq 1\\))\nWant “corners” to perform variable selection (\\(\\ell_q\\) has “corners” for \\(q \\leq 1\\))"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#model-selection-vs.-variable-selection",
-    "href": "schedule/slides/07-greedy-selection.html#model-selection-vs.-variable-selection",
+    "objectID": "schedule/slides/09-l1-penalties.html#the-best-of-both-worlds",
+    "href": "schedule/slides/09-l1-penalties.html#the-best-of-both-worlds",
     "title": "UBC Stat406 2024W",
-    "section": "Model Selection vs. Variable Selection",
-    "text": "Model Selection vs. Variable Selection\nVariable selection is a subset of model selection.\n\nAssume we have 2 predictors (x1, x2) and we’re trying to choose which to include in a linear regressor:\nModel 1: y ~ x1 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} ), \\: \\sigma^2 \\right) \\right\\}\\))\nModel 2: y ~ x2 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1X^{(2)}), \\: \\sigma^2 \\right)  \\right\\}\\))\nModel 3: y ~ x1 + x2 (i.e. \\(\\left\\{ Y|X  \\sim \\mathcal N\\left( \\:( \\beta_0 + \\beta_1 X^{(1)} + \\beta_2X^{(2)}), \\: \\sigma^2 \\right)  \\right\\}\\))\n\nChoosing which predictors to include is implicitly selecting a model.\n\n\n\n\n\n\n\nNote\n\n\nNote that \\(\\mathrm{Model 1}, \\mathrm{Model 2} \\subset \\mathrm{Model 3}\\)\nWe say that these models are nested."
+    "section": "The best of both worlds",
+    "text": "The best of both worlds\n\n\nCode\nnb &lt;- normBall(1)\ned &lt;- ellipseData()\nbols &lt;- data.frame(x = 1, y = 1)\nbhat &lt;- lballmax(ed, 1)\nggplot(nb, aes(x, y)) +\n  geom_path(colour = red) +\n  geom_contour(mapping = aes(z = z), colour = blue, data = ed, bins = 7) +\n  geom_vline(xintercept = 0) +\n  geom_hline(yintercept = 0) +\n  geom_point(data = bols) +\n  coord_equal(xlim = c(-2, 2), ylim = c(-2, 2)) +\n  theme_bw(base_family = \"\", base_size = 24) +\n  geom_label(\n    data = bols, mapping = aes(label = bquote(\"hat(beta)[ols]\")), parse = TRUE,\n    nudge_x = .3, nudge_y = .3\n  ) +\n  geom_point(data = bhat) +\n  xlab(bquote(beta[1])) +\n  ylab(bquote(beta[2])) +\n  geom_label(\n    data = bhat, mapping = aes(label = bquote(\"hat(beta)[s]^L\")), parse = TRUE,\n    nudge_x = -.4, nudge_y = -.4\n  )\n\n\n\nThis regularization set with \\(q = 1\\)…\n\n… is convex (computationally efficient to optimize)\n… has corners (performs variable selection)"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#selecting-variables-predictors-with-linear-methods",
-    "href": "schedule/slides/07-greedy-selection.html#selecting-variables-predictors-with-linear-methods",
+    "objectID": "schedule/slides/09-l1-penalties.html#ell_1-regularized-regression",
+    "href": "schedule/slides/09-l1-penalties.html#ell_1-regularized-regression",
     "title": "UBC Stat406 2024W",
-    "section": "Selecting variables / predictors with linear methods",
-    "text": "Selecting variables / predictors with linear methods\n\n\nSuppose we have a set of predictors.\nWe estimate models with different subsets of predictors and use CV / Cp / AIC / BIC to decide which is preferred.\nHow do we choose which variable subsets to consider?\n\n\n\nAll subsets\n\nestimate model based on every possible subset of size \\(|\\mathcal{S}| \\leq \\min\\{n, p\\}\\), use one with lowest risk estimate\n\nForward selection\n\nstart with \\(\\mathcal{S}=\\varnothing\\), add predictors greedily\n\nBackward selection\n\nstart with \\(\\mathcal{S}=\\{1,\\ldots,p\\}\\), remove greedily\n\nHybrid\n\ncombine forward and backward smartly\n\n\n\n\n\n\n\n\n\n\n\nCaution\n\n\nWithin each procedure, we’re comparing nested models. This is important."
+    "section": "\\(\\ell_1\\)-regularized regression",
+    "text": "\\(\\ell_1\\)-regularized regression\nKnown as\n\n“lasso”\n“basis pursuit”\n\nThe estimator is given by the constrained optimization\n\\[\\blt = \\argmin_{\\beta}  \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 \\st  \\snorm{\\beta}_1 \\leq s\\]\nAs with ridge regression, we will use the unconstrained, regularized form (Lagrangian):\n\\[\\bll = \\argmin_{\\beta} \\frac{1}{n}\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1\\]"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
-    "href": "schedule/slides/07-greedy-selection.html#costs-and-benefits",
+    "objectID": "schedule/slides/09-l1-penalties.html#lasso",
+    "href": "schedule/slides/09-l1-penalties.html#lasso",
     "title": "UBC Stat406 2024W",
-    "section": "Costs and benefits",
-    "text": "Costs and benefits\n\nAll subsets\n\n👍 estimates each subset\n💣 takes \\(2^p\\) model fits when \\(p&lt;n\\). If \\(p=50\\), this is about \\(10^{15}\\) models.\n\n\n\n\nForward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n\nBackward selection\n\n👍 computationally feasible\n💣 ignores some models, correlated predictors means bad performance\n💣 doesn’t work if \\(p&gt;n\\)\n\n\n\n\n\nHybrid\n\n👍 visits more models than forward/backward\n💣 slower"
+    "section": "Lasso",
+    "text": "Lasso\nWhile the ridge regression estimate can be easily computed:\n\\[\\brl = \\argmin_{\\beta} \\frac 1n \\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_2^2 = (\\X^{\\top}\\X + \\lambda \\mathbf{I})^{-1} \\X^{\\top}\\y\\]\nthe lasso estimate does not have a closed form:\n\\[\\bll = \\argmin_{\\beta} \\frac 1n\\snorm{\\y-\\X\\beta}_2^2 + \\lambda \\snorm{\\beta}_1 = \\; ??\\]\nBut the optimization problem is convex, so there are efficient algorithms to compute it!\n\n\nThe best are Iterative Soft Thresholding or Coordinate Descent. Gradient Descent doesn’t work very well in practice."
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#synthetic-example",
-    "href": "schedule/slides/07-greedy-selection.html#synthetic-example",
+    "objectID": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
+    "href": "schedule/slides/09-l1-penalties.html#coefficient-path-ridge-vs-lasso",
     "title": "UBC Stat406 2024W",
-    "section": "Synthetic example",
-    "text": "Synthetic example\n\nset.seed(123)\nn &lt;- 406\ndf &lt;- tibble( # like data.frame, but columns can be functions of preceding\n  x1 = rnorm(n),\n  x2 = rnorm(n, mean = 2, sd = 1),\n  x3 = rexp(n, rate = 1),\n  x4 = x2 + rnorm(n, sd = .1), # correlated with x2\n  x5 = x1 + rnorm(n, sd = .1), # correlated with x1\n  x6 = x1 - x2 + rnorm(n, sd = .1), # correlated with x2 and x1 (and others)\n  x7 = x1 + x3 + rnorm(n, sd = .1), # correlated with x1 and x3 (and others)\n  y = x1 * 3 + x2 / 3 + rnorm(n, sd = 2.2) # function of x1 and x2 only\n)\n\n\n\\(\\mathbf{x}_1\\) and \\(\\mathbf{x}_2\\) are the true predictors\nBut the rest are correlated with them"
+    "section": "Coefficient path: ridge vs lasso",
+    "text": "Coefficient path: ridge vs lasso\n\n\nCode\nlibrary(glmnet)\ndata(prostate, package = \"ElemStatLearn\")\nX &lt;- prostate |&gt; dplyr::select(-train, -lpsa) |&gt;  as.matrix()\nY &lt;- prostate$lpsa\nlasso &lt;- glmnet(x = X, y = Y) # alpha = 1 by default\nridge &lt;- glmnet(x = X, y = Y, alpha = 0)\nop &lt;- par()\n\n\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\", xvar = \"lambda\")\nplot(ridge, main = \"Ridge\", xvar = \"lambda\")"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#full-model",
-    "href": "schedule/slides/07-greedy-selection.html#full-model",
+    "objectID": "schedule/slides/09-l1-penalties.html#same-path-versus-ell_1-norm",
+    "href": "schedule/slides/09-l1-penalties.html#same-path-versus-ell_1-norm",
     "title": "UBC Stat406 2024W",
-    "section": "Full model",
-    "text": "Full model\n\nfull &lt;- lm(y ~ ., data = df)\nsummary(full)\n\n\nCall:\nlm(formula = y ~ ., data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.7739 -1.4283 -0.0929  1.4257  7.5869 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)   \n(Intercept)  0.03383    0.27700   0.122  0.90287   \nx1           6.70481    2.06743   3.243  0.00128 **\nx2          -0.43945    1.71650  -0.256  0.79807   \nx3           1.37293    1.11524   1.231  0.21903   \nx4          -1.19911    1.17850  -1.017  0.30954   \nx5          -0.53918    1.07089  -0.503  0.61490   \nx6          -1.88547    1.21652  -1.550  0.12196   \nx7          -1.25245    1.10743  -1.131  0.25876   \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.231 on 398 degrees of freedom\nMultiple R-squared:  0.6411,    Adjusted R-squared:  0.6347 \nF-statistic: 101.5 on 7 and 398 DF,  p-value: &lt; 2.2e-16"
+    "section": "Same path versus \\(\\ell_1\\) norm",
+    "text": "Same path versus \\(\\ell_1\\) norm\n\npar(mfrow = c(1, 2), mar = c(5, 3, 5, .1))\nplot(lasso, main = \"Lasso\")\nplot(ridge, main = \"Ridge\")"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#true-model",
-    "href": "schedule/slides/07-greedy-selection.html#true-model",
+    "objectID": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
+    "href": "schedule/slides/09-l1-penalties.html#additional-intuition-for-why-lasso-selects-variables",
     "title": "UBC Stat406 2024W",
-    "section": "True model",
-    "text": "True model\n\ntruth &lt;- lm(y ~ x1 + x2, data = df)\nsummary(truth)\n\n\nCall:\nlm(formula = y ~ x1 + x2, data = df)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-6.4519 -1.3873 -0.1941  1.3498  7.5533 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)   0.1676     0.2492   0.673   0.5015    \nx1            3.0316     0.1146  26.447   &lt;2e-16 ***\nx2            0.2447     0.1109   2.207   0.0279 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.233 on 403 degrees of freedom\nMultiple R-squared:  0.6357,    Adjusted R-squared:  0.6339 \nF-statistic: 351.6 on 2 and 403 DF,  p-value: &lt; 2.2e-16"
+    "section": "Additional intuition for why Lasso selects variables",
+    "text": "Additional intuition for why Lasso selects variables\nSuppose, for a particular \\(\\lambda\\), I have solutions for \\(\\widehat{\\beta}_k\\), \\(k = 1,\\ldots,j-1, j+1,\\ldots,p\\).\nLet \\(\\widehat{\\y}_{-j} = \\X_{-j}\\widehat{\\beta}_{-j}\\), and assume WLOG \\(\\overline{\\X}_k = 0\\), \\(\\X_k^\\top\\X_k = 1\\ \\forall k\\)\nOne can show that:\n\\[\n\\widehat{\\beta}_j = S\\left(\\mathbf{X}^\\top_j(\\y - \\widehat{\\y}_{-j}),\\ \\lambda\\right).\n\\]\n\\[\nS(z, \\lambda) = \\begin{cases} z - \\lambda & z &gt; \\lambda \\\\\nz + \\lambda & z &lt; -\\lambda \\\\ 0 & |z| \\leq \\lambda \\end{cases}\n%= \\textrm{sign}(z)(|z| - \\lambda)_+\n\\]\n\nIterating over this is called coordinate descent and gives the solution\n\n\n\n\nIf I were told all the other coefficient estimates.\nThen to find this one, I’d shrink when the gradient is big, or set to 0 if it gets too small.\n\n\n\nSee for example, https://doi.org/10.18637/jss.v033.i01"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#all-subsets",
-    "href": "schedule/slides/07-greedy-selection.html#all-subsets",
+    "objectID": "schedule/slides/09-l1-penalties.html#packages",
+    "href": "schedule/slides/09-l1-penalties.html#packages",
     "title": "UBC Stat406 2024W",
-    "section": "All subsets",
-    "text": "All subsets\n\nlibrary(leaps)\ntrythemall &lt;- regsubsets(y ~ ., data = df)\nsummary(trythemall)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df)\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: exhaustive\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
+    "section": "Packages",
+    "text": "Packages\nThere are two main R implementations for finding lasso\n{glmnet}: lasso = glmnet(X, Y, alpha=1).\n\nSetting alpha = 0 gives ridge regression (as does lm.ridge in the MASS package)\nSetting alpha \\(\\in (0,1)\\) gives a method called the “elastic net” which combines ridge regression and lasso (regularization \\(\\alpha \\|\\beta\\|_1 + (1-\\alpha)\\|\\beta\\|^2_2\\)). More on that later.\nDefault alpha = 1 (it does lasso)\n\n{lars}: lars = lars(X, Y)\n\nlars() also does other things called “Least angle” and “forward stagewise” in addition to “forward stepwise” regression\nThe path returned by lars() is more useful than that returned by glmnet().\n\n\nBut you should use {glmnet}."
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp",
-    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp",
+    "objectID": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
+    "href": "schedule/slides/09-l1-penalties.html#choosing-the-lambda",
     "title": "UBC Stat406 2024W",
-    "section": "BIC and Cp",
-    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(trythemall)$bic, \n  Cp = summary(trythemall)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) + \n  geom_point() + \n  geom_line() + \n  facet_wrap(~name, scales = \"free_y\") + \n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange), \n    guide = \"none\"\n  )"
+    "section": "Choosing the \\(\\lambda\\)",
+    "text": "Choosing the \\(\\lambda\\)\nYou have to choose \\(\\lambda\\) in lasso or in ridge regression\nlasso selects variables (by setting coefficients to zero), but the value of \\(\\lambda\\) determines how many/which.\nAll of these packages come with CV built in.\nHowever, the way to do it differs from package to package"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#forward-stepwise",
-    "href": "schedule/slides/07-greedy-selection.html#forward-stepwise",
+    "objectID": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
+    "href": "schedule/slides/09-l1-penalties.html#glmnet-version-same-procedure-for-lasso-or-ridge",
     "title": "UBC Stat406 2024W",
-    "section": "Forward stepwise",
-    "text": "Forward stepwise\n\nstepup &lt;- regsubsets(y ~ ., data = df, method = \"forward\")\nsummary(stepup)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df, method = \"forward\")\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: forward\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
+    "section": "{glmnet} version (same procedure for lasso or ridge)",
+    "text": "{glmnet} version (same procedure for lasso or ridge)\n\nlasso &lt;- cv.glmnet(X, Y) # estimate full model and CV no good reason to call glmnet() itself\n# 2. Look at the CV curve. If the dashed lines are at the boundaries, redo and adjust lambda\nlambda_min &lt;- lasso$lambda.min # the value, not the location (or use lasso$lambda.1se)\ncoeffs &lt;- coefficients(lasso, s = \"lambda.min\") # s can be string or a number\npreds &lt;- predict(lasso, newx = X, s = \"lambda.1se\") # must supply `newx`\n\n\n\\(\\widehat{R}_{CV}\\) is an estimator of \\(R_n\\), it has bias and variance\nBecause we did CV, we actually have 10 \\(\\widehat{R}\\) values, 1 per split.\nCalculate the mean (that’s what we’ve been using), but what about SE?"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp-1",
-    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp-1",
-    "title": "UBC Stat406 2024W",
-    "section": "BIC and Cp",
-    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(stepup)$bic,\n  Cp = summary(stepup)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) +\n  geom_point() +\n  geom_line() +\n  facet_wrap(~name, scales = \"free_y\") +\n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange),\n    guide = \"none\"\n  )"
-  },
-  {
-    "objectID": "schedule/slides/07-greedy-selection.html#backward-selection",
-    "href": "schedule/slides/07-greedy-selection.html#backward-selection",
-    "title": "UBC Stat406 2024W",
-    "section": "Backward selection",
-    "text": "Backward selection\n\nstepdown &lt;- regsubsets(y ~ ., data = df, method = \"backward\")\nsummary(stepdown)\n\nSubset selection object\nCall: regsubsets.formula(y ~ ., data = df, method = \"backward\")\n7 Variables  (and intercept)\n   Forced in Forced out\nx1     FALSE      FALSE\nx2     FALSE      FALSE\nx3     FALSE      FALSE\nx4     FALSE      FALSE\nx5     FALSE      FALSE\nx6     FALSE      FALSE\nx7     FALSE      FALSE\n1 subsets of each size up to 7\nSelection Algorithm: backward\n         x1  x2  x3  x4  x5  x6  x7 \n1  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \" \" \" \"\n2  ( 1 ) \"*\" \" \" \" \" \" \" \" \" \"*\" \" \"\n3  ( 1 ) \"*\" \" \" \" \" \"*\" \" \" \"*\" \" \"\n4  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \" \"\n5  ( 1 ) \"*\" \" \" \"*\" \"*\" \" \" \"*\" \"*\"\n6  ( 1 ) \"*\" \" \" \"*\" \"*\" \"*\" \"*\" \"*\"\n7  ( 1 ) \"*\" \"*\" \"*\" \"*\" \"*\" \"*\" \"*\""
-  },
-  {
-    "objectID": "schedule/slides/07-greedy-selection.html#bic-and-cp-2",
-    "href": "schedule/slides/07-greedy-selection.html#bic-and-cp-2",
-    "title": "UBC Stat406 2024W",
-    "section": "BIC and Cp",
-    "text": "BIC and Cp\n\n\ntibble(\n  BIC = summary(stepdown)$bic,\n  Cp = summary(stepdown)$cp,\n  size = 1:7\n) |&gt;\n  pivot_longer(-size) |&gt;\n  ggplot(aes(size, value, colour = name)) +\n  geom_point() +\n  geom_line() +\n  facet_wrap(~name, scales = \"free_y\") +\n  ylab(\"\") +\n  scale_colour_manual(\n    values = c(blue, orange), \n    guide = \"none\"\n  )"
-  },
-  {
-    "objectID": "schedule/slides/07-greedy-selection.html#section-1",
-    "href": "schedule/slides/07-greedy-selection.html#section-1",
+    "objectID": "schedule/slides/09-l1-penalties.html#section-1",
+    "href": "schedule/slides/09-l1-penalties.html#section-1",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "for this dataset, everything is the same"
+    "text": "par(mfrow = c(1, 2), mar = c(5, 3, 3, 0))\nplot(lasso) # a plot method for the cv fit\nplot(lasso$glmnet.fit) # the glmnet.fit == glmnet(X,Y)\nabline(v = colSums(abs(coef(lasso$glmnet.fit)[-1, drop(lasso$index)])), lty = 2)"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#what-algorithm-should-you-use-in-practice",
-    "href": "schedule/slides/07-greedy-selection.html#what-algorithm-should-you-use-in-practice",
+    "objectID": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
+    "href": "schedule/slides/09-l1-penalties.html#paths-with-chosen-lambda",
     "title": "UBC Stat406 2024W",
-    "section": "What algorithm should you use in practice?",
-    "text": "What algorithm should you use in practice?\nEach algorithm (forward selection, backward selection, etc.) produces a series of models.\nFor a given algorithm, we know how to choose amongst the models in a principled way (model selection!)\nHow do we choose which algorithm to use?\n\nAs a practicioner\nDetermine how big your computational budget is, make an educated guess.\nAs a researcher\nWe can systematically compare the different algorithms by simulating multiple data sets and comparing the prediction error of the models produced by each algorithm."
+    "section": "Paths with chosen lambda",
+    "text": "Paths with chosen lambda\n\nridge &lt;- cv.glmnet(X, Y, alpha = 0, lambda.min.ratio = 1e-10) # added to get a minimum\npar(mfrow = c(1, 4))\nplot(ridge, main = \"Ridge\")\nplot(lasso, main = \"Lasso\")\nplot(ridge$glmnet.fit, main = \"Ridge\")\nabline(v = sum(abs(coef(ridge)))) # defaults to `lambda.1se`\nplot(lasso$glmnet.fit, main = \"Lasso\")\nabline(v = sum(abs(coef(lasso)))) # again, `lambda.1se` unless told otherwise"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#comparing-algorithms-through-simulation",
-    "href": "schedule/slides/07-greedy-selection.html#comparing-algorithms-through-simulation",
+    "objectID": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
+    "href": "schedule/slides/09-l1-penalties.html#degrees-of-freedom",
     "title": "UBC Stat406 2024W",
-    "section": "Comparing algorithms through simulation",
-    "text": "Comparing algorithms through simulation\n\n\n\n\n\n\nNote\n\n\n\nFor each algorithm (forward selection, backward selection, all subsets), do:\n\nFor \\(i \\in [1, 100]\\), do\n\nGenerate a samples of training data\nSelected a model (e.g. based on \\(C_p\\)) generated by the algorithm\nMake predictions on held-out set data\nExamine prediction MSE (on held-out set)\n\n\n\nCompare the average MSE (across the 100 simulations) for each algorithm.\n\n\n\n\nWhy are we using held-out MSE to compare forward selection vs. backward selection vs. all subsets? Why not use \\(C_p\\) of the selected model?"
+    "section": "Degrees of freedom",
+    "text": "Degrees of freedom\nLasso is not a linear smoother. There is no matrix \\(S\\) such that \\(\\widehat{\\y} = \\mathbf{S}\\y\\) for the predicted values from lasso.\n\nWe can’t use cv_nice().\nWe don’t have \\(\\tr{\\mathbf{S}} = \\textrm{df}\\) because there is no \\(\\mathbf{S}\\).\n\nHowever,\n\nOne can show that \\(\\textrm{df}_\\lambda = \\E[\\#(\\widehat{\\beta}_\\lambda \\neq 0)] = \\E[||\\widehat{\\beta}_\\lambda||_0]\\)\nThe proof is PhD-level material\n\nNote that the \\(\\widehat{\\textrm{df}}_\\lambda\\) is shown on the CV plot and that lasso.glmnet$glmnet.fit$df contains this value for all \\(\\lambda\\)."
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#code-for-simulation",
-    "href": "schedule/slides/07-greedy-selection.html#code-for-simulation",
+    "objectID": "schedule/slides/09-l1-penalties.html#other-flavours",
+    "href": "schedule/slides/09-l1-penalties.html#other-flavours",
     "title": "UBC Stat406 2024W",
-    "section": "Code for simulation",
-    "text": "Code for simulation\n… Annoyingly, no predict method for regsubsets, so we make one.\n\npredict.regsubsets &lt;- function(object, newdata, risk_estimate = c(\"cp\", \"bic\"), ...) {\n  risk_estimate &lt;- match.arg(risk_estimate)\n  chosen &lt;- coef(object, which.min(summary(object)[[risk_estimate]]))\n  predictors &lt;- names(chosen)\n  if (object$intercept) predictors &lt;- predictors[-1]\n  X &lt;- newdata[, predictors]\n  if (object$intercept) X &lt;- cbind2(1, X)\n  drop(as.matrix(X) %*% chosen)\n}"
+    "section": "Other flavours",
+    "text": "Other flavours\n\nThe elastic net\n\ngenerally used for correlated variables that combines a ridge/lasso penalty. Use glmnet(..., alpha = a) (0 &lt; a &lt; 1).\n\nGrouped lasso\n\nwhere variables are included or excluded in groups. Required for factors (1-hot encoding)\n\nRelaxed lasso\n\nTakes the estimated model from lasso and fits the full least squares solution on the selected covariates (less bias, more variance). Use glmnet(..., relax = TRUE).\n\nDantzig selector\n\na slightly modified version of the lasso"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#section-2",
-    "href": "schedule/slides/07-greedy-selection.html#section-2",
+    "objectID": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
+    "href": "schedule/slides/09-l1-penalties.html#lasso-cinematic-universe",
+    "title": "UBC Stat406 2024W",
+    "section": "Lasso cinematic universe",
+    "text": "Lasso cinematic universe\n\n\n\nSCAD\n\na non-convex version of lasso that adds a more severe variable selection penalty\n\n\\(\\sqrt{\\textrm{lasso}}\\)\n\nclaims to be tuning parameter free (but isn’t). Uses \\(\\Vert\\cdot\\Vert_2\\) instead of \\(\\Vert\\cdot\\Vert_1\\) for the loss.\n\nGeneralized lasso\n\nAdds various additional matrices to the penalty term (e.g. \\(\\Vert D\\beta\\Vert_1\\)).\n\nArbitrary combinations\n\ncombine the above penalties in your favourite combinations"
+  },
+  {
+    "objectID": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
+    "href": "schedule/slides/09-l1-penalties.html#warnings-on-regularized-regression",
+    "title": "UBC Stat406 2024W",
+    "section": "Warnings on regularized regression",
+    "text": "Warnings on regularized regression\n\nThis isn’t a method unless you say how to choose \\(\\lambda\\).\nThe intercept is never penalized. Adds an extra degree-of-freedom.\nPredictor scaling is very important.\nDiscrete predictors need groupings.\nCentering the predictors is important\n(These all work with other likelihoods.)\n\n\nSoftware handles most of these automatically, but not always. (No Lasso with factor predictors.)"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#section",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "17 Nonlinear classifiers",
+    "text": "17 Nonlinear classifiers\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 23 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#two-lectures-ago",
+    "title": "UBC Stat406 2024W",
+    "section": "Two lectures ago",
+    "text": "Two lectures ago\nWe discussed logistic regression\n\\[\\begin{aligned}\nPr(Y = 1 \\given X=x)  & = \\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}} \\\\\nPr(Y = 0 \\given X=x) & = \\frac{1}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}=1-\\frac{\\exp\\{\\beta_0 + \\beta^{\\top}x\\}}{1 + \\exp\\{\\beta_0 + \\beta^{\\top}x\\}}\\end{aligned}\\]"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#make-it-nonlinear",
+    "title": "UBC Stat406 2024W",
+    "section": "Make it nonlinear",
+    "text": "Make it nonlinear\nWe can make logistic regression have non-linear decision boundaries by mapping the features to a higher dimension (just like with linear regression)\nSay:\nPolynomials\n\\((x_1, x_2) \\mapsto \\left(1,\\ x_1,\\ x_1^2,\\ x_2,\\ x_2^2,\\ x_1 x_2\\right)\\)\n\ndat1 &lt;- generate_lda_2d(100, Sigma = .5 * diag(2)) |&gt; mutate(y = as.factor(y))\nlogit_poly &lt;- glm(y ~ x1 * x2 + I(x1^2) + I(x2^2), dat1, family = \"binomial\")"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#visualizing-the-classification-boundary",
+    "title": "UBC Stat406 2024W",
+    "section": "Visualizing the classification boundary",
+    "text": "Visualizing the classification boundary\n\n\nCode\nlibrary(cowplot)\ngr &lt;- expand_grid(x1 = seq(-2.5, 3, length.out = 100), x2 = seq(-2.5, 3, length.out = 100))\npts_logit &lt;- predict(logit_poly, gr)\ng0 &lt;- ggplot(dat1, aes(x1, x2)) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = tibble(gr, disc = pts_logit), aes(x1, x2, fill = disc)) +\n  geom_point(aes(shape = as.factor(y)), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_viridis_b(n.breaks = 6, alpha = .5, name = \"log odds\") +\n  ggtitle(\"Polynomial logit\") +\n  theme(legend.position = \"bottom\", legend.key.width = unit(1.5, \"cm\"))\nplot_grid(g0)\n\n\n\nA linear decision boundary in the higher-dimensional space corresponds to a non-linear decision boundary in low dimensions."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn-classifiers",
+    "title": "UBC Stat406 2024W",
+    "section": "KNN classifiers",
+    "text": "KNN classifiers"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#choosing-k-is-very-important",
+    "title": "UBC Stat406 2024W",
+    "section": "Choosing \\(k\\) is very important",
+    "text": "Choosing \\(k\\) is very important\n\n\nCode\nset.seed(406406406)\nks &lt;- c(1, 2, 5, 10, 20)\nnn &lt;- map(ks, ~ as_tibble(knn(dat1[, -1], gr[, 1:2], dat1$y, .x)) |&gt; \n  set_names(sprintf(\"k = %02s\", .x))) |&gt;\n  list_cbind() |&gt;\n  bind_cols(gr)\npg &lt;- pivot_longer(nn, starts_with(\"k =\"), names_to = \"k\", values_to = \"knn\")\n\nggplot(pg, aes(x1, x2)) +\n  geom_raster(aes(fill = knn), alpha = .6) +\n  facet_wrap(~ k) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  geom_point(data = dat1, mapping = aes(x1, x2, shape = as.factor(y)), size = 4) +\n  theme_bw(base_size = 18) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  theme(\n    legend.title = element_blank(),\n    legend.key.height = unit(3, \"cm\")\n  )\n\n\n\n\nHow should we choose \\(k\\)?\nScaling is also very important. “Nearness” is determined by distance, so better to standardize your data first.\nIf there are ties, break randomly. So even \\(k\\) is strange."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#knn.cv-leave-one-out",
+    "title": "UBC Stat406 2024W",
+    "section": "knn.cv() (leave one out)",
+    "text": "knn.cv() (leave one out)\n\nkmax &lt;- 20\nerr &lt;- map_dbl(1:kmax, ~ mean(knn.cv(dat1[, -1], dat1$y, k = .x) != dat1$y))\n\n\nI would use the largest (odd) k that is close to the minimum.\nThis produces simpler, smoother, decision boundaries."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#final-version",
+    "title": "UBC Stat406 2024W",
+    "section": "Final version",
+    "text": "Final version\n\n\n\n\nCode\nkopt &lt;- max(which(err == min(err)))\nkopt &lt;- kopt + 1 * (kopt %% 2 == 0)\ngr$opt &lt;- knn(dat1[, -1], gr[, 1:2], dat1$y, k = kopt)\ntt &lt;- table(knn(dat1[, -1], dat1[, -1], dat1$y, k = kopt), dat1$y, dnn = c(\"predicted\", \"truth\"))\nggplot(dat1, aes(x1, x2)) +\n  theme_bw(base_size = 24) +\n  scale_shape_manual(values = c(\"0\", \"1\"), guide = \"none\") +\n  geom_raster(data = gr, aes(x1, x2, fill = opt), alpha = .6) +\n  geom_point(aes(shape = y), size = 4) +\n  coord_cartesian(c(-2.5, 3), c(-2.5, 3)) +\n  scale_fill_manual(values = c(orange, green), labels = c(\"0\", \"1\")) +\n  theme(\n    legend.position = \"bottom\", legend.title = element_blank(),\n    legend.key.width = unit(2, \"cm\")\n  )\n\n\n\n\n\n\n\n\n\n\n\n\nBest \\(k\\): 19\nMisclassification error: 0.17\nConfusion matrix:\n\n\n\n         truth\npredicted  1  2\n        1 41  6\n        2 11 42\n\n\n\n\n\n\n\n\n\n\n\n1c36b39 (Update last of classification slides) ## Trees\n\n\n\n\n\n\n\n\n\nWe saw regression trees last module\nClassification trees are\n\nMore natural\nSlightly different computationally\n\nEverything else is pretty much the same"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#axis-parallel-splits",
+    "title": "UBC Stat406 2024W",
+    "section": "Axis-parallel splits",
+    "text": "Axis-parallel splits\nLike with regression trees, classification trees operate by greedily splitting the predictor space\n\n\n\nnames(bakeoff)\n\n [1] \"winners\"                  \n [2] \"series\"                   \n [3] \"age\"                      \n [4] \"occupation\"               \n [5] \"hometown\"                 \n [6] \"percent_star\"             \n [7] \"percent_technical_wins\"   \n [8] \"percent_technical_bottom3\"\n [9] \"percent_technical_top3\"   \n[10] \"technical_highest\"        \n[11] \"technical_lowest\"         \n[12] \"technical_median\"         \n[13] \"judge1\"                   \n[14] \"judge2\"                   \n[15] \"viewers_7day\"             \n[16] \"viewers_28day\"            \n\n\n\nsmalltree &lt;- tree(\n  winners ~ technical_median + percent_star,\n  data = bakeoff\n)\n\n\n\n\n\nCode\npar(mar = c(5, 5, 0, 0) + .1)\nplot(bakeoff$technical_median, bakeoff$percent_star,\n  pch = c(\"-\", \"+\")[bakeoff$winners + 1], cex = 2, bty = \"n\", las = 1,\n  ylab = \"% star baker\", xlab = \"times above median in technical\",\n  col = orange, cex.axis = 2, cex.lab = 2\n)\npartition.tree(smalltree,\n  add = TRUE, col = blue,\n  ordvars = c(\"technical_median\", \"percent_star\")\n)"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#when-do-trees-do-well",
+    "title": "UBC Stat406 2024W",
+    "section": "When do trees do well?",
+    "text": "When do trees do well?\n\n\n\n\n\n2D example\nTop Row:\ntrue decision boundary is linear\n🍎 linear classifier\n👎 tree with axis-parallel splits\nBottom Row:\ntrue decision boundary is non-linear\n🤮 A linear classifier can’t capture the true decision boundary\n🍎 decision tree is successful."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-build-a-tree",
+    "title": "UBC Stat406 2024W",
+    "section": "How do we build a tree?",
+    "text": "How do we build a tree?\n\nDivide the predictor space into \\(J\\) non-overlapping regions \\(R_1, \\ldots, R_J\\)\n\n\nthis is done via greedy, recursive binary splitting\n\n\nEvery observation that falls into a given region \\(R_j\\) is given the same prediction\n\n\ndetermined by majority (or plurality) vote in that region.\n\nImportant:\n\nTrees can only make rectangular regions that are aligned with the coordinate axis.\nWe use a greedy (not optimal) algorithm to fit the tree"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#flashback-constructing-trees-for-regression",
+    "title": "UBC Stat406 2024W",
+    "section": "Flashback: Constructing Trees for Regression",
+    "text": "Flashback: Constructing Trees for Regression\n\nWhile (\\(\\mathtt{depth} \\ne \\mathtt{max.depth}\\)):\n\nFor each existing region \\(R_k\\)\n\nFor a given splitting variable \\(j\\) and split value \\(s\\), define \\[\n\\begin{align}\nR_k^&gt; &= \\{x \\in R_k : x^{(j)} &gt; s\\} \\\\\nR_k^&lt; &= \\{x \\in R_k : x^{(j)} &gt; s\\}\n\\end{align}\n\\]\nChoose \\(j\\) and \\(s\\) to maximize quality of fit; i.e. \\[\\min |R_k^&gt;| \\cdot \\widehat{Var}(R_k^&gt;) + |R_k^&lt;| \\cdot  \\widehat{Var}(R_k^&lt;)\\]\n\n\n\n\nWe have to change this last line for classification"
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#how-do-we-measure-quality-of-fit",
+    "title": "UBC Stat406 2024W",
+    "section": "How do we measure quality of fit?",
+    "text": "How do we measure quality of fit?\nLet \\(p_{mk}\\) be the proportion of training observations in the \\(m^{th}\\) region that are from the \\(k^{th}\\) class.\n\n\n\n\n\n\n\nclassification error rate:\n\\(E = 1 - \\max_k (\\widehat{p}_{mk})\\)\n\n\nGini index:\n\\(G = \\sum_k \\widehat{p}_{mk}(1-\\widehat{p}_{mk})\\)\n\n\ncross-entropy:\n\\(D = -\\sum_k \\widehat{p}_{mk}\\log(\\widehat{p}_{mk})\\)\n\n\n\nBoth Gini and cross-entropy measure the purity of the classifier (small if all \\(p_{mk}\\) are near zero or 1).\nClassification error is hard to optimize.\nWe build a classifier by growing a tree that minimizes \\(G\\) or \\(D\\)."
+  },
+  {
+    "objectID": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "href": "schedule/slides/17-nonlinear-classifiers.html#advantages-and-disadvantages-of-trees-again",
+    "title": "UBC Stat406 2024W",
+    "section": "Advantages and disadvantages of trees (again)",
+    "text": "Advantages and disadvantages of trees (again)\n🎉 Trees are very easy to explain (much easier than even linear regression).\n🎉 Some people believe that decision trees mirror human decision.\n🎉 Trees can easily be displayed graphically no matter the dimension of the data.\n🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.\n💩 Trees aren’t very good at prediction.\n💩 Trees are highly variable. Small changes in training data \\(\\Longrightarrow\\) big changes in the tree.\nTo fix these last two, we can try to grow many trees and average their performance.\n\nWe do this next module\n\n\n\nUBC Stat 406 - 2024"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#section",
+    "href": "schedule/slides/18-the-bootstrap.html#section",
+    "title": "UBC Stat406 2024W",
+    "section": "18 The bootstrap",
+    "text": "18 The bootstrap\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 28 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#uncertainty-with-one-sample",
+    "href": "schedule/slides/18-the-bootstrap.html#uncertainty-with-one-sample",
+    "title": "UBC Stat406 2024W",
+    "section": "Uncertainty with one sample?",
+    "text": "Uncertainty with one sample?\nWe get data \\(X_{1:N},Y_{1:N}\\). We compute something from the data \\(\\hat\\theta = f(X_{1:N},Y_{1:N})\\).\nThat \\(\\ \\hat\\theta\\) is a point estimate (regression coeffs, median of \\(Y\\), risk estimate…)\nHow do we understand the uncertainty in \\(\\hat\\theta\\approx \\theta\\) due to randomness in \\(X_{1:N}, Y_{1:N}\\)?\n\nIf we know the sampling distribution of \\(\\hat\\theta\\), we can use variance / confidence intervals.\nWe usually don’t know that in practice (don’t know real data dist, \\(f\\) can be nasty)\nFor some \\(\\hat\\theta\\), things are nice anyway. E.g. for empirical mean \\(\\hat\\theta = \\frac{1}{N}\\sum_{n=1}^N X_n\\) with iid \\(X_n\\):\n\n\\(\\Var{\\hat\\theta} = \\Var{X_1} / n\\).\nConfidence Intervals: if \\(X_n\\) are iid and \\(n\\) “big”, then CLT: \\(\\hat\\theta \\overset{\\text{approx}}{\\sim}\\mathcal{N}(\\mu, \\sigma^2/n)\\)"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#unknown-sampling-distribution",
+    "href": "schedule/slides/18-the-bootstrap.html#unknown-sampling-distribution",
+    "title": "UBC Stat406 2024W",
+    "section": "Unknown sampling distribution?",
+    "text": "Unknown sampling distribution?\nWhat if you are skeptical of CLT / don’t know the sampling distribution?\n\nI fit LDA on some data.\nI get a new \\(X_0\\) and produce \\(\\hat\\theta = \\Pr(Y_0 =1 \\given X_0)\\).\nCan I get a 95% confidence interval for \\(\\theta = \\Pr(Y_0=1 \\given X_0)\\)?\n\n\nThe bootstrap gives this to you."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#etymology-of-the-bootstrap",
+    "href": "schedule/slides/18-the-bootstrap.html#etymology-of-the-bootstrap",
+    "title": "UBC Stat406 2024W",
+    "section": "Etymology of the “bootstrap”",
+    "text": "Etymology of the “bootstrap”\n\n“to build itself up incrementally, starting from very little”\n“to create something valuable from very little/nothing”\nattributed to a late 1800s physics textbook question\n\n“why can a man not lift himself up by pulling on his bootstraps?”\n\nbecame a sarcastic comment about self-driven socioeconomic advancement\n\nas these things go: co-opted by others and taken seriously\n\nfun fact: same etymology for the term in computing\n\n“booting up your computer”"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#generic-bootstrap-procedure",
+    "href": "schedule/slides/18-the-bootstrap.html#generic-bootstrap-procedure",
+    "title": "UBC Stat406 2024W",
+    "section": "Generic Bootstrap Procedure",
+    "text": "Generic Bootstrap Procedure\nThe bootstrap is super general-purpose. Given data \\(X_{1:N}, Y_{1:N}\\):\n\nCompute \\(\\hat\\theta = f(X_{1:N}, Y_{1:N})\\)\nFor \\(b=1,\\dots, B\\), resample data w/ replacement: \\(X^{(b)}_{1:N}, Y^{(b)}_{1:N}\\) (bootstrap samples)\nFor \\(b=1,\\dots, B\\), recompute \\(\\hat\\theta^{(b)} = f(X^{(b)}_{1:N}, Y^{(b)}_{1:N}\\)) (bootstrap estimates)\nVariance of \\(\\hat\\theta \\approx\\) the empirical variance of \\(\\hat\\theta^{(b)}\\)\n\\((1-\\alpha)\\)% Confidence Interval for \\(\\theta\\): \\(\\left[2\\hat\\theta - \\widehat{F}_{\\text{boot}}(1-\\alpha/2),\\ 2\\hat\\theta - \\widehat{F}_{\\text{boot}}(\\alpha/2)\\right]\\)\n\n\\(\\widehat{F}_{\\text{boot}}\\) is the empirical CDF of the samples \\(\\hat\\theta^{(b)}\\)"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#the-bootstrap-is-very-flexible",
+    "href": "schedule/slides/18-the-bootstrap.html#the-bootstrap-is-very-flexible",
+    "title": "UBC Stat406 2024W",
+    "section": "The bootstrap is very flexible",
+    "text": "The bootstrap is very flexible\ne.g., for LDA:\n\nProduce the original estimate \\(\\hat\\theta=\\widehat{\\Pr}(Y_0=1 \\given X_0)\\)\nResample your training data \\(B\\) times with replacement\nRefit LDA for each one to produce \\(\\widehat{\\Pr}\\nolimits_b(Y_0 =1 \\given X_0)\\).\nCI: \\(\\left[2\\widehat{\\Pr}(Y_0 =1 \\given X_0) - \\widehat{F}_{\\text{boot}}(1-\\alpha/2),\\ 2\\widehat{\\Pr}(Y_0 =1 \\given X_0) - \\widehat{F}_{\\text{boot}}(\\alpha/2)\\right]\\)\n\n\\(\\widehat{F}_{\\text{boot}}\\) is the empirical CDF of the samples \\(\\widehat{\\Pr}\\nolimits_b(Y_0 =1 \\given X_0)\\)"
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#a-basic-example",
+    "href": "schedule/slides/18-the-bootstrap.html#a-basic-example",
+    "title": "UBC Stat406 2024W",
+    "section": "A basic example",
+    "text": "A basic example\n\nLet \\(X_i\\sim \\textrm{Exponential}(1/5)\\). The pdf is \\(f(x) = \\frac{1}{5}e^{-x/5}\\)\nI know if I estimate the mean with \\(\\bar{X}\\), then by the CLT (if \\(n\\) is big),\n\n\\[\\frac{\\sqrt{n}(\\bar{X}-E[X])}{s} \\approx N(0, 1).\\]\n\nThis gives me a 95% confidence interval like \\[\\bar{X} \\pm 2s/\\sqrt{n}\\]\nBut I don’t want to estimate the mean, I want to estimate the median."
+  },
+  {
+    "objectID": "schedule/slides/18-the-bootstrap.html#section-1",
+    "href": "schedule/slides/18-the-bootstrap.html#section-1",
     "title": "UBC Stat406 2024W",
     "section": "",
-    "text": "simulate_and_estimate_them_all &lt;- function(n = 406) {\n  N &lt;- 2 * n # generate 2x the amount of data (half train, half test)\n  df &lt;- tibble( # generate data\n    x1 = rnorm(N), \n    x2 = rnorm(N, mean = 2), \n    x3 = rexp(N),\n    x4 = x2 + rnorm(N, sd = .1), \n    x5 = x1 + rnorm(N, sd = .1),\n    x6 = x1 - x2 + rnorm(N, sd = .1), \n    x7 = x1 + x3 + rnorm(N, sd = .1),\n    y = x1 * 3 + x2 / 3 + rnorm(N, sd = 2.2)\n  )\n  train &lt;- df[1:n, ] # half the data for training\n  test &lt;- df[(n + 1):N, ] # half the data for evaluation\n  \n  oracle &lt;- lm(y ~ x1 + x2 - 1, data = train) # knowing the right model, not the coefs\n  full &lt;- lm(y ~ ., data = train)\n  stepup &lt;- regsubsets(y ~ ., data = train, method = \"forward\")\n  stepdown &lt;- regsubsets(y ~ ., data = train, method = \"backward\")\n  \n  tibble(\n    y = test$y,\n    oracle = predict(oracle, newdata = test),\n    full = predict(full, newdata = test),\n    stepup = predict(stepup, newdata = test),\n    stepdown = predict(stepdown, newdata = test),\n    truth = drop(as.matrix(test[, c(\"x1\", \"x2\")]) %*% c(3, 1/3))\n  )\n}\n\nset.seed(12345)\nour_sim &lt;- map(1:50, ~ simulate_and_estimate_them_all(406)) |&gt;\n  list_rbind(names_to = \"sim\")"
+    "text": "Code\nggplot(data.frame(x = c(0, 12)), aes(x)) +\n  stat_function(fun = function(x) dexp(x, 1 / 5), color = orange) +\n  geom_vline(xintercept = 5, color = blue) + # mean\n  geom_vline(xintercept = qexp(.5, 1 / 5), color = red) + # median\n  annotate(\"label\",\n    x = c(2.5, 5.5, 10), y = c(.15, .15, .05),\n    label = c(\"median\", \"bar(x)\", \"pdf\"), parse = TRUE,\n    color = c(red, blue, orange), size = 6\n  )"
   },
   {
-    "objectID": "schedule/slides/07-greedy-selection.html#results",
-    "href": "schedule/slides/07-greedy-selection.html#results",
+    "objectID": "schedule/slides/18-the-bootstrap.html#how-to-assess-uncertainty-in-the-median",
+    "href": "schedule/slides/18-the-bootstrap.html#how-to-assess-uncertainty-in-the-median",
     "title": "UBC Stat406 2024W",
-    "section": "Results",
-    "text": "Results\n\n\nour_sim |&gt; \n  group_by(sim) %&gt;%\n  summarise(\n    across(oracle:truth, ~ mean((y - .)^2)), \n    .groups = \"drop\"\n  ) %&gt;%\n  transmute(across(oracle:stepdown, ~ . / truth - 1)) |&gt; \n  pivot_longer(\n    everything(), \n    names_to = \"method\", \n    values_to = \"mse\"\n  ) |&gt; \n  ggplot(aes(method, mse, fill = method)) +\n  geom_boxplot(notch = TRUE) +\n  geom_hline(yintercept = 0, linewidth = 2) +\n  scale_fill_viridis_d() +\n  theme(legend.position = \"none\") +\n  scale_y_continuous(\n    labels = scales::label_percent()\n  ) +\n  ylab(\"% increase in mse relative\\n to the truth\")"
+    "section": "How to assess uncertainty in the median?",
+    "text": "How to assess uncertainty in the median?\n\nI give you a sample of size 500, you give me the sample median.\nHow do you get a CI?\nYou can use the bootstrap!\n\n\nset.seed(406406406)\nx &lt;- rexp(n, 1 / 5)\n(med &lt;- median(x)) # sample median\n\n[1] 3.611615\n\nB &lt;- 100\nalpha &lt;- 0.05\nFhat &lt;- map_dbl(1:B, ~ median(sample(x, replace = TRUE))) # repeat B times, \"empirical distribution\"\nCI &lt;- 2 * med - quantile(Fhat, probs = c(1 - alpha / 2, alpha / 2))"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#section",
-    "href": "schedule/slides/02-lm-example.html#section",
+    "objectID": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
+    "href": "schedule/slides/18-the-bootstrap.html#empirical-distribution",
     "title": "UBC Stat406 2024W",
-    "section": "02 Linear model example",
-    "text": "02 Linear model example\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 16 September 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+    "section": "Empirical distribution",
+    "text": "Empirical distribution\n\n\nCode\nbootdf = tibble(boots = Fhat)\nggplot(bootdf, aes(boots)) + \n  stat_ecdf(colour = orange) +\n  geom_vline(xintercept = quantile(Fhat, probs = c(.05, .95))) +\n  geom_hline(yintercept = c(.05, .95), linetype = \"dashed\") +\n  annotate(\n    \"label\", x = c(3.2, 3.9), y = c(.2, .8), \n    label = c(\"hat(F)[boot](.05)\", \"hat(F)[boot](.95)\"), \n    parse = TRUE\n  )"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#economic-mobility",
-    "href": "schedule/slides/02-lm-example.html#economic-mobility",
+    "objectID": "schedule/slides/18-the-bootstrap.html#result",
+    "href": "schedule/slides/18-the-bootstrap.html#result",
     "title": "UBC Stat406 2024W",
-    "section": "Economic mobility",
-    "text": "Economic mobility\n\ndata(\"mobility\", package = \"Stat406\")\nmobility\n\n# A tibble: 741 × 43\n      ID Name        Mobility State Population Urban Black Seg_racial Seg_income\n   &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;\n 1   100 Johnson Ci…   0.0622 TN        576081     1 0.021      0.09       0.035\n 2   200 Morristown    0.0537 TN        227816     1 0.02       0.093      0.026\n 3   301 Middlesbor…   0.0726 TN         66708     0 0.015      0.064      0.024\n 4   302 Knoxville     0.0563 TN        727600     1 0.056      0.21       0.092\n 5   401 Winston-Sa…   0.0448 NC        493180     1 0.174      0.262      0.072\n 6   402 Martinsvil…   0.0518 VA         92753     0 0.224      0.137      0.024\n 7   500 Greensboro    0.0474 NC       1055133     1 0.218      0.22       0.068\n 8   601 North Wilk…   0.0517 NC         90016     0 0.032      0.114      0.012\n 9   602 Galax         0.0796 VA         64676     0 0.029      0.131      0.005\n10   700 Spartanburg   0.0431 SC        354533     1 0.207      0.139      0.045\n# ℹ 731 more rows\n# ℹ 34 more variables: Seg_poverty &lt;dbl&gt;, Seg_affluence &lt;dbl&gt;, Commute &lt;dbl&gt;,\n#   Income &lt;dbl&gt;, Gini &lt;dbl&gt;, Share01 &lt;dbl&gt;, Gini_99 &lt;dbl&gt;, Middle_class &lt;dbl&gt;,\n#   Local_tax_rate &lt;dbl&gt;, Local_gov_spending &lt;dbl&gt;, Progressivity &lt;dbl&gt;,\n#   EITC &lt;dbl&gt;, School_spending &lt;dbl&gt;, Student_teacher_ratio &lt;dbl&gt;,\n#   Test_scores &lt;dbl&gt;, HS_dropout &lt;dbl&gt;, Colleges &lt;dbl&gt;, Tuition &lt;dbl&gt;,\n#   Graduation &lt;dbl&gt;, Labor_force_participation &lt;dbl&gt;, Manufacturing &lt;dbl&gt;, …\n\n\n\nNote how many observations and predictors it has.\nWe’ll use Mobility as the response"
+    "section": "Result",
+    "text": "Result\n\n\nCode\nggplot(data.frame(Fhat), aes(Fhat)) +\n  geom_density(color = orange) +\n  geom_vline(xintercept = CI, color = orange, linetype = 2) +\n  geom_vline(xintercept = med, col = blue) +\n  geom_vline(xintercept = qexp(.5, 1 / 5), col = red) +\n  annotate(\"label\",\n    x = c(3.15, 3.5, 3.75), y = c(.5, .5, 1),\n    color = c(orange, red, blue),\n    label = c(\"widehat(F)\", \"true~median\", \"widehat(median)\"),\n    parse = TRUE\n  ) +\n  xlab(\"x\") +\n  geom_rug(aes(2 * med - Fhat))"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#a-linear-model",
-    "href": "schedule/slides/02-lm-example.html#a-linear-model",
+    "objectID": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
+    "href": "schedule/slides/18-the-bootstrap.html#how-does-this-work",
     "title": "UBC Stat406 2024W",
-    "section": "A linear model",
-    "text": "A linear model\n\\[\\mbox{Mobility}_i = \\beta_0 + \\beta_1 \\, \\mbox{State}_i + \\beta_2 \\, \\mbox{Urban}_i + \\cdots + \\epsilon_i\\]\nor equivalently\n\\[E \\left[ \\biggl. \\mbox{mobility} \\, \\biggr| \\, \\mbox{State}, \\mbox{Urban},\n    \\ldots \\right]  = \\beta_0 + \\beta_1 \\, \\mbox{State} +\n    \\beta_2 \\, \\mbox{Urban} + \\cdots\\]"
+    "section": "How does this work?",
+    "text": "How does this work?\nThe Fundamental Premise (TM): a sufficiently large sample looks like the population.\nSo, sampling from the sample looks like sampling from the population.\n\n\nPopulation:\n\n\n\n\n\n\n\n\n\nMedians for samples of size \\(N=100\\):\n\n\n[1] 3.055229\n\n\n[1] 4.155205\n\n\n[1] 3.346588\n\n\n\n\nOne Sample ( \\(N = 100\\) ):\n\n\n\n\n\n\n\n\n\nMedians for samples of size \\(N=100\\):\n\n\n[1] 3.126391\n\n\n[1] 3.063069\n\n\n[1] 3.534019"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#analysis",
-    "href": "schedule/slides/02-lm-example.html#analysis",
+    "objectID": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
+    "href": "schedule/slides/18-the-bootstrap.html#bootstrap-error-sources",
     "title": "UBC Stat406 2024W",
-    "section": "Analysis",
-    "text": "Analysis\n\nRandomly split into a training (say 3/4) and a test set (1/4)\nUse training set to fit a model\nFit the “full” model\n“Look” at the fit\n\n\n\nset.seed(20220914)\nmob &lt;- mobility[complete.cases(mobility), ] |&gt;\n    select(-Name, -ID, -State)\nn &lt;- nrow(mob)\nset &lt;- sample.int(n, floor(n * .75), FALSE)\ntrain &lt;- mob[set, ]\ntest &lt;- mob[setdiff(1:n, set), ]\nfull &lt;- lm(Mobility ~ ., data = train)\n\n\nWhy don’t we include Name or ID?"
+    "section": "Bootstrap error sources",
+    "text": "Bootstrap error sources\n\n\nSimulation error\n\nusing only \\(B\\) samples to estimate \\(F\\) with \\(\\hat{F}\\).\n\nStatistical error\n\nour data depended on a sample from the population. We don’t have the whole population so we make an error by using a sample (Note: this part is what always happens with data, and what the science of statistics analyzes.)\n\nSpecification error\n\nIf we use the parametric bootstrap, and our model is wrong, then we are overconfident."
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#results",
-    "href": "schedule/slides/02-lm-example.html#results",
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals",
     "title": "UBC Stat406 2024W",
-    "section": "Results",
-    "text": "Results\n(dispatch happening here!)\n\nsummary(full)\n\n\nCall:\nlm(formula = Mobility ~ ., data = train)\n\nResiduals:\n      Min        1Q    Median        3Q       Max \n-0.072092 -0.010256 -0.001452  0.009170  0.090428 \n\nCoefficients:\n                            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)                1.849e-01  8.083e-02   2.288 0.022920 *  \nPopulation                 3.378e-09  2.478e-09   1.363 0.173916    \nUrban                      2.853e-03  3.892e-03   0.733 0.464202    \nBlack                      7.807e-02  2.859e-02   2.731 0.006735 ** \nSeg_racial                -5.626e-02  1.780e-02  -3.160 0.001754 ** \nSeg_income                 8.677e-01  9.355e-01   0.928 0.354453    \nSeg_poverty               -7.416e-01  5.014e-01  -1.479 0.140316    \nSeg_affluence             -2.224e-01  4.763e-01  -0.467 0.640874    \nCommute                    6.313e-02  2.838e-02   2.225 0.026915 *  \nIncome                     4.207e-07  6.997e-07   0.601 0.548112    \nGini                       3.592e+00  3.357e+00   1.070 0.285578    \nShare01                   -3.635e-02  3.357e-02  -1.083 0.279925    \nGini_99                   -3.657e+00  3.356e+00  -1.090 0.276704    \nMiddle_class               1.031e-01  4.835e-02   2.133 0.033828 *  \nLocal_tax_rate             2.268e-01  2.620e-01   0.866 0.387487    \nLocal_gov_spending         1.273e-07  3.016e-06   0.042 0.966374    \nProgressivity              4.983e-03  1.324e-03   3.764 0.000205 ***\nEITC                      -3.324e-04  4.528e-04  -0.734 0.463549    \nSchool_spending           -9.019e-04  2.272e-03  -0.397 0.691658    \nStudent_teacher_ratio     -1.639e-03  1.123e-03  -1.459 0.145748    \nTest_scores                2.487e-04  3.137e-04   0.793 0.428519    \nHS_dropout                -1.698e-01  9.352e-02  -1.816 0.070529 .  \nColleges                  -2.811e-02  7.661e-02  -0.367 0.713942    \nTuition                    3.459e-07  4.362e-07   0.793 0.428417    \nGraduation                -1.702e-02  1.425e-02  -1.194 0.233650    \nLabor_force_participation -7.850e-02  5.405e-02  -1.452 0.147564    \nManufacturing             -1.605e-01  2.816e-02  -5.700  3.1e-08 ***\nChinese_imports           -5.165e-04  1.004e-03  -0.514 0.607378    \nTeenage_labor             -1.019e+00  2.111e+00  -0.483 0.629639    \nMigration_in               4.490e-02  3.480e-01   0.129 0.897436    \nMigration_out             -4.475e-01  4.093e-01  -1.093 0.275224    \nForeign_born               9.137e-02  5.494e-02   1.663 0.097454 .  \nSocial_capital            -1.114e-03  2.728e-03  -0.408 0.683245    \nReligious                  4.570e-02  1.298e-02   3.520 0.000506 ***\nViolent_crime             -3.393e+00  1.622e+00  -2.092 0.037373 *  \nSingle_mothers            -3.590e-01  9.442e-02  -3.802 0.000177 ***\nDivorced                   1.707e-02  1.603e-01   0.107 0.915250    \nMarried                   -5.894e-02  7.246e-02  -0.813 0.416720    \nLongitude                 -4.239e-05  2.239e-04  -0.189 0.850001    \nLatitude                   6.725e-04  5.687e-04   1.182 0.238037    \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 0.02128 on 273 degrees of freedom\nMultiple R-squared:  0.7808,    Adjusted R-squared:  0.7494 \nF-statistic: 24.93 on 39 and 273 DF,  p-value: &lt; 2.2e-16"
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat\\theta^{(b)}\\) be the resamples\nOur interval is\n\\[\n[2\\hat{\\theta} - \\hat\\theta^{(b)}_{1-\\alpha/2},\\ 2\\hat{\\theta} - \\hat\\theta^{(b)}_{\\alpha/2}]\n\\]\nwhere \\(\\theta^{(b)}_q\\) is the \\(q\\) quantile of \\(\\hat\\theta^{(b)}\\).\n\n\nCalled the “Pivotal Interval”\nHas the correct \\(1-\\alpha\\)% coverage under very mild conditions on \\(\\hat{\\theta}\\)"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#diagnostic-plots",
-    "href": "schedule/slides/02-lm-example.html#diagnostic-plots",
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-1",
     "title": "UBC Stat406 2024W",
-    "section": "Diagnostic plots",
-    "text": "Diagnostic plots\nNB: the line in the QQ plot isn’t right for either geom_qq_line or plot.lm…\n\n\nstuff &lt;- tibble(\n  residuals = residuals(full),\n  fitted = fitted(full),\n  stdresiduals = rstandard(full)\n)\nggplot(stuff, aes(fitted, residuals)) +\n  geom_point() +\n  geom_smooth(\n    se = FALSE,\n    colour = \"steelblue\",\n    linewidth = 2\n  ) +\n  ggtitle(\"Residuals vs Fitted\")\n\n\n\n\n\n\n\n\n\n\n\nggplot(stuff, aes(sample = stdresiduals)) +\n  geom_qq(size = 2) +\n  geom_qq_line(linewidth = 2, color = \"steelblue\") +\n  labs(\n    x = \"Theoretical quantiles\",\n    y = \"Standardized residuals\",\n    title = \"Normal Q-Q\"\n  )"
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat\\theta^{(b)}\\) be the resamples\n\\[\n[\\hat{\\theta} - z_{1-\\alpha/2}\\hat{s},\\ \\hat{\\theta} + z_{1-\\alpha/2}\\hat{s}]\n\\]\nwhere \\(\\hat{s} = \\sqrt{\\Var{\\hat\\theta^{(b)}}}\\)\n\n\nCalled the “Normal Interval”\nOnly works if the distribution of \\(\\hat{\\theta^{(b)}}\\) is approximately Normal.\nCommon and really tempting, but not likely to work well\nDon’t do this"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#can-also-just-use-dispatched-plot",
-    "href": "schedule/slides/02-lm-example.html#can-also-just-use-dispatched-plot",
+    "objectID": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
+    "href": "schedule/slides/18-the-bootstrap.html#types-of-intervals-2",
     "title": "UBC Stat406 2024W",
-    "section": "Can also just use dispatched plot",
-    "text": "Can also just use dispatched plot\n\n\nplot(full, 1)\n\n\n\n\n\n\n\n\n\n\n\nplot(full, 2)"
+    "section": "Types of intervals",
+    "text": "Types of intervals\nLet \\(\\hat{\\theta}\\) be our sample statistic, \\(\\hat\\theta^{(b)}\\) be the resamples\n\\[\n[\\hat\\theta^{(b)}_{\\alpha/2},\\ \\hat\\theta^{(b)}_{1-\\alpha/2}]\n\\]\nwhere \\(\\hat\\theta^{(b)}_q\\) is the \\(q\\) quantile of \\(\\hat\\theta^{(b)}\\).\n\n\nCalled the “Percentile Interval”\nIt does have (asymp) right coverage if \\(\\exists\\) monotone \\(m\\) so that \\(m(\\hat\\theta) \\sim N(m(\\theta), c^2)\\)\nBetter than the Normal Interval, more assumptions than the Pivotal Interval\nWe teach this one in DSCI100 because it’s easy and “looks right” (it’s not, in general)\n\nUnlike Pivotal, doesn’t follow from the fundamental premise of bootstrap"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#fit-a-reduced-model",
-    "href": "schedule/slides/02-lm-example.html#fit-a-reduced-model",
+    "objectID": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
+    "href": "schedule/slides/18-the-bootstrap.html#slightly-harder-example",
     "title": "UBC Stat406 2024W",
-    "section": "Fit a reduced model",
-    "text": "Fit a reduced model\n\nreduced &lt;- lm(\n  Mobility ~ Commute + Gini_99 + Test_scores + HS_dropout +\n    Manufacturing + Migration_in + Religious + Single_mothers,\n  data = train\n)\n\nsummary(reduced)$coefficients \n\n                    Estimate  Std. Error   t value     Pr(&gt;|t|)\n(Intercept)     0.1663344179 0.017769995  9.360409 1.829270e-18\nCommute         0.0637329409 0.014926382  4.269819 2.618234e-05\nGini_99        -0.1086058241 0.038958986 -2.787696 5.642726e-03\nTest_scores     0.0004997645 0.000256038  1.951915 5.186618e-02\nHS_dropout     -0.2162067301 0.082003195 -2.636565 8.805228e-03\nManufacturing  -0.1594229237 0.020215791 -7.886059 5.647668e-14\nMigration_in   -0.3891567027 0.171839168 -2.264657 2.423771e-02\nReligious       0.0435673365 0.010463920  4.163577 4.084854e-05\nSingle_mothers -0.2864269552 0.046578928 -6.149282 2.444903e-09\n\nreduced |&gt;\n  broom::glance() |&gt;\n  print(width = 120)\n\n# A tibble: 1 × 12\n  r.squared adj.r.squared  sigma statistic  p.value    df logLik    AIC    BIC\n      &lt;dbl&gt;         &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;\n1     0.718         0.711 0.0229      96.9 5.46e-79     8   743. -1466. -1429.\n  deviance df.residual  nobs\n     &lt;dbl&gt;       &lt;int&gt; &lt;int&gt;\n1    0.159         304   313"
+    "section": "Slightly harder example",
+    "text": "Slightly harder example\n\n\n\nggplot(fatcats, aes(Bwt, Hwt)) +\n  geom_point(color = blue) +\n  xlab(\"Cat body weight (Kg)\") +\n  ylab(\"Cat heart weight (g)\")\n\n\n\n\n\n\n\n\n\n\n\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nsummary(cats.lm)\n\n\nCall:\nlm(formula = Hwt ~ 0 + Bwt, data = fatcats)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-9.8138 -0.9014 -0.2155  0.7548 22.5957 \n\nCoefficients:\n    Estimate Std. Error t value Pr(&gt;|t|)    \nBwt  3.88297    0.08401   46.22   &lt;2e-16 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 2.789 on 143 degrees of freedom\nMultiple R-squared:  0.9373,    Adjusted R-squared:  0.9368 \nF-statistic:  2136 on 1 and 143 DF,  p-value: &lt; 2.2e-16\n\nconfint(cats.lm)\n\n       2.5 %   97.5 %\nBwt 3.716912 4.049036"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#diagnostic-plots-for-reduced-model",
-    "href": "schedule/slides/02-lm-example.html#diagnostic-plots-for-reduced-model",
+    "objectID": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
+    "href": "schedule/slides/18-the-bootstrap.html#when-we-fit-models-we-examine-diagnostics",
     "title": "UBC Stat406 2024W",
-    "section": "Diagnostic plots for reduced model",
-    "text": "Diagnostic plots for reduced model\n\n\nplot(reduced, 1)\n\n\n\n\n\n\n\n\n\n\n\nplot(reduced, 2)"
+    "section": "When we fit models, we examine diagnostics",
+    "text": "When we fit models, we examine diagnostics\n\n\n\nqqnorm(residuals(cats.lm), pch = 16, col = blue)\nqqline(residuals(cats.lm), col = orange, lwd = 2)\n\n\n\n\n\n\n\n\nThe tails are too fat. I don’t believe that CI…\n\n\nWe bootstrap\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.731614 4.030176 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.716912 4.049036"
   },
   {
-    "objectID": "schedule/slides/02-lm-example.html#how-do-we-decide-which-model-is-better",
-    "href": "schedule/slides/02-lm-example.html#how-do-we-decide-which-model-is-better",
+    "objectID": "schedule/slides/18-the-bootstrap.html#an-alternative",
+    "href": "schedule/slides/18-the-bootstrap.html#an-alternative",
     "title": "UBC Stat406 2024W",
-    "section": "How do we decide which model is better?",
-    "text": "How do we decide which model is better?\n\n\n\nGoodness of fit versus prediction power\n\n\nmap( # smaller AIC is better\n  list(full = full, reduced = reduced),\n  ~ c(aic = AIC(.x), rsq = summary(.x)$r.sq)\n)\n\n$full\n          aic           rsq \n-1482.5981023     0.7807509 \n\n$reduced\n         aic          rsq \n-1466.088492     0.718245 \n\n\n\nUse both models to predict Mobility\nCompare both sets of predictions\n\n\n\n\nmses &lt;- function(preds, obs) round(mean((obs - preds)^2), 5)\nc(\n  full = mses(\n    predict(full, newdata = test),\n    test$Mobility\n  ),\n  reduced = mses(\n    predict(reduced, newdata = test),\n    test$Mobility\n  )\n)\n\n   full reduced \n0.00072 0.00084 \n\n\n\n\nCode\ntest$full &lt;- predict(full, newdata = test)\ntest$reduced &lt;- predict(reduced, newdata = test)\ntest |&gt;\n  select(Mobility, full, reduced) |&gt;\n  pivot_longer(-Mobility) |&gt;\n  ggplot(aes(Mobility, value)) +\n  geom_point(color = \"orange\") +\n  facet_wrap(~name, 2) +\n  xlab(\"observed mobility\") +\n  ylab(\"predicted mobility\") +\n  geom_abline(slope = 1, intercept = 0, colour = \"darkblue\")"
+    "section": "An alternative",
+    "text": "An alternative\n\nSo far, I didn’t use any information about the data-generating process.\nWe’ve done the non-parametric bootstrap\nThis is easiest, and most common for the methods in this module\n\n\nBut there’s another version\n\nYou could try a “parametric bootstrap”\nThis assumes knowledge about the DGP"
   },
   {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols",
+    "objectID": "schedule/slides/18-the-bootstrap.html#same-data",
+    "href": "schedule/slides/18-the-bootstrap.html#same-data",
     "title": "UBC Stat406 2024W",
-    "section": "1) The Bias of OLS",
-    "text": "1) The Bias of OLS\nIn last class’ clicker question, we were trying to predict income from a \\(p=2\\), \\(n=50000\\) dataset. I claimed that the OLS predictor is high bias in this example.\n\n\nBut Trevor proved that the OLS predictor is unbiased (via the following proof):\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\nB. Then \\(E[\\hat \\beta_\\mathrm{ols}] = E[ E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] ]\\)\nC. \\(E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X] = (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top E[ \\mathbf y \\mid \\mathbf X]\\)\nD. \\(E[ \\mathbf y \\mid \\mathbf X] = \\mathbf X \\beta\\)\nE. So \\(E[\\hat \\beta_\\mathrm{ols}] - \\beta = E[(\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X^\\top \\mathbf X \\beta] - \\beta = \\beta - \\beta = 0\\).\n\nWhy did this proof not apply to the clicker question?\n(Which step of this proof breaks down?)"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bias-of-ols-1",
-    "title": "UBC Stat406 2024W",
-    "section": "1) The Bias of OLS",
-    "text": "1) The Bias of OLS\nWhich step did the proof break down?\nA. Assume that \\(y = x^\\top \\beta + \\epsilon, \\quad \\epsilon \\sim \\mathcal N(0, \\sigma^2).\\)\n\nThis assumption does not hold.\nIt is (almost certainly) not the case that Income ~ Age + Education.\n\n\nIn reality, \\(y \\sim f(x) + \\epsilon\\) where \\(f(x)\\) is some potentially nonlinear function. So\n\\[\n\\begin{align}\nE[\\hat \\beta_\\mathrm{ols}] = E[E[\\hat \\beta_\\mathrm{ols} \\mid \\mathbf X ]]\n= E[ (\\mathbf X^\\top \\mathbf X)^{-1} \\mathbf X f(\\mathbf X) ] \\ne \\beta\n\\end{align}\n\\]\nIn statistics speak, our model is misspecified.\nRidge/lasso will always increase bias and decrease variance, even under misspecification."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
-    "href": "schedule/slides/11-kernel-smoothers.html#why-does-ridge-regression-shrink-varinace",
-    "title": "UBC Stat406 2024W",
-    "section": "2) Why does ridge regression shrink varinace?",
-    "text": "2) Why does ridge regression shrink varinace?\nMathematically\n\nVariance of OLS: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X)^{-1} ]\\)\nVariance of ridge regression: \\(\\mathrm{Cov}[\\hat \\beta_\\mathrm{ols}] = \\sigma^2 E[ (\\mathbf X^\\top \\mathbf X + \\lambda \\mathbf I)^{-1} ]\\)\n\n\n\nIntuitively…\nThink about the constrained optimization problem pictorally.\nWhat happens if we had a different dataset?"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#section",
-    "href": "schedule/slides/11-kernel-smoothers.html#section",
-    "title": "UBC Stat406 2024W",
-    "section": "11 Local methods",
-    "text": "11 Local methods\nStat 406\nGeoff Pleiss, Trevor Campbell\nLast modified – 08 October 2024\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#last-time",
-    "href": "schedule/slides/11-kernel-smoothers.html#last-time",
-    "title": "UBC Stat406 2024W",
-    "section": "Last time…",
-    "text": "Last time…\nWe looked at feature maps as a way to do nonlinear regression.\nWe used new “features” \\(\\Phi(x) = \\bigg(\\phi_1(x),\\ \\phi_2(x),\\ldots,\\phi_k(x)\\bigg)\\)\nNow we examine a nonparametric alternative\nSuppose I just look at the “neighbours” of some point (based on the \\(x\\)-values)\nI just average the \\(y\\)’s at those locations together"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
-    "href": "schedule/slides/11-kernel-smoothers.html#lets-use-3-neighbours",
-    "title": "UBC Stat406 2024W",
-    "section": "Let’s use 3 neighbours",
-    "text": "Let’s use 3 neighbours\n\n\nCode\nlibrary(cowplot)\ndata(arcuate, package = \"Stat406\")\nset.seed(406406)\narcuate_unif &lt;- arcuate |&gt; slice_sample(n = 40) |&gt; arrange(position)\npt &lt;- 15\nnn &lt;-  3\nseq_range &lt;- function(x, n = 101) seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = n)\nneibs &lt;- sort.int(abs(arcuate_unif$position - arcuate_unif$position[pt]), index.return = TRUE)$ix[1:nn]\narcuate_unif$neighbours = seq_len(40) %in% neibs\ng1 &lt;- ggplot(arcuate_unif, aes(position, fa, colour = neighbours)) + \n  geom_point() +\n  scale_colour_manual(values = c(blue, red)) + \n  geom_vline(xintercept = arcuate_unif$position[pt], colour = red) + \n  annotate(\"rect\", fill = red, alpha = .25, ymin = -Inf, ymax = Inf,\n           xmin = min(arcuate_unif$position[neibs]), \n           xmax = max(arcuate_unif$position[neibs])\n  ) +\n  theme(legend.position = \"none\")\ng2 &lt;- ggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(\n    data = tibble(\n      position = seq_range(arcuate_unif$position),\n      fa = FNN::knn.reg(\n        arcuate_unif$position, matrix(position, ncol = 1),\n        y = arcuate_unif$fa\n      )$pred\n    ),\n    colour = orange, linewidth = 2\n  )\nplot_grid(g1, g2, ncol = 2)"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#knn",
-    "href": "schedule/slides/11-kernel-smoothers.html#knn",
-    "title": "UBC Stat406 2024W",
-    "section": "KNN",
-    "text": "KNN\n\n\n\n\n\n\n\n\n\n\n\n\n\n\ndata(arcuate, package = \"Stat406\")\nlibrary(FNN)\narcuate_unif &lt;- arcuate |&gt; \n  slice_sample(n = 40) |&gt; \n  arrange(position) \n\nnew_position &lt;- seq(\n  min(arcuate_unif$position), \n  max(arcuate_unif$position),\n  length.out = 101\n)\n\nknn3 &lt;- knn.reg(\n  train = arcuate_unif$position, \n  test = matrix(arcuate_unif$position, ncol = 1), \n  y = arcuate_unif$fa, \n  k = 3\n)"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
-    "href": "schedule/slides/11-kernel-smoothers.html#this-method-is-k-nearest-neighbours.",
-    "title": "UBC Stat406 2024W",
-    "section": "This method is \\(K\\)-nearest neighbours.",
-    "text": "This method is \\(K\\)-nearest neighbours.\nIt’s a linear smoother just like in previous lectures: \\(\\widehat{\\mathbf{y}} = \\mathbf{S} \\mathbf{y}\\) for some matrix \\(S\\).\nYou should imagine what \\(\\mathbf{S}\\) looks like.\n\nWhat is the degrees of freedom of KNN, and how does it depend on \\(k\\)?\nHow does \\(k\\) affect the bias/variance?\n\n\n\n\\(\\mathrm{df} = \\tr{\\mathbf S} = n/k\\).\n\\(k = n\\) produces a constant predictor (highest bias, lowest variance).\n\\(k = 1\\) produces a low bias but extremely high variance predictor."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
-    "href": "schedule/slides/11-kernel-smoothers.html#local-averages-soft-knn",
-    "title": "UBC Stat406 2024W",
-    "section": "Local averages (soft KNN)",
-    "text": "Local averages (soft KNN)\nKNN averages the neighbours with equal weight.\nBut some neighbours are “closer” than other neighbours.\nInstead of choosing the number of neighbours to average, we can average any observations within a certain distance.\n\nThe boxes have width 30."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
-    "href": "schedule/slides/11-kernel-smoothers.html#what-is-a-kernel-smoother",
-    "title": "UBC Stat406 2024W",
-    "section": "What is a “kernel” smoother?",
-    "text": "What is a “kernel” smoother?\n\nThe mathematics:\n\n\nA kernel is any function \\(K\\) such that for any \\(u\\),\n\n\\(K(u) \\geq 0\\),\n\\(\\int K(u) du = 1\\),\n\\(\\int uK(u) du = 0\\).\n\n\n\nThe idea: a kernel takes weighted averages. The kernel function gives the weights.\nThe previous example is called the boxcar kernel."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-with-the-boxcar",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing with the boxcar",
-    "text": "Smoothing with the boxcar\n\n\nCode\ntestpts &lt;- seq(0, 200, length.out = 101)\ndmat &lt;- abs(outer(testpts, arcuate_unif$position, \"-\"))\nS &lt;- (dmat &lt; 15)\nS &lt;- S / rowSums(S)\nboxcar &lt;- tibble(position = testpts, fa = S %*% arcuate_unif$fa)\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(data = boxcar, colour = orange)\n\n\n\nThis one gives the same non-zero weight to all points within \\(\\pm 15\\) range."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels",
-    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels",
-    "title": "UBC Stat406 2024W",
-    "section": "Other kernels",
-    "text": "Other kernels\nMost of the time, we don’t use the boxcar because the weights are weird.\nIdeally we would like closer points to have more weight.\n\n\nA more common kernel: the Gaussian kernel\n\\[\nK(u) = \\frac{1}{\\sqrt{2 \\pi \\sigma^2}} \\exp\\left(-\\frac{u^2}{2\\sigma^2}\\right)\n\\]\nFor the plot, I made \\(\\sigma=7.5\\).\nNow the weights “die away” for points farther from where we’re predicting.\n(but all nonzero!!)\n\n\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 7.5) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#other-kernels-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Other kernels",
-    "text": "Other kernels\nWhat if I made \\(\\sigma=15\\)?\n\n\nCode\ngaussian_kernel &lt;- function(x) dnorm(x, mean = arcuate_unif$position[15], sd = 15) * 3\nggplot(arcuate_unif, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_segment(aes(x = position[15], y = 0, xend = position[15], yend = fa[15]), colour = orange) +\n  stat_function(fun = gaussian_kernel, geom = \"area\", fill = orange)\n\n\n\nBefore, points far from \\(x_{15}\\) got very small weights, now they have more influence.\nFor the Gaussian kernel, \\(\\sigma\\) determines something like the “range” of the smoother."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
-    "href": "schedule/slides/11-kernel-smoothers.html#many-gaussians",
-    "title": "UBC Stat406 2024W",
-    "section": "Many Gaussians",
-    "text": "Many Gaussians\nThe following code creates \\(\\mathbf{S}\\) for Gaussian kernel smoothers with different \\(\\sigma\\)\n\ndmat &lt;- as.matrix(dist(x))\nSgauss &lt;- function(sigma) {\n  gg &lt;- dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg), \"/\") # make the rows sum to 1.\n}\n\n\n\nCode\nSgauss &lt;- function(sigma) {\n  gg &lt;-  dnorm(dmat, sd = sigma) # not an argument, uses the global dmat\n  sweep(gg, 1, rowSums(gg),'/') # make the rows sum to 1.\n}\nboxcar$S15 = with(arcuate_unif, Sgauss(15) %*% fa)\nboxcar$S08 = with(arcuate_unif, Sgauss(8) %*% fa)\nboxcar$S30 = with(arcuate_unif, Sgauss(30) %*% fa)\nbc = boxcar %&gt;% select(position, S15, S08, S30) %&gt;% \n  pivot_longer(-position, names_to = \"Sigma\")\nggplot(arcuate_unif, aes(position, fa)) + \n  geom_point(colour = blue) + \n  geom_line(data = bc, aes(position, value, colour = Sigma), linewidth = 1.5) +\n  scale_colour_brewer(palette = \"Set1\")"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
-    "href": "schedule/slides/11-kernel-smoothers.html#the-bandwidth",
-    "title": "UBC Stat406 2024W",
-    "section": "The bandwidth",
-    "text": "The bandwidth\n\nChoosing \\(\\sigma\\) is very important.\nThis “range” parameter is called the bandwidth.\nIt is way more important than which kernel you use."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
-    "href": "schedule/slides/11-kernel-smoothers.html#choosing-the-bandwidth",
-    "title": "UBC Stat406 2024W",
-    "section": "Choosing the bandwidth",
-    "text": "Choosing the bandwidth\nAs we have discussed, kernel smoothing (and KNN) are linear smoothers\n\\[\\widehat{\\mathbf{y}} = \\mathbf{S}\\mathbf{y}\\]\nThe degrees of freedom is \\(\\textrm{tr}(\\mathbf{S})\\)\nTherefore we can use our model selection criteria from before\n\nUnfortunately, these don’t satisfy the “technical condition”, so cv_nice() doesn’t give LOO-CV"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing the full Lidar data",
-    "text": "Smoothing the full Lidar data\n\nar &lt;- arcuate |&gt; slice_sample(n = 200)\n\ngcv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - mean(diag(S)))^2 )\n}\n\nfake_loocv &lt;- function(y, S) {\n  yhat &lt;- S %*% y\n  mean( (y - yhat)^2 / (1 - diag(S))^2 )\n}\n\ndmat &lt;- as.matrix(dist(ar$position))\nsigmas &lt;- 10^(seq(log10(300), log10(.3), length = 100))\n\ngcvs &lt;- map_dbl(sigmas, ~ gcv(ar$fa, Sgauss(.x)))\nflcvs &lt;- map_dbl(sigmas, ~ fake_loocv(ar$fa, Sgauss(.x)))\nbest_s &lt;- sigmas[which.min(gcvs)]\nother_s &lt;- sigmas[which.min(flcvs)]\n\nar$smoothed &lt;- Sgauss(best_s) %*% ar$fa\nar$other &lt;- Sgauss(other_s) %*% ar$fa"
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-the-full-lidar-data-1",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing the full Lidar data",
-    "text": "Smoothing the full Lidar data\n\n\nCode\ng3 &lt;- ggplot(data.frame(sigma = sigmas, gcv = gcvs), aes(sigma, gcv)) +\n  geom_point(colour = blue) +\n  geom_vline(xintercept = best_s, colour = red) +\n  scale_x_log10() +\n  xlab(sprintf(\"Sigma, best is sig = %.2f\", best_s))\ng4 &lt;- ggplot(ar, aes(position, fa)) +\n  geom_point(colour = blue) +\n  geom_line(aes(y = smoothed), colour = orange, linewidth = 2)\nplot_grid(g3, g4, nrow = 1)\n\n\n\nI considered \\(\\sigma \\in [0.3,\\ 300]\\) and used \\(3.97\\).\nIt’s too wiggly, to my eye. Typical for GCV."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
-    "href": "schedule/slides/11-kernel-smoothers.html#smoothing-manually",
-    "title": "UBC Stat406 2024W",
-    "section": "Smoothing manually",
-    "text": "Smoothing manually\nI did Kernel Smoothing “manually”\n\nFor a fixed bandwidth\nCompute the smoothing matrix\nMake the predictions\nRepeat and compute GCV\n\nThe point is to “show how it works”. It’s also really easy."
-  },
-  {
-    "objectID": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
-    "href": "schedule/slides/11-kernel-smoothers.html#r-functions-packages",
-    "title": "UBC Stat406 2024W",
-    "section": "R functions / packages",
-    "text": "R functions / packages\nThere are a number of other ways to do this in R\n\nloess()\nksmooth()\nKernSmooth::locpoly()\nmgcv::gam()\nnp::npreg()\n\nThese have tricks and ways of doing CV and other things automatically.\n\nNote\n\nAll I needed was the distance matrix dist(x).\n\n\nGiven ANY distance function\n\n\nsay, \\(d(\\mathbf{x}_i, \\mathbf{x}_j) = \\Vert\\mathbf{x}_i - \\mathbf{x}_j\\Vert_2 + I(x_{i,3} = x_{j,3})\\)\n\n\nI can use these methods."
+    "section": "Same data",
+    "text": "Same data\n\n\nNon-parametric bootstrap\nSame as before\n\nB &lt;- 500\nalpha &lt;- .05\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt;\n    slice_sample(prop = 1, replace = TRUE)\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # NP Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.726857 4.038470 \n\nconfint(cats.lm) # Original CI\n\n       2.5 %   97.5 %\nBwt 3.716912 4.049036\n\n\n\n\nParametric bootstrap\n\nAssume that the linear model is TRUE.\nThen, \\(\\texttt{Hwt}_i = \\widehat{\\beta}\\times \\texttt{Bwt}_i + \\widehat{e}_i\\), \\(\\widehat{e}_i \\approx \\epsilon_i\\)\nThe \\(\\epsilon_i\\) is random \\(\\longrightarrow\\) just resample \\(\\widehat{e}_i\\).\n\n\nB &lt;- 500\nbhats &lt;- double(B)\ncats.lm &lt;- lm(Hwt ~ 0 + Bwt, data = fatcats)\nr &lt;- residuals(cats.lm)\nbhats &lt;- map_dbl(1:B, ~ {\n  newcats &lt;- fatcats |&gt; mutate(\n    Hwt = predict(cats.lm) +\n      sample(r, n(), replace = TRUE)\n  )\n  coef(lm(Hwt ~ 0 + Bwt, data = newcats))\n})\n\n2 * coef(cats.lm) - # Parametric Bootstrap CI\n  quantile(bhats, probs = c(1 - alpha / 2, alpha / 2))\n\n   97.5%     2.5% \n3.707015 4.035300"
   },
   {
     "objectID": "schedule/slides/00-gradient-descent.html#section",

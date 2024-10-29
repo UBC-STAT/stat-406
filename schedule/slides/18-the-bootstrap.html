@@ -398,7 +398,7 @@
 <h2>18 The bootstrap</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 02 November 2023</p>
+<p>Last modified – 28 October 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -429,95 +429,82 @@
 \newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="a-small-detour" class="slide level2">
-<h2>A small detour…</h2>
-
-<img data-src="https://www.azquotes.com/picture-quotes/quote-i-believe-in-pulling-yourself-up-by-your-own-bootstraps-i-believe-it-is-possible-i-saw-stephen-colbert-62-38-03.jpg" class="r-stretch"></section>
-<section id="section-1" class="slide level2">
-<h2></h2>
-
-<img data-src="http://rackjite.com/wp-content/uploads/rr11014aa.jpg" class="r-stretch"></section>
-<section id="in-statistics" class="slide level2">
-<h2>In statistics…</h2>
-<p>The “bootstrap” works. And well.</p>
-<p>It’s good for “second-level” analysis.</p>
+<section id="uncertainty-with-one-sample" class="slide level2">
+<h2>Uncertainty with one sample?</h2>
+<p>We get data <span class="math inline">\(X_{1:N},Y_{1:N}\)</span>. We compute <em>something</em> from the data <span class="math inline">\(\hat\theta = f(X_{1:N},Y_{1:N})\)</span>.</p>
+<p>That <span class="math inline">\(\ \hat\theta\)</span> is a <em>point estimate</em> (regression coeffs, median of <span class="math inline">\(Y\)</span>, risk estimate…)</p>
+<p>How do we understand the <em>uncertainty</em> in <span class="math inline">\(\hat\theta\approx \theta\)</span> due to <em>randomness</em> in <span class="math inline">\(X_{1:N}, Y_{1:N}\)</span>?</p>
+<div class="fragment">
+<p><em>If we know</em> the <strong>sampling distribution</strong> of <span class="math inline">\(\hat\theta\)</span>, we can use variance / confidence intervals.</p>
+<p><strong>We usually don’t know that in practice</strong> (don’t know real data dist, <span class="math inline">\(f\)</span> can be nasty)</p>
+<p>For some <span class="math inline">\(\hat\theta\)</span>, things are nice anyway. E.g. for empirical mean <span class="math inline">\(\hat\theta = \frac{1}{N}\sum_{n=1}^N X_n\)</span> with iid <span class="math inline">\(X_n\)</span>:</p>
 <ul>
-<li><p>“First-level” analyses are things like <span class="math inline">\(\hat\beta\)</span>, <span class="math inline">\(\hat \y\)</span>, an estimator of the center (a median), etc.</p></li>
-<li><p>“Second-level” are things like <span class="math inline">\(\Var{\hat\beta}\)</span>, a confidence interval for <span class="math inline">\(\hat \y\)</span>, or a median, etc.</p></li>
+<li><span class="math inline">\(\Var{\hat\theta} = \Var{X_1} / n\)</span>.</li>
+<li>Confidence Intervals: if <span class="math inline">\(X_n\)</span> are iid and <span class="math inline">\(n\)</span> “big”, then <strong>CLT</strong>: <span class="math inline">\(\hat\theta \overset{\text{approx}}{\sim}\mathcal{N}(\mu, \sigma^2/n)\)</span></li>
 </ul>
-<hr>
-<p>You usually get these “second-level” properties from “the sampling distribution of an estimator”</p>
+</div>
 </section>
-<section id="in-statistics-1" class="slide level2">
-<h2>In statistics…</h2>
-<p>The “bootstrap” works. And well.</p>
-<p>It’s good for “second-level” analysis.</p>
-<ul>
-<li><p>“First-level” analyses are things like <span class="math inline">\(\hat\beta\)</span>, <span class="math inline">\(\hat \y\)</span>, an estimator of the center (a median), etc.</p></li>
-<li><p>“Second-level” are things like <span class="math inline">\(\Var{\hat\beta}\)</span>, a confidence interval for <span class="math inline">\(\hat \y\)</span>, or a median, etc.</p></li>
-</ul>
-<hr>
-<p>But what if you don’t know the sampling distribution? Or you’re skeptical of the CLT argument?</p>
+<section id="unknown-sampling-distribution" class="slide level2">
+<h2>Unknown sampling distribution?</h2>
+<p>What if you are skeptical of CLT / don’t know the sampling distribution?</p>
+<div class="fragment">
+<p>I fit LDA on some data.</p>
+<p>I get a new <span class="math inline">\(X_0\)</span> and produce <span class="math inline">\(\hat\theta = \Pr(Y_0 =1 \given X_0)\)</span>.</p>
+<p>Can I get a 95% confidence interval for <span class="math inline">\(\theta = \Pr(Y_0=1 \given X_0)\)</span>?</p>
+</div>
+<div class="fragment">
+<p><strong>The bootstrap gives this to you.</strong></p>
+</div>
 </section>
-<section id="in-statistics-2" class="slide level2">
-<h2>In statistics…</h2>
-<p>The “bootstrap” works. And well.</p>
-<p>It’s good for “second-level” analysis.</p>
+<section id="etymology-of-the-bootstrap" class="slide level2">
+<h2>Etymology of the “bootstrap”</h2>
 <ul>
-<li><p>“First-level” analyses are things like <span class="math inline">\(\hat\beta\)</span>, <span class="math inline">\(\hat \y\)</span>, an estimator of the center (a median), etc.</p></li>
-<li><p>“Second-level” are things like <span class="math inline">\(\Var{\hat\beta}\)</span>, a confidence interval for <span class="math inline">\(\hat \y\)</span>, or a median, etc.</p></li>
+<li><p>“to build itself up incrementally, starting from very little”</p></li>
+<li><p>“to create something valuable from very little/nothing”</p></li>
+<li><p>attributed to a late 1800s physics textbook question</p>
+<ul>
+<li>“why can a man not lift himself up by pulling on his bootstraps?”</li>
+</ul></li>
+<li><p>became a sarcastic comment about self-driven socioeconomic advancement</p>
+<ul>
+<li>as these things go: co-opted by others and taken seriously</li>
+</ul></li>
+<li><p>fun fact: same etymology for the term in computing</p>
+<ul>
+<li>“booting up your computer”</li>
+</ul></li>
 </ul>
-<hr>
-<p><span class="primary">Sampling distributions</span></p>
+<!--![](http://rackjite.com/wp-content/uploads/rr11014aa.jpg)-->
+</section>
+<section id="generic-bootstrap-procedure" class="slide level2">
+<h2>Generic Bootstrap Procedure</h2>
+<p>The bootstrap is <em>super general-purpose</em>. Given data <span class="math inline">\(X_{1:N}, Y_{1:N}\)</span>:</p>
 <ol type="1">
-<li>If <span class="math inline">\(X_i\)</span> are iid Normal <span class="math inline">\((0,\sigma^2)\)</span>, then <span class="math inline">\(\Var{\overline{X}} = \sigma^2 / n\)</span>.</li>
-<li>If <span class="math inline">\(X_i\)</span> are iid and <span class="math inline">\(n\)</span> is big, then <span class="math inline">\(\Var{\overline{X}} \approx \Var{X_1} / n\)</span>.</li>
-<li>If <span class="math inline">\(X_i\)</span> are iid Binomial <span class="math inline">\((m, p)\)</span>, then <span class="math inline">\(\Var{\overline{X}} = mp(1-p) / n\)</span></li>
+<li>Compute <span class="math inline">\(\hat\theta = f(X_{1:N}, Y_{1:N})\)</span></li>
+<li>For <span class="math inline">\(b=1,\dots, B\)</span>, resample data w/ replacement: <span class="math inline">\(X^{(b)}_{1:N}, Y^{(b)}_{1:N}\)</span> (<em>bootstrap samples</em>)</li>
+<li>For <span class="math inline">\(b=1,\dots, B\)</span>, recompute <span class="math inline">\(\hat\theta^{(b)} = f(X^{(b)}_{1:N}, Y^{(b)}_{1:N}\)</span>) (<em>bootstrap estimates</em>)</li>
+<li>Variance of <span class="math inline">\(\hat\theta \approx\)</span> the empirical variance of <span class="math inline">\(\hat\theta^{(b)}\)</span></li>
+<li><span class="math inline">\((1-\alpha)\)</span>% Confidence Interval for <span class="math inline">\(\theta\)</span>: <span class="math inline">\(\left[2\hat\theta - \widehat{F}_{\text{boot}}(1-\alpha/2),\ 2\hat\theta - \widehat{F}_{\text{boot}}(\alpha/2)\right]\)</span>
+<ul>
+<li><span class="math inline">\(\widehat{F}_{\text{boot}}\)</span> is the empirical CDF of the samples <span class="math inline">\(\hat\theta^{(b)}\)</span></li>
+</ul></li>
 </ol>
 </section>
-<section id="example-of-unknown-sampling-distribution" class="slide level2">
-<h2>Example of unknown sampling distribution</h2>
-<p>I estimate a LDA on some data.</p>
-<p>I get a new <span class="math inline">\(x_0\)</span> and produce <span class="math inline">\(\widehat{Pr}(y_0 =1 \given x_0)\)</span>.</p>
-<p>Can I get a 95% confidence interval for <span class="math inline">\(Pr(y_0=1 \given x_0)\)</span>?</p>
-<div class="fragment">
-<p><span class="secondary">The bootstrap gives this to you.</span></p>
-</div>
-</section>
-<section id="bootstrap-procedure" class="slide level2">
-<h2>Bootstrap procedure</h2>
+<section id="the-bootstrap-is-very-flexible" class="slide level2">
+<h2>The bootstrap is very flexible</h2>
+<p>e.g., for LDA:</p>
 <ol type="1">
-<li>Resample your training data w/ replacement.</li>
-<li>Calculate LDA on this sample.</li>
-<li>Produce a new prediction, call it <span class="math inline">\(\widehat{Pr}_b(y_0 =1 \given x_0)\)</span>.</li>
-<li>Repeat 1-3 <span class="math inline">\(b = 1,\ldots,B\)</span> times.</li>
-<li>CI: <span class="math inline">\(\left[2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(1-\alpha/2),\ 2\widehat{Pr}(y_0 =1 \given x_0) - \widehat{F}_{boot}(\alpha/2)\right]\)</span></li>
+<li>Produce the original estimate <span class="math inline">\(\hat\theta=\widehat{\Pr}(Y_0=1 \given X_0)\)</span></li>
+<li>Resample your training data <span class="math inline">\(B\)</span> times with replacement</li>
+<li>Refit LDA for each one to produce <span class="math inline">\(\widehat{\Pr}\nolimits_b(Y_0 =1 \given X_0)\)</span>.</li>
+<li>CI: <span class="math inline">\(\left[2\widehat{\Pr}(Y_0 =1 \given X_0) - \widehat{F}_{\text{boot}}(1-\alpha/2),\ 2\widehat{\Pr}(Y_0 =1 \given X_0) - \widehat{F}_{\text{boot}}(\alpha/2)\right]\)</span>
+<ul>
+<li><span class="math inline">\(\widehat{F}_{\text{boot}}\)</span> is the empirical CDF of the samples <span class="math inline">\(\widehat{\Pr}\nolimits_b(Y_0 =1 \given X_0)\)</span></li>
+</ul></li>
 </ol>
-<div class="fragment">
-<p><span class="math inline">\(\hat{F}\)</span> is the “empirical” distribution of the bootstraps.</p>
-</div>
 </section>
-<section id="empirical-distribution" class="slide level2">
-<h2>Empirical distribution</h2>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a>r <span class="ot">&lt;-</span> <span class="fu">rexp</span>(<span class="dv">50</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
-<span id="cb1-2"><a></a><span class="fu">ggplot</span>(<span class="fu">tibble</span>(<span class="at">r =</span> r), <span class="fu">aes</span>(r)) <span class="sc">+</span> </span>
-<span id="cb1-3"><a></a>  <span class="fu">stat_ecdf</span>(<span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb1-4"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">quantile</span>(r, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>))) <span class="sc">+</span></span>
-<span id="cb1-5"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb1-6"><a></a>  <span class="fu">annotate</span>(</span>
-<span id="cb1-7"><a></a>    <span class="st">"label"</span>, <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">12</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>), </span>
-<span id="cb1-8"><a></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"hat(F)[boot](.05)"</span>, <span class="st">"hat(F)[boot](.95)"</span>), </span>
-<span id="cb1-9"><a></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
-<span id="cb1-10"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="very-basic-example" class="slide level2">
-<h2>Very basic example</h2>
+<section id="a-basic-example" class="slide level2">
+<h2>A basic example</h2>
 <ul>
 <li><p>Let <span class="math inline">\(X_i\sim \textrm{Exponential}(1/5)\)</span>. The pdf is <span class="math inline">\(f(x) = \frac{1}{5}e^{-x/5}\)</span></p></li>
 <li><p>I know if I estimate the mean with <span class="math inline">\(\bar{X}\)</span>, then by the CLT (if <span class="math inline">\(n\)</span> is big),</p></li>
@@ -528,46 +515,65 @@
 <li><p>But I don’t want to estimate the mean, I want to estimate the median.</p></li>
 </ul>
 </section>
-<section id="section-2" class="slide level2">
+<section id="section-1" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span></span>
-<span id="cb2-2"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="cf">function</span>(x) <span class="fu">dexp</span>(x, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> orange) <span class="sc">+</span></span>
-<span id="cb2-3"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">5</span>, <span class="at">color =</span> blue) <span class="sc">+</span> <span class="co"># mean</span></span>
-<span id="cb2-4"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> red) <span class="sc">+</span> <span class="co"># median</span></span>
-<span id="cb2-5"><a></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
-<span id="cb2-6"><a></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">5.5</span>, <span class="dv">10</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">15</span>, .<span class="dv">05</span>),</span>
-<span id="cb2-7"><a></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"bar(x)"</span>, <span class="st">"pdf"</span>), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb2-8"><a></a>    <span class="at">color =</span> <span class="fu">c</span>(red, blue, orange), <span class="at">size =</span> <span class="dv">6</span></span>
-<span id="cb2-9"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span></span>
+<span id="cb1-2"><a></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="cf">function</span>(x) <span class="fu">dexp</span>(x, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> orange) <span class="sc">+</span></span>
+<span id="cb1-3"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">5</span>, <span class="at">color =</span> blue) <span class="sc">+</span> <span class="co"># mean</span></span>
+<span id="cb1-4"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> red) <span class="sc">+</span> <span class="co"># median</span></span>
+<span id="cb1-5"><a></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
+<span id="cb1-6"><a></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">5.5</span>, <span class="dv">10</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">15</span>, .<span class="dv">05</span>),</span>
+<span id="cb1-7"><a></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"bar(x)"</span>, <span class="st">"pdf"</span>), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-8"><a></a>    <span class="at">color =</span> <span class="fu">c</span>(red, blue, orange), <span class="at">size =</span> <span class="dv">6</span></span>
+<span id="cb1-9"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 
 </div>
-<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="now-what" class="slide level2">
-<h2>Now what…</h2>
+<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="how-to-assess-uncertainty-in-the-median" class="slide level2">
+<h2>How to assess uncertainty in the median?</h2>
 <ul>
 <li><p>I give you a sample of size 500, you give me the sample median.</p></li>
 <li><p>How do you get a CI?</p></li>
 <li><p>You can use the bootstrap!</p></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
-<span id="cb3-2"><a></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
-<span id="cb3-3"><a></a>(med <span class="ot">&lt;-</span> <span class="fu">median</span>(x)) <span class="co"># sample median</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb2-2"><a></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span>
+<span id="cb2-3"><a></a>(med <span class="ot">&lt;-</span> <span class="fu">median</span>(x)) <span class="co"># sample median</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 3.611615</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb5-2"><a></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
-<span id="cb5-3"><a></a>Fhat <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> <span class="fu">median</span>(<span class="fu">sample</span>(x, <span class="at">replace =</span> <span class="cn">TRUE</span>))) <span class="co"># repeat B times, "empirical distribution"</span></span>
-<span id="cb5-4"><a></a>CI <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> <span class="fu">quantile</span>(Fhat, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb4-2"><a></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb4-3"><a></a>Fhat <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> <span class="fu">median</span>(<span class="fu">sample</span>(x, <span class="at">replace =</span> <span class="cn">TRUE</span>))) <span class="co"># repeat B times, "empirical distribution"</span></span>
+<span id="cb4-4"><a></a>CI <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> <span class="fu">quantile</span>(Fhat, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="section-3" class="slide level2">
-<h2></h2>
+<section id="empirical-distribution" class="slide level2">
+<h2>Empirical distribution</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a>bootdf <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">boots =</span> Fhat)</span>
+<span id="cb5-2"><a></a><span class="fu">ggplot</span>(bootdf, <span class="fu">aes</span>(boots)) <span class="sc">+</span> </span>
+<span id="cb5-3"><a></a>  <span class="fu">stat_ecdf</span>(<span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb5-4"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">quantile</span>(Fhat, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>))) <span class="sc">+</span></span>
+<span id="cb5-5"><a></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a></a>  <span class="fu">annotate</span>(</span>
+<span id="cb5-7"><a></a>    <span class="st">"label"</span>, <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">3.2</span>, <span class="fl">3.9</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">2</span>, .<span class="dv">8</span>), </span>
+<span id="cb5-8"><a></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"hat(F)[boot](.05)"</span>, <span class="st">"hat(F)[boot](.95)"</span>), </span>
+<span id="cb5-9"><a></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-10"><a></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="result" class="slide level2">
+<h2>Result</h2>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -590,25 +596,140 @@
 <img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
 <section id="how-does-this-work" class="slide level2">
 <h2>How does this work?</h2>
-
-<img data-src="gfx/boot1.png" class="r-stretch"></section>
-<section id="approximations" class="slide level2">
-<h2>Approximations</h2>
-
-<img data-src="gfx/boot2.png" class="r-stretch"></section>
+<p>The Fundamental Premise (TM): <strong>a sufficiently large sample looks like the population</strong>.</p>
+<p>So, <em>sampling from the sample looks like sampling from the population.</em></p>
+<div class="flex">
+<div class="w-50">
+<p>Population:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-6-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Medians for samples of size <span class="math inline">\(N=100\)</span>:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.055229</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4.155205</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.346588</code></pre>
+</div>
+</div>
+</div>
+<div class="w-50">
+<p>One Sample ( <span class="math inline">\(N = 100\)</span> ):</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-8-1.svg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Medians for samples of size <span class="math inline">\(N=100\)</span>:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.126391</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.063069</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.534019</code></pre>
+</div>
+</div>
+</div>
+</div>
+<!-- ![](gfx/boot1.png)-->
+<!-- ## Approximations -->
+<!-- ![](gfx/boot2.png) -->
+</section>
+<section id="bootstrap-error-sources" class="slide level2">
+<h2>Bootstrap error sources</h2>
+<!-- ![](gfx/boot2.png){.center} -->
+<dl>
+<dt>Simulation error</dt>
+<dd>
+using only <span class="math inline">\(B\)</span> samples to estimate <span class="math inline">\(F\)</span> with <span class="math inline">\(\hat{F}\)</span>.
+</dd>
+<dt>Statistical error</dt>
+<dd>
+our data depended on a sample from the population. We don’t have the whole population so we make an error by using a sample (Note: this part is what <strong>always</strong> happens with data, and what the science of statistics analyzes.)
+</dd>
+<dt>Specification error</dt>
+<dd>
+If we use the parametric bootstrap, and our model is wrong, then we are overconfident.
+</dd>
+</dl>
+</section>
+<section id="types-of-intervals" class="slide level2">
+<h2>Types of intervals</h2>
+<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat\theta^{(b)}\)</span> be the resamples</p>
+<p>Our interval is</p>
+<p><span class="math display">\[
+[2\hat{\theta} - \hat\theta^{(b)}_{1-\alpha/2},\ 2\hat{\theta} - \hat\theta^{(b)}_{\alpha/2}]
+\]</span></p>
+<p>where <span class="math inline">\(\theta^{(b)}_q\)</span> is the <span class="math inline">\(q\)</span> quantile of <span class="math inline">\(\hat\theta^{(b)}\)</span>.</p>
+<hr>
+<ul>
+<li>Called the “Pivotal Interval”</li>
+<li>Has the correct <span class="math inline">\(1-\alpha\)</span>% coverage under very mild conditions on <span class="math inline">\(\hat{\theta}\)</span></li>
+</ul>
+</section>
+<section id="types-of-intervals-1" class="slide level2">
+<h2>Types of intervals</h2>
+<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat\theta^{(b)}\)</span> be the resamples</p>
+<p><span class="math display">\[
+[\hat{\theta} - z_{1-\alpha/2}\hat{s},\ \hat{\theta} + z_{1-\alpha/2}\hat{s}]
+\]</span></p>
+<p>where <span class="math inline">\(\hat{s} = \sqrt{\Var{\hat\theta^{(b)}}}\)</span></p>
+<hr>
+<ul>
+<li>Called the “Normal Interval”</li>
+<li>Only works if the distribution of <span class="math inline">\(\hat{\theta^{(b)}}\)</span> is approximately Normal.</li>
+<li>Common and really tempting, but not likely to work well</li>
+<li>Don’t do this</li>
+</ul>
+</section>
+<section id="types-of-intervals-2" class="slide level2">
+<h2>Types of intervals</h2>
+<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat\theta^{(b)}\)</span> be the resamples</p>
+<p><span class="math display">\[
+[\hat\theta^{(b)}_{\alpha/2},\ \hat\theta^{(b)}_{1-\alpha/2}]
+\]</span></p>
+<p>where <span class="math inline">\(\hat\theta^{(b)}_q\)</span> is the <span class="math inline">\(q\)</span> quantile of <span class="math inline">\(\hat\theta^{(b)}\)</span>.</p>
+<hr>
+<ul>
+<li>Called the “Percentile Interval”</li>
+<li>It <em>does</em> have (asymp) right coverage if <span class="math inline">\(\exists\)</span> monotone <span class="math inline">\(m\)</span> so that <span class="math inline">\(m(\hat\theta) \sim N(m(\theta), c^2)\)</span></li>
+<li>Better than the Normal Interval, more assumptions than the Pivotal Interval</li>
+<li>We teach this one in DSCI100 because it’s easy and “looks right” (it’s not, in general)
+<ul>
+<li>Unlike Pivotal, doesn’t follow from the fundamental premise of bootstrap</li>
+</ul></li>
+</ul>
+</section>
 <section id="slightly-harder-example" class="slide level2">
 <h2>Slightly harder example</h2>
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">ggplot</span>(fatcats, <span class="fu">aes</span>(Bwt, Hwt)) <span class="sc">+</span></span>
-<span id="cb7-2"><a></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> blue) <span class="sc">+</span></span>
-<span id="cb7-3"><a></a>  <span class="fu">xlab</span>(<span class="st">"Cat body weight (Kg)"</span>) <span class="sc">+</span></span>
-<span id="cb7-4"><a></a>  <span class="fu">ylab</span>(<span class="st">"Cat heart weight (g)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a><span class="fu">ggplot</span>(fatcats, <span class="fu">aes</span>(Bwt, Hwt)) <span class="sc">+</span></span>
+<span id="cb13-2"><a></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> blue) <span class="sc">+</span></span>
+<span id="cb13-3"><a></a>  <span class="fu">xlab</span>(<span class="st">"Cat body weight (Kg)"</span>) <span class="sc">+</span></span>
+<span id="cb13-4"><a></a>  <span class="fu">ylab</span>(<span class="st">"Cat heart weight (g)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center"></p>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-11-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
@@ -616,31 +737,31 @@
 </div>
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
-<span id="cb8-2"><a></a><span class="fu">summary</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
+<span id="cb14-2"><a></a><span class="fu">summary</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
 lm(formula = Hwt ~ 0 + Bwt, data = fatcats)
 
 Residuals:
-     Min       1Q   Median       3Q      Max 
--11.2353  -0.7932  -0.1407   0.5968  11.1026 
+    Min      1Q  Median      3Q     Max 
+-9.8138 -0.9014 -0.2155  0.7548 22.5957 
 
 Coefficients:
     Estimate Std. Error t value Pr(&gt;|t|)    
-Bwt  3.95424    0.06294   62.83   &lt;2e-16 ***
+Bwt  3.88297    0.08401   46.22   &lt;2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Residual standard error: 2.089 on 143 degrees of freedom
-Multiple R-squared:  0.965, Adjusted R-squared:  0.9648 
-F-statistic:  3947 on 1 and 143 DF,  p-value: &lt; 2.2e-16</code></pre>
+Residual standard error: 2.789 on 143 degrees of freedom
+Multiple R-squared:  0.9373,    Adjusted R-squared:  0.9368 
+F-statistic:  2136 on 1 and 143 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a><span class="fu">confint</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="fu">confint</span>(cats.lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
-Bwt 3.829836 4.078652</code></pre>
+Bwt 3.716912 4.049036</code></pre>
 </div>
 </div>
 </div>
@@ -651,39 +772,39 @@ Bwt 3.829836 4.078652</code></pre>
 <div class="flex">
 <div class="w-50">
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a><span class="fu">qqnorm</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> blue)</span>
-<span id="cb12-2"><a></a><span class="fu">qqline</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">col =</span> orange, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a></a><span class="fu">qqnorm</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> blue)</span>
+<span id="cb18-2"><a></a><span class="fu">qqline</span>(<span class="fu">residuals</span>(cats.lm), <span class="at">col =</span> orange, <span class="at">lwd =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure>
-<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-9-1.svg" class="quarto-figure quarto-figure-center"></p>
+<p><img data-src="18-the-bootstrap_files/figure-revealjs/unnamed-chunk-13-1.svg" class="quarto-figure quarto-figure-center"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The tails are too fat. So I don’t believe that CI…</p>
+<p>The tails are too fat. I don’t believe that CI…</p>
 </div>
 <div class="w-50">
 <p><strong>We bootstrap</strong></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb13-2"><a></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
-<span id="cb13-3"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb13-4"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
-<span id="cb13-5"><a></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-6"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb13-7"><a></a>})</span>
-<span id="cb13-8"><a></a></span>
-<span id="cb13-9"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Bootstrap CI</span></span>
-<span id="cb13-10"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb19-2"><a></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
+<span id="cb19-3"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb19-4"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
+<span id="cb19-5"><a></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-6"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb19-7"><a></a>})</span>
+<span id="cb19-8"><a></a></span>
+<span id="cb19-9"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Bootstrap CI</span></span>
+<span id="cb19-10"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
-3.826735 4.084322 </code></pre>
+3.731614 4.030176 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
-Bwt 3.829836 4.078652</code></pre>
+Bwt 3.716912 4.049036</code></pre>
 </div>
 </div>
 </div>
@@ -711,24 +832,24 @@ Bwt 3.829836 4.078652</code></pre>
 <p><span class="secondary">Non-parametric bootstrap</span></p>
 <p>Same as before</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb17-2"><a></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
-<span id="cb17-3"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb17-4"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
-<span id="cb17-5"><a></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb17-6"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb17-7"><a></a>})</span>
-<span id="cb17-8"><a></a></span>
-<span id="cb17-9"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># NP Bootstrap CI</span></span>
-<span id="cb17-10"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb23-2"><a></a>alpha <span class="ot">&lt;-</span> .<span class="dv">05</span></span>
+<span id="cb23-3"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb23-4"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span></span>
+<span id="cb23-5"><a></a>    <span class="fu">slice_sample</span>(<span class="at">prop =</span> <span class="dv">1</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-6"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb23-7"><a></a>})</span>
+<span id="cb23-8"><a></a></span>
+<span id="cb23-9"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># NP Bootstrap CI</span></span>
+<span id="cb23-10"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
-3.832907 4.070232 </code></pre>
+3.726857 4.038470 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a><span class="fu">confint</span>(cats.lm) <span class="co"># Original CI</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       2.5 %   97.5 %
-Bwt 3.829836 4.078652</code></pre>
+Bwt 3.716912 4.049036</code></pre>
 </div>
 </div>
 </div>
@@ -740,96 +861,35 @@ Bwt 3.829836 4.078652</code></pre>
 <li>The <span class="math inline">\(\epsilon_i\)</span> is random <span class="math inline">\(\longrightarrow\)</span> just resample <span class="math inline">\(\widehat{e}_i\)</span>.</li>
 </ol>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb21-2"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">double</span>(B)</span>
-<span id="cb21-3"><a></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
-<span id="cb21-4"><a></a>r <span class="ot">&lt;-</span> <span class="fu">residuals</span>(cats.lm)</span>
-<span id="cb21-5"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
-<span id="cb21-6"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
-<span id="cb21-7"><a></a>    <span class="at">Hwt =</span> <span class="fu">predict</span>(cats.lm) <span class="sc">+</span></span>
-<span id="cb21-8"><a></a>      <span class="fu">sample</span>(r, <span class="fu">n</span>(), <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb21-9"><a></a>  )</span>
-<span id="cb21-10"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
-<span id="cb21-11"><a></a>})</span>
-<span id="cb21-12"><a></a></span>
-<span id="cb21-13"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Parametric Bootstrap CI</span></span>
-<span id="cb21-14"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a>B <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb27-2"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">double</span>(B)</span>
+<span id="cb27-3"><a></a>cats.lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> fatcats)</span>
+<span id="cb27-4"><a></a>r <span class="ot">&lt;-</span> <span class="fu">residuals</span>(cats.lm)</span>
+<span id="cb27-5"><a></a>bhats <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> {</span>
+<span id="cb27-6"><a></a>  newcats <span class="ot">&lt;-</span> fatcats <span class="sc">|&gt;</span> <span class="fu">mutate</span>(</span>
+<span id="cb27-7"><a></a>    <span class="at">Hwt =</span> <span class="fu">predict</span>(cats.lm) <span class="sc">+</span></span>
+<span id="cb27-8"><a></a>      <span class="fu">sample</span>(r, <span class="fu">n</span>(), <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-9"><a></a>  )</span>
+<span id="cb27-10"><a></a>  <span class="fu">coef</span>(<span class="fu">lm</span>(Hwt <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> Bwt, <span class="at">data =</span> newcats))</span>
+<span id="cb27-11"><a></a>})</span>
+<span id="cb27-12"><a></a></span>
+<span id="cb27-13"><a></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">coef</span>(cats.lm) <span class="sc">-</span> <span class="co"># Parametric Bootstrap CI</span></span>
+<span id="cb27-14"><a></a>  <span class="fu">quantile</span>(bhats, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   97.5%     2.5% 
-3.815162 4.065045 </code></pre>
+3.707015 4.035300 </code></pre>
 </div>
 </div>
 </div>
 </div>
-</section>
-<section id="bootstrap-error-sources" class="slide level2">
-<h2>Bootstrap error sources</h2>
+<!--
+## More details
 
-<img data-src="gfx/boot2.png" class="center r-stretch"><dl>
-<dt>Simulation error</dt>
-<dd>
-using only <span class="math inline">\(B\)</span> samples to estimate <span class="math inline">\(F\)</span> with <span class="math inline">\(\hat{F}\)</span>.
-</dd>
-<dt>Statistical error</dt>
-<dd>
-our data depended on a sample from the population. We don’t have the whole population so we make an error by using a sample (Note: this part is what <strong>always</strong> happens with data, and what the science of statistics analyzes.)
-</dd>
-<dt>Specification error</dt>
-<dd>
-If we use the parametric bootstrap, and our model is wrong, then we are overconfident.
-</dd>
-</dl>
-</section>
-<section id="types-of-intervals" class="slide level2">
-<h2>Types of intervals</h2>
-<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat{\Theta}\)</span> be the resamples</p>
-<p>Our interval is</p>
-<p><span class="math display">\[
-[2\hat{\theta} - \theta^*_{1-\alpha/2},\ 2\hat{\theta} - \theta^*_{\alpha/2}]
-\]</span></p>
-<p>where <span class="math inline">\(\theta^*_q\)</span> is the <span class="math inline">\(q\)</span> quantile of <span class="math inline">\(\hat{\Theta}\)</span>.</p>
-<hr>
-<ul>
-<li>Called the “Pivotal Interval”</li>
-<li>Has the correct <span class="math inline">\(1-\alpha\)</span>% coverage under very mild conditions on <span class="math inline">\(\hat{\theta}\)</span></li>
-</ul>
-</section>
-<section id="types-of-intervals-1" class="slide level2">
-<h2>Types of intervals</h2>
-<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat{\Theta}\)</span> be the resamples</p>
-<p><span class="math display">\[
-[\hat{\theta} - z_{\alpha/2}\hat{s},\ \hat{\theta} + z_{\alpha/2}\hat{s}]
-\]</span></p>
-<p>where <span class="math inline">\(\hat{s} = \sqrt{\Var{\hat{\Theta}}}\)</span></p>
-<hr>
-<ul>
-<li>Called the “Normal Interval”</li>
-<li>Only works if the distribution of <span class="math inline">\(\hat{\Theta}\)</span> is approximately Normal.</li>
-<li>Unlikely to work well</li>
-<li>Don’t do this</li>
-</ul>
-</section>
-<section id="types-of-intervals-2" class="slide level2">
-<h2>Types of intervals</h2>
-<p>Let <span class="math inline">\(\hat{\theta}\)</span> be our sample statistic, <span class="math inline">\(\hat{\Theta}\)</span> be the resamples</p>
-<p><span class="math display">\[
-[\theta^*_{\alpha/2},\ \theta^*_{1-\alpha/2}]
-\]</span></p>
-<p>where <span class="math inline">\(\theta^*_q\)</span> is the <span class="math inline">\(q\)</span> quantile of <span class="math inline">\(\hat{\Theta}\)</span>.</p>
-<hr>
-<ul>
-<li>Called the “Percentile Interval”</li>
-<li>Works if <span class="math inline">\(\exists\)</span> monotone <span class="math inline">\(m\)</span> so that <span class="math inline">\(m(\hat\Theta) \sim N(m(\theta), c^2)\)</span></li>
-<li>Better than the Normal Interval</li>
-<li>More assumptions than the Pivotal Interval</li>
-</ul>
-</section>
-<section id="more-details" class="slide level2">
-<h2>More details</h2>
-<blockquote>
-<p>See “All of Statistics” by Larry Wasserman, Chapter 8.3</p>
-</blockquote>
-<p>There’s a handout with the proofs on Canvas (under Modules)</p>
+> See "All of Statistics" by Larry Wasserman, Chapter 8.3
+
+There's a handout with the proofs on Canvas (under Modules)
+
+-->
 </section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
