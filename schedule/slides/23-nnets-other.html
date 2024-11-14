@@ -388,7 +388,6 @@
       margin-right: 0; 
     }
   </style>
-  <script src="../../site_libs/twitter-widget/widgets.js"></script>
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -396,10 +395,10 @@
 
 
 <section id="section" class="slide level2 large" data-background-image="gfx/smooths.svg" data-background-opacity="0.3">
-<h2>23 Neural nets - other considerations</h2>
+<h2>23 Neural nets - generalization</h2>
 <p><span class="secondary">Stat 406</span></p>
 <p><span class="secondary">Geoff Pleiss, Trevor Campbell</span></p>
-<p>Last modified – 12 October 2023</p>
+<p>Last modified – 13 November 2024</p>
 <p><span class="math display">\[
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
@@ -425,198 +424,121 @@
 \newcommand{\bls}{\widehat{\beta}_{ols}}
 \newcommand{\blt}{\widehat{\beta}^L_{s}}
 \newcommand{\bll}{\widehat{\beta}^L_{\lambda}}
+\newcommand{\U}{\mathbf{U}}
+\newcommand{\D}{\mathbf{D}}
+\newcommand{\V}{\mathbf{V}}
 \]</span></p>
 </section>
-<section id="estimation-procedures-training" class="slide level2">
-<h2>Estimation procedures (training)</h2>
-<p>Back-propagation</p>
-<p><span class="secondary">Advantages:</span></p>
-<ul>
-<li><p>It’s updates only depend on local information in the sense that if objects in the hierarchical model are unrelated to each other, the updates aren’t affected</p>
-<p>(This helps in many ways, most notably in parallel architectures)</p></li>
-<li><p>It doesn’t require second-derivative information</p></li>
-<li><p>As the updates are only in terms of <span class="math inline">\(\hat{R}_i\)</span>, the algorithm can be run in either batch or online mode</p></li>
-</ul>
-<p><span class="tertiary">Down sides:</span></p>
-<ul>
-<li><p>It can be very slow</p></li>
-<li><p>Need to choose the learning rate <span class="math inline">\(\gamma_t\)</span></p></li>
-</ul>
-</section>
-<section id="other-algorithms" class="slide level2">
-<h2>Other algorithms</h2>
-<p>There are many variations on the fitting algorithm</p>
-<p><span class="secondary">Stochastic gradient descent:</span> (SGD) discussed in the optimization lecture</p>
-<p>The rest are variations that use lots of tricks</p>
-<ul>
-<li>RMSprop</li>
-<li>Adam</li>
-<li>Adadelta</li>
-<li>Adagrad</li>
-<li>Adamax</li>
-<li>Nadam</li>
-<li>Ftrl</li>
-</ul>
-</section>
-<section id="regularizing-neural-networks" class="slide level2">
-<h2>Regularizing neural networks</h2>
-<p>NNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters.</p>
-<p>Flavours:</p>
-<ul>
-<li>a complexity penalization term <span class="math inline">\(\longrightarrow\)</span> solve <span class="math inline">\(\min \hat{R} + \rho(\alpha,\beta)\)</span></li>
-<li>early stopping on the back propagation algorithm used for fitting</li>
-</ul>
-<dl>
-<dt>Weight decay</dt>
-<dd>
-This is like ridge regression in that we penalize the squared Euclidean norm of the weights <span class="math inline">\(\rho(\mathbf{W},\mathbf{B}) = \sum w_i^2 + \sum b_i^2\)</span>
-</dd>
-<dt>Weight elimination</dt>
-<dd>
-This encourages more shrinking of small weights <span class="math inline">\(\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}\)</span> or Lasso-type
-</dd>
-<dt>Dropout</dt>
-<dd>
-In each epoch, randomly choose <span class="math inline">\(z\%\)</span> of the nodes and set those weights to zero.
-</dd>
-</dl>
-</section>
-<section id="other-common-pitfalls" class="slide level2">
-<h2>Other common pitfalls</h2>
-<p>There are a few areas to watch out for</p>
-<p><span class="tertiary">Nonconvexity:</span></p>
-<p>The neural network optimization problem is non-convex.</p>
-<p>This makes any numerical solution highly dependent on the initial values. These should be</p>
-<ul>
-<li>chosen carefully, typically random near 0. <span class="hand">DON’T</span> use all 0.</li>
-<li>regenerated several times to check sensitivity</li>
-</ul>
-<p><span class="tertiary">Scaling:</span><br>
-Be sure to standardize the covariates before training</p>
-</section>
-<section id="other-common-pitfalls-1" class="slide level2">
-<h2>Other common pitfalls</h2>
-<p><span class="tertiary">Number of hidden units:</span><br>
-It is generally better to have too many hidden units than too few (regularization can eliminate some).</p>
-<p><span class="tertiary">Sifting the output:</span></p>
-<ul>
-<li>Choose the solution that minimizes training error</li>
-<li>Choose the solution that minimizes the penalized training error</li>
-<li>Average the solutions across runs</li>
-</ul>
-</section>
-<section id="tuning-parameters" class="slide level2">
-<h2>Tuning parameters</h2>
-<p>There are many.</p>
-<ul>
-<li>Regularization</li>
-<li>Stopping criterion</li>
-<li>learning rate</li>
-<li>Architecture</li>
-<li>Dropout %</li>
-<li>others…</li>
-</ul>
-<p>These are hard to tune.</p>
-<p>In practice, people might choose “some” with a validation set, and fix the rest largely arbitrarily</p>
-<div class="fragment">
-<p>More often, people set them all arbitrarily</p>
-</div>
-</section>
-<section id="thoughts-on-nnets" class="slide level2 smaller">
-<h2>Thoughts on NNets</h2>
-<p>Off the top of my head, without lots of justification</p>
-<div class="flex">
-<div class="w-50">
-<p>🤬😡 <span class="tertiary">Why don’t statisticians like them?</span> 🤬😡</p>
-<ul>
-<li>There is little theory (though this is increasing)</li>
-<li>Stat theory applies to global minima, here, only local determined by the optimizer</li>
-<li>Little understanding of when they work</li>
-<li>In large part, NNets look like logistic regression + feature creation. We understand that well, and in many applications, it performs as well</li>
-<li>Explosion of tuning parameters without a way to decide</li>
-<li>Require massive datasets to work</li>
-<li>Lots of examples where they perform <em>exceedingly</em> poorly</li>
-</ul>
-</div>
-<div class="w-50">
-<p>🔥🔥<span class="tertiary">Why are they hot?</span>🔥🔥</p>
-<ul>
-<li>Perform exceptionally well on typical CS tasks (images, translation)</li>
-<li>Take advantage of SOTA computing (parallel, GPUs)</li>
-<li>Very good for multinomial logistic regression</li>
-<li>An excellent example of “transfer learning”</li>
-<li>They generate pretty pictures (the nets, pseudo-responses at hidden units)</li>
-</ul>
-</div>
-</div>
-</section>
-<section id="keras" class="slide level2">
-<h2>Keras</h2>
-<p>Most people who do deep learning use Python <span class="math inline">\(+\)</span> Keras <span class="math inline">\(+\)</span> Tensorflow</p>
-<p>It takes some work to get all this software up and running.</p>
-<p>It is possible to do in with R using an <a href="https://keras.rstudio.com/index.html">interface to Keras</a>.</p>
-<div class="fragment">
-<p>I used to try to do a walk-through, but the interface is quite brittle</p>
-<p>If you want to explore, see the handout:</p>
-<ul>
-<li>Knitted: <a href="https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.html" class="uri">https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.html</a></li>
-<li>Rmd: <a href="https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.Rmd" class="uri">https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.Rmd</a></li>
-</ul>
-</div>
+<section id="this-lecture" class="slide level2">
+<h2>This lecture</h2>
+<ol type="1">
+<li><p>What factors affect generalization? (The ability to make accurate predictions)</p></li>
+<li><p>Why do NN generalize, despite having lots of parameters?</p></li>
+<li><p>Modern techniques to improve generalization</p></li>
+</ol>
 </section>
 <section>
-<section id="double-descent-and-model-complexity" class="title-slide slide level1 center">
-<h1>Double descent and model complexity</h1>
-
+<section id="what-factors-affect-generalization" class="title-slide slide level1 center">
+<h1>What factors affect generalization?</h1>
+<p>(The ability to make accurate predictions)</p>
 </section>
-<section id="section-1" class="slide level2">
-<h2></h2>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<blockquote class="twitter-tweet" data-width="550" data-lang="en" data-dnt="true" data-theme="light"><p lang="en" dir="ltr">The Bias-Variance Trade-Off &amp; "DOUBLE DESCENT" 🧵<br><br>Remember the bias-variance trade-off? It says that models  perform well for an "intermediate level of flexibility".  You've seen the picture of the U-shape test error curve.<br><br>We try to hit the "sweet spot" of flexibility.<br><br>1/🧵 <a href="https://t.co/HPk05izkZh">pic.twitter.com/HPk05izkZh</a></p>— Daniela Witten (@daniela_witten) <a href="https://twitter.com/daniela_witten/status/1292293102103748609?ref_src=twsrc%5Etfw">August 9, 2020</a></blockquote>
-
-</div>
-</div>
+<section id="tunable-parameters-of-nn" class="slide level2">
+<h2>Tunable parameters of NN</h2>
+<ol type="1">
+<li><p>Number of hidden layers (<span class="math inline">\(L\)</span>)</p></li>
+<li><p>Width of hidden layers (<span class="math inline">\(D\)</span>)</p></li>
+<li><p>Nonlinearity function</p></li>
+<li><p>Loss function</p></li>
+<li><p>Initial SGD step size</p></li>
+<li><p>SGD step size decay rate</p></li>
+<li><p>SGD batch size</p></li>
+<li><p>SGD stopping criterion</p></li>
+<li><p>Amount of regularization (we’ll talk about this concept in a bit)</p></li>
+<li><p>Initialization of NN parameters</p></li>
+<li><p>…</p></li>
+</ol>
 </section>
-<section id="where-does-this-u-shape-come-from" class="slide level2">
-<h2>Where does this U shape come from?</h2>
-<p><span class="secondary">MSE = Squared Bias + Variance + Irreducible Noise</span></p>
-<p>As we increase flexibility:</p>
+<section id="how-to-tune-nn-parameters" class="slide level2">
+<h2>How to tune NN parameters</h2>
+<h3 id="section-1">😓</h3>
 <ul>
-<li>Squared bias goes down</li>
-<li>Variance goes up</li>
-<li>Eventually, | <span class="math inline">\(\partial\)</span> Variance | <span class="math inline">\(&gt;\)</span> | <span class="math inline">\(\partial\)</span> Squared Bias |.</li>
+<li><p>There are exponentially many designs of NNs</p></li>
+<li><p>Training a single NN is expensive</p></li>
+<li><p>NN training depends on random initialization, so you generally have to do multiple runs</p></li>
 </ul>
-<p><span class="secondary">Goal:</span> Choose amount of flexibility to balance these and minimize MSE.</p>
-<div class="fragment">
-<p><span class="hand">Use CV or something to estimate MSE and decide how much flexibility.</span></p>
-</div>
-</section>
-<section id="section-2" class="slide level2">
-<h2></h2>
-<div class="cell" data-layout-align="center">
-<div class="cell-output-display">
-<blockquote class="twitter-tweet" data-conversation="none" data-width="550" data-lang="en" data-dnt="true" data-theme="light"><p lang="en" dir="ltr">In the past few yrs, (and particularly in the context of deep learning) ppl have noticed "double descent" -- when you continue to fit increasingly flexible models that interpolate the training data, then the test error can start to DECREASE again!! <br><br>Check it out:&nbsp;<br>3/ <a href="https://t.co/Vo54tRVRNG">pic.twitter.com/Vo54tRVRNG</a></p>— Daniela Witten (@daniela_witten) <a href="https://twitter.com/daniela_witten/status/1292293104855158784?ref_src=twsrc%5Etfw">August 9, 2020</a></blockquote>
-
-</div>
-</div>
-</section>
-<section id="zero-training-error-and-model-saturation" class="slide level2">
-<h2>Zero training error and model saturation</h2>
+<h3 id="in-practice">In Practice</h3>
 <ul>
-<li><p>In Deep Learning, the recommendation is to “fit until you get zero training error”</p></li>
-<li><p>This somehow magically, leads to a continued decrease in test error.</p></li>
-<li><p>So, who cares about the Bias-Variance Trade off!!</p></li>
+<li><p>Compare a handful of designs on a single holdout set (no cross val)</p></li>
+<li><p>Principled NN architecture search is an active area of research</p></li>
 </ul>
-<div class="fragment">
-<p><span class="secondary">Lesson:</span></p>
-<p>BV Trade off is not wrong. 😢</p>
-<p>This is a misunderstanding of black box algorithms and flexibility.</p>
-<p>We don’t even need deep learning to illustrate.</p>
+</section>
+<section id="some-common-patterns-to-reduce-the-search-space" class="slide level2">
+<h2>Some Common Patterns to Reduce the Search Space</h2>
+<ol type="1">
+<li><p>Use ReLU nonlinearities, and nothing else</p></li>
+<li><p>Use the same width for all layers (or grow with with a simple formula)</p></li>
+<li><p>Measure loss on a validation set throughout training, and stop SGD when the validation loss plateaus</p></li>
+<li><p>Ask a grad student for their tricks</p></li>
+</ol>
+</section></section>
+<section>
+<section id="why-do-nn-generalize" class="title-slide slide level1 center">
+<h1>Why do NN generalize…</h1>
+<p>… despite having tons of parameters?</p>
+</section>
+<section id="capacity-vs-generalization" class="slide level2">
+<h2>Capacity vs Generalization</h2>
+<p>Consider a NN with ReLU nonlinearities <span class="math inline">\(g( \boldsymbol w^\top \boldsymbol z) = \max\{\boldsymbol w^\top \boldsymbol z, 0 \}\)</span> with <span class="math inline">\(L\)</span> hidden layers, each with <span class="math inline">\(D\)</span> hidden activations.</p>
+<h3 id="recall">Recall:</h3>
+<ul>
+<li><p>Number of piecewise-linear regions: <span class="math inline">\(O(D^L)\)</span> (exponential!)</p></li>
+<li><p>Number of parameters: <span class="math inline">\(O(D^2 L)\)</span></p></li>
+</ul>
+<h3 id="this-implies">This implies:</h3>
+<ul>
+<li><p>Our NN is capable of learning complicated functions (many piecewise-linear components)</p></li>
+<li><p>But will it learn the <em>right</em> function from limited data?</p></li>
+</ul>
+</section>
+<section id="recall-biasvariance-tradeoff-for-trees" class="slide level2">
+<h2>Recall: Bias/Variance Tradeoff For Trees</h2>
+<div class="flex">
+<div class="w-58">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="gfx/tree_bias_variance.png" class="quarto-figure quarto-figure-center" data-fig-caption="Bias/variance tradeoff for trees as a function of depth." width="600"></p>
+</figure>
+</div>
+</div>
+<div class="w-40">
+<ul>
+<li><p>Neural networks have lots of parameters ( <span class="math inline">\(O(D^2 L)\)</span>, which is typically <span class="math inline">\(&gt; n\)</span> )</p></li>
+<li><p>In theory, we would expect similar bias/variance curves for neural networks as a function of <code># params</code></p></li>
+</ul>
+</div>
 </div>
 </section>
-<section id="section-3" class="slide level2">
-<h2></h2>
+<section id="the-surprising-biasvar-curves-for-nn-double-descent" class="slide level2">
+<h2>The Surprising Bias/Var Curves For NN (Double Descent)</h2>
+
+<img data-src="gfx/double_descent_nn_toy.png" class="quarto-figure quarto-figure-center r-stretch" data-fig-caption="Toy depiction of double descent curve for neural networks." width="1000"><ul>
+<li><p>NN risk (as a function of <code># params</code>) experiences a “double descent” shape?!?!?!</p></li>
+<li><p>Most modern NN have tons of parameters, and so they’re explained by the right side of the graph</p></li>
+</ul>
+</section>
+<section id="the-surprising-biasvar-curves-for-nn-double-descent-1" class="slide level2">
+<h2>The Surprising Bias/Var Curves For NN (Double Descent)</h2>
+
+<img data-src="gfx/double_descent_nn.png" width="1000" class="r-stretch quarto-figure-center"><p class="caption"><span class="small">Image credit: Belkin et al., (2019)</span></p><ul>
+<li><p>Double descent is a <em>newly discovered phenomenon</em> (~2019)</p></li>
+<li><p>Statisticians are still trying to understand why it occurs.<br>
+<span class="small">There has been good progress since ~2020!</span></p></li>
+</ul>
+</section>
+<section id="to-understand-double-descent-study-basis-regression" class="slide level2">
+<h2>To Understand Double Descent: Study Basis Regression</h2>
+<p>The double descent phenomenon is not specific to neural networks.<br>
+We can observe it in basis regression (read: linear models!) as we increase the number of basis functions <span class="math inline">\(&gt; n\)</span>:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="fu">library</span>(splines)</span>
 <span id="cb1-2"><a></a><span class="fu">set.seed</span>(<span class="dv">20221102</span>)</span>
@@ -626,12 +548,11 @@ It is generally better to have too many hidden units than too few (regularizatio
 <span id="cb1-6"><a></a>  <span class="at">y =</span> <span class="fu">sin</span>(x) <span class="sc">+</span> <span class="fu">runif</span>(n, <span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
 <span id="cb1-7"><a></a>)</span>
 <span id="cb1-8"><a></a>g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(x, y)) <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">stat_function</span>(<span class="at">fun =</span> sin) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>))</span>
-<span id="cb1-9"><a></a>g <span class="sc">+</span> <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">4</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> green) <span class="sc">+</span> <span class="co"># too smooth</span></span>
-<span id="cb1-10"><a></a>  <span class="fu">stat_smooth</span>(<span class="at">method =</span> lm, <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">bs</span>(x, <span class="at">df =</span> <span class="dv">8</span>), <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> orange) <span class="co"># looks good</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-9"><a></a>g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="section-4" class="slide level2">
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-1-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="section-2" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
@@ -640,12 +561,12 @@ It is generally better to have too many hidden units than too few (regularizatio
 <span id="cb2-4"><a></a>Xn <span class="ot">&lt;-</span> <span class="fu">bs</span>(xn, <span class="at">df =</span> <span class="dv">20</span>, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb2-5"><a></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
 <span id="cb2-6"><a></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
-<span id="cb2-7"><a></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x=</span>xn, <span class="at">y=</span>yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb2-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"20 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> xn, <span class="at">y =</span> yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
+<span id="cb2-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"20 basis functions (n=20)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="section-5" class="slide level2">
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-2-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="section-3" class="slide level2">
 <h2></h2>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>xn <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="fl">1.5</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
@@ -655,14 +576,16 @@ It is generally better to have too many hidden units than too few (regularizatio
 <span id="cb3-5"><a></a>S <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
 <span id="cb3-6"><a></a>yhat <span class="ot">&lt;-</span> Xn <span class="sc">%*%</span> S<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">diag</span>(<span class="dv">1</span><span class="sc">/</span>S<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">crossprod</span>(S<span class="sc">$</span>u, df<span class="sc">$</span>y)</span>
 <span id="cb3-7"><a></a>g <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> xn, <span class="at">y =</span> yhat), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb3-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"40 degrees of freedom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-8"><a></a>  <span class="fu">ggtitle</span>(<span class="st">"40 basis functions (n=20)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-5-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="what-happened" class="slide level2">
-<h2>What happened?!</h2>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-3-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="section-4" class="slide level2">
+<h2></h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4" data-code-line-numbers="1|3-12|13-16|"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>doffs <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">50</span></span>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a>doffs <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">50</span></span>
 <span id="cb4-2"><a></a>mse <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y) <span class="fu">mean</span>((x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb4-3"><a></a>get_errs <span class="ot">&lt;-</span> <span class="cf">function</span>(doff) {</span>
 <span id="cb4-4"><a></a>  X <span class="ot">&lt;-</span> <span class="fu">bs</span>(df<span class="sc">$</span>x, <span class="at">df =</span> doff, <span class="at">intercept =</span> <span class="cn">TRUE</span>)</span>
@@ -677,99 +600,230 @@ It is generally better to have too many hidden units than too few (regularizatio
 <span id="cb4-13"><a></a>errs <span class="ot">&lt;-</span> <span class="fu">map</span>(doffs, get_errs) <span class="sc">|&gt;</span></span>
 <span id="cb4-14"><a></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb4-15"><a></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span> <span class="ot">=</span> doffs) <span class="sc">|&gt;</span> </span>
-<span id="cb4-16"><a></a>  <span class="fu">pivot_longer</span>(train<span class="sc">:</span>test, <span class="at">values_to =</span> <span class="st">"error"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-16"><a></a>  <span class="fu">pivot_longer</span>(train<span class="sc">:</span>test, <span class="at">values_to =</span> <span class="st">"error"</span>)</span>
+<span id="cb4-17"><a></a><span class="fu">ggplot</span>(errs, <span class="fu">aes</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span>, error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
+<span id="cb4-18"><a></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb4-19"><a></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">12</span>)) <span class="sc">+</span></span>
+<span id="cb4-20"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
+<span id="cb4-21"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb4-22"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+
+</div>
+<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-4-1.svg" class="quarto-figure quarto-figure-center r-stretch"><ul>
+<li><p>Inflection point occurs when <code># basis functions = n</code>!</p></li>
+<li><p>This is the point at which our basis regressor is able to perfectly fit the training data.</p></li>
+</ul>
+</section>
+<section id="understanding-double-descent-hand-wavy" class="slide level2">
+<h2>Understanding Double Descent (Hand-Wavy)</h2>
+<p>Let <span class="math inline">\(\boldsymbol Z \in \R^{n \times d}\)</span> be the matrix of basis expansions for our <span class="math inline">\(n\)</span> training points.</p>
+<p>Basis regression is just OLS with the basis expansion <span class="math inline">\(\boldsymbol Z\)</span>: <span class="small"><span class="math display">\[ \min_{\boldsymbol \beta} \left\Vert \boldsymbol Z \boldsymbol \beta - \boldsymbol y \right\Vert_2^2. \]</span></span></p>
+<ul>
+<li><p>When <span class="math inline">\(d &lt; n\)</span>, the regressor is <strong>underparameterized.</strong><br>
+<span class="small">I.e. there is no <span class="math inline">\(\boldsymbol \beta\)</span> that perfectly explains our training responses given our basis-expanded training inputs.</span></p></li>
+<li><p>When <span class="math inline">\(d = n\)</span>, there is a value of <span class="math inline">\(\boldsymbol \beta\)</span> that fits our training data perfectly.<br>
+<span class="small">I.e. <span class="math inline">\(\Vert \boldsymbol Z \boldsymbol \beta - \boldsymbol y \Vert = 0\)</span>.</span></p>
+<ul>
+<li><span class="small">We are fitting both the <em>noise</em> and the <em>signal</em> (leading to a high variance predictor).</span></li>
+</ul></li>
+<li><p>When <span class="math inline">\(d &gt; n\)</span>, we can also fit the data (noise + signal) perfectly.👋 However, more features implies that the the noise gets “spread out” over all of parameters. 👋</p>
+<ul>
+<li><p><span class="small">👋 Since each parameter only captures “some” of the noise, we are less likely to make predictions based on it. 👋</span></p></li>
+<li><p><span class="small">This explanation is overly simplified, and there is a lot more at play.</span></p></li>
+</ul></li>
+</ul>
+</section>
+<section id="do-we-need-to-worry-about-variance" class="slide level2">
+<h2>Do we need to worry about variance?</h2>
+<p><em>Regularizing</em> a neural network (adding a complexity penalty to the loss) is a common practice to prevent overfitting to the noise.</p>
+<p><span class="math display">\[ \argmin_{\boldsymbol W^{(t)}, \boldsymbol \beta} \sum_{i=1}^n \ell(y_i, \hat f_\mathrm{NN}(\boldsymbol x_i)  \: + \: \text{complexity penalty} \]</span></p>
+<p>E.g. <em>weight decay / L2 regularization</em>:</p>
+<p><span class="math display">\[ \text{complexity penalty} = \frac{\lambda}{2} \left( \Vert \boldsymbol \beta \Vert_2^2 + \sum_{i=1}^L \Vert \mathrm{vec} (\boldsymbol W^{(L)}) \Vert_2^2 \right) \]</span></p>
+<ul>
+<li><p><span class="math inline">\(\lambda\)</span> is a tuning parameter</p></li>
+<li><p><span class="secondary">What does weight decay / L2 regularization remind you of? Think about linear models</span></p></li>
+</ul>
+</section>
+<section id="do-we-need-to-worry-about-variance-1" class="slide level2">
+<h2>Do we need to worry about variance?</h2>
+<p><span class="math display">\[ \text{complexity penalty} = \frac{\lambda}{2} \left( \Vert \boldsymbol \beta \Vert_2^2 + \sum_{i=1}^L \Vert \mathrm{vec} (\boldsymbol W^{(L)}) \Vert_2^2 \right) \]</span></p>
+<ul>
+<li><p>Before we understood double descent, we used to think you needed high <span class="math inline">\(\lambda\)</span> (lots of regularization) to combat high variance</p>
+<ul>
+<li>People invented many other regularizers (e.g.&nbsp;dropout, pruning, mixup, etc.)</li>
+</ul></li>
+<li><p>Now that we understand double descent (and we realize we don’t have a variance problem), <span class="secondary">it’s now uncommon to do anything more than light weight decay (small <span class="math inline">\(\lambda\)</span>)</span></p></li>
+</ul>
+<!-- ## Degrees of freedom and complexity -->
+<!-- * In low dimensions (where $n \gg p$), with linear smoothers, df and model complexity are roughly the same. -->
+<!-- * But this relationship breaks down in more complicated settings -->
+<!-- * We've already seen this: -->
+<!-- ```{r, message=FALSE} -->
+<!-- library(glmnet) -->
+<!-- out <- cv.glmnet(X, df$y, nfolds = n) # leave one out -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- #| code-fold: true -->
+<!-- #| fig-width: 9 -->
+<!-- #| fig-height: 2.5 -->
+<!-- with( -->
+<!--   out,  -->
+<!--   tibble(lambda = lambda, df = nzero, cv = cvm, cvup = cvup, cvlo = cvlo ) -->
+<!-- ) |>  -->
+<!--   filter(df > 0) |> -->
+<!--   pivot_longer(lambda:df) |>  -->
+<!--   ggplot(aes(x = value)) + -->
+<!--   geom_errorbar(aes(ymax = cvup, ymin = cvlo)) + -->
+<!--   geom_point(aes(y = cv), colour = orange) + -->
+<!--   facet_wrap(~ name, strip.position = "bottom", scales = "free_x") + -->
+<!--   scale_y_log10() + -->
+<!--   scale_x_log10() + theme(axis.title.x = element_blank()) -->
+<!-- ``` -->
+<!-- ## Infinite solutions -->
+<!-- * In Lasso, df is not really the right measure of complexity -->
+<!-- * Better is $\lambda$ or the norm of the coefficients (these are basically the same) -->
+<!-- * So what happened with the Splines? -->
+<!-- . . . -->
+<!-- * When df $= 20$, there's a unique solution that interpolates the data -->
+<!-- * When df $> 20$, there are infinitely many solutions that interpolate the data. -->
+<!-- Because we used the SVD to solve the system, we happened to pick one: the one that has the smallest $\Vert\hat\beta\Vert_2$ -->
+<!-- Recent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm. -->
+<!-- If we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don't see double descent anymore. -->
+<!-- ## The lesson -->
+<!-- * Deep learning isn't magic. -->
+<!-- * Zero training error with lots of parameters doesn't mean good test error. -->
+<!-- * We still need the bias variance tradeoff -->
+<!-- * It's intuition still applies: more flexibility eventually leads to increased MSE -->
+<!-- * But we need to be careful how we measure complexity. -->
+<!-- ::: aside -->
+<!-- There is very interesting recent theory that says  -->
+<!-- when we can expect lower test error to the right of the interpolation threshold -->
+<!-- than to the left.  -->
+<!-- ::: -->
+<!-- ## Regularizing neural networks -->
+<!-- NNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters. -->
+<!-- Flavours: -->
+<!-- -   a complexity penalization term $\longrightarrow$ solve $\min \hat{R} + \rho(\alpha,\beta)$ -->
+<!-- -   early stopping on the back propagation algorithm used for fitting -->
+<!-- Weight decay -->
+<!-- : This is like ridge regression in that we penalize the squared Euclidean norm of the weights $\rho(\mathbf{W},\mathbf{B}) = \sum w_i^2 + \sum b_i^2$ -->
+<!-- Weight elimination -->
+<!-- : This encourages more shrinking of small weights $\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}$ or Lasso-type -->
+<!-- Dropout -->
+<!-- : In each epoch, randomly choose $z\%$ of the nodes and set those weights to zero. -->
+<!-- ## Other common pitfalls -->
+<!-- [Number of hidden units:]{.tertiary}   -->
+<!-- It is generally -->
+<!-- better to have too many hidden units than too few (regularization -->
+<!-- can eliminate some). -->
+<!-- [Sifting the output:]{.tertiary} -->
+<!-- * Choose the solution that minimizes training error -->
+<!-- * Choose the solution that minimizes the penalized  training error -->
+<!-- * Average the solutions across runs -->
+</section></section>
+<section>
+<section id="modern-techniques-to-improve-generalization" class="title-slide slide level1 center">
+<h1>Modern Techniques to Improve Generalization</h1>
+
+</section>
+<section id="specialty-architectures" class="slide level2">
+<h2>Specialty architectures</h2>
+<p>So far we’ve studied neural networks where we (recursively) construct basis functions from “building blocks” of the form: <span class="math display">\[ \boldsymbol a^{(t)}_j = g( \boldsymbol w^{(i)\top}_j \boldsymbol a^{(t - 1)}) \]</span></p>
+<ul>
+<li><p>These neural networks are known as <em>multilayer perceptrons</em> (MLP).</p></li>
+<li><p>By using different building blocks, we can make neural networks that are more adept to different types of data. E.g.:</p>
+<ol type="1">
+<li><p><strong>Convolutional NN</strong> (good for image data)</p></li>
+<li><p><strong>Graph NN</strong> (good for molecules, social networks, etc.)</p></li>
+<li><p><strong>Transformers</strong> (good for language and sequential data)</p></li>
+</ol></li>
+</ul>
+</section>
+<section id="specialty-architectures-convolutional-neural-networks" class="slide level2">
+<h2>Specialty architectures: convolutional neural networks</h2>
+<div class="flex">
+<div class="w-60">
+<p>Rather than computing an <em>inner product</em> with the hidden layer parameters (i.e.&nbsp;<span class="math inline">\(\boldsymbol w^{(i)\top}_j \boldsymbol a^{(t - 1)}\)</span>), we instead perform a <em>convolution</em>:</p>
+<p><span class="math display">\[ \boldsymbol a^{(t)}_j = g( \boldsymbol w^{(i)}_j \star \boldsymbol a^{(t - 1)}) \]</span></p>
+<ul>
+<li><p>Captures spatial correlations amongst neighbouring pixels</p></li>
+<li><p>Predictions remain constant even if we <em>translate</em> objects in the image</p></li>
+</ul>
+<p>The convolutional building blocks are usually combined with other building blocks, like <em>pooling layers</em> and <em>normalization layers</em>.</p>
+</div>
+<div class="w-35">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="https://maucher.home.hdm-stuttgart.de/Pics/gif/same_padding_no_strides.gif" class="quarto-figure quarto-figure-center" style="width:100.0%" data-fig-caption="Animation of convolution operation"></p>
+</figure>
+</div>
+</div>
 </div>
 </section>
-<section id="what-happened-1" class="slide level2">
-<h2>What happened?!</h2>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a></a><span class="fu">ggplot</span>(errs, <span class="fu">aes</span>(<span class="st">`</span><span class="at">degrees of freedom</span><span class="st">`</span>, error, <span class="at">color =</span> name)) <span class="sc">+</span></span>
-<span id="cb5-2"><a></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb5-3"><a></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, .<span class="dv">12</span>)) <span class="sc">+</span></span>
-<span id="cb5-4"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> </span>
-<span id="cb5-5"><a></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(blue, orange), <span class="at">name =</span> <span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<section id="specialty-architectures-convolutional-neural-networks-1" class="slide level2">
+<h2>Specialty architectures: convolutional neural networks</h2>
+<p>Why is a convolutional neural network better for images?</p>
 
-</div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-7-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="what-happened-2" class="slide level2">
-<h2>What happened?!</h2>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>best_test <span class="ot">&lt;-</span> errs <span class="sc">|&gt;</span> <span class="fu">filter</span>(name <span class="sc">==</span> <span class="st">"test"</span>)</span>
-<span id="cb6-2"><a></a>min_norm <span class="ot">&lt;-</span> best_test<span class="sc">$</span>norm[<span class="fu">which.min</span>(best_test<span class="sc">$</span>error)]</span>
-<span id="cb6-3"><a></a><span class="fu">ggplot</span>(best_test, <span class="fu">aes</span>(norm, error)) <span class="sc">+</span></span>
-<span id="cb6-4"><a></a>  <span class="fu">geom_line</span>(<span class="at">colour =</span> blue, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"test error"</span>) <span class="sc">+</span></span>
-<span id="cb6-5"><a></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> min_norm, <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb6-6"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-8-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="degrees-of-freedom-and-complexity" class="slide level2">
-<h2>Degrees of freedom and complexity</h2>
-<ul>
-<li><p>In low dimensions (where <span class="math inline">\(n \gg p\)</span>), with linear smoothers, df and model complexity are roughly the same.</p></li>
-<li><p>But this relationship breaks down in more complicated settings</p></li>
-<li><p>We’ve already seen this:</p></li>
+<img data-src="gfx/image_mlp.png" width="800" class="r-stretch quarto-figure-center"><p class="caption"><span class="small">Image credit: Varsha Kishore</span></p><ul>
+<li><p>With an standard MLP, we’d need to “flatten” our image into a vector of pixels. This flattening doesn’t preseve spatial correlations amongst pixels.</p></li>
+<li><p>If the dog in our image shifts, then we are not guaranteed to make the same prediction (we are not translation invariant).</p></li>
 </ul>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb7-2"><a></a>out <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(X, df<span class="sc">$</span>y, <span class="at">nfolds =</span> n) <span class="co"># leave one out</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell" data-layout-align="center">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a><span class="fu">with</span>(</span>
-<span id="cb8-2"><a></a>  out, </span>
-<span id="cb8-3"><a></a>  <span class="fu">tibble</span>(<span class="at">lambda =</span> lambda, <span class="at">df =</span> nzero, <span class="at">cv =</span> cvm, <span class="at">cvup =</span> cvup, <span class="at">cvlo =</span> cvlo )</span>
-<span id="cb8-4"><a></a>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-5"><a></a>  <span class="fu">filter</span>(df <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-6"><a></a>  <span class="fu">pivot_longer</span>(lambda<span class="sc">:</span>df) <span class="sc">|&gt;</span> </span>
-<span id="cb8-7"><a></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> value)) <span class="sc">+</span></span>
-<span id="cb8-8"><a></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymax =</span> cvup, <span class="at">ymin =</span> cvlo)) <span class="sc">+</span></span>
-<span id="cb8-9"><a></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> cv), <span class="at">colour =</span> orange) <span class="sc">+</span></span>
-<span id="cb8-10"><a></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> name, <span class="at">strip.position =</span> <span class="st">"bottom"</span>, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
-<span id="cb8-11"><a></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
-<span id="cb8-12"><a></a>  <span class="fu">scale_x_log10</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.title.x =</span> <span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-
-</div>
-<img data-src="23-nnets-other_files/figure-revealjs/unnamed-chunk-10-1.svg" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="infinite-solutions" class="slide level2">
-<h2>Infinite solutions</h2>
-<ul>
-<li><p>In Lasso, df is not really the right measure of complexity</p></li>
-<li><p>Better is <span class="math inline">\(\lambda\)</span> or the norm of the coefficients (these are basically the same)</p></li>
-<li><p>So what happened with the Splines?</p></li>
-</ul>
-<div class="fragment">
-<ul>
-<li><p>When df <span class="math inline">\(= 20\)</span>, there’s a unique solution that interpolates the data</p></li>
-<li><p>When df <span class="math inline">\(&gt; 20\)</span>, there are infinitely many solutions that interpolate the data.</p></li>
-</ul>
-<p>Because we used the SVD to solve the system, we happened to pick one: the one that has the smallest <span class="math inline">\(\Vert\hat\beta\Vert_2\)</span></p>
-<p>Recent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm.</p>
-<p>If we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don’t see double descent anymore.</p>
-</div>
 </section>
-<section id="the-lesson" class="slide level2">
-<h2>The lesson</h2>
+<section id="transfer-learning" class="slide level2">
+<h2>Transfer Learning</h2>
+<p>You want to build an image classifier for CT scans, but you only have <span class="math inline">\(n=1000\)</span> 😢<br>
+<span class="small">Conventional wisdom would tell you that you don’t have enough data to train a neural network.</span></p>
+<h3 id="transfer-learning-to-the-rescue">Transfer learning to the rescue!</h3>
 <ul>
-<li><p>Deep learning isn’t magic.</p></li>
-<li><p>Zero training error with lots of parameters doesn’t mean good test error.</p></li>
-<li><p>We still need the bias variance tradeoff</p></li>
-<li><p>It’s intuition still applies: more flexibility eventually leads to increased MSE</p></li>
-<li><p>But we need to be careful how we measure complexity.</p></li>
+<li><p>Start with an existing neural network trained on a related predictive task</p></li>
+<li><p>Train this neural network on your data using gradient descent with a <em>small step size</em><br>
+<span class="secondary">Also known as <em>fine-tuning</em></span></p></li>
 </ul>
 
-<aside><div>
-<p>There is very interesting recent theory that says when we can expect lower test error to the right of the interpolation threshold than to the left.</p>
-</div></aside></section></section>
+<img data-src="gfx/transfer_learning.png" class="quarto-figure quarto-figure-center r-stretch" data-fig-caption="Transfer learning depiction" width="800"></section>
+<section id="transfer-learning-1" class="slide level2">
+<h2>Transfer Learning</h2>
+
+<img data-src="gfx/transfer_learning.png" class="quarto-figure quarto-figure-center r-stretch" data-fig-caption="Transfer learning depiction" width="800"><h3 id="why-does-this-work">Why Does This Work?</h3>
+<ul>
+<li><p>The original NN has learned basis functions that are REALLY good for image data</p></li>
+<li><p>You are now essentially using these good basis functions on your smaller dataset</p></li>
+</ul>
+</section>
+<section id="final-thoughts" class="slide level2">
+<h2>Final Thoughts</h2>
+<ul>
+<li><p>Not much theory for why NN work (though this is increasing)</p></li>
+<li><p>NN are best for <em>unstructured data types</em> (e.g.&nbsp;images, text, etc.)</p>
+<ul>
+<li><p><span class="small">Best when combined with a specialty architecture (e.g.&nbsp;convolutional NN)</span></p></li>
+<li><p><span class="small">If you have “tabular” data, use another algorithm (e.g.&nbsp;random forest)</span></p></li>
+</ul></li>
+<li><p><em>Transfer learning</em> is now the defacto approach</p>
+<ul>
+<li><p><span class="small">Try not to train NN from scratch</span></p></li>
+<li><p><span class="small">Makes NN work for small datasets</span></p></li>
+</ul></li>
+<li><p>NN are computational expensive</p>
+<ul>
+<li><p><span class="small">They won’t run on your laptiop</span></p></li>
+<li><p><span class="small">You need a GPU cluster</span></p></li>
+</ul></li>
+<li><p>NN are amazing, but they’re not always the right solution. <span class="secondary">What are some other downsides?</span></p></li>
+</ul>
+</section>
+<section id="final-thoughts-1" class="slide level2">
+<h2>Final Thoughts</h2>
+<ul>
+<li><p>If you want to play around with NN, <span class="secondary">learn Python</span></p>
+<ul>
+<li><p><span class="small">There’s an example on the website of how to train NN in R. It’s gnarly.</span></p></li>
+<li><p><span class="small">Use the PyTorch library</span></p></li>
+</ul></li>
+<li><p>There’s a wide world of NN to learn about!</p></li>
+</ul>
+</section></section>
 <section id="next-time" class="title-slide slide level1 center">
 <h1>Next time…</h1>
 <p><span class="secondary">Module 5</span></p>
