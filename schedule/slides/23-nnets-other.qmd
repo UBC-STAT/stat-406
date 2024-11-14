@@ -1,5 +1,5 @@
 ---
-lecture: "23 Neural nets - other considerations"
+lecture: "23 Neural nets - generalization"
 format: revealjs
 metadata-files: 
   - _metadata.yml
@@ -9,229 +9,144 @@ metadata-files:
 
 
 
-## Estimation procedures (training)
+## This lecture
 
+1. What factors affect generalization? (The ability to make accurate predictions)
 
-Back-propagation
+2. Why do NN generalize, despite having lots of parameters?
 
-[Advantages:]{.secondary}
-
--   It's updates only depend on local
-    information in the sense that if objects in the hierarchical model
-    are unrelated to each other, the updates aren't affected
-
-    (This helps in many ways, most notably in parallel architectures)
-
--   It doesn't require second-derivative information
-
--   As the updates are only in terms of $\hat{R}_i$, the algorithm can
-    be run in either batch  or online  mode
-
-[Down sides:]{.tertiary}
-
--   It can be very slow
-
--   Need to choose the learning rate
-    $\gamma_t$
-
-## Other algorithms
-
-There are many  variations on the fitting algorithm
-
-[Stochastic gradient descent:]{.secondary} (SGD) discussed in the optimization lecture
-
-The rest are variations that use lots of tricks
-
-* RMSprop
-* Adam
-* Adadelta
-* Adagrad
-* Adamax
-* Nadam
-* Ftrl
-
-
-## Regularizing neural networks
-
-NNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters.
-
-Flavours:
-
--   a complexity penalization term $\longrightarrow$ solve $\min \hat{R} + \rho(\alpha,\beta)$
--   early stopping on the back propagation algorithm used for fitting
-
-
-Weight decay
-: This is like ridge regression in that we penalize the squared Euclidean norm of the weights $\rho(\mathbf{W},\mathbf{B}) = \sum w_i^2 + \sum b_i^2$
-
-Weight elimination
-: This encourages more shrinking of small weights $\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}$ or Lasso-type
-
-Dropout
-: In each epoch, randomly choose $z\%$ of the nodes and set those weights to zero.
+3. Modern techniques to improve generalization
 
 
 
-## Other common pitfalls
 
-There are a few areas to watch out for
+# What factors affect generalization?
 
-[Nonconvexity:]{.tertiary} 
-
-The neural network optimization problem is non-convex. 
-
-This makes any numerical solution highly dependent on the initial values. These should be
-
-* chosen carefully, typically random near 0. [DON'T]{.hand} use all 0.
-* regenerated several times to check sensitivity
-
-[Scaling:]{.tertiary}  
-Be sure to standardize the covariates before training
-
-## Other common pitfalls
-
-[Number of hidden units:]{.tertiary}  
-It is generally
-better to have too many hidden units than too few (regularization
-can eliminate some).
+(The ability to make accurate predictions)
 
 
-[Sifting the output:]{.tertiary}
+## Tunable parameters of NN
 
-* Choose the solution that minimizes training error
-* Choose the solution that minimizes the penalized  training error
-* Average the solutions across runs
+1. Number of hidden layers ($L$)
 
+2. Width of hidden layers ($D$)
 
-## Tuning parameters
+3. Nonlinearity function
 
-There are many.
+4. Loss function
 
-* Regularization
-* Stopping criterion
-* learning rate
-* Architecture
-* Dropout %
-* others...
+5. Initial SGD step size
 
-These are hard to tune.
+6. SGD step size decay rate
 
-In practice, people might choose "some" with a validation set, and fix the rest largely arbitrarily
+7. SGD batch size
 
-. . .
+8. SGD stopping criterion
 
-More often, people set them all arbitrarily
+9. Amount of regularization (we'll talk about this concept in a bit)
+
+10. Initialization of NN parameters
+
+11. ...
 
 
-## Thoughts on NNets {.smaller}
+## How to tune NN parameters
 
-Off the top of my head, without lots of justification
+### 😓
+
+* There are exponentially many designs of NNs
+
+* Training a single NN is expensive
+
+* NN training depends on random initialization, so you generally have to do multiple runs
+
+
+### In Practice
+
+* Compare a handful of designs on a single holdout set (no cross val)
+
+* Principled NN architecture search is an active area of research
+
+
+
+## Some Common Patterns to Reduce the Search Space
+
+1. Use ReLU nonlinearities, and nothing else
+
+2. Use the same width for all layers (or grow with with a simple formula)
+
+3. Measure loss on a validation set throughout training, and stop SGD when the validation loss plateaus
+
+4. Ask a grad student for their tricks
+
+
+# Why do NN generalize...
+
+... despite having tons of parameters?
+
+
+
+## Capacity vs Generalization
+
+Consider a NN with ReLU nonlinearities
+$g( \boldsymbol w^\top \boldsymbol z) = \max\{\boldsymbol w^\top \boldsymbol z, 0 \}$
+with $L$ hidden layers, each with $D$ hidden activations.
+
+### Recall:
+
+* Number of piecewise-linear regions: $O(D^L)$ (exponential!)
+
+* Number of parameters: $O(D^2 L)$
+
+### This implies:
+
+* Our NN is capable of learning complicated functions (many piecewise-linear components)
+
+* But will it learn the *right* function from limited data?
+
+
+## Recall: Bias/Variance Tradeoff For Trees
 
 ::: flex
-::: w-50
+::: w-58
 
-🤬😡 [Why don't statisticians like them?]{.tertiary} 🤬😡
+![](gfx/tree_bias_variance.png){width=600 fig-align="center" fig-caption="Bias/variance tradeoff for trees as a function of depth."}
 
-- There is little theory (though this is increasing)
-- Stat theory applies to global minima, here, only local determined by the optimizer
-- Little understanding of when they work
-- In large part, NNets look like logistic regression + feature creation. We understand that well, and in many applications, it performs as well
-- Explosion of tuning parameters without a way to decide
-- Require massive datasets to work
-- Lots of examples where they perform _exceedingly_ poorly
 :::
+::: w-40
 
-::: w-50
+* Neural networks have lots of parameters ( $O(D^2 L)$, which is typically $> n$ )
 
-
-🔥🔥[Why are they hot?]{.tertiary}🔥🔥
-
-- Perform exceptionally well on typical CS tasks (images, translation)
-- Take advantage of SOTA computing (parallel, GPUs)
-- Very good for multinomial logistic regression
-- An excellent example of "transfer learning"
-- They generate pretty pictures (the nets, pseudo-responses at hidden units)
+* In theory, we would expect similar bias/variance curves for neural networks as a function of `# params`
 
 :::
 :::
 
 
-## Keras
+## The Surprising Bias/Var Curves For NN (Double Descent)
 
-Most people who do deep learning use Python $+$ Keras $+$ Tensorflow
+![](gfx/double_descent_nn_toy.png){width=1000 fig-align="center" fig-caption="Toy depiction of double descent curve for neural networks."}
 
-It takes some work to get all this software up and running.
+* NN risk (as a function of `# params`) experiences a "double descent" shape?!?!?!
 
-It is possible to do in with R using an [interface to Keras](https://keras.rstudio.com/index.html).
-
-. . .
-
-I used to try to do a walk-through, but the interface is quite brittle
-
-If you want to explore, see the handout:
-
-* Knitted: <https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.html>
-* Rmd: <https://ubc-stat.github.io/stat-406-lectures/handouts/keras-nnet.Rmd>
+* Most modern NN have tons of parameters, and so they're explained by the right side of the graph
 
 
-# Double descent and model complexity
+## The Surprising Bias/Var Curves For NN (Double Descent)
 
-##
+![[Image credit: Belkin et al., (2019)]{.small}](gfx/double_descent_nn.png){width=1000 fig-align="center" fig-caption="Double descent curve for neural networks."}
 
-```{r}
-#| echo: false
-#| fig-align: center
-tweetrmd::tweet_embed("https://twitter.com/daniela_witten/status/1292293102103748609")
-```
+* Double descent is a *newly discovered phenomenon* (~2019)
 
-
-## Where does this U shape come from?
-
-
-[MSE = Squared Bias + Variance + Irreducible Noise]{.secondary}
-
-
-As we increase flexibility:
-
-* Squared bias goes down
-* Variance goes up
-* Eventually, | $\partial$ Variance | $>$ | $\partial$ Squared Bias |.
-
-
-[Goal:]{.secondary} Choose amount of flexibility to balance these and minimize MSE.
-
-. . .
-
-[Use CV or something to estimate MSE and decide how much flexibility.]{.hand}
-
-
-##
-
-```{r, echo=FALSE, eval=TRUE}
-tweetrmd::tweet_embed("https://twitter.com/daniela_witten/status/1292293104855158784", hide_thread = "t")
-```
+* Statisticians are still trying to understand why it occurs.\
+  [There has been good progress since ~2020!]{.small}
 
 
 
-## Zero training error and model saturation
+## To Understand Double Descent: Study Basis Regression
 
-* In Deep Learning, the recommendation is to "fit until you get zero training error"
-
-* This somehow magically, leads to a continued decrease in test error.
-
-* So, who cares about the Bias-Variance Trade off!!
-
-. . .
-
-[Lesson:]{.secondary}
-
-BV Trade off is not wrong. 😢
-
-This is a misunderstanding of black box algorithms and flexibility.
-
-We don't even need deep learning to illustrate. 
-
-##
+The double descent phenomenon is not specific to neural networks.\
+We can observe it in basis regression (read: linear models!) as we increase the number of basis functions $> n$:
 
 ```{r, fig.width=6, fig.height=4, fig.align='center'}
 library(splines)
@@ -242,8 +157,7 @@ df <- tibble(
   y = sin(x) + runif(n, -0.5, 0.5)
 )
 g <- ggplot(df, aes(x, y)) + geom_point() + stat_function(fun = sin) + ylim(c(-2, 2))
-g + stat_smooth(method = lm, formula = y ~ bs(x, df = 4), se = FALSE, color = green) + # too smooth
-  stat_smooth(method = lm, formula = y ~ bs(x, df = 8), se = FALSE, color = orange) # looks good
+g
 ```
 
 
@@ -256,8 +170,8 @@ X <- bs(df$x, df = 20, intercept = TRUE)
 Xn <- bs(xn, df = 20, intercept = TRUE)
 S <- svd(X)
 yhat <- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)
-g + geom_line(data = tibble(x=xn, y=yhat), colour = orange) +
-  ggtitle("20 degrees of freedom")
+g + geom_line(data = tibble(x = xn, y = yhat), colour = orange) +
+  ggtitle("20 basis functions (n=20)")
 ```
 
 ##
@@ -270,15 +184,17 @@ Xn <- bs(xn, df = 40, intercept = TRUE)
 S <- svd(X)
 yhat <- Xn %*% S$v %*% diag(1/S$d) %*% crossprod(S$u, df$y)
 g + geom_line(data = tibble(x = xn, y = yhat), colour = orange) +
-  ggtitle("40 degrees of freedom")
+  ggtitle("40 basis functions (n=20)")
 ```
 
 
-## What happened?!
+##
 
 
 ```{r}
-#| code-line-numbers: "1|3-12|13-16|"
+#| code-fold: true
+#| fig-width: 9
+#| fig-height: 5
 doffs <- 4:50
 mse <- function(x, y) mean((x - y)^2)
 get_errs <- function(doff) {
@@ -295,15 +211,6 @@ errs <- map(doffs, get_errs) |>
   list_rbind() |> 
   mutate(`degrees of freedom` = doffs) |> 
   pivot_longer(train:test, values_to = "error")
-```
-
-## What happened?!
-
-
-```{r}
-#| code-fold: true
-#| fig-width: 9
-#| fig-height: 5
 ggplot(errs, aes(`degrees of freedom`, error, color = name)) +
   geom_line(linewidth = 2) + 
   coord_cartesian(ylim = c(0, .12)) +
@@ -312,93 +219,291 @@ ggplot(errs, aes(`degrees of freedom`, error, color = name)) +
   geom_vline(xintercept = 20)
 ```
 
-## What happened?!
+* Inflection point occurs when `# basis functions = n`!
 
-```{r}
-#| code-fold: true
-#| fig-width: 9
-#| fig-height: 5
-best_test <- errs |> filter(name == "test")
-min_norm <- best_test$norm[which.min(best_test$error)]
-ggplot(best_test, aes(norm, error)) +
-  geom_line(colour = blue, size = 2) + ylab("test error") +
-  geom_vline(xintercept = min_norm, colour = orange) +
-  scale_y_log10() + scale_x_log10() + geom_vline(xintercept = 20)
-```
+* This is the point at which our basis regressor is able to perfectly fit the training data.
 
+## Understanding Double Descent (Hand-Wavy)
 
-## Degrees of freedom and complexity
+Let $\boldsymbol Z \in \R^{n \times d}$ be the matrix of basis expansions for our $n$ training points.
 
-* In low dimensions (where $n \gg p$), with linear smoothers, df and model complexity are roughly the same.
+Basis regression is just OLS with the basis expansion $\boldsymbol Z$:
+[$$ \min_{\boldsymbol \beta} \left\Vert \boldsymbol Z \boldsymbol \beta - \boldsymbol y \right\Vert_2^2. $$]{.small}
 
-* But this relationship breaks down in more complicated settings
-
-* We've already seen this:
-
-```{r, message=FALSE}
-library(glmnet)
-out <- cv.glmnet(X, df$y, nfolds = n) # leave one out
-```
-
-```{r}
-#| code-fold: true
-#| fig-width: 9
-#| fig-height: 2.5
-with(
-  out, 
-  tibble(lambda = lambda, df = nzero, cv = cvm, cvup = cvup, cvlo = cvlo )
-) |> 
-  filter(df > 0) |>
-  pivot_longer(lambda:df) |> 
-  ggplot(aes(x = value)) +
-  geom_errorbar(aes(ymax = cvup, ymin = cvlo)) +
-  geom_point(aes(y = cv), colour = orange) +
-  facet_wrap(~ name, strip.position = "bottom", scales = "free_x") +
-  scale_y_log10() +
-  scale_x_log10() + theme(axis.title.x = element_blank())
-```
+* When $d < n$, the regressor is **underparameterized.**\
+  [I.e. there is no $\boldsymbol \beta$ that perfectly explains our training responses given our basis-expanded training inputs.]{.small}
+  
+* When $d = n$, there is a value of $\boldsymbol \beta$ that fits our training data perfectly.\
+  [I.e. $\Vert \boldsymbol Z \boldsymbol \beta - \boldsymbol y \Vert = 0$.]{.small}
+  
+  * [We are fitting both the *noise* and the *signal* (leading to a high variance predictor).]{.small}
+  
+* When $d > n$, we can also fit the data (noise + signal) perfectly.👋 However, more features implies that the the noise gets "spread out" over all of parameters. 👋 
+  
+  * [👋 Since each parameter only captures "some" of the noise, we are less likely to make predictions based on it. 👋]{.small}
+  
+  * [This explanation is overly simplified, and there is a lot more at play.]{.small}
 
 
-## Infinite solutions
+## Do we need to worry about variance?
 
-* In Lasso, df is not really the right measure of complexity
+*Regularizing* a neural network (adding a complexity penalty to the loss) is a common practice to prevent overfitting to the noise.
 
-* Better is $\lambda$ or the norm of the coefficients (these are basically the same)
+$$ \argmin_{\boldsymbol W^{(t)}, \boldsymbol \beta} \sum_{i=1}^n \ell(y_i, \hat f_\mathrm{NN}(\boldsymbol x_i)  \: + \: \text{complexity penalty} $$
 
-* So what happened with the Splines?
+E.g. *weight decay / L2 regularization*:
 
-. . .
+$$ \text{complexity penalty} = \frac{\lambda}{2} \left( \Vert \boldsymbol \beta \Vert_2^2 + \sum_{i=1}^L \Vert \mathrm{vec} (\boldsymbol W^{(L)}) \Vert_2^2 \right) $$
 
-* When df $= 20$, there's a unique solution that interpolates the data
+* $\lambda$ is a tuning parameter
 
-* When df $> 20$, there are infinitely many solutions that interpolate the data.
-
-Because we used the SVD to solve the system, we happened to pick one: the one that has the smallest $\Vert\hat\beta\Vert_2$
-
-Recent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm.
-
-If we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don't see double descent anymore.
+* [What does weight decay / L2 regularization remind you of? Think about linear models]{.secondary}
 
 
-## The lesson
 
-* Deep learning isn't magic.
+## Do we need to worry about variance?
 
-* Zero training error with lots of parameters doesn't mean good test error.
+$$ \text{complexity penalty} = \frac{\lambda}{2} \left( \Vert \boldsymbol \beta \Vert_2^2 + \sum_{i=1}^L \Vert \mathrm{vec} (\boldsymbol W^{(L)}) \Vert_2^2 \right) $$
 
-* We still need the bias variance tradeoff
+* Before we understood double descent, we used to think you needed high $\lambda$ (lots of regularization) to combat high variance
 
-* It's intuition still applies: more flexibility eventually leads to increased MSE
+  * People invented many other regularizers (e.g. dropout, pruning, mixup, etc.)
 
-* But we need to be careful how we measure complexity.
+* Now that we understand double descent (and we realize we don't have a variance problem), [it's now uncommon to do anything more than light weight decay (small $\lambda$)]{.secondary}
 
-::: aside
+<!-- ## Degrees of freedom and complexity -->
 
-There is very interesting recent theory that says 
-when we can expect lower test error to the right of the interpolation threshold
-than to the left. 
+<!-- * In low dimensions (where $n \gg p$), with linear smoothers, df and model complexity are roughly the same. -->
 
+<!-- * But this relationship breaks down in more complicated settings -->
+
+<!-- * We've already seen this: -->
+
+<!-- ```{r, message=FALSE} -->
+<!-- library(glmnet) -->
+<!-- out <- cv.glmnet(X, df$y, nfolds = n) # leave one out -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| code-fold: true -->
+<!-- #| fig-width: 9 -->
+<!-- #| fig-height: 2.5 -->
+<!-- with( -->
+<!--   out,  -->
+<!--   tibble(lambda = lambda, df = nzero, cv = cvm, cvup = cvup, cvlo = cvlo ) -->
+<!-- ) |>  -->
+<!--   filter(df > 0) |> -->
+<!--   pivot_longer(lambda:df) |>  -->
+<!--   ggplot(aes(x = value)) + -->
+<!--   geom_errorbar(aes(ymax = cvup, ymin = cvlo)) + -->
+<!--   geom_point(aes(y = cv), colour = orange) + -->
+<!--   facet_wrap(~ name, strip.position = "bottom", scales = "free_x") + -->
+<!--   scale_y_log10() + -->
+<!--   scale_x_log10() + theme(axis.title.x = element_blank()) -->
+<!-- ``` -->
+
+
+<!-- ## Infinite solutions -->
+
+<!-- * In Lasso, df is not really the right measure of complexity -->
+
+<!-- * Better is $\lambda$ or the norm of the coefficients (these are basically the same) -->
+
+<!-- * So what happened with the Splines? -->
+
+<!-- . . . -->
+
+<!-- * When df $= 20$, there's a unique solution that interpolates the data -->
+
+<!-- * When df $> 20$, there are infinitely many solutions that interpolate the data. -->
+
+<!-- Because we used the SVD to solve the system, we happened to pick one: the one that has the smallest $\Vert\hat\beta\Vert_2$ -->
+
+<!-- Recent work in Deep Learning shows that SGD has the same property: it returns the local optima with the smallest norm. -->
+
+<!-- If we measure complexity in terms of the norm of the weights, rather than by counting parameters, we don't see double descent anymore. -->
+
+
+<!-- ## The lesson -->
+
+<!-- * Deep learning isn't magic. -->
+
+<!-- * Zero training error with lots of parameters doesn't mean good test error. -->
+
+<!-- * We still need the bias variance tradeoff -->
+
+<!-- * It's intuition still applies: more flexibility eventually leads to increased MSE -->
+
+<!-- * But we need to be careful how we measure complexity. -->
+
+<!-- ::: aside -->
+
+<!-- There is very interesting recent theory that says  -->
+<!-- when we can expect lower test error to the right of the interpolation threshold -->
+<!-- than to the left.  -->
+
+<!-- ::: -->
+
+
+
+
+
+
+
+<!-- ## Regularizing neural networks -->
+
+<!-- NNets can almost always achieve 0 training error. Even with regularization. Because they have so many parameters. -->
+
+<!-- Flavours: -->
+
+<!-- -   a complexity penalization term $\longrightarrow$ solve $\min \hat{R} + \rho(\alpha,\beta)$ -->
+<!-- -   early stopping on the back propagation algorithm used for fitting -->
+
+
+<!-- Weight decay -->
+<!-- : This is like ridge regression in that we penalize the squared Euclidean norm of the weights $\rho(\mathbf{W},\mathbf{B}) = \sum w_i^2 + \sum b_i^2$ -->
+
+<!-- Weight elimination -->
+<!-- : This encourages more shrinking of small weights $\rho(\mathbf{W},\mathbf{B}) =  \sum \frac{w_i^2}{1+w_i^2} + \sum \frac{b_i^2}{1 + b_i^2}$ or Lasso-type -->
+
+<!-- Dropout -->
+<!-- : In each epoch, randomly choose $z\%$ of the nodes and set those weights to zero. -->
+
+
+
+<!-- ## Other common pitfalls -->
+
+<!-- [Number of hidden units:]{.tertiary}   -->
+<!-- It is generally -->
+<!-- better to have too many hidden units than too few (regularization -->
+<!-- can eliminate some). -->
+
+
+<!-- [Sifting the output:]{.tertiary} -->
+
+<!-- * Choose the solution that minimizes training error -->
+<!-- * Choose the solution that minimizes the penalized  training error -->
+<!-- * Average the solutions across runs -->
+
+
+
+
+# Modern Techniques to Improve Generalization
+
+## Specialty architectures
+
+So far we've studied neural networks where we (recursively) construct basis functions from "building blocks" of the form:
+$$ \boldsymbol a^{(t)}_j = g( \boldsymbol w^{(i)\top}_j \boldsymbol a^{(t - 1)}) $$
+
+* These neural networks are known as *multilayer perceptrons* (MLP).
+
+* By using different building blocks, we can make neural networks that are more adept to different types of data. E.g.:
+
+   1. **Convolutional NN** (good for image data)
+   
+   2. **Graph NN** (good for molecules, social networks, etc.)
+   
+   3. **Transformers** (good for language and sequential data)
+
+   
+   
+## Specialty architectures: convolutional neural networks
+
+::: flex
+::: w-60
+
+Rather than computing an *inner product* with the hidden layer parameters (i.e. $\boldsymbol w^{(i)\top}_j \boldsymbol a^{(t - 1)}$), we instead perform a *convolution*:
+
+$$ \boldsymbol a^{(t)}_j = g( \boldsymbol w^{(i)}_j \star \boldsymbol a^{(t - 1)}) $$
+
+* Captures spatial correlations amongst neighbouring pixels
+
+* Predictions remain constant even if we *translate* objects in the image
+
+The convolutional building blocks are usually combined with other building blocks, like *pooling layers* and *normalization layers*.
+
+   
 :::
+
+::: w-35
+![](https://maucher.home.hdm-stuttgart.de/Pics/gif/same_padding_no_strides.gif){width=100% fig-align="center" fig-caption="Animation of convolution operation"}
+:::
+:::
+
+## Specialty architectures: convolutional neural networks
+
+Why is a convolutional neural network better for images?
+
+![[Image credit: Varsha Kishore]{.small}](gfx/image_mlp.png){width=800 fig-align="center" fig-caption="MLP for image data"}
+
+
+
+* With an standard MLP, we'd need to "flatten" our image into a vector of pixels. This flattening doesn't preseve spatial correlations amongst pixels.
+
+* If the dog in our image shifts, then we are not guaranteed to make the same prediction (we are not translation invariant).
+
+## Transfer Learning
+
+You want to build an image classifier for CT scans, but you only have $n=1000$ 😢\
+[Conventional wisdom would tell you that you don't have enough data to train a neural network.]{.small}
+
+### Transfer learning to the rescue!
+
+* Start with an existing neural network trained on a related predictive task
+
+* Train this neural network on your data using gradient descent with a *small step size*\
+  [Also known as *fine-tuning*]{.secondary}
+  
+![](gfx/transfer_learning.png){width=800 fig-align="center" fig-caption="Transfer learning depiction"}
+
+## Transfer Learning
+
+
+![](gfx/transfer_learning.png){width=800 fig-align="center" fig-caption="Transfer learning depiction"}
+
+### Why Does This Work?
+
+* The original NN has learned basis functions that are REALLY good for image data
+
+* You are now essentially using these good basis functions on your smaller dataset
+
+
+
+## Final Thoughts
+
+* Not much theory for why NN work (though this is increasing)
+
+* NN are best for *unstructured data types* (e.g. images, text, etc.)
+   
+   * [Best when combined with a specialty architecture (e.g. convolutional NN)]{.small}
+   
+   * [If you have "tabular" data, use another algorithm (e.g. random forest)]{.small}
+   
+* *Transfer learning* is now the defacto approach
+
+   * [Try not to train NN from scratch]{.small}
+   
+   * [Makes NN work for small datasets]{.small}
+   
+* NN are computational expensive
+
+   * [They won't run on your laptiop]{.small}
+   
+   * [You need a GPU cluster]{.small}
+   
+* NN are amazing, but they're not always the right solution. [What are some other downsides?]{.secondary}
+
+
+## Final Thoughts
+
+* If you want to play around with NN, [learn Python]{.secondary}
+
+   * [There's an example on the website of how to train NN in R. It's gnarly.]{.small}
+   
+   * [Use the PyTorch library]{.small}
+
+* There's a wide world of NN to learn about!
+
 
 
 
