@@ -245,6 +245,40 @@ Basis regression is just OLS with the basis expansion $\boldsymbol Z$:
   * [This explanation is overly simplified, and there is a lot more at play.]{.small}
 
 
+## Understanding Double Descent (Less Hand-Wavy)
+
+::: flex
+::: w-60
+
+(From [Hastie et al., 2020](https://arxiv.org/abs/1903.08560))
+
+* $\gamma = D / N$ (ratio of features / data)
+
+* $\sigma^2 = \mathbb{E}[Y|X]$ (observational noise)
+
+* When basis features are uncorrelated, we have (asymptotically)
+
+$$
+\begin{aligned}
+  \mathrm{Bias}^2 &= \begin{cases}
+    0 & \gamma < 1 \text{ (underparam.)} \\
+    1 - \tfrac{1}{\gamma} & \gamma \geq 1 \text{ (overparam.)}
+  \end{cases} \\
+  & \\
+  \mathrm{Var} &= \begin{cases}
+    \sigma^2 \tfrac{\gamma}{1 - \gamma} & \gamma < 1 \text{ (underparam.)} \\
+    \sigma^2 \tfrac{1}{\gamma - 1} & \gamma \geq 1 \text{ (overparam.)}
+  \end{cases} \\
+\end{aligned}
+$$
+:::
+
+::: w-38
+![](gfx/hastie_double_descent.png){width=100% fig-align="center" fig-caption="Double descent curve theoretical."}
+:::
+:::
+
+
 ## Do we need to worry about variance?
 
 *Regularizing* a neural network (adding a complexity penalty to the loss) is a common practice to prevent overfitting to the noise.
