@@ -56,53 +56,66 @@ metadata-files:
 ## 1. Model selection
 
 - What is a statistical model?
-- What is the goal of model selection?
-- What is the difference between training and test error?
-- What is overfitting?
+- What is the difference between training error, test error, and risk?
+- What is the (theoretical) predictor with the lowest risk for regression? For classification?
+  - Why can we not obtain these predictor in practice?
 - What is the bias-variance tradeoff?
+- What is the goal of model selection?
 - What is the difference between AIC / BIC / CV / Held-out validation?
 
 ## 2. Regression
 
 - What do we mean by regression?
-- What is the difference between linear and non-linear regression?
-- What are linear smoothers and why do we care?
-- What is feature creation?
 - What is regularization?
-- What is the difference between L1 and L2 regularization?
+  - What is the goal of regularization?
+  - What is the difference between L1 and L2 regularization?
+- How do we do non-linear regression?
+  - What are splies?
+  - What are kernel smoothers?
+  - What is knn?
+  - What are decision trees?
+- What is the curse of dimensionality?
 
 ## 3. Classification
 
-- What is classification? Bayes Rule?
-- What are linear decision boundaries?
+- What is classification?
+  - What is the difference between a generative versus descriminative classification model?
+- What is a decision boundary? When is it linear?
 - Compare logistic regression to discriminant analysis.
+  - What are the assumptions made by each method?
+  - What are the shapes of the decision boundaries?
 - What are the positives and negatives of trees?
-- What about loss functions? How do we measure performance?
+- How do we measure performance of classification beyond 0-1 loss?
+  - What is a probabilistic notion of classification performance?
+  - How do we measure the goodness of uncertainty estimates?
 
 
 ## 4. Modern methods
 
+- What is the bootstrap?
 - What is the difference between bagging and boosting?
-- What is the point of the bootstrap?
+  - When do we prefer one over the other (think bias-variance tradeoff)?
 - What is the difference between random forests and bagging?
 - How do we understand Neural Networks?
+  - What is the difference between neural networks and other non-linear methods?
+  - What is the difference between increasing width and increasing depth? (Number of parameters, expressivity)
+  - How do we train neural networks? What is backpropagation?
+  - Why are we surprised that neural networks "work"?
 
 ## 5. Unsupervised learning
 
 - What is unsupervised learning?
-- Can be used for feature creation / EDA.
-- Understanding linear vs. non-linear methods.
-- What does PCA / KPCA estimate?
-- Positives and negatives of clustering procedures.
+- What is dimensionality reduction?
+  - What is the difference between PCA vs KPCA?
+  - What do the principle components represent?
+- What is clustering?
+  - What is the difference between k-means and hierarchical clustering?
 
 # Pause for course evals
 
-Currently at 18/139.
+Currently at 51/144.
 
 # A few clicker questions
-
-`r fontawesome::fa('face-grin-stars', height = "6em", fill = blue)`
-
 
 ## 
 
@@ -115,47 +128,95 @@ b. False
 
 ##
 
-### Which of the following produces the ridge regression estimate of $\beta$ with $\lambda = 1$?
+### Which of the following is true about the training error?
 
 <hr>
 
-a. `lm(y ~ x, lambda = 1)`
-b. `(crossprod(x)) + diag(ncol(x))) %*% crossprod(x, y)`
-c. `solve(crossprod(x) + diag(ncol(x))) %*% crossprod(x, y)`
-d. `glmnet(x, y, lambda = 1, alpha = 0)`
-
-## 
-
-### If Classifier A has higher AUC than Classifier B, then Classifier A is preferred.
-
-<hr>
-
-a. True
-b. False
+a. It will decrease as we add interaction terms
+b. It will decrease as we add more training data
+c. It will decrease as we add more regularization
+d. It will decrease as we remove useless predictors
 
 ##
 
-### Which of the following is true about the bootstrap?
+(Multiple answer)
 
+### Which of the following is an advantage to using LOO-CV over k-fold CV?
+ 
 <hr>
-
-a. It is a method for estimating the sampling distribution of a statistic.
-b. It is a method for estimating expected prediction error.
-c. It is a method for improving the performance of a classifier.
-d. It is a method for estimating the variance of a statistic.
+ 
+a. The bias of LOO-CV, as a risk estimator, is lower than that of k-fold CV.
+b. The variance of LOO-CV, as a risk estimator, is lower than that of k-fold CV. 
+c. It can be computed more quickly than k-fold CV for kernel smoothers.
+c. It can be computed more quickly than k-fold CV for ridge regression.
 
 ##
 
-### Which campus eatery is the best place to celebrate the end of the Term?
+(Multiple answer)
+
+### Which of the following reduce the bias of linear regression?
 
 <hr>
 
-a. Koerner's
-b. Sports Illustrated Clubhouse (formerly Biercraft)
-c. Brown's Crafthouse
-d. Rain or Shine
+a. Adding a ridge penalty
+b. Adding a lasso penalty
+c. Adding interaction terms / nonlinear basis functions
+d. Adding more training data
+
+<!-- ##  -->
+
+<!-- (Multiple answer) -->
+
+<!-- ### Which of the following are true about the Bayes' classifier? -->
+
+<!-- <hr> -->
+
+<!-- a. It is the classifier with the lowest 0-1 risk -->
+<!-- b. It depends on $P(Y=1)$ and $P(Y=0)$ -->
+<!-- c. It has a linear classification boundary -->
+<!-- d. It cannot be estimated with a finite amount of data -->
 
 ##
+
+(multiple answer)
+
+### The decision boundary for classification problems...
+
+<hr>
+
+a. Is the set of points where $P(Y=1|X) = P(Y=0|X)$
+b. Is the set of points where $P(Y=1|X) / P(Y=0|X) = P(Y=1) / P(Y=0)$
+c. Is the set of points where $P(Y=1|X) / P(Y=0|X) = P(Y=0) / P(Y=1)$
+d. Is linear for all discriminant analysis predictors
+
+
+##
+
+(multiple answer)
+
+### Which of the following properties of boosting are true?
+
+<hr>
+
+a. The risk can be estimated without a holdout set
+b. The component predictors can be trained in parallel
+c. The predictive uncertainty can be estimated by the variance of the predictors
+d. The bias of the ensemble is lower than the bias of the component predictors
+e. The variance of the ensemble is lower than the variance of the component predictors
+
+##
+
+(multiple answer)
+
+### Which of the following statements are true about PCA and KPCA?
+
+<hr>
+
+a. PCA requires specifying the number of principled components, while KPCA does not
+b. KPCA requires the data to be centered, while PCA does not
+c. PCA is a linear method, while KPCA is a non-linear method
+d. After performing KPCA, the principle components can be used to reduce the dimensionality of new (previously unseen) test data
+
 
 <!--
 ### Which would you prefer to hear about (briefly)?
