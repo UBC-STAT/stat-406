@@ -21,6 +21,314 @@
     "text": "Scenario 2. You did something you shouldn’t have\nSwitch your branch back to lab00-git (or whatever you named it).\nOpen the file lab01.Rmd. Select everything after # Instructions and delete it. Save. Then Knit (producing a pdf). Commit both files with a message “did the wrong lab, and built a pdf”. Push your commits with the Green up arrow.\nTake a look at the PR on Github now. There’s a bunch of crud that shouldn’t be there.\nWe’ve done 3 things here that we shouldn’t have.\n\nWe built a pdf that we don’t want at all. It needs to go away.\nWe bollixed up the lab01.Rmd file. We don’t want that or it will screw up the lab next week.\nWe pushed it all into our submission for this week.\n\nThe first instinct is to Delete both files, commit, and push. This is VERY BAD. That will further screw up everything. Basically, you’re telling git “I don’t want these files at all” when you mean “I don’t want changes to these files in this branch”. The difference is subtle but important. Because you DO want these files (without the changes) at some point, but you don’t want them here.\nLet’s fix these issues.\n\nFirst, we want to “get rid of” the pdf. In the Terminal type\ngit reset HEAD^ -- lab01.pdf\nClick the little “Refresh” arrow in the Git panel. You should now see lab01.pdf twice, once with a red D that is checked and once with two yellow question marks that is NOT checked. This is what we want.\nCommit exactly as is. Use a message like “remove the stray pdf” and Push. Now, take a look at the PR on Github. It should be gone from the list of files in the PR.\nThere’s still that annoying two-yellow-question-mark version in the Git panel. Don’t click the check box (that will just redo everything we undid). Instead, highlight the file by clicking the file name, click the Gear Icon Dropdown, and then select “Revert”. Now it’s gone, and the pdf should disappear from your filesystem.\n\nSecond, let’s “undo” the deletion in the .Rmd. This is easy, and a useful pattern to remember.\nIn the Terminal, type\ngit checkout main -- lab01.Rmd\nWhat this does is grabs the version on main that isn’t messed up and puts it here, overwriting your changes. This isn’t the only way to fix your problem (you could have done the same thing we did with the pdf), but it’s pretty easy.\nStage commit and push. Now look at the PR on Github. Even though you made two changes (one deleting everything, and one restoring everything) to the lab01.Rmd, it should be “gone” from the PR now. That’s because the version on this branch looks just like the version on main, so there are no changes to be made into the main branch. This is just what we want.\n\nNow we’ve also fixed the third error already. None of those bogus changes to lab01 are in our PR for this week anymore."
   },
   {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "",
+    "text": "\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\]"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#learning-objectives",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#learning-objectives",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "Learning Objectives",
+    "text": "Learning Objectives\nBy the end of this lecture, you will be able to:\n\nDistinguish between “learning,” “supervised learning,” “prediction,” and “inference.”\nTranslate between algorithmic and statistical perspectives on learning\n\nDefine a statistical model\nDefine an estimator\nDefine a prediction rule\n\nDefine the standard linear regression model\nDerive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#what-is-supervised-learning",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#what-is-supervised-learning",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "What is (Supervised) Learning?",
+    "text": "What is (Supervised) Learning?\nThere are many formulations of “learning” in statistics and machine learning. The main focus of this course is supervised learning.\n\nGoal of supervised learning: predict a response variable \\(Y\\) given a set of covariates \\(X\\)\n\nFor example, predicting house prices based on features like size, location, and number of bedrooms.\n\n\nLearning from data:\nWe are given a training dataset: \\[ \\mathcal{D} = \\{(X_1, Y_1), (X_2, Y_2), \\ldots, (X_n, Y_n)\\} \\in \\mathbb R^p \\times \\mathcal Y\\]\nwhere:\n\n\\(X_i \\in \\mathbb R^p\\) are the \\(d\\)-dimensional covariates (e.g. size, location, number of bedrooms, etc. for each house)\n\\(Y_i \\in \\mathcal Y\\) is the response variable (e.g. house price)\n\\(\\mathcal Y\\) is the space of possible responses.\n\nFor our problem and other regression problems, \\(\\mathcal Y = \\mathbb R\\).\nFor classification problems (i.e. predicting whether the house is for sale or not) \\(\\mathcal Y\\) is a finite set of classes (e.g. “for sale” vs “not for sale”).\n\n\nFrom this training set, we want to learn a function \\(\\hat f : \\mathbb R^p \\to \\mathcal Y\\) that accurately predicts the response for new observations.\n\nGiven a set of new covariates \\(X_\\mathrm{new}\\) (e.g. a new house that we don’t know the price of)\nWe predict \\(\\hat Y_\\mathrm{new} = \\hat f(X_\\mathrm{new})\\) (e.g. our predicted price for the new house)\nOur goal is for \\(\\hat Y_\\mathrm{new} \\approx Y_\\mathrm{new}\\): the true (but unknown) price of the new house.\n\n\nPrediction versus Inference\nIn learning we are primarily concerned with prediction over inference.\n\nInference: The goal is making a probabilistic statement about the relationship between \\(X\\) and \\(Y\\).\n\n(For example, we might want to know how much the price of a house increases for each additional bedroom.)\n\nPrediction: The goal is producing accurate \\(\\hat Y_\\mathrm{new}\\).\n\nWe don’t really care about the underlying relationship, or even about making probabilistic statements about it.\nWe just want some procedure to give us good predictions."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#the-supervised-learning-procedure-two-perspectives",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#the-supervised-learning-procedure-two-perspectives",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "The Supervised Learning Procedure: Two Perspectives",
+    "text": "The Supervised Learning Procedure: Two Perspectives\n\n\nCS/Algorithmic Perspective\nLearning is often presented as an algorithm for producing a prediction rule \\(\\hat f\\) from data \\(\\mathcal{D}\\). This algorithm consist of 6 steps, which we will examine in the context of linear regression:\n\nTrain/test split: Divide data into training and testing sets\n\nGiven our dataset \\(\\mathcal{D}\\), we split it into a training set \\(\\mathcal{D}_\\mathrm{train}\\), a validation set \\(\\mathcal{D}_\\mathrm{val}\\), and a test set \\(\\mathcal{D}_\\mathrm{test}\\).\n\nHypothesis class: Select a set of candidate \\(\\hat f\\) which might make a good prediction rule.\n\nFor linear regression, the hypothesis class is linear functions of the form \\(\\hat f(x) = x^\\top \\hat\\beta\\) for some \\(\\hat \\beta\\).\n\nTraining: Define a training algorithm (a procedure to choose a \\(\\hat \\beta\\) from the training data) and apply it to \\(\\mathcal{D}_\\mathrm{train}\\).\n\nMost training algorithms involve minimizing a loss function over training data.\nFor linear models, we often choose \\(\\hat f\\) to minimize the squared error loss over training data. \\[L(Y, \\hat Y) = (Y - \\hat Y)^2, \\qquad \\hat \\beta = \\argmin_{\\beta} \\frac{1}{n} \\sum_{i=1}^{n} L(Y_i, X_i^\\top \\beta). \\]\n\nValidation: Test performance on withheld validation data.\n\nWe compute the average loss on the validation set to evaluate how well our model generalizes to unseen data.\n\nIteration: Refine model based on evaluation results\n\nWe may choose to change our hypothesis class, the set of features, the loss function, or the training algorithm to try to reduce validation error.\n\nTesting (confusingly referred to by some as “Inference”): Once satisfied with the model, evaluate on the test set to estimate performance on new data.\n\n\n\nStatistical Perspective\nOver the next few lectures, we will derive the CS/algorithmic perspective from first statistical principles. For this lecture, we will focus on a statistical perspective on Steps 2, 3, and 6:\n\n\n\nStep\nCS Perspective\nStatistical Perspective\n\n\n\n\n2\nHypothesis Class\nStatistical Model\n\n\n3\nTraining\nEstimation\n\n\n6\nTesting (Inference)\nPrediction"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#statistical-models",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#statistical-models",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "Statistical Models",
+    "text": "Statistical Models\nA statistical model defines the possible relationships between the covariates \\(X\\) and the response variable \\(Y\\).\n\nFormally, it is a set of probability distributions that could possibly generate the data we observe.\nFor the learning problem, where we care about predicting \\(Y\\) given \\(X\\), we will consider statistical models that are sets of conditional distributions \\(P(Y \\mid X)\\).\n\n\nThe Linear Regression Model\n\nFrom STAT 306, you may recall that we typically assume that the relationship between \\(X\\) and \\(Y\\) can be described as: \\[Y = X^\\top \\beta + \\varepsilon\\]\n\n\\(\\beta\\) is the vector of parameters that we are trying to estimate.\n\\(\\varepsilon\\) is the random error term, which is typicall i.i.d. \\(\\varepsilon \\sim N(0, \\sigma^2)\\) for some \\(\\sigma^2 &gt; 0\\).\n(You may notice that we don’t have an intercept term \\(\\beta_0\\) in this model. We assume that \\(X\\) has an “all-ones” covariate, i.e. \\(X = [1, X_1, X_2, \\ldots, X_p]\\), so that the intercept term \\(\\beta_0\\) is included with the other \\(\\beta\\) terms, i.e. \\(X^\\top \\beta = \\beta_0 + X_1^\\top \\beta_1 + \\ldots + X_p^\\top \\beta_p\\).)\n\nFor any given \\(\\beta\\), if we are given \\(X = x\\), then we have that \\(Y \\sim \\mathcal{N}(x^\\top\\beta, \\sigma^2)\\). Thus, the corresponding statistical model/set of possible conditional distributions is:\n\n\\[\\left\\{ P \\: : \\: P(Y \\mid X = x) \\: = \\: \\mathcal{N}(x^\\top\\beta, \\sigma^2), \\:\\: \\beta \\in \\mathbb R^p \\right\\}.\\]\n\nWe refer to \\(\\beta\\) as the parameters of the model, as a given value of \\(\\beta\\) specifies a particular distribution within the set.\n\n\n\nOther Models\nThis linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distribution can be used instead. For example:\n\nThe more general linear regression model: we could consider the slightly more general case of conditional distributions defined by an expected value condition: \\[\\left\\{ P \\: : \\: \\mathbb E[Y \\mid X = x] \\: = \\: x^\\top\\beta, \\:\\: \\beta \\in \\mathbb R^p \\right.\\}\\]\n\nNote that \\(\\mathbb E[\\mathcal{N}(x^\\top\\beta, \\sigma^2)] = x^\\top \\beta\\), and so the linear regression model is a subset of this more general model.\nHowever, this model allows for the possibility of non-normal residuals.\n\nThe polynomial regression model: we could instead consider the slightly more general case where the expectation is a polynomial function of \\(X\\), rather than just a linear function: \\[\\left\\{ P \\: : \\: \\mathbb E[Y \\mid X = x] \\: = \\: p(x), \\:\\: p \\text{ is a polynomial of degree } d \\right\\}\\]\n\nNote again that our general linear model is a special case; however this model allows for more complex relationships between \\(X\\) and \\(Y\\).\nThis model also has parameters (the coefficients of the polynomial). though they are not explicit in this formulation.\n\nAll possible distributions: what if we used the most general set of distributions? \\[\\left\\{ P \\: : \\: P(Y \\mid X = x) \\text{ is any distribution} \\right\\}\\]\n\nWhile this is a valid set, it turns out that it is too general for the purposes of learning.\nSpecifically, the no free lunch theorem states that we will not be able to identify a “good” model from this set even if we were given infinite training data!\n(We need to have some “structure” or simplifying assumptions in our model to be able to learn from data.)"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#estimation",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#estimation",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "Estimation",
+    "text": "Estimation\n\nOnce we have chosen a statistical model, the estimation step involves us choosing a specific distribution from the model that best fits our training data.\nAlternatively, we can think of it as estimating a set of parameters that define a distribution within our model that describe the training data.\nThere are many statistically valid estimation procedures. We’ll derive two that you’ve likely seen before: Maximum Likelihood Estimation (MLE) and Empirical Risk Minimization (ERM). (We’ll talk about others throughout this course.)\n\nWe will work through these two procedures using the linear regression model as our statistical model.\n\n1. Empirical Risk Minimization (ERM)\nGoal: Find the parameters that minimize the loss on our training data.\n\nFrom STAT 306, you may remember a procedure known as Ordinary Least Squares (OLS) to estimate the parameters of a linear regression model.\nThis procedures is a special case of a more general procedure Empirical Risk Minimization (ERM) for reasons that we will see in a few lectures.\n\nThe OLS/ERM Procedure:\n\nDefine a loss function\n\nWe need to quantify what we mean by “least bad.”\nA loss function measures how well a particular \\(P[Y \\mid X=X_i]\\) distribution fits the true label \\(Y_i\\).\nGiven a \\(\\beta\\) for our linear regression model, a common choice of loss function is the squared error loss: \\[L(Y_i, \\hat{Y_i}) = (Y_i - \\hat{Y_i})^2, \\qquad \\hat{Y_i} = X_i^\\top\\beta.\\]\n\nMinimize the average loss over the training data\n\nThe empirical risk is defined as the average loss over our training data:\n\\[\\hat{R}(\\beta) =\\frac{1}{n}\\sum_{i=1}^n L(Y_i, \\hat Y_i) = \\frac{1}{n}\\sum_{i=1}^n (Y_i - X_i^\\top\\beta)^2\\]\nThe OLS (ERM) estimator is the set of parameters \\(\\hat{\\beta}\\) (i.e. the distribution from our model) that minimizes this empirical risk:\n\\[\\hat{\\beta}_\\mathrm{OLS} = \\arg\\min_{\\beta} \\hat{R}(\\beta) = \\arg\\min_{\\beta} \\frac{1}{n}\\sum_{i=1}^n (Y_i - X_i^\\top\\beta)^2\\]\nTaking the derivative and setting to zero:\n\\[\\frac{\\partial}{\\partial \\beta}\\sum_{i=1}^n (Y_i - X_i^\\top\\beta)^2 = -2\\sum_{i=1}^n X_i(Y_i - X_i^\\top\\beta) = 0\\]\nBy arranging all of our training data into a matrix \\(\\boldsymbol X \\in \\mathbb{R}^{n \\times d}\\) and a vector \\(\\boldsymbol Y \\in \\mathbb{R}^n\\), with\n\\[\\boldsymbol X = \\begin{bmatrix} -X_1^\\top- \\\\ -X_2^\\top- \\\\ \\vdots \\\\ -X_n^\\top- \\end{bmatrix} \\in \\mathbb{R}^{n \\times d}, \\qquad \\boldsymbol Y = \\begin{bmatrix} Y_1 \\\\ Y_2 \\\\ \\vdots \\\\ Y_n \\end{bmatrix},\\]\nwe get:\n\\[\\hat{\\beta}_\\mathrm{OLS} = (\\boldsymbol X^\\top \\boldsymbol X)^{-1} \\boldsymbol X^\\top \\boldsymbol Y.\\]\n\n\n\n\n2. Maximum Likelihood Estimation (MLE)\nGoal: Find the parameters that maximize the likelihood of observing our data.\n\nThe likelihood function maps a distribution from our model (parameterized by \\(\\beta\\)) to the probability density of our observed training data.\n\nLikelihood function for linear regression.\n\nFor the linear regression model with normal errors, the likelihood function is: \\[\\mathcal{L} (\\beta, \\sigma^2) = \\prod_{i=1}^n \\frac{1}{\\sqrt{2\\pi\\sigma^2}} \\exp\\left(-\\frac{(Y_i - X_i^\\top\\beta)^2}{2\\sigma^2}\\right)\\]\nThe term inside the product is the density of the normal distribution \\(\\mathcal{N}(X_i^\\top\\beta, \\sigma^2)\\) evaluated at \\(Y_i\\).\nWe take the product over all \\(n\\) training examples \\((X_i, Y_i)\\) because we assume that the data points are i.i.d.\nWe choose \\(\\beta\\) to maximize the likelihood function, i.e. the \\(\\beta\\) that make observed data most probable.\n\nLog-likelihoods are easier to work with.\n\nTaking the log of the likelihood function, log-likelihood: \\[\\ell(\\beta, \\sigma^2) = -\\frac{n}{2}\\log(2\\pi\\sigma^2) - \\frac{1}{2\\sigma^2}\\sum_{i=1}^n (Y_i - X_i^\\top\\beta)^2\\]\nThe logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.\nThe \\(-\\frac{n}{2}\\log(2\\pi\\sigma^2)\\) constant and the \\(\\frac{1}{2\\sigma^2}\\) scaling term also don’t affect the maximum, so we can ignore them.\nThus, the maximum likelihood estimate of \\(\\beta\\) is found by minimizing: \\[\\argmin_{\\beta} \\sum_{i=1}^n (Y_i - X_i^\\top\\beta)^2,\\]\nThis is exactly the same optimization problem we derived for ERM! Thus, \\[ \\hat{\\beta}_\\mathrm{MLE} = (\\boldsymbol X^\\top \\boldsymbol X)^{-1} \\boldsymbol X^\\top \\boldsymbol Y = \\hat{\\beta}_\\mathrm{OLS} \\]\n\nKey Insight: For linear regression with normal errors, MLE and OLS/ERM give identical results!\n\nIf we had used a different loss function (e.g. \\(L(Y_i, \\hat{Y_i}) = |Y_i - \\hat{Y_i}|\\)), the ERM estimator would not be the same as the OLS/MLE estimator.\nThere are many possible loss functions with different properties, and we will explore them in future lectures."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#prediction",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#prediction",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "Prediction",
+    "text": "Prediction\n\nOnce we have estimated \\(\\hat{\\beta}\\) and selected the distribution that “best” describes our data, we can make predictions on new data points \\(X_\\mathrm{new}\\).\nFor linear models, we often use the prediction rule: \\[\\hat{Y}_\\mathrm{new} = X_\\mathrm{new}^\\top\\hat{\\beta}\\]\n\nDecision theory for predictions: We want a principled reason for using this prediction rule.\n\nDecision theory: choose a prediction \\(\\hat{Y}_\\mathrm{new}\\) that minimizes the expected loss:\n\\[\\hat{Y}_\\mathrm{new} = \\argmin_{\\hat{y}_\\mathrm{new}} \\mathbb E[L(Y, \\hat{y}_\\mathrm{new}) \\mid X_\\mathrm{new}, \\hat \\beta].\\]\nAccording to our estimated model, we have\n\\[P(Y_\\mathrm{new} \\mid X_\\mathrm{new}, \\hat \\beta) = \\mathcal{N}(X_\\mathrm{new}^\\top\\hat{\\beta}, \\sigma^2).\\]\nPlugging in the squared error loss function into this formula, we get:\n\\[\n\\begin{align*}\n    \\hat{Y}_\\mathrm{new} &= \\argmin_{\\hat{y}_\\mathrm{new}} \\mathbb E[(Y_\\mathrm{new} - \\hat{y}_\\mathrm{new})^2 \\mid X_\\mathrm{new}, \\hat \\beta] \\\\\n    &= \\argmin_{\\hat{y}_\\mathrm{new}} \\left( \\underbrace{\\mathbb E[Y_\\mathrm{new}^2 \\mid X_\\mathrm{new}, \\hat \\beta]}_{\n       \\underbrace{\\mathrm{Var}[Y_\\mathrm{new} \\mid X_\\mathrm{new}, \\hat \\beta]}_{\\sigma^2} +\n       \\underbrace{(\\mathbb E[Y_\\mathrm{new} \\mid X_\\mathrm{new}, \\hat \\beta])^2}_{(X_\\mathrm{new}^\\top \\hat{\\beta})^2}\n    } - 2\\hat{y}_\\mathrm{new} \\underbrace{\\mathbb E[Y_\\mathrm{new} \\mid X_\\mathrm{new}, \\hat \\beta]}_{X_\\mathrm{new}^\\top \\beta}\n    + \\hat{y}_\\mathrm{new}^2 \\right) \\\\\n    &= \\argmin_{\\hat{y}_\\mathrm{new}} \\left(\n       \\underbrace{\\sigma^2}_\\mathrm{const.} + \\underbrace{\n          (X_\\mathrm{new}^\\top \\hat{\\beta})^2- 2\\hat{y}_\\mathrm{new} (X_\\mathrm{new}^\\top \\hat{\\beta}) + \\hat{y}_\\mathrm{new}^2\n       }_{(\\hat{y}_\\mathrm{new} - X_\\mathrm{new}^\\top \\hat{\\beta})^2}\n    \\right)\n\\end{align*}\n\\]\nWe can drop the \\(\\sigma^2\\) constant, since it doesn’t affect the minimum, and we are left with:\n\\[\\hat{Y}_\\mathrm{new} = \\argmin_{\\hat{y}_\\mathrm{new}} (\\hat{y}_\\mathrm{new} - X_\\mathrm{new}^\\top \\hat{\\beta})^2,\\]\nwhich, after taking the derivative and setting to zero, gives us: \\(\\hat{Y}_\\mathrm{new} = X_\\mathrm{new}^\\top \\hat{\\beta}\\).\n\nImportant! If we had chosen a different loss function, we would have derived a different prediction rule."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_02_learning_procedure_regression.html#summary",
+    "href": "schedule/lectures/lecture_02_learning_procedure_regression.html#summary",
+    "title": "Lecture 2: Introduction to Learning, Regression",
+    "section": "Summary",
+    "text": "Summary\nThis lecture introduced the statistical framework for learning:\n\nStatistical models define the probabilistic structure of our data\nEstimation finds the best parameters using MLE or ERM\nPrediction uses fitted models to make predictions on new data\n\n\nThis framework will extend to more complex models and methods throughout the course.\nLinear regression serves as our foundational example, where MLE and ERM produce identical estimators under normal error assumptions.\nIn the next lecture, we will apply this statistical framework to classification problems."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#section",
+    "href": "schedule/slides/00-r-review.html#section",
+    "title": "UBC Stat406 2025 W1",
+    "section": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour",
+    "text": "00 R, Rmarkdown, code, and {tidyverse}:  A whirlwind tour\nStat 406\nGeoff Pleiss\nLast modified – 25 August 2025\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#tour-of-rstudio",
+    "href": "schedule/slides/00-r-review.html#tour-of-rstudio",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Tour of Rstudio",
+    "text": "Tour of Rstudio\nThings to note\n\nConsole\nTerminal\nScripts, .Rmd, Knit\nFiles, Projects\nGetting help\nEnvironment, Git"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#r-and-the-tidyverse",
+    "href": "schedule/slides/00-r-review.html#r-and-the-tidyverse",
+    "title": "UBC Stat406 2025 W1",
+    "section": "R and the {tidyverse}",
+    "text": "R and the {tidyverse}\n\n\n\n\nToday is going to be a whirlwind tour of R.\nIf you are new to R: read the first 4 chapters of Data Science: A First Introduction.\nIt’s available for free at https://datasciencebook.ca. It covers:\n\nData loading from .csv, Excel, database, and web sources\nData saving to .csv files\nData wrangling with tidyverse functions\nPlotting with ggplot"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#basic-data-structures",
+    "href": "schedule/slides/00-r-review.html#basic-data-structures",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Basic data structures",
+    "text": "Basic data structures\n\n\nVectors:\n\nx &lt;- c(1, 3, 4)\nx[1]\n\n[1] 1\n\nx[-1]\n\n[1] 3 4\n\nrev(x)\n\n[1] 4 3 1\n\nc(x, x)\n\n[1] 1 3 4 1 3 4\n\n\n\n\n\nMatrices:\n\nx &lt;- matrix(1:25, nrow = 5, ncol = 5)\nx[1,]\n\n[1]  1  6 11 16 21\n\nx[,-1]\n\n     [,1] [,2] [,3] [,4]\n[1,]    6   11   16   21\n[2,]    7   12   17   22\n[3,]    8   13   18   23\n[4,]    9   14   19   24\n[5,]   10   15   20   25\n\nx[c(1,3),  2:3]\n\n     [,1] [,2]\n[1,]    6   11\n[2,]    8   13\n\n\n\nAll elements of a vector/matrix must be of the same type"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#basic-data-structures-cont.",
+    "href": "schedule/slides/00-r-review.html#basic-data-structures-cont.",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Basic data structures (cont.)",
+    "text": "Basic data structures (cont.)\n\n\nLists\n\n(l &lt;- list(\n  a = letters[1:2],\n  b = 1:4,\n  c = list(a = 1)))\n\n$a\n[1] \"a\" \"b\"\n\n$b\n[1] 1 2 3 4\n\n$c\n$c$a\n[1] 1\n\nl$a\n\n[1] \"a\" \"b\"\n\nl$c$a\n\n[1] 1\n\nl[\"b\"] # compare to l[[\"b\"]] == l$b\n\n$b\n[1] 1 2 3 4\n\n\n\n\nData frames\n\n(dat &lt;- data.frame(\n  z = 1:5,\n  b = 6:10,\n  c = letters[1:5]))\n\n  z  b c\n1 1  6 a\n2 2  7 b\n3 3  8 c\n4 4  9 d\n5 5 10 e\n\nclass(dat)\n\n[1] \"data.frame\"\n\ndat$b\n\n[1]  6  7  8  9 10\n\ndat[1,]\n\n  z b c\n1 1 6 a\n\n\n\n\nLists can have multiple element types; data frames are lists of vectors"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#functions-in-r",
+    "href": "schedule/slides/00-r-review.html#functions-in-r",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Functions in R",
+    "text": "Functions in R\nA function is a mapping from inputs to outputs, and is defined with the function keyword.\nThe function’s body is wrapped in curly braces, and its output is given by the return keyword (or the last evaluated statement)\n\nf &lt;- function(x, y){\n  x+y\n}\n\nf(3,5)\n\n[1] 8\n\n\n\nf &lt;- function(x, y){\n  return(x+y)\n}\n\nf(3,5)\n\n[1] 8"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#function-signatures",
+    "href": "schedule/slides/00-r-review.html#function-signatures",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Function Signatures",
+    "text": "Function Signatures\n\n\nCode\nsig &lt;- sig::sig\n\n\n\nsig(lm)\n\nfn &lt;- function(formula, data, subset, weights, na.action, method = \"qr\", model\n  = TRUE, x = FALSE, y = FALSE, qr = TRUE, singular.ok = TRUE, contrasts =\n  NULL, offset, ...)\n\nsig(`+`)\n\nfn &lt;- function(e1, e2)\n\nsig(dplyr::filter)\n\nfn &lt;- function(.data, ..., .by = NULL, .preserve = FALSE)\n\nsig(stats::filter)\n\nfn &lt;- function(x, filter, method = c(\"convolution\", \"recursive\"), sides = 2,\n  circular = FALSE, init = NULL)\n\nsig(rnorm)\n\nfn &lt;- function(n, mean = 0, sd = 1)"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#these-are-all-the-same",
+    "href": "schedule/slides/00-r-review.html#these-are-all-the-same",
+    "title": "UBC Stat406 2025 W1",
+    "section": "These are all the same",
+    "text": "These are all the same\n\nset.seed(12345)\nrnorm(3)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(n = 3, mean = 0)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(3, 0, 1)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\nset.seed(12345)\nrnorm(sd = 1, n = 3, mean = 0)\n\n[1]  0.5855288  0.7094660 -0.1093033\n\n\n\nFunctions can have default values.\nYou may, but don’t have to, name the arguments\nIf you name them, you can pass them out of order (but you shouldn’t)."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
+    "href": "schedule/slides/00-r-review.html#outputs-vs.-side-effects",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Outputs vs. Side Effects",
+    "text": "Outputs vs. Side Effects\n\n\n\nf &lt;- function(arg1, arg2, arg3 = 12, ...) {\n  stuff &lt;- arg1 * arg3\n  stuff2 &lt;- stuff + arg2\n  plot(arg1, stuff2, ...)\n  return(stuff2)\n}\nx &lt;- rnorm(100)\n\n\n\n\ny1 &lt;- f(x, 3, 15, col = 4, pch = 19)\n\n\n\n\n\n\n\nstr(y1)\n\n num [1:100] -3.8 12.09 -24.27 12.45 -1.14 ..."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#outputs-vs.-side-effects-1",
+    "href": "schedule/slides/00-r-review.html#outputs-vs.-side-effects-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Outputs vs. Side Effects",
+    "text": "Outputs vs. Side Effects\n\n\n\nSide effects are things a function changes in global scope\nOutputs can be assigned to variables\nA good example is the hist function\nYou have probably only seen the side effect which is to plot the histogram\n\n\nmy_histogram &lt;- hist(rnorm(1000))\n\n\n\n\n\n\n\n\n\n\n\nstr(my_histogram)\n\nList of 6\n $ breaks  : num [1:14] -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 ...\n $ counts  : int [1:13] 4 21 41 89 142 200 193 170 74 38 ...\n $ density : num [1:13] 0.008 0.042 0.082 0.178 0.284 0.4 0.386 0.34 0.148 0.076 ...\n $ mids    : num [1:13] -2.75 -2.25 -1.75 -1.25 -0.75 -0.25 0.25 0.75 1.25 1.75 ...\n $ xname   : chr \"rnorm(1000)\"\n $ equidist: logi TRUE\n - attr(*, \"class\")= chr \"histogram\"\n\nclass(my_histogram)\n\n[1] \"histogram\""
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#when-writing-functions-program-defensively-ensure-behaviour",
+    "href": "schedule/slides/00-r-review.html#when-writing-functions-program-defensively-ensure-behaviour",
+    "title": "UBC Stat406 2025 W1",
+    "section": "When writing functions, program defensively, ensure behaviour",
+    "text": "When writing functions, program defensively, ensure behaviour\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  x + 1\n}\n\nincrementer(2)\n\n[1] 3\n\nincrementer(1:4)\n\n[1] 2 3 4 5\n\nincrementer(\"a\")\n\nError in x + 1: non-numeric argument to binary operator\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  stopifnot(is.numeric(x))\n  return(x + 1)\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): is.numeric(x) is not TRUE\n\n\n\n\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + 1\n}\nincrementer(\"a\")\n\nError in incrementer(\"a\"): `x` must be numeric\n\nincrementer(2, -3) ## oops!\n\n[1] 3\n\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  x + inc_by\n}\nincrementer(2, -3)\n\n[1] -1"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#unit-testing",
+    "href": "schedule/slides/00-r-review.html#unit-testing",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Unit Testing",
+    "text": "Unit Testing\nWhen you write functions, test them!\nUse testthat: check a few usual values and corner cases\n\n\n\nlibrary(testthat)\nincrementer &lt;- function(x, inc_by = 1) {\n  if (!is.numeric(x)) {\n    stop(\"`x` must be numeric\")\n  }\n  if (!is.numeric(inc_by)) {\n    stop(\"`inc_by` must be numeric\")\n  }\n  x + inc_by\n}\nexpect_error(incrementer(\"a\"))\nexpect_equal(incrementer(1:3), 2:4)\nexpect_equal(incrementer(2, -3), -1)\nexpect_error(incrementer(1, \"b\"))\nexpect_identical(incrementer(1:3), 2:4)\n\nError: incrementer(1:3) not identical to 2:4.\nObjects equal but not identical\n\n\n\n\n\nis.integer(2:4)\n\n[1] TRUE\n\nis.integer(incrementer(1:3))\n\n[1] FALSE\n\nexpect_identical(incrementer(1:3, 1L), 2:4)\n\n\n\n\n\n\n\n\n\n\nImportant\n\n\nDon’t copy code; write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#classes",
+    "href": "schedule/slides/00-r-review.html#classes",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Classes",
+    "text": "Classes\n\n\nWe saw some of these earlier:\n\ntib &lt;- tibble(\n  x1 = rnorm(100),\n  x2 = rnorm(100),\n  y = x1 + 2 * x2 + rnorm(100)\n)\nmdl &lt;- lm(y ~ ., data = tib )\nclass(tib)\n\n[1] \"tbl_df\"     \"tbl\"        \"data.frame\"\n\nclass(mdl)\n\n[1] \"lm\"\n\n\nThe class allows for the use of “methods”\n\nprint(mdl)\n\n\nCall:\nlm(formula = y ~ ., data = tib)\n\nCoefficients:\n(Intercept)           x1           x2  \n    -0.1742       1.0454       2.0470  \n\n\n\n\n\nR “knows what to do” when you print() an object of class \"lm\".\nprint() is called a “generic” function.\nYou can create “methods” that get dispatched.\nFor any generic, R looks for a method for the class.\nIf available, it calls that function."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#viewing-the-dispatch-chain",
+    "href": "schedule/slides/00-r-review.html#viewing-the-dispatch-chain",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Viewing the dispatch chain",
+    "text": "Viewing the dispatch chain\n\nsloop::s3_dispatch(print(incrementer))\n\n=&gt; print.function\n * print.default\n\nsloop::s3_dispatch(print(tib))\n\n   print.tbl_df\n=&gt; print.tbl\n * print.data.frame\n * print.default\n\nsloop::s3_dispatch(print(mdl))\n\n=&gt; print.lm\n * print.default"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#generic-methods",
+    "href": "schedule/slides/00-r-review.html#generic-methods",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Generic Methods",
+    "text": "Generic Methods\nThere are lots of generic functions in R\nCommon ones are print(), summary(), and plot().\nAlso, lots of important statistical modelling concepts: residuals() coef()\n(In python, these work the opposite way: obj.residuals. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)\n\nThe convention is that the specialized function is named method.class(), e.g., summary.lm().\nIf no specialized function is defined, R will try to use method.default().\n\nFor this reason, R programmers try to avoid . in names of functions or objects."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#wherefore-methods",
+    "href": "schedule/slides/00-r-review.html#wherefore-methods",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Wherefore methods?",
+    "text": "Wherefore methods?\n\nThe advantage is that you don’t have to learn a totally new syntax to grab residuals or plot things\nYou just use residuals(mdl) whether mdl has class lm or any other class you expect to have residuals\nThe one draw-back is the help pages for the generic methods tend to be pretty vague\nCompare ?summary with ?summary.lm."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#different-environments",
+    "href": "schedule/slides/00-r-review.html#different-environments",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Different environments",
+    "text": "Different environments\n(known as scope in other languages)\n\nThese are often tricky, but are very common.\nMost programming languages have this concept in one way or another.\nIn R code run in the Console produces objects in the “Global environment”\nYou can see what you create in the “Environment” tab.\nBut there’s lots of other stuff.\nMany packages are automatically loaded at startup, so you have access to the functions and data inside\n\nFor example mean(), lm(), plot(), iris (technically iris is lazy-loaded, meaning it’s not in memory until you call it, but it is available)"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#section-1",
+    "href": "schedule/slides/00-r-review.html#section-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "",
+    "text": "Other packages require you to load them with library(pkg) before their functions are available.\nBut, you can call those functions by prefixing the package name ggplot2::ggplot().\nYou can also access functions that the package developer didn’t “export” for use with ::: like dplyr:::as_across_fn_call()\n\n\nThat is all about accessing “objects in package environments”"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#other-issues-with-environments",
+    "href": "schedule/slides/00-r-review.html#other-issues-with-environments",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Other issues with environments",
+    "text": "Other issues with environments\nAs one might expect, functions create an environment inside the function.\n\nz &lt;- 1\nfun &lt;- function(x) {\n  z &lt;- x\n  print(z)\n  invisible(z)\n}\nfun(14)\n\n[1] 14\n\n\n\nNon-trivial cases are data-masking environments.\n\ntib &lt;- tibble(x1 = rnorm(100),  x2 = rnorm(100),  y = x1 + 2 * x2)\nmdl &lt;- lm(y ~ x2, data = tib)\nx2\n\nError: object 'x2' not found\n\n\n\nlm() looks “inside” the tib to find y and x2\nThe data variables are added to the lm() environment"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#other-issues-with-environments-1",
+    "href": "schedule/slides/00-r-review.html#other-issues-with-environments-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Other issues with environments",
+    "text": "Other issues with environments\nWhen Knit, .Rmd files run in their OWN environment.\nThey are run from top to bottom, with code chunks depending on previous\nThis makes them reproducible.\n\nObjects in your local environment are not available in the .Rmd\nObjects in the .Rmd are not available locally.\n\n\n\n\n\n\nTip\n\n\nThe most frequent error I see is:\n\nrunning chunks individually, 1-by-1, and it works\nKnitting, and it fails\n\nThe reason is almost always that the chunks refer to objects in the Environment that don’t exist in the .Rmd"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#section-2",
+    "href": "schedule/slides/00-r-review.html#section-2",
+    "title": "UBC Stat406 2025 W1",
+    "section": "",
+    "text": "This error also happens because:\n\nlibrary() calls were made globally but not in the .Rmd\n\nso the packages aren’t loaded\n\npaths to data or other objects are not relative to the .Rmd in your file system\n\nthey must be\n\nCarefully keeping Labs / Assignments in their current location will help to avoid some of these.\n\n\n\n\n\n\n\nTip\n\n\nKnit frequently throughout your homework / lab so that you encounter environment errors early and often!"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#how-to-fix-code",
+    "href": "schedule/slides/00-r-review.html#how-to-fix-code",
+    "title": "UBC Stat406 2025 W1",
+    "section": "How to fix code",
+    "text": "How to fix code\n\nIf you’re using a function in a package, start with ?function to see the help\n\nMake sure you’re calling the function correctly.\nTry running the examples.\npaste the error into Google (if you share the error on Slack, I often do this first)\nGo to the package website if it exists, and browse around\n\nIf your .Rmd won’t Knit\n\nDid you make the mistake on the last slide?\nDid it Knit before? Then the bug is in whatever you added.\nDid you never Knit it? Why not?\nCall rstudioapi::restartSession(), then run the Chunks 1-by-1"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#adding-browser",
+    "href": "schedule/slides/00-r-review.html#adding-browser",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Adding browser()",
+    "text": "Adding browser()\n(known as a breakpoint in any other language)\n\nOnly useful with your own functions.\nOpen the script with the function, and add browser() to the code somewhere\nThen call your function.\nThe execution will Stop where you added browser() and you’ll have access to the local environment to play around"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#reproducible-examples",
+    "href": "schedule/slides/00-r-review.html#reproducible-examples",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Reproducible examples",
+    "text": "Reproducible examples\n\n\n\n\n\n\nQuestion I frequently get:\n\n\n“I ran this code, but it didn’t work.”\n\n\n\n\nIf you want to ask me why the code doesn’t work, you need to show me what’s wrong.\n\n\n\n\n\n\n\nDon’t just paste a screenshot!\n\n\nUnless you get lucky, I won’t be able to figure it out from that. And we’ll both get frustrated.\n\n\n\nWhat you need is a Reproducible Example or reprex.\n\nThis is a small chunk of code that\n\nruns in it’s own environment\nand produces the error."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#the-reprex-package",
+    "href": "schedule/slides/00-r-review.html#the-reprex-package",
+    "title": "UBC Stat406 2025 W1",
+    "section": "The {reprex} package",
+    "text": "The {reprex} package\n\nOpen a new .R script.\nPaste your buggy code in the file (no need to save)\nEdit your code to make sure it’s “enough to produce the error” and nothing more. (By rerunning the code a few times.)\nCopy your code (so that it’s on the clipboard)\nCall reprex::reprex(venue = \"r\") from the console. This will run your code in a new environment and show the result in the Viewer tab. Does it create the error you expect?\nIf it creates other errors, that may be the problem. You may fix the bug on your own!\nIf it doesn’t have errors, then your global environment is Farblunget.\nThe Output is now on your clipboard. Go to Slack and paste it in a message. Then press Cmd+Shift+Enter (on Mac) or Ctrl+Shift+Enter (Windows/Linux). Under Type, select R.\nSend the message, perhaps with more description and an SOS emoji.\n\n\n\n\n\n\n\nNote\n\n\nBecause Reprex runs in it’s own environment, it doesn’t have access to any of the libraries you loaded or the stuff in your global environment. You’ll have to load these things in the script."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#r-pitfalls",
+    "href": "schedule/slides/00-r-review.html#r-pitfalls",
+    "title": "UBC Stat406 2025 W1",
+    "section": "R Pitfalls",
+    "text": "R Pitfalls\n\nR is very permissive, and this leads to frequent silent errors\n\nnonstandard evaluation of arguments, data masking\nallows dots in names (even though they mean something syntactically!)\nallows accessing attributes that don’t exist\npromotion of ints to floats, floats to strings 😱\n\nLots of unusual design decisions\n\nmany assignment operators (-&gt;, &lt;-, -&gt;&gt;, &lt;&lt;-, =)\nmany accessors (a$b is a[[\"b\"]] but not a[\"b\"])\nlacking basic data types (e.g., hash maps)\ninformal classes (class(x) &lt;- \"a weird new class!\")\ntonnes of functions/data/objects in the global namespace\n3 == \"3\" (evaluates to TRUE?!!?!)\n\nRscript executable treats code differently than the R REPL"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#tidyverse-is-huge",
+    "href": "schedule/slides/00-r-review.html#tidyverse-is-huge",
+    "title": "UBC Stat406 2025 W1",
+    "section": "{tidyverse} is huge",
+    "text": "{tidyverse} is huge\nCore tidyverse is ~30 different packages, but we’re going to just talk about a few.\nLoad all of them by calling library(tidyverse)\nPackages fall roughly into a few categories:\n\nConvenience functions: {magrittr} and many many others.\nData processing: {dplyr} and many others.\nGraphing: {ggplot2} and some others like {scales}.\nUtilities\n\n\n\nWe’re going to talk quickly about some of it, but ignore much of 2.\nThere’s a lot that’s great about these packages, especially ease of data processing.\nBut it doesn’t always jive with base R (it’s almost a separate proglang at this point)."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#when-in-doubt",
+    "href": "schedule/slides/00-r-review.html#when-in-doubt",
+    "title": "UBC Stat406 2025 W1",
+    "section": "When in doubt…",
+    "text": "When in doubt…\n\n\n\n\nRead the first 4 chapters (especially 3 and 4!)\nhttps://datasciencebook.ca"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#piping-with-magrittr",
+    "href": "schedule/slides/00-r-review.html#piping-with-magrittr",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Piping with {magrittr}",
+    "text": "Piping with {magrittr}\nThis was introduced by {magrittr} as %&gt;%,\nbut is now in base R (&gt;=4.1.0) as |&gt;.\nNote: there are other pipes in {magrittr} (e.g. %$% and %T%) but I’ve never used them.\nThe point of the pipe is to logically sequence nested operations\nThe pipe passes the left hand side as the first argument of the right hand side"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#example",
+    "href": "schedule/slides/00-r-review.html#example",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Example",
+    "text": "Example\n\n\n\nselect(filter(mtcars, cyl == 6), mpg)\n\n                mpg\nMazda RX4      21.0\nMazda RX4 Wag  21.0\nHornet 4 Drive 21.4\nValiant        18.1\nMerc 280       19.2\nMerc 280C      17.8\nFerrari Dino   19.7\n\n\n\nmse1 &lt;- print(\n  sum(\n    residuals(\n      lm(y~., data = mutate(\n        tib,\n        x3 = x1^2,\n        x4 = log(x2 + abs(min(x2)) + 1)\n      )\n      )\n    )^2\n  )\n)\n\n[1] 1.371438e-29\n\n\n\n\nmtcars |&gt; filter(cyl == 6) |&gt; select(mpg)\n\n                mpg\nMazda RX4      21.0\nMazda RX4 Wag  21.0\nHornet 4 Drive 21.4\nValiant        18.1\nMerc 280       19.2\nMerc 280C      17.8\nFerrari Dino   19.7\n\n\n\nmse2 &lt;- tib |&gt;\n  mutate(\n    x3 = x1^2,\n    x4 = log(x2 + abs(min(x2)) + 1)\n  ) %&gt;% # base pipe only goes to first arg\n  lm(y ~ ., data = .) |&gt; # note the use of `.`\n  residuals() |&gt;\n  magrittr::raise_to_power(2) |&gt; # same as `^`(2)\n  sum() |&gt;\n  print()\n\n[1] 1.371438e-29"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#section-3",
+    "href": "schedule/slides/00-r-review.html#section-3",
+    "title": "UBC Stat406 2025 W1",
+    "section": "",
+    "text": "It may seem like we should push this all the way\n\ntib |&gt;\n  mutate(\n    x3 = x1^2,\n    x4 = log(x2 + abs(min(x2)) + 1)\n  ) %&gt;% # base pipe only goes to first arg\n  lm(y ~ ., data = .) |&gt; # note the use of `.`\n  residuals() |&gt;\n  magrittr::raise_to_power(2) |&gt; # same as `^`(2)\n  sum() -&gt;\n  mse3\n\nThis technically works…but at a minimum it makes it hard to extend pipe sequences.\n\n\n\n\n\n\n\nNote\n\n\nOpinion zone: It’s also just weird. Don’t encourage the R devs."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#data-processing-in-dplyr",
+    "href": "schedule/slides/00-r-review.html#data-processing-in-dplyr",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Data processing in {dplyr}",
+    "text": "Data processing in {dplyr}\nThis package has all sorts of things. And it interacts with {tibble} generally.\nThe basic idea is “tibble in, tibble out”.\nSatisfies data masking which means you can refer to columns by name or use helpers like ends_with(\"_rate\")\nMajorly useful operations:\n\nselect() (chooses columns to keep)\nmutate() (showed this already)\ngroup_by()\npivot_longer() and pivot_wider()\nleft_join() and full_join()\nsummarise()\n\n\n\n\n\n\n\nNote\n\n\nfilter() and select() are functions in Base R.\nSometimes you get 🐞 because it called the wrong version.\nTo be sure, prefix it like dplyr::select()."
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#a-useful-data-frame",
+    "href": "schedule/slides/00-r-review.html#a-useful-data-frame",
+    "title": "UBC Stat406 2025 W1",
+    "section": "A useful data frame",
+    "text": "A useful data frame\n\n7-day rolling avg COVID case/death counts for CA and WA from Aug 1-21, 2022 from Johns Hopkins\n\nlibrary(tidyverse)\ncovid &lt;- read_csv(\"data/covid.csv\") |&gt;\n  select(geo_value, time_value, signal, value)\n\ncovid\n\n# A tibble: 84 × 4\n   geo_value time_value signal                        value\n   &lt;chr&gt;     &lt;date&gt;     &lt;chr&gt;                         &lt;dbl&gt;\n 1 ca        2022-08-01 confirmed_7dav_incidence_prop  45.4\n 2 wa        2022-08-01 confirmed_7dav_incidence_prop  27.7\n 3 ca        2022-08-02 confirmed_7dav_incidence_prop  44.9\n 4 wa        2022-08-02 confirmed_7dav_incidence_prop  27.7\n 5 ca        2022-08-03 confirmed_7dav_incidence_prop  44.5\n 6 wa        2022-08-03 confirmed_7dav_incidence_prop  26.6\n 7 ca        2022-08-04 confirmed_7dav_incidence_prop  42.3\n 8 wa        2022-08-04 confirmed_7dav_incidence_prop  26.6\n 9 ca        2022-08-05 confirmed_7dav_incidence_prop  40.7\n10 wa        2022-08-05 confirmed_7dav_incidence_prop  34.6\n# ℹ 74 more rows"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#examples",
+    "href": "schedule/slides/00-r-review.html#examples",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Examples",
+    "text": "Examples\nRename the signal to something short.\n\ncovid &lt;- covid |&gt;\n  mutate(signal = case_when(\n    str_starts(signal, \"confirmed\") ~ \"case_rate\",\n    TRUE ~ \"death_rate\"\n  ))\n\nSort by time_value then geo_value\n\ncovid &lt;- covid |&gt; arrange(time_value, geo_value)\n\nCalculate grouped medians\n\ncovid |&gt;\n  group_by(geo_value, signal) |&gt;\n  summarise(med = median(value), .groups = \"drop\")\n\n# A tibble: 4 × 3\n  geo_value signal        med\n  &lt;chr&gt;     &lt;chr&gt;       &lt;dbl&gt;\n1 ca        case_rate  33.2  \n2 ca        death_rate  0.112\n3 wa        case_rate  23.2  \n4 wa        death_rate  0.178"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#examples-1",
+    "href": "schedule/slides/00-r-review.html#examples-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Examples",
+    "text": "Examples\nSplit the data into two tibbles by signal\n\ncases &lt;- covid |&gt;\n  filter(signal == \"case_rate\") |&gt;\n  rename(case_rate = value) |&gt; select(-signal)\ndeaths &lt;- covid |&gt;\n  filter(signal == \"death_rate\") |&gt;\n  rename(death_rate = value) |&gt; select(-signal)\n\nJoin them together\n\njoined &lt;- full_join(cases, deaths, by = c(\"geo_value\", \"time_value\"))\n\nDo the same thing by pivoting\n\ncovid |&gt; pivot_wider(names_from = signal, values_from = value)\n\n# A tibble: 42 × 4\n   geo_value time_value case_rate death_rate\n   &lt;chr&gt;     &lt;date&gt;         &lt;dbl&gt;      &lt;dbl&gt;\n 1 ca        2022-08-01      45.4      0.105\n 2 wa        2022-08-01      27.7      0.169\n 3 ca        2022-08-02      44.9      0.106\n 4 wa        2022-08-02      27.7      0.169\n 5 ca        2022-08-03      44.5      0.107\n 6 wa        2022-08-03      26.6      0.173\n 7 ca        2022-08-04      42.3      0.112\n 8 wa        2022-08-04      26.6      0.173\n 9 ca        2022-08-05      40.7      0.116\n10 wa        2022-08-05      34.6      0.225\n# ℹ 32 more rows"
+  },
+  {
+    "objectID": "schedule/slides/00-r-review.html#plotting-with-ggplot2",
+    "href": "schedule/slides/00-r-review.html#plotting-with-ggplot2",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Plotting with {ggplot2}",
+    "text": "Plotting with {ggplot2}\n\nEverything you can do with ggplot(), you can do with plot(). But the defaults are much prettier.\nIt’s also much easier to adjust by aesthetics / panels by factors.\nIt also uses “data masking”: data goes into ggplot(data = mydata), then the columns are available to the rest.\nIt (sort of) pipes, but by adding layers with +\nIt strongly prefers “long” data frames over “wide” data frames.\n\n\nI’ll give a very fast overview of some confusing bits."
+  },
+  {
     "objectID": "course-setup.html",
     "href": "course-setup.html",
     "title": "Guide for setting up the course infrastructure",
@@ -445,7 +753,7 @@
     "href": "schedule/index.html#the-learning-procedure---models-fitting-model-selection",
     "title": " Schedule",
     "section": "1 The Learning Procedure - Models, Fitting, Model Selection",
-    "text": "1 The Learning Procedure - Models, Fitting, Model Selection\nTopics: Learning through statistician and algorithmic lenses, model selection; cross validation\nLearning Objectives:\n\nFormulate learning problems in terms of statistical models, estimators, and model selection\nIdentify criteria for good statistical models, estimators, and model selection metrics\n\nHandouts and Resources:\n\nProgramming in R .Rmd, .pdf\nUsing RMarkdown .Rmd, .pdf\n\n\n\n\n\n\n\n\n\n\nDate\nTopic\nReadings\nDeadlines\n\n\n\n\nSep 2\n(no class, Imagine UBC)\n\n\n\n\nSep 4\nClass Overview, Probability Review\n\n\n\n\nSep 9\nIntroduction to Learning, Regression\nISLR 2.1 (ESL 2.4, 2.6)\n\n\n\nSep 11\nLearning (cont.), Classification\nISLR 4.3 (ESL 4.4)\n\n\n\nSep 16\nModel Selection and Cross Validation\nISLR 5.1 (ESL 2.9, 7.10)"
+    "text": "1 The Learning Procedure - Models, Fitting, Model Selection\nTopics: Learning through statistician and algorithmic lenses, model selection; cross validation\nLearning Objectives:\n\nFormulate learning problems in terms of statistical models, estimators, and model selection\nIdentify criteria for good statistical models, estimators, and model selection metrics\n\nHandouts and Resources:\n\nProgramming in R .Rmd, .pdf\nUsing RMarkdown .Rmd, .pdf\nOverview of R and Tidyverse (Slides from last term)\nOverview of git and version control (Slides from last term)\n\n\n\n\nDate\nTopic\nReadings\nDeadlines\n\n\n\n\nSep 2\n(no class, Imagine UBC)\n\n\n\n\nSep 4\nClass Overview, Probability Review\n\n\n\n\nSep 9\nIntroduction to Learning, Regression (notes)\nISLR 2.1 (ESL 2.4, 2.6)\n\n\n\nSep 11\nLearning (cont.), Classification\nISLR 4.3 (ESL 4.4)\n\n\n\nSep 16\nModel Selection and Cross Validation\nISLR 5.1 (ESL 2.9, 7.10)"
   },
   {
     "objectID": "schedule/index.html#bias-variance-tradeoff-linear-methods",
@@ -495,5 +803,208 @@
     "title": " Schedule",
     "section": "Final Exam",
     "text": "Final Exam\n\n\n\n\n\n\nImportant\n\n\n\nDo not make any plans to leave Vancouver before the final exam date is announced.\n\n\n\nIn person attendance is required (per Faculty of Science guidelines)\nYou may bring 2 sheets of front/back 8.5 × 11 inch paper with handwritten notes you want to use. No other materials will be allowed."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#section",
+    "href": "schedule/slides/00-version-control.html#section",
+    "title": "UBC Stat406 2025 W1",
+    "section": "00 Git and Github",
+    "text": "00 Git and Github\nStat 406\nGeoff Pleiss\nLast modified – 25 August 2025\n\\[\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\DeclareMathOperator*{\\argmax}{argmax}\n\\DeclareMathOperator*{\\minimize}{minimize}\n\\DeclareMathOperator*{\\maximize}{maximize}\n\\DeclareMathOperator*{\\find}{find}\n\\DeclareMathOperator{\\st}{subject\\,\\,to}\n\\newcommand{\\E}{E}\n\\newcommand{\\Expect}[1]{\\E\\left[ #1 \\right]}\n\\newcommand{\\Var}[1]{\\mathrm{Var}\\left[ #1 \\right]}\n\\newcommand{\\Cov}[2]{\\mathrm{Cov}\\left[#1,\\ #2\\right]}\n\\newcommand{\\given}{\\ \\vert\\ }\n\\newcommand{\\X}{\\mathbf{X}}\n\\newcommand{\\x}{\\mathbf{x}}\n\\newcommand{\\y}{\\mathbf{y}}\n\\newcommand{\\P}{\\mathcal{P}}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\lVert #1 \\right\\rVert}\n\\newcommand{\\snorm}[1]{\\lVert #1 \\rVert}\n\\newcommand{\\tr}[1]{\\mbox{tr}(#1)}\n\\newcommand{\\brt}{\\widehat{\\beta}^R_{s}}\n\\newcommand{\\brl}{\\widehat{\\beta}^R_{\\lambda}}\n\\newcommand{\\bls}{\\widehat{\\beta}_{ols}}\n\\newcommand{\\blt}{\\widehat{\\beta}^L_{s}}\n\\newcommand{\\bll}{\\widehat{\\beta}^L_{\\lambda}}\n\\newcommand{\\U}{\\mathbf{U}}\n\\newcommand{\\D}{\\mathbf{D}}\n\\newcommand{\\V}{\\mathbf{V}}\n\\]"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#why-version-control",
+    "href": "schedule/slides/00-version-control.html#why-version-control",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Why version control?",
+    "text": "Why version control?\n\nMuch of this lecture is based on material from Colin Rundel and Karl Broman"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#why-version-control-1",
+    "href": "schedule/slides/00-version-control.html#why-version-control-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Why version control?",
+    "text": "Why version control?\n\nSimple formal system for tracking all changes to a project\nTime machine for your projects\n\nTrack blame and/or praise\nRemove the fear of breaking things\n\nLearning curve is steep, but when you need it you REALLY need it\n\n\n\n\nWhen you get really good\n\n\nVersion control can act as a living lab notebook"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#overview",
+    "href": "schedule/slides/00-version-control.html#overview",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Overview",
+    "text": "Overview\n\ngit is a command line program that lives on your machine\nIf you want to track changes in a directory, you type git init\nThis creates a (hidden) directory called .git\nThe .git directory contains a history of all changes made to “versioned” files\nThis top directory is referred to as a “repository” or “repo”\nhttp://github.com is a service that hosts a repo remotely and has other features: issues, project boards, pull requests, renders .ipynb & .md\nSome IDEs (pycharm, RStudio, VScode) have built in git\ngit/GitHub is broad and complicated. Here, just what you need"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#aside-on-built-in-command-line",
+    "href": "schedule/slides/00-version-control.html#aside-on-built-in-command-line",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Aside on “Built-in” & “Command line”",
+    "text": "Aside on “Built-in” & “Command line”\n\n\n\n\n\n\nTip\n\n\nFirst things first, RStudio and the Terminal\n\n\n\n\nCommand line is the “old” type of computing. You type commands at a prompt and the computer “does stuff”.\nYou may not have seen where this is. RStudio has one built in called “Terminal”\nThe Mac System version is also called “Terminal”. If you have a Linux machine, this should all be familiar.\nWindows is not great at this.\nTo get the most out of Git, you have to use the command line."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#typical-workflow",
+    "href": "schedule/slides/00-version-control.html#typical-workflow",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Typical workflow",
+    "text": "Typical workflow\n\nDownload a repo from Github\n\n```{bash}\ngit clone https://github.com/stat550-2021/lecture-slides.git\n```\n\nCreate a branch\n\n```{bash}\ngit branch &lt;branchname&gt;\n```\n\nMake changes to your files.\nAdd your changes to be tracked (“stage” them)\n\n```{bash}\ngit add &lt;name/of/tracked/file&gt;\n```\n\nCommit your changes\n\n```{bash}\ngit commit -m \"Some explanatory message\"\n```\nRepeat 3–5 as needed. Once you’re satisfied\n\nPush to GitHub\n\n```{bash}\ngit push\ngit push -u origin &lt;branchname&gt;\n```"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#commit-messages-should-be-meaningful",
+    "href": "schedule/slides/00-version-control.html#commit-messages-should-be-meaningful",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Commit messages should be meaningful",
+    "text": "Commit messages should be meaningful\n\n\n\n\n\nInstead, try “Update linear model in Question 1.2”"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#what-should-be-tracked",
+    "href": "schedule/slides/00-version-control.html#what-should-be-tracked",
+    "title": "UBC Stat406 2025 W1",
+    "section": "What should be tracked?",
+    "text": "What should be tracked?\n\n\nDefinitely\n\ncode, markdown documentation, tex files, bash scripts/makefiles, …\n\n\n\n\nPossibly\n\njupyter notebooks, images (that won’t change), …\n\n\n\n\nQuestionable\n\nprocessed data, static pdfs, …\n\n\n\n\nDefinitely not\n\nfull data, continually updated pdfs, other things compiled from source code, logs…"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#what-should-be-tracked-1",
+    "href": "schedule/slides/00-version-control.html#what-should-be-tracked-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "What should be tracked?",
+    "text": "What should be tracked?\n\n\nTLDR\nAny file that YOU edit should be tracked\nAny file that’s computer generated should PROBABLY NOT be tracked\nHowever, in this course you will track rendered PDFs of your homeworks/labs. This makes it easier for the graders."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#what-should-be-tracked-2",
+    "href": "schedule/slides/00-version-control.html#what-should-be-tracked-2",
+    "title": "UBC Stat406 2025 W1",
+    "section": "What should be tracked?",
+    "text": "What should be tracked?\nA file called .gitignore tells git files or types to never track\n```{bash}\n# History files\n.Rhistory\n.Rapp.history\n\n# Session Data files\n.RData\n\n# User-specific files\n.Ruserdata\n\n# Compiled junk\n*.o\n*.so\n*.DS_Store\n```\nShortcut to track everything (use carefully):\n```{bash}\ngit add .\n```"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#rules",
+    "href": "schedule/slides/00-version-control.html#rules",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Rules",
+    "text": "Rules\nHomework and Labs\n\nYou each have your own repo\nYou make a branch\nDO NOT rename files\nMake enough commits (3 for labs, 5 for HW).\nPush your changes (at anytime) and make a PR against main when done.\nTAs review your work.\nOn HW, if you want to revise, make changes in response to feedback and push to the same branch. Then “re-request review”."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#whats-a-pr",
+    "href": "schedule/slides/00-version-control.html#whats-a-pr",
+    "title": "UBC Stat406 2025 W1",
+    "section": "What’s a PR?",
+    "text": "What’s a PR?\n\nThis exists on GitHub (not git)\nDemonstration"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#whats-a-pr-1",
+    "href": "schedule/slides/00-version-control.html#whats-a-pr-1",
+    "title": "UBC Stat406 2025 W1",
+    "section": "What’s a PR?",
+    "text": "What’s a PR?\n\nThis exists on GitHub (not git)\nDemonstration"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#some-things-to-be-aware-of",
+    "href": "schedule/slides/00-version-control.html#some-things-to-be-aware-of",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Some things to be aware of",
+    "text": "Some things to be aware of\n\nmaster vs main\nIf you think you did something wrong, stop and ask for help\nThere are guardrails in place. But those won’t stop a bulldozer.\nThe hardest part is the initial setup. Then, this should all be rinse-and-repeat.\nThis book is great: Happy Git with R\n\nSee Chapter 6 if you have install problems.\nSee Chapter 9 for credential caching (avoid typing a password all the time)\nSee Chapter 13 if RStudio can’t find git"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#protection",
+    "href": "schedule/slides/00-version-control.html#protection",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Protection",
+    "text": "Protection\n\nTypical for your PR to trigger tests to make sure you don’t break things\nTypical for team members or supervisors to review your PR for compliance"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#guardrails",
+    "href": "schedule/slides/00-version-control.html#guardrails",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Guardrails",
+    "text": "Guardrails\n\nIn this course, we protect main so that you can’t push there\n\n\n\n\n\n\nWarning\n\n\nIf you try to push to main, it will give an error like\n```{bash}\nremote: error: GH006: Protected branch update failed for refs/heads/main.\n```\nThe fix is: make a new branch, then push that."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#operations-in-rstudio",
+    "href": "schedule/slides/00-version-control.html#operations-in-rstudio",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Operations in Rstudio",
+    "text": "Operations in Rstudio\n\n\n\nStage\nCommit\nPush\nPull\nCreate a branch\n\nCovers:\n\nEverything to do your HW / Project if you’re careful\nPlus most other things you “want to do”\n\n\n\nCommand line versions (of the same)\n```{bash}\ngit add &lt;name/of/file&gt;\n\ngit commit -m \"some useful message\"\n\ngit push\n\ngit pull\n\ngit checkout -b &lt;name/of/branch&gt;\n```"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#other-useful-stuff-but-command-line-only",
+    "href": "schedule/slides/00-version-control.html#other-useful-stuff-but-command-line-only",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Other useful stuff (but command line only)",
+    "text": "Other useful stuff (but command line only)\n\n\nInitializing\n```{bash}\ngit config user.name --global \"Geoff Pleiss\"\ngit config user.email --global \"geoff.pleiss@stat.ubc.ca\"\ngit config core.editor --global nano\n# or emacs or ... (Geoff loves vim and you should too!)\n```\nStaging\n```{bash}\ngit add name/of/file # stage 1 file\ngit add . # stage all\n```\nCommitting\n```{bash}\n# stage/commit simultaneously\ngit commit -am \"message\"\n\n# open editor to write long commit message\ngit commit\n```\nPushing\n```{bash}\n# If branchname doesn't exist\n# on remote, create it and push\ngit push -u origin branchname\n```\n\n\nBranching\n```{bash}\n# switch to branchname, error if uncommitted changes\ngit checkout branchname\n# switch to a previous commit\ngit checkout aec356\n\n# create a new branch\ngit branch newbranchname\n# create a new branch and check it out\ngit checkout -b newbranchname\n\n# merge changes in branch2 onto branch1\ngit checkout branch1\ngit merge branch2\n\n# grab a file from branch2 and put it on current\ngit checkout branch2 -- name/of/file\n\ngit branch -v # list all branches\n```\nCheck the status\n```{bash}\ngit status\ngit remote -v # list remotes\ngit log # show recent commits, msgs\n```"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#conflicts",
+    "href": "schedule/slides/00-version-control.html#conflicts",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Conflicts",
+    "text": "Conflicts\n\nSometimes you merge things and “conflicts” happen.\nMeaning that changes on one branch would overwrite changes on a different branch.\n\n\n\n\nThey look like this:\n\nHere are lines that are either unchanged from\nthe common ancestor, or cleanly resolved\nbecause only one side changed.\n\nBut below we have some troubles\n&lt;&lt;&lt;&lt;&lt;&lt;&lt; yours:sample.txt\nConflict resolution is hard;\nlet's go shopping.\n=======\nGit makes conflict resolution easy.\n&gt;&gt;&gt;&gt;&gt;&gt;&gt; theirs:sample.txt\n\nAnd here is another line that is cleanly\nresolved or unmodified.\n\n\nYou get to decide, do you want to keep\n\nYour changes (above ======)\nTheir changes (below ======)\nBoth.\nNeither.\n\nBut always delete the &lt;&lt;&lt;&lt;&lt;, ======, and &gt;&gt;&gt;&gt;&gt; lines.\nOnce you’re satisfied, committing resolves the conflict."
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#some-other-pointers",
+    "href": "schedule/slides/00-version-control.html#some-other-pointers",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Some other pointers",
+    "text": "Some other pointers\n\nCommits have long names: 32b252c854c45d2f8dfda1076078eae8d5d7c81f\n\nIf you want to use it, you need “enough to be unique”: 32b25\n\nOnline help uses directed graphs in ways different from statistics:\n\nIn stats, arrows point from cause to effect, forward in time\nIn git docs, it’s reversed, they point to the thing on which they depend\n\n\nCheat sheet\nhttps://training.github.com/downloads/github-git-cheat-sheet.pdf"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#how-to-undo-in-3-scenarios",
+    "href": "schedule/slides/00-version-control.html#how-to-undo-in-3-scenarios",
+    "title": "UBC Stat406 2025 W1",
+    "section": "How to undo in 3 scenarios",
+    "text": "How to undo in 3 scenarios\n\nSuppose we’re concerned about a file named README.md\nOften, git status will give some of these as suggestions\n\n\n\n1. Saved but not staged\n\nIn RStudio, select the file and click   then select  Revert…\n\n```{bash}\n# grab the previously committed version\ngit checkout -- README.md\n```\n2. Staged but not committed\n\nIn RStudio, uncheck the box by the file, then use the method above.\n\n```{bash}\n# unstage\ngit reset HEAD README.md\ngit checkout -- README.md\n```\n\n\n3. Committed\n\nNot easy to do in RStudio…\n\n```{bash}\n# check the log to see where you made the chg,\ngit log\n# go one step before that (eg to 32b252)\n# and grab that earlier version\ngit checkout 32b252 -- README.md\n```\n\n```{bash}\n# alternatively\n# if it happens to also be on another branch\ngit checkout otherbranch -- README.md\n```"
+  },
+  {
+    "objectID": "schedule/slides/00-version-control.html#recovering-from-things",
+    "href": "schedule/slides/00-version-control.html#recovering-from-things",
+    "title": "UBC Stat406 2025 W1",
+    "section": "Recovering from things",
+    "text": "Recovering from things\n\nAccidentally did work on main, Tried to Push but got refused\n\n```{bash}\n# make a new branch with everything, but stay on main\ngit branch newbranch\n# undo everything that hasn't been pushed to main\ngit fetch && git reset --hard origin/main\ngit checkout newbranch\n```\n\nMade a branch, did lots of work, realized it’s trash, and you want to burn it\n\n```{bash}\ngit checkout main\ngit branch -d badbranch\n```\n\nAnything more complicated, either post to Slack or LMGTFY"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "By the end of this lecture, you will be able to: 1. Define the log-odds statistical model for binary classification, and justify its advantages 2. Derive logistic regression through MLE and ERM 3. Construct predictions for classifiers based on different notions of risk\n\n\n\nIn the previous lecture, we developed a statistical perspective of the supervised learning procedure, and we worked through the steps of the learning procedure in a regression context.\n\n\n\n\n\n\n\n\n\nStep\nCS Perspective\nStatistical Perspective\nExample: Linear Regression\n\n\n\n\n2\nHypothesis Class\nStatistical Model\n\\(\\mathbb E[Y \\mid X = x] = x^\\top \\beta\\)\n\n\n3\nTraining\nEstimation\n$ =  = _ = (XX){-1} X^Y $\n\n\n6\nTesting (Inference)\nPrediction\n\\(\\hat Y_\\mathrm{new} = X_\\mathrm{new}^\\top \\hat \\beta\\)\n\n\n\nIn this lecture, we will work through the same steps, but this time for classification problems.\nClassification versus regression: - In regression, the response variable \\(Y\\) is continuous (i.e. \\(\\mathcal Y = \\mathbb{R}\\)). - In binary classification, the response variable \\(Y\\) is boolean (i.e. \\(\\mathcal Y = \\{0, 1\\}\\)), where - \\(Y = 1\\) represents the “positive” class - \\(Y = 0\\) represents the “negative” class - (You might see \\(Y = -1\\) used to denote the negative class. It doesn’t make a huge difference, but we’ll stick with \\(Y=0\\) for mathematical simplicity.) - The goal remains the same: learn a function \\(\\hat{f}: \\mathbb{R}^d \\to \\{0, 1\\}\\) that accurately predicts the class label for new observations.\nLet’s now derive a statistical model estimation procedure, and prediction rule for binary classification!\nSneak peak: logistic regression\n\nWe will ultimately derive logistic regression,\n\n\n\n\n\nRecall that a statistical model is a set of probability distributions.\nIn classification, we are interested in families of \\(P(Y=1 \\mid X = x)\\) distributions\n\nThese distributions implicitly define the distribution of \\(P(Y=0 \\mid X = x)\\) by the law of total probability, i.e. \\(P(Y=0 \\mid X = x) = 1 - P(Y=1 \\mid X = x)\\).\n\nNotation: For simplicity, let’s define:\n\n\\(\\pi_1(x) := P(Y = 1 \\mid X = x)\\) (probability of positive class)\n\\(\\pi_0(x) := P(Y = 0 \\mid X = x)\\) (probability of negative class)\nNote that \\(\\pi_0(x) = 1 - \\pi_1(x)\\).\n\n\nSneak peak: the logistic regression model\n\nYou may remember from STAT 406 or CPSC 340 a set of distributions that look like: \\[P(Y = 1 \\mid X = x) = \\pi_1(x) = \\frac{\\exp(x^\\top \\beta)}{1 + \\exp(x^\\top \\beta)}\\]\n\n\\(\\beta \\in \\mathbb{R}^p\\) is a vector of parameters.\n\nThis statistical model is known as logistic regression, and it is a good starting point for binary classification.\nWe will now derive this model from first principles.\n\nWhat type of distribution should we model?\n\nIt’s hard to directly model \\(\\pi_1(x)\\) or \\(\\pi_0(x)\\) distributions.\nConsider \\(\\pi_1(x) = x^\\top \\beta\\). What’s the problem with this?\n\nIf \\(x^\\top \\beta &gt; 1\\), then \\(\\pi_1(x) = P(Y=1|X=x) &gt; 1\\), which is not a valid probability.\nIf \\(x^\\top \\beta &lt; 0\\), then \\(\\pi_1(x) = P(Y=1|X=x) &lt; 0\\), which is also not a valid probability.\n\n\nModelling the log-odds - Instead of defining distributions through \\(P(Y = 1 \\mid X = x)\\) directly, we will instead define distributions through the log-odds ratio\n\nThe log-odds ratio is then: \\[r(x) := \\log\\left(\\frac{\\pi_1(x)}{\\pi_0(x)}\\right) = \\log\\left(\\frac{\\pi_1(x)}{1 - \\pi_1(x)}\\right)\\]\nI claim that this ratio can take any real value, i.e. \\(r(x) \\in \\mathbb{R}\\).\n\n\n\n\\(\\pi_1(x)\\)\nOdds Ratio\n\\(r(x)\\) (Log Odds Ratio)\n\n\n\n\n\\(\\approx 1\\)\n\\(\\pi_1(x) / \\pi_0(x) \\to \\infty\\)\n\\(r(x) \\to \\infty\\)\n\n\n\\(\\approx 0\\)\n\\(\\pi_1(x) / \\pi_0(x) \\to 0\\)\n\\(r(x) \\to -\\infty\\)\n\n\n\n\nThe linear log-odds model\nWe’re now ready to define a statistical model for binary classification.\n\nWe will consider\n\\[\\log\\left(\\frac{\\pi_1(x)}{\\pi_0(x)}\\right) = x^\\top\\beta\\]\nBy substituting \\(\\pi_0(x) = 1 - \\pi_1(x)\\) and then solving for \\(\\pi_1(x)\\), we get:\n\\[\\pi_1(x) = \\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)}\\]\nThus our statistical model is the following set of distributions: \\[\\left\\{ P(Y=1 \\mid X) \\: : \\: P(Y=1 \\mid X=x) = \\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)}, \\quad \\beta \\in \\mathbb{R}^d \\right\\}\\]\n\nThe logistic function:\n\nThe function in the above equation is known as the logistic function or sigmoid function:\n\\[\\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)} = \\frac{1}{1 + \\exp(-x^\\top\\beta)} := \\sigma(x^\\top \\beta)\\]\nIt has many useful properties\n\nRange: \\(\\sigma(z) \\in (0, 1)\\) for all \\(z \\in \\mathbb{R}\\)\nSymmetric: \\(\\sigma(-z) = 1 - \\sigma(z)\\)\nConvenient derivative: \\(\\sigma'(z) = \\sigma(z)(1 - \\sigma(z))\\)\n\nIt can be seen as a “smooth approximation” to the 0-1 step function:\n\n\n\n\nLogistic Function\n\n\n\n\n\nGoing a bit out of order, let’s discuss how we can make predictions using the logistic regression model.\nMaking predictions:\nGiven - a \\(\\hat \\beta\\) estimate - a new observation \\(X_{\\text{new}}\\) - a loss function \\(L(Y, \\hat{Y})\\) that quantifies how “bad” a prediction is\nrecall that we make predictions by minimizing the expected loss:\n\\[\\hat{Y}_{\\text{new}} = \\argmin_{\\hat{y}} \\mathbb{E}[L(Y, \\hat{y}) \\mid X_{\\text{new}}, \\hat \\beta]\\]\n0/1 Loss:\n\nThe most natural loss function for classification is the 0/1 loss:\n\n\\[L_{0/1}(Y, \\hat{Y}) = \\mathbb{I}(Y \\neq \\hat{Y}) = \\begin{cases} 0 & \\text{if } Y = \\hat{Y} \\\\ 1 & \\text{if } Y \\neq \\hat{Y} \\end{cases}\\]\n\nUnder our logistic model, we have:\n\n\\[\n\\begin{align*}\n\\hat{Y}_{\\text{new}} &= \\argmin_{\\hat{y}} \\mathbb{E}[ \\mathbb{I}(Y \\neq \\hat{y}) \\mid X_{\\text{new}}, \\hat \\beta] \\\\\n&= \\argmin_{\\hat{y}} P(Y \\neq \\hat{y} \\mid X_{\\text{new}}, \\hat \\beta) \\\\\n&= \\argmin_{\\hat{y}} \\left[\n   \\underbrace{P(Y = 1 \\mid X_{\\text{new}}, \\hat \\beta)}_{\\sigma(X_\\mathrm{new}^\\top \\hat \\beta)} \\mathbb{I}(\\hat{y} = 0) +\n   \\underbrace{P(Y = 0 \\mid X_{\\text{new}}, \\hat \\beta)}_{1 - \\sigma(X_\\mathrm{new}^\\top \\hat \\beta)} \\mathbb{I}(\\hat{y} = 1) \\right] \\\\\n&= \\begin{cases}\n1 & \\text{if } \\sigma(X_\\mathrm{new}^\\top \\hat \\beta) &gt; 0.5 \\\\\n0 & \\text{if } \\sigma(X_\\mathrm{new}^\\top \\hat \\beta) \\leq 0.5\n\\end{cases}\n\\end{align*}.\n\\]\nDecision boundary:\n\nNote that\n\n\\(\\sigma(X_\\mathrm{new}^\\top \\hat \\beta) &gt; 0.5\\) when \\(X_\\mathrm{new}^\\top \\hat \\beta &gt; 0\\)\n\\(\\sigma(X_\\mathrm{new}^\\top \\hat \\beta) \\leq 0.5\\) when \\(X_\\mathrm{new}^\\top \\hat \\beta \\leq 0\\).\n\nThe decision boundary, defined by:\n\\[x^\\top\\beta = 0\\]\nis the hyperplane that separates the positively-classified \\(x\\) from the negatively classified \\(x\\).\nThis decision boundary for logistic regression is linear in \\(x\\).\n\n\n\n\nDecision Boundary\n\n\nOther losses:\nThere are other losses that we could use to generated different prediction rules:\n\nProbabilistic loss: \\(L_\\mathrm{prob}(Y, \\hat{Y}) = -\\log P(Y = \\hat Y)\\)\n\nThis loss produces “soft” predictions (e.g. \\(\\hat{Y}_{\\text{new}} = 0.273\\)) that give a probability estimate of the positive class.\n\nAsymmetric losses: \\(L_\\alpha(Y, \\hat{Y}) = \\alpha \\mathbb{I}(Y = 1, \\hat{Y} = 0) + (1-\\alpha) \\mathbb{I}(Y = 0, \\hat{Y} = 1)\\) for some \\(\\alpha \\in (0, 1)\\)\n\nThis loss allows us to penalize false positives and false negatives differently, which can be useful in imbalanced datasets.\n\n\nWe will explore these losses, as well as metrics derived from these losses, in a homework assignment.\n\n\n\nAs with regression, we will derive estimators for the logistic regression parameters \\(\\beta\\) through the principles of maximum likelihood estimation (MLE) and empirical risk minimization (ERM).\n\n\nRecall the MLE estimator is given by\n\\[\\hat{\\beta}_\\mathrm{MLE} = \\argmax_{\\beta} \\mathcal L(\\beta) = \\argmax_{\\beta} \\ell(\\beta)\\]\nwhere \\(\\mathcal{L}(\\beta)\\) is the likelihood function and \\(\\ell(\\beta)\\) is the log-likelihood function.\nLog likelihood of the linear log-odds model:\n\nGiven training data \\(\\mathcal{D} = \\{(X_1, Y_1), \\ldots, (X_n, Y_n)\\}\\), recall that the likelihood/log-likelihood function is:\n\\[\n\\begin{gather}\n\\mathcal{L}(\\beta) = \\prod_{i=1}^n P(Y_i \\mid X_i; \\beta) \\\\\n\\ell(\\beta) = \\sum_{i=1}^n \\log P(Y_i \\mid X_i; \\beta)\n\\end{gather}\n\\]\nPlugging in our model, we have that:\n\\[\nP(Y_i \\mid X_i; \\beta) = \\begin{cases}\n   \\sigma(X_i^\\top \\beta) & \\text{if } Y_i = 1 \\\\\n   1 - \\sigma(X_i^\\top \\beta) & \\text{if } Y_i = 0\n\\end{cases}\n\\]\nWe can write this equation more compactly as:\n\\[P(Y_i \\mid X_i, \\beta) = \\sigma(X_i^\\top \\beta)^{Y_i} (1 - \\sigma(X_i^\\top \\beta))^{1-Y_i}.\\]\nThus the log likelihood function is:\n\\[\n\\ell(\\beta) = \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1 - Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n\\]\nwhere \\(\\pi_1(X_i) = \\sigma(\\beta_0 + X_i^\\top\\beta)\\) and \\(\\pi_0(X_i) = 1 - \\pi_1(X_i)\\).\n\nComputing the MLE estimator:\n\\[\n\\hat \\beta_\\mathrm{MLE} = \\argmin_{\\beta} \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1 - Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n\\]\n\nUnlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.\nWe can numerically solve for the optimization using a technique called gradient descent, which we will cover in a future lecture.\n\n\n\n\nRecall the ERM estimator is given by\n\\[\\hat{\\beta}_\\mathrm{MLE} = \\argmin_{\\beta} \\sum_{i=1}^n L(Y_i, \\hat Y_i)\\]\nwhere \\(L\\) is a loss function of our choosing.\nLoss function for classification: - Using the 0/1 loss , as well as its corresponding prediction rule that we derived above, we have \\[L(Y, \\hat Y) = \\mathbb{I}(Y \\neq \\hat Y), \\qquad \\hat Y = \\mathbb{I}(X^\\top \\beta &gt; 0)\\]\n\nHowever, this loss leads to a hard minimization problem:\n\n\\[\\argmin_{\\beta} \\sum_{i=1}^n \\mathbb{I}(Y_i \\neq \\mathbb{I}(X_i^\\top \\beta &gt; 0))\\]\n\nThis optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.\nComputationally, it is NP-hard, meaning it will take \\(O(2^n)\\) time to solve in the worse case!\n\nLogistic Loss as a Surrogate\n\nInstead, we can substitute \\(L(Y, \\hat Y)\\) with the following approximation:\n\n\\[L_{\\text{logistic}}(Y, \\mathbb{I}(X_i^\\top \\beta &gt; 0)) \\approx \\left[ (1-Y) \\sigma(X^\\top \\beta) + Y (1 - \\sigma(X^\\top \\beta)) \\right]\\]\n\nThis approximation will be close to the 0/1 loss when \\(X_i^\\top \\beta\\) is very positive or very negative:\n\n\n\n\n\n\n\n\n\n\\(X_i^\\top \\beta\\)\n\\(\\sigma(X_i^\\top \\beta)\\)\n\\((1 - \\sigma(X_i^\\top \\beta)\\)\n\n\n\n\n\\(\\gg 0\\)\n\\(\\approx 1\\)\n\\(\\approx 0\\)\n\n\n\\(\\ll 0\\)\n\\(\\approx 0\\)\n\\(\\approx 1\\)\n\n\n\n\nSubstituting this loss into the ERM estimator yields a convex optimization problem, which are (relatively) easy to solve numerically:\n\n\\[\\hat{\\beta}_\\mathrm{ERM} = \\argmin_{\\beta} \\sum_{i=1}^n \\left[ (1-Y_i) \\sigma(X_i^\\top \\beta) + Y_i (1 - \\sigma(X_i^\\top \\beta)) \\right]\\]\n\nA little manipulation will show that this is equalivalent to the MLE optimization problem!\n\n\\[\n\\begin{align*}\n\\hat{\\beta}_\\mathrm{ERM} &= \\argmin_{\\beta} \\sum_{i=1}^n \\left[ (1-Y_i) \\sigma(X_i^\\top \\beta) + Y_i (1 - \\sigma(X_i^\\top \\beta)) \\right] \\\\\n&= \\argmax_{\\beta} \\sum_{i=1}^n \\left[ (Y_i - 1) \\log(\\sigma(X_i^\\top \\beta)) + (-Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right] \\\\\n&= \\argmax_{\\beta} \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1-Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n= \\hat{\\beta}_\\mathrm{MLE}.\n\\end{align*}\\]\nKey insight: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.\n\n\n\n\nThis lecture extended the statistical framework from regression to classification:\n\nStatistical Model: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in \\([0, 1]\\).\nPrediction: The optimal prediction rule depends on the loss function.\nLinear Decision Boundary: Under the \\(0/1 loss\\), the \\(Y=0\\) and \\(Y=1\\) predictions are separated by a hyperplane defined by the decision boundary \\(X^\\top \\beta = 0\\).\nEstimation: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.\n\nIn the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#learning-objectives",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#learning-objectives",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "By the end of this lecture, you will be able to: 1. Define the log-odds statistical model for binary classification, and justify its advantages 2. Derive logistic regression through MLE and ERM 3. Construct predictions for classifiers based on different notions of risk"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#supervised-learning-for-classification-statistical-perspective",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#supervised-learning-for-classification-statistical-perspective",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "In the previous lecture, we developed a statistical perspective of the supervised learning procedure, and we worked through the steps of the learning procedure in a regression context.\n\n\n\n\n\n\n\n\n\nStep\nCS Perspective\nStatistical Perspective\nExample: Linear Regression\n\n\n\n\n2\nHypothesis Class\nStatistical Model\n\\(\\mathbb E[Y \\mid X = x] = x^\\top \\beta\\)\n\n\n3\nTraining\nEstimation\n$ =  = _ = (XX){-1} X^Y $\n\n\n6\nTesting (Inference)\nPrediction\n\\(\\hat Y_\\mathrm{new} = X_\\mathrm{new}^\\top \\hat \\beta\\)\n\n\n\nIn this lecture, we will work through the same steps, but this time for classification problems.\nClassification versus regression: - In regression, the response variable \\(Y\\) is continuous (i.e. \\(\\mathcal Y = \\mathbb{R}\\)). - In binary classification, the response variable \\(Y\\) is boolean (i.e. \\(\\mathcal Y = \\{0, 1\\}\\)), where - \\(Y = 1\\) represents the “positive” class - \\(Y = 0\\) represents the “negative” class - (You might see \\(Y = -1\\) used to denote the negative class. It doesn’t make a huge difference, but we’ll stick with \\(Y=0\\) for mathematical simplicity.) - The goal remains the same: learn a function \\(\\hat{f}: \\mathbb{R}^d \\to \\{0, 1\\}\\) that accurately predicts the class label for new observations.\nLet’s now derive a statistical model estimation procedure, and prediction rule for binary classification!\nSneak peak: logistic regression\n\nWe will ultimately derive logistic regression,"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#statistical-model-linear-log-odds",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#statistical-model-linear-log-odds",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "Recall that a statistical model is a set of probability distributions.\nIn classification, we are interested in families of \\(P(Y=1 \\mid X = x)\\) distributions\n\nThese distributions implicitly define the distribution of \\(P(Y=0 \\mid X = x)\\) by the law of total probability, i.e. \\(P(Y=0 \\mid X = x) = 1 - P(Y=1 \\mid X = x)\\).\n\nNotation: For simplicity, let’s define:\n\n\\(\\pi_1(x) := P(Y = 1 \\mid X = x)\\) (probability of positive class)\n\\(\\pi_0(x) := P(Y = 0 \\mid X = x)\\) (probability of negative class)\nNote that \\(\\pi_0(x) = 1 - \\pi_1(x)\\).\n\n\nSneak peak: the logistic regression model\n\nYou may remember from STAT 406 or CPSC 340 a set of distributions that look like: \\[P(Y = 1 \\mid X = x) = \\pi_1(x) = \\frac{\\exp(x^\\top \\beta)}{1 + \\exp(x^\\top \\beta)}\\]\n\n\\(\\beta \\in \\mathbb{R}^p\\) is a vector of parameters.\n\nThis statistical model is known as logistic regression, and it is a good starting point for binary classification.\nWe will now derive this model from first principles.\n\nWhat type of distribution should we model?\n\nIt’s hard to directly model \\(\\pi_1(x)\\) or \\(\\pi_0(x)\\) distributions.\nConsider \\(\\pi_1(x) = x^\\top \\beta\\). What’s the problem with this?\n\nIf \\(x^\\top \\beta &gt; 1\\), then \\(\\pi_1(x) = P(Y=1|X=x) &gt; 1\\), which is not a valid probability.\nIf \\(x^\\top \\beta &lt; 0\\), then \\(\\pi_1(x) = P(Y=1|X=x) &lt; 0\\), which is also not a valid probability.\n\n\nModelling the log-odds - Instead of defining distributions through \\(P(Y = 1 \\mid X = x)\\) directly, we will instead define distributions through the log-odds ratio\n\nThe log-odds ratio is then: \\[r(x) := \\log\\left(\\frac{\\pi_1(x)}{\\pi_0(x)}\\right) = \\log\\left(\\frac{\\pi_1(x)}{1 - \\pi_1(x)}\\right)\\]\nI claim that this ratio can take any real value, i.e. \\(r(x) \\in \\mathbb{R}\\).\n\n\n\n\\(\\pi_1(x)\\)\nOdds Ratio\n\\(r(x)\\) (Log Odds Ratio)\n\n\n\n\n\\(\\approx 1\\)\n\\(\\pi_1(x) / \\pi_0(x) \\to \\infty\\)\n\\(r(x) \\to \\infty\\)\n\n\n\\(\\approx 0\\)\n\\(\\pi_1(x) / \\pi_0(x) \\to 0\\)\n\\(r(x) \\to -\\infty\\)\n\n\n\n\nThe linear log-odds model\nWe’re now ready to define a statistical model for binary classification.\n\nWe will consider\n\\[\\log\\left(\\frac{\\pi_1(x)}{\\pi_0(x)}\\right) = x^\\top\\beta\\]\nBy substituting \\(\\pi_0(x) = 1 - \\pi_1(x)\\) and then solving for \\(\\pi_1(x)\\), we get:\n\\[\\pi_1(x) = \\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)}\\]\nThus our statistical model is the following set of distributions: \\[\\left\\{ P(Y=1 \\mid X) \\: : \\: P(Y=1 \\mid X=x) = \\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)}, \\quad \\beta \\in \\mathbb{R}^d \\right\\}\\]\n\nThe logistic function:\n\nThe function in the above equation is known as the logistic function or sigmoid function:\n\\[\\frac{\\exp(x^\\top\\beta)}{1 + \\exp(x^\\top\\beta)} = \\frac{1}{1 + \\exp(-x^\\top\\beta)} := \\sigma(x^\\top \\beta)\\]\nIt has many useful properties\n\nRange: \\(\\sigma(z) \\in (0, 1)\\) for all \\(z \\in \\mathbb{R}\\)\nSymmetric: \\(\\sigma(-z) = 1 - \\sigma(z)\\)\nConvenient derivative: \\(\\sigma'(z) = \\sigma(z)(1 - \\sigma(z))\\)\n\nIt can be seen as a “smooth approximation” to the 0-1 step function:\n\n\n\n\nLogistic Function"
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#prediction-and-different-notions-of-risk",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#prediction-and-different-notions-of-risk",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "Going a bit out of order, let’s discuss how we can make predictions using the logistic regression model.\nMaking predictions:\nGiven - a \\(\\hat \\beta\\) estimate - a new observation \\(X_{\\text{new}}\\) - a loss function \\(L(Y, \\hat{Y})\\) that quantifies how “bad” a prediction is\nrecall that we make predictions by minimizing the expected loss:\n\\[\\hat{Y}_{\\text{new}} = \\argmin_{\\hat{y}} \\mathbb{E}[L(Y, \\hat{y}) \\mid X_{\\text{new}}, \\hat \\beta]\\]\n0/1 Loss:\n\nThe most natural loss function for classification is the 0/1 loss:\n\n\\[L_{0/1}(Y, \\hat{Y}) = \\mathbb{I}(Y \\neq \\hat{Y}) = \\begin{cases} 0 & \\text{if } Y = \\hat{Y} \\\\ 1 & \\text{if } Y \\neq \\hat{Y} \\end{cases}\\]\n\nUnder our logistic model, we have:\n\n\\[\n\\begin{align*}\n\\hat{Y}_{\\text{new}} &= \\argmin_{\\hat{y}} \\mathbb{E}[ \\mathbb{I}(Y \\neq \\hat{y}) \\mid X_{\\text{new}}, \\hat \\beta] \\\\\n&= \\argmin_{\\hat{y}} P(Y \\neq \\hat{y} \\mid X_{\\text{new}}, \\hat \\beta) \\\\\n&= \\argmin_{\\hat{y}} \\left[\n   \\underbrace{P(Y = 1 \\mid X_{\\text{new}}, \\hat \\beta)}_{\\sigma(X_\\mathrm{new}^\\top \\hat \\beta)} \\mathbb{I}(\\hat{y} = 0) +\n   \\underbrace{P(Y = 0 \\mid X_{\\text{new}}, \\hat \\beta)}_{1 - \\sigma(X_\\mathrm{new}^\\top \\hat \\beta)} \\mathbb{I}(\\hat{y} = 1) \\right] \\\\\n&= \\begin{cases}\n1 & \\text{if } \\sigma(X_\\mathrm{new}^\\top \\hat \\beta) &gt; 0.5 \\\\\n0 & \\text{if } \\sigma(X_\\mathrm{new}^\\top \\hat \\beta) \\leq 0.5\n\\end{cases}\n\\end{align*}.\n\\]\nDecision boundary:\n\nNote that\n\n\\(\\sigma(X_\\mathrm{new}^\\top \\hat \\beta) &gt; 0.5\\) when \\(X_\\mathrm{new}^\\top \\hat \\beta &gt; 0\\)\n\\(\\sigma(X_\\mathrm{new}^\\top \\hat \\beta) \\leq 0.5\\) when \\(X_\\mathrm{new}^\\top \\hat \\beta \\leq 0\\).\n\nThe decision boundary, defined by:\n\\[x^\\top\\beta = 0\\]\nis the hyperplane that separates the positively-classified \\(x\\) from the negatively classified \\(x\\).\nThis decision boundary for logistic regression is linear in \\(x\\).\n\n\n\n\nDecision Boundary\n\n\nOther losses:\nThere are other losses that we could use to generated different prediction rules:\n\nProbabilistic loss: \\(L_\\mathrm{prob}(Y, \\hat{Y}) = -\\log P(Y = \\hat Y)\\)\n\nThis loss produces “soft” predictions (e.g. \\(\\hat{Y}_{\\text{new}} = 0.273\\)) that give a probability estimate of the positive class.\n\nAsymmetric losses: \\(L_\\alpha(Y, \\hat{Y}) = \\alpha \\mathbb{I}(Y = 1, \\hat{Y} = 0) + (1-\\alpha) \\mathbb{I}(Y = 0, \\hat{Y} = 1)\\) for some \\(\\alpha \\in (0, 1)\\)\n\nThis loss allows us to penalize false positives and false negatives differently, which can be useful in imbalanced datasets.\n\n\nWe will explore these losses, as well as metrics derived from these losses, in a homework assignment."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#estimation",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#estimation",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "As with regression, we will derive estimators for the logistic regression parameters \\(\\beta\\) through the principles of maximum likelihood estimation (MLE) and empirical risk minimization (ERM).\n\n\nRecall the MLE estimator is given by\n\\[\\hat{\\beta}_\\mathrm{MLE} = \\argmax_{\\beta} \\mathcal L(\\beta) = \\argmax_{\\beta} \\ell(\\beta)\\]\nwhere \\(\\mathcal{L}(\\beta)\\) is the likelihood function and \\(\\ell(\\beta)\\) is the log-likelihood function.\nLog likelihood of the linear log-odds model:\n\nGiven training data \\(\\mathcal{D} = \\{(X_1, Y_1), \\ldots, (X_n, Y_n)\\}\\), recall that the likelihood/log-likelihood function is:\n\\[\n\\begin{gather}\n\\mathcal{L}(\\beta) = \\prod_{i=1}^n P(Y_i \\mid X_i; \\beta) \\\\\n\\ell(\\beta) = \\sum_{i=1}^n \\log P(Y_i \\mid X_i; \\beta)\n\\end{gather}\n\\]\nPlugging in our model, we have that:\n\\[\nP(Y_i \\mid X_i; \\beta) = \\begin{cases}\n   \\sigma(X_i^\\top \\beta) & \\text{if } Y_i = 1 \\\\\n   1 - \\sigma(X_i^\\top \\beta) & \\text{if } Y_i = 0\n\\end{cases}\n\\]\nWe can write this equation more compactly as:\n\\[P(Y_i \\mid X_i, \\beta) = \\sigma(X_i^\\top \\beta)^{Y_i} (1 - \\sigma(X_i^\\top \\beta))^{1-Y_i}.\\]\nThus the log likelihood function is:\n\\[\n\\ell(\\beta) = \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1 - Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n\\]\nwhere \\(\\pi_1(X_i) = \\sigma(\\beta_0 + X_i^\\top\\beta)\\) and \\(\\pi_0(X_i) = 1 - \\pi_1(X_i)\\).\n\nComputing the MLE estimator:\n\\[\n\\hat \\beta_\\mathrm{MLE} = \\argmin_{\\beta} \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1 - Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n\\]\n\nUnlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.\nWe can numerically solve for the optimization using a technique called gradient descent, which we will cover in a future lecture.\n\n\n\n\nRecall the ERM estimator is given by\n\\[\\hat{\\beta}_\\mathrm{MLE} = \\argmin_{\\beta} \\sum_{i=1}^n L(Y_i, \\hat Y_i)\\]\nwhere \\(L\\) is a loss function of our choosing.\nLoss function for classification: - Using the 0/1 loss , as well as its corresponding prediction rule that we derived above, we have \\[L(Y, \\hat Y) = \\mathbb{I}(Y \\neq \\hat Y), \\qquad \\hat Y = \\mathbb{I}(X^\\top \\beta &gt; 0)\\]\n\nHowever, this loss leads to a hard minimization problem:\n\n\\[\\argmin_{\\beta} \\sum_{i=1}^n \\mathbb{I}(Y_i \\neq \\mathbb{I}(X_i^\\top \\beta &gt; 0))\\]\n\nThis optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.\nComputationally, it is NP-hard, meaning it will take \\(O(2^n)\\) time to solve in the worse case!\n\nLogistic Loss as a Surrogate\n\nInstead, we can substitute \\(L(Y, \\hat Y)\\) with the following approximation:\n\n\\[L_{\\text{logistic}}(Y, \\mathbb{I}(X_i^\\top \\beta &gt; 0)) \\approx \\left[ (1-Y) \\sigma(X^\\top \\beta) + Y (1 - \\sigma(X^\\top \\beta)) \\right]\\]\n\nThis approximation will be close to the 0/1 loss when \\(X_i^\\top \\beta\\) is very positive or very negative:\n\n\n\n\n\n\n\n\n\n\\(X_i^\\top \\beta\\)\n\\(\\sigma(X_i^\\top \\beta)\\)\n\\((1 - \\sigma(X_i^\\top \\beta)\\)\n\n\n\n\n\\(\\gg 0\\)\n\\(\\approx 1\\)\n\\(\\approx 0\\)\n\n\n\\(\\ll 0\\)\n\\(\\approx 0\\)\n\\(\\approx 1\\)\n\n\n\n\nSubstituting this loss into the ERM estimator yields a convex optimization problem, which are (relatively) easy to solve numerically:\n\n\\[\\hat{\\beta}_\\mathrm{ERM} = \\argmin_{\\beta} \\sum_{i=1}^n \\left[ (1-Y_i) \\sigma(X_i^\\top \\beta) + Y_i (1 - \\sigma(X_i^\\top \\beta)) \\right]\\]\n\nA little manipulation will show that this is equalivalent to the MLE optimization problem!\n\n\\[\n\\begin{align*}\n\\hat{\\beta}_\\mathrm{ERM} &= \\argmin_{\\beta} \\sum_{i=1}^n \\left[ (1-Y_i) \\sigma(X_i^\\top \\beta) + Y_i (1 - \\sigma(X_i^\\top \\beta)) \\right] \\\\\n&= \\argmax_{\\beta} \\sum_{i=1}^n \\left[ (Y_i - 1) \\log(\\sigma(X_i^\\top \\beta)) + (-Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right] \\\\\n&= \\argmax_{\\beta} \\sum_{i=1}^n \\left[ Y_i \\log(\\sigma(X_i^\\top \\beta)) + (1-Y_i) \\log(1 - \\sigma(X_i^\\top \\beta)) \\right]\n= \\hat{\\beta}_\\mathrm{MLE}.\n\\end{align*}\\]\nKey insight: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent."
+  },
+  {
+    "objectID": "schedule/lectures/lecture_03_learning_procedure_classification.html#summary",
+    "href": "schedule/lectures/lecture_03_learning_procedure_classification.html#summary",
+    "title": "Lecture 3: Classification and Logistic Regression",
+    "section": "",
+    "text": "This lecture extended the statistical framework from regression to classification:\n\nStatistical Model: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in \\([0, 1]\\).\nPrediction: The optimal prediction rule depends on the loss function.\nLinear Decision Boundary: Under the \\(0/1 loss\\), the \\(Y=0\\) and \\(Y=1\\) predictions are separated by a hyperplane defined by the decision boundary \\(X^\\top \\beta = 0\\).\nEstimation: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.\n\nIn the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation."
   }
 ]

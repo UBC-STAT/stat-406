@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-08-26">
+
+<title>Lecture 2: Introduction to Learning, Regression – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-8601374965b5aae9b60399aa83673985.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#what-is-supervised-learning" id="toc-what-is-supervised-learning" class="nav-link" data-scroll-target="#what-is-supervised-learning">What is (Supervised) Learning?</a>
+  <ul class="collapse">
+  <li><a href="#prediction-versus-inference" id="toc-prediction-versus-inference" class="nav-link" data-scroll-target="#prediction-versus-inference">Prediction versus Inference</a></li>
+  </ul></li>
+  <li><a href="#the-supervised-learning-procedure-two-perspectives" id="toc-the-supervised-learning-procedure-two-perspectives" class="nav-link" data-scroll-target="#the-supervised-learning-procedure-two-perspectives">The Supervised Learning Procedure: Two Perspectives</a>
+  <ul class="collapse">
+  <li><a href="#csalgorithmic-perspective" id="toc-csalgorithmic-perspective" class="nav-link" data-scroll-target="#csalgorithmic-perspective">CS/Algorithmic Perspective</a></li>
+  <li><a href="#statistical-perspective" id="toc-statistical-perspective" class="nav-link" data-scroll-target="#statistical-perspective">Statistical Perspective</a></li>
+  </ul></li>
+  <li><a href="#statistical-models" id="toc-statistical-models" class="nav-link" data-scroll-target="#statistical-models">Statistical Models</a>
+  <ul class="collapse">
+  <li><a href="#the-linear-regression-model" id="toc-the-linear-regression-model" class="nav-link" data-scroll-target="#the-linear-regression-model">The Linear Regression Model</a></li>
+  <li><a href="#other-models" id="toc-other-models" class="nav-link" data-scroll-target="#other-models">Other Models</a></li>
+  </ul></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a>
+  <ul class="collapse">
+  <li><a href="#empirical-risk-minimization-erm" id="toc-empirical-risk-minimization-erm" class="nav-link" data-scroll-target="#empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</a></li>
+  <li><a href="#maximum-likelihood-estimation-mle" id="toc-maximum-likelihood-estimation-mle" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</a></li>
+  </ul></li>
+  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 2: Introduction to Learning, Regression</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 26, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><span class="math display">\[
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\]</span></p>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you will be able to:</p>
+<ol type="1">
+<li>Distinguish between “learning,” “supervised learning,” “prediction,” and “inference.”</li>
+<li>Translate between algorithmic and statistical perspectives on learning
+<ul>
+<li>Define a statistical model</li>
+<li>Define an estimator</li>
+<li>Define a prediction rule</li>
+</ul></li>
+<li>Define the standard linear regression model</li>
+<li>Derive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework</li>
+</ol>
+</section>
+<section id="what-is-supervised-learning" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-supervised-learning">What is (Supervised) Learning?</h2>
+<p>There are many formulations of “learning” in statistics and machine learning. The main focus of this course is <strong>supervised learning</strong>.</p>
+<ul>
+<li><strong>Goal of supervised learning</strong>: predict a response variable <span class="math inline">\(Y\)</span> given a set of covariates <span class="math inline">\(X\)</span>
+<ul>
+<li>For example, predicting house prices based on features like size, location, and number of bedrooms.</li>
+</ul></li>
+</ul>
+<p><strong>Learning from data</strong>:</p>
+<p>We are given a <strong>training dataset</strong>: <span class="math display">\[ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in \mathbb R^p \times \mathcal Y\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(X_i \in \mathbb R^p\)</span> are the <span class="math inline">\(d\)</span>-dimensional covariates (e.g.&nbsp;size, location, number of bedrooms, etc. for each house)</li>
+<li><span class="math inline">\(Y_i \in \mathcal Y\)</span> is the response variable (e.g.&nbsp;house price)</li>
+<li><span class="math inline">\(\mathcal Y\)</span> is the space of possible responses.
+<ul>
+<li>For our problem and other <strong>regression problems</strong>, <span class="math inline">\(\mathcal Y = \mathbb R\)</span>.</li>
+<li>For <strong>classification problems</strong> (i.e.&nbsp;predicting whether the house is for sale or not) <span class="math inline">\(\mathcal Y\)</span> is a finite set of classes (e.g.&nbsp;“for sale” vs “not for sale”).</li>
+</ul></li>
+</ul>
+<p>From this training set, we want to <em>learn</em> a function <span class="math inline">\(\hat f : \mathbb R^p \to \mathcal Y\)</span> that accurately predicts the response for new observations.</p>
+<ul>
+<li>Given a set of new covariates <span class="math inline">\(X_\mathrm{new}\)</span> (e.g.&nbsp;a new house that we don’t know the price of)</li>
+<li>We predict <span class="math inline">\(\hat Y_\mathrm{new} = \hat f(X_\mathrm{new})\)</span> (e.g.&nbsp;our predicted price for the new house)</li>
+<li>Our goal is for <span class="math inline">\(\hat Y_\mathrm{new} \approx Y_\mathrm{new}\)</span>: the true (but unknown) price of the new house.</li>
+</ul>
+<section id="prediction-versus-inference" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-versus-inference">Prediction versus Inference</h3>
+<p>In learning we are primarily concerned with <strong>prediction</strong> over <strong>inference</strong>.</p>
+<ul>
+<li><strong>Inference</strong>: The goal is making a probabilistic statement about the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.
+<ul>
+<li>(For example, we might want to know how much the price of a house increases for each additional bedroom.)</li>
+</ul></li>
+<li><strong>Prediction</strong>: The goal is producing accurate <span class="math inline">\(\hat Y_\mathrm{new}\)</span>.
+<ul>
+<li>We don’t really care about the underlying relationship, or even about making probabilistic statements about it.</li>
+<li>We just want some procedure to give us good predictions.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="the-supervised-learning-procedure-two-perspectives" class="level2">
+<h2 class="anchored" data-anchor-id="the-supervised-learning-procedure-two-perspectives">The Supervised Learning Procedure: Two Perspectives</h2>
+<!-- The main focus of this class is developing and analyzing different procedures for producing $\hat f$ prediction rules.
+You may have been exposed to algorithms in CPSC 340 that accomplish this procedure.
+In this class, we will formulate these algorithms from first statistical principles and derive algorithms that satisfy these principles. -->
+<section id="csalgorithmic-perspective" class="level3">
+<h3 class="anchored" data-anchor-id="csalgorithmic-perspective">CS/Algorithmic Perspective</h3>
+<p>Learning is often presented as an algorithm for producing a prediction rule <span class="math inline">\(\hat f\)</span> from data <span class="math inline">\(\mathcal{D}\)</span>. This algorithm consist of 6 steps, which we will examine in the context of linear regression:</p>
+<ol type="1">
+<li><strong>Train/test split</strong>: Divide data into training and testing sets
+<ul>
+<li>Given our dataset <span class="math inline">\(\mathcal{D}\)</span>, we split it into a training set <span class="math inline">\(\mathcal{D}_\mathrm{train}\)</span>, a validation set <span class="math inline">\(\mathcal{D}_\mathrm{val}\)</span>, and a test set <span class="math inline">\(\mathcal{D}_\mathrm{test}\)</span>.</li>
+</ul></li>
+<li><strong>Hypothesis class</strong>: Select a set of candidate <span class="math inline">\(\hat f\)</span> which might make a good prediction rule.
+<ul>
+<li>For linear regression, the hypothesis class is linear functions of the form <span class="math inline">\(\hat f(x) = x^\top \hat\beta\)</span> for some <span class="math inline">\(\hat \beta\)</span>.</li>
+</ul></li>
+<li><strong>Training</strong>: Define a training algorithm (a procedure to choose a <span class="math inline">\(\hat \beta\)</span> from the training data) and apply it to <span class="math inline">\(\mathcal{D}_\mathrm{train}\)</span>.
+<ul>
+<li>Most training algorithms involve minimizing a <strong>loss function</strong> over training data.</li>
+<li>For linear models, we often choose <span class="math inline">\(\hat f\)</span> to minimize the <strong>squared error loss</strong> over training data. <span class="math display">\[L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \argmin_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). \]</span></li>
+</ul></li>
+<li><strong>Validation</strong>: Test performance on withheld validation data.
+<ul>
+<li>We compute the average loss on the validation set to evaluate how well our model generalizes to unseen data.</li>
+</ul></li>
+<li><strong>Iteration</strong>: Refine model based on evaluation results
+<ul>
+<li>We may choose to change our hypothesis class, the set of features, the loss function, or the training algorithm to try to reduce validation error.</li>
+</ul></li>
+<li><strong>Testing</strong> <em>(confusingly referred to by some as “Inference”)</em>: Once satisfied with the model, evaluate on the test set to estimate performance on new data.</li>
+</ol>
+</section>
+<section id="statistical-perspective" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-perspective">Statistical Perspective</h3>
+<p>Over the next few lectures, we will derive the CS/algorithmic perspective from first statistical principles. For this lecture, we will focus on a statistical perspective on Steps 2, 3, and 6:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Step</th>
+<th>CS Perspective</th>
+<th>Statistical Perspective</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2</td>
+<td>Hypothesis Class</td>
+<td>Statistical Model</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Training</td>
+<td>Estimation</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>Testing (Inference)</td>
+<td>Prediction</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="statistical-models" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-models">Statistical Models</h2>
+<p>A <strong>statistical model</strong> defines the possible relationships between the covariates <span class="math inline">\(X\)</span> and the response variable <span class="math inline">\(Y\)</span>.</p>
+<ul>
+<li>Formally, it is a <em>set of probability distributions</em> that could possibly generate the data we observe.</li>
+<li>For the learning problem, where we care about predicting <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>, we will consider statistical models that are <strong>sets of conditional distributions</strong> <span class="math inline">\(P(Y \mid X)\)</span>.</li>
+</ul>
+<section id="the-linear-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="the-linear-regression-model">The Linear Regression Model</h3>
+<ul>
+<li>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = X^\top \beta + \varepsilon\]</span>
+<ul>
+<li><span class="math inline">\(\beta\)</span> is the vector of parameters that we are trying to estimate.</li>
+<li><span class="math inline">\(\varepsilon\)</span> is the random error term, which is typicall i.i.d. <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma^2 &gt; 0\)</span>.</li>
+<li>(You may notice that we don’t have an intercept term <span class="math inline">\(\beta_0\)</span> in this model. We assume that <span class="math inline">\(X\)</span> has an “all-ones” covariate, i.e.&nbsp;<span class="math inline">\(X = [1, X_1, X_2, \ldots, X_p]\)</span>, so that the intercept term <span class="math inline">\(\beta_0\)</span> is included with the other <span class="math inline">\(\beta\)</span> terms, i.e.&nbsp;<span class="math inline">\(X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p\)</span>.)</li>
+</ul></li>
+<li>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</li>
+</ul>
+<p><span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.\]</span></p>
+<ul>
+<li>We refer to <span class="math inline">\(\beta\)</span> as the <strong>parameters</strong> of the model, as a given value of <span class="math inline">\(\beta\)</span> specifies a particular distribution within the set.</li>
+</ul>
+</section>
+<section id="other-models" class="level3">
+<h3 class="anchored" data-anchor-id="other-models">Other Models</h3>
+<p>This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distribution can be used instead. For example:</p>
+<ol type="1">
+<li><p><strong>The more general linear regression model</strong>: we could consider the slightly more general case of conditional distributions defined by an expected value condition: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}\]</span></p>
+<ul>
+<li>Note that <span class="math inline">\(\mathbb E[\mathcal{N}(x^\top\beta, \sigma^2)] = x^\top \beta\)</span>, and so the linear regression model is a <em>subset</em> of this more general model.</li>
+<li>However, this model allows for the possibility of non-normal residuals.</li>
+</ul></li>
+<li><p><strong>The polynomial regression model</strong>: we could instead consider the slightly more general case where the expectation is a polynomial function of <span class="math inline">\(X\)</span>, rather than just a linear function: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}\]</span></p>
+<ul>
+<li>Note again that our general linear model is a special case; however this model allows for more complex relationships between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
+<li>This model also has parameters (the coefficients of the polynomial). though they are not explicit in this formulation.</li>
+</ul></li>
+<li><p><strong>All possible distributions</strong>: what if we used the most general set of distributions? <span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}\]</span></p>
+<ul>
+<li>While this is a valid set, it turns out that it is too general for the purposes of learning.</li>
+<li>Specifically, the <strong>no free lunch theorem</strong> states that we will not be able to identify a “good” model from this set even if we were given infinite training data!</li>
+<li>(We need to have some “structure” or simplifying assumptions in our model to be able to learn from data.)</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="estimation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<ul>
+<li>Once we have chosen a statistical model, the <strong>estimation</strong> step involves us choosing a specific distribution from the model that best fits our training data.</li>
+<li>Alternatively, we can think of it as estimating a set of <strong>parameters</strong> that define a distribution within our model that describe the training data.</li>
+<li>There are many statistically valid estimation procedures. We’ll derive two that you’ve likely seen before: <strong>Maximum Likelihood Estimation (MLE)</strong> and <strong>Empirical Risk Minimization (ERM)</strong>. (We’ll talk about others throughout this course.)</li>
+</ul>
+<p>We will work through these two procedures using the linear regression model as our statistical model.</p>
+<section id="empirical-risk-minimization-erm" class="level3">
+<h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</h3>
+<p><strong>Goal</strong>: Find the parameters that minimize the loss on our training data.</p>
+<ul>
+<li>From STAT 306, you may remember a procedure known as <strong>Ordinary Least Squares (OLS)</strong> to estimate the parameters of a linear regression model.</li>
+<li>This procedures is a special case of a more general procedure <strong>Empirical Risk Minimization (ERM)</strong> for reasons that we will see in a few lectures.</li>
+</ul>
+<p><strong>The OLS/ERM Procedure:</strong></p>
+<ol type="1">
+<li><strong>Define a loss function</strong>
+<ul>
+<li>We need to quantify what we mean by “least bad.”</li>
+<li>A <strong>loss function</strong> measures how well a particular <span class="math inline">\(P[Y \mid X=X_i]\)</span> distribution fits the true label <span class="math inline">\(Y_i\)</span>.</li>
+<li>Given a <span class="math inline">\(\beta\)</span> for our linear regression model, a common choice of loss function is the <strong>squared error loss</strong>: <span class="math display">\[L(Y_i, \hat{Y_i}) = (Y_i - \hat{Y_i})^2, \qquad \hat{Y_i} = X_i^\top\beta.\]</span></li>
+</ul></li>
+<li><strong>Minimize the average loss over the training data</strong>
+<ul>
+<li><p>The <strong>empirical risk</strong> is defined as the average loss over our training data:</p>
+<p><span class="math display">\[\hat{R}(\beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
+<li><p>The <strong>OLS (ERM) estimator</strong> is the set of parameters <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the distribution from our model) that minimizes this empirical risk:</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
+<li><p>Taking the derivative and setting to zero:</p>
+<p><span class="math display">\[\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0\]</span></p></li>
+<li><p>By arranging all of our training data into a matrix <span class="math inline">\(\boldsymbol X \in \mathbb{R}^{n \times d}\)</span> and a vector <span class="math inline">\(\boldsymbol Y \in \mathbb{R}^n\)</span>, with</p>
+<p><span class="math display">\[\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times d}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},\]</span></p>
+<p>we get:</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
+</ul></li>
+</ol>
+</section>
+<section id="maximum-likelihood-estimation-mle" class="level3">
+<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</h3>
+<p><strong>Goal</strong>: Find the parameters that maximize the likelihood of observing our data.</p>
+<ul>
+<li>The <strong>likelihood function</strong> maps a distribution from our model (parameterized by <span class="math inline">\(\beta\)</span>) to the probability density of our observed training data.</li>
+</ul>
+<p><strong>Likelihood function for linear regression.</strong></p>
+<ul>
+<li><p>For the linear regression model with normal errors, the likelihood function is: <span class="math display">\[\mathcal{L} (\beta, \sigma^2) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(Y_i - X_i^\top\beta)^2}{2\sigma^2}\right)\]</span></p></li>
+<li><p>The term inside the product is the density of the normal distribution <span class="math inline">\(\mathcal{N}(X_i^\top\beta, \sigma^2)\)</span> evaluated at <span class="math inline">\(Y_i\)</span>.</p></li>
+<li><p>We take the product over all <span class="math inline">\(n\)</span> training examples <span class="math inline">\((X_i, Y_i)\)</span> because we assume that the data points are i.i.d.</p></li>
+<li><p>We choose <span class="math inline">\(\beta\)</span> to maximize the likelihood function, i.e.&nbsp;the <span class="math inline">\(\beta\)</span> that make observed data most probable.</p></li>
+</ul>
+<p><strong>Log-likelihoods are easier to work with</strong>.</p>
+<ul>
+<li><p>Taking the log of the likelihood function, log-likelihood: <span class="math display">\[\ell(\beta, \sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
+<li><p>The logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.</p></li>
+<li><p>The <span class="math inline">\(-\frac{n}{2}\log(2\pi\sigma^2)\)</span> constant and the <span class="math inline">\(\frac{1}{2\sigma^2}\)</span> scaling term also don’t affect the maximum, so we can ignore them.</p></li>
+<li><p>Thus, the maximum likelihood estimate of <span class="math inline">\(\beta\)</span> is found by minimizing: <span class="math display">\[\argmin_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,\]</span></p></li>
+<li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
+</ul>
+<p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results!</p>
+<ul>
+<li>If we had used a different loss function (e.g.&nbsp;<span class="math inline">\(L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|\)</span>), the ERM estimator would not be the same as the OLS/MLE estimator.</li>
+<li>There are many possible loss functions with different properties, and we will explore them in future lectures.</li>
+</ul>
+</section>
+</section>
+<section id="prediction" class="level2">
+<h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
+<ul>
+<li>Once we have estimated <span class="math inline">\(\hat{\beta}\)</span> and selected the distribution that “best” describes our data, we can make predictions on new data points <span class="math inline">\(X_\mathrm{new}\)</span>.</li>
+<li>For linear models, we often use the prediction rule: <span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}\]</span></li>
+</ul>
+<p><strong>Decision theory for predictions</strong>: We want a principled reason for using this prediction rule.</p>
+<ul>
+<li><p><strong>Decision theory</strong>: choose a prediction <span class="math inline">\(\hat{Y}_\mathrm{new}\)</span> that minimizes the expected loss:</p>
+<p><span class="math display">\[\hat{Y}_\mathrm{new} = \argmin_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
+<li><p>According to our estimated model, we have</p>
+<p><span class="math display">\[P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).\]</span></p></li>
+<li><p>Plugging in the squared error loss function into this formula, we get:</p>
+<p><span class="math display">\[
+\begin{align*}
+    \hat{Y}_\mathrm{new} &amp;= \argmin_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new} - \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
+    &amp;= \argmin_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2 \mid X_\mathrm{new}, \hat \beta]}_{
+       \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
+       \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
+    } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{X_\mathrm{new}^\top \beta}
+    + \hat{y}_\mathrm{new}^2 \right) \\
+    &amp;= \argmin_{\hat{y}_\mathrm{new}} \left(
+       \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
+          (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
+       }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
+    \right)
+\end{align*}
+\]</span></p></li>
+<li><p>We can drop the <span class="math inline">\(\sigma^2\)</span> constant, since it doesn’t affect the minimum, and we are left with:</p>
+<p><span class="math display">\[\hat{Y}_\mathrm{new} = \argmin_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
+<p>which, after taking the derivative and setting to zero, gives us: <span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span>.</p></li>
+</ul>
+<p><strong>Important!</strong> If we had chosen a different loss function, we would have derived a different prediction rule.</p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>This lecture introduced the statistical framework for learning:</p>
+<ol type="1">
+<li><strong>Statistical models</strong> define the probabilistic structure of our data</li>
+<li><strong>Estimation</strong> finds the best parameters using MLE or ERM</li>
+<li><strong>Prediction</strong> uses fitted models to make predictions on new data</li>
+</ol>
+<ul>
+<li>This framework will extend to more complex models and methods throughout the course.</li>
+<li>Linear regression serves as our foundational example, where MLE and ERM produce identical estimators under normal error assumptions.</li>
+<li>In the next lecture, we will apply this statistical framework to <em>classification problems</em>.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
