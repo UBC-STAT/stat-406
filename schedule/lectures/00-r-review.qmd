@@ -1,0 +1,1145 @@
+---
+lecture: "00 R, Rmarkdown, code, and `{tidyverse}`: <br> A whirlwind tour"
+format: revealjs
+metadata-files: 
+  - _metadata.yml
+---
+
+{{< include _titleslide.qmd >}}
+
+## Housekeeping
+
+1. Introduction
+1. My office hours will be in *(room redacted)* after class **today only**
+    - I'm trying to book this room for future OHs
+1. This week's lab is due **Friday 23:00** (to help with setup issues)
+    - **only for this week.** After that, 23:00 on night of the lab
+1. Reminders 
+    - 4 students still haven't done Quiz 0
+    - 25 students need to accept the GitHub invite
+    - 8 students need to enroll in a lab section
+
+
+# The basics
+
+
+## Tour of Rstudio
+
+Things to note
+
+1. Console
+1. Terminal
+1. Scripts, .Rmd, Knit
+1. Files, Projects
+1. Getting help
+1. Environment, Git
+
+## R and the `{tidyverse}`
+
+:::: {.columns}
+::: {.column width="35%"}
+
+![](https://datasciencebook.ca/img/frontmatter/ds-a-first-intro-cover.jpg)
+
+:::
+
+::: {.column width="65%"}
+
+Today is going to be a *whirlwind tour* of R.
+
+If you are new to R: read the first 4 chapters of [*Data Science: A First Introduction*](https://datasciencebook.ca).
+
+It's available for free at `https://datasciencebook.ca`. It covers:
+
+- Data loading from `.csv`, Excel, database, and web sources
+- Data saving to `.csv` files
+- Data wrangling with `tidyverse` functions
+- Plotting with `ggplot`
+
+:::
+
+::::
+
+
+## Basic data structures
+
+:::: {.columns}
+::: {.column width="45%"}
+
+### Vectors:
+```{r}
+x <- c(1, 3, 4)
+x[1]
+x[-1]
+rev(x)
+c(x, x)
+```
+:::
+
+::: {.column width="10%"}
+:::
+
+::: {.column width="45%"}
+
+### Matrices:
+```{r}
+x <- matrix(1:25, nrow = 5, ncol = 5)
+x[1,]
+x[,-1]
+x[c(1,3),  2:3]
+```
+
+:::
+::::
+
+[All elements of a vector/matrix must be of the same type]{.secondary}
+
+## Basic data structures
+
+::: flex
+::: w-50
+
+### Lists
+```{r}
+(l <- list(
+  a = letters[1:2], 
+  b = 1:4, 
+  c = list(a = 1)))
+l$a
+l$c$a
+l["b"] # compare to l[["b"]] == l$b
+```
+:::
+
+
+::: w-50
+
+### Data frames
+```{r}
+(dat <- data.frame(
+  z = 1:5, 
+  b = 6:10, 
+  c = letters[1:5]))
+class(dat)
+dat$b
+dat[1,]
+```
+
+:::
+:::
+
+[Lists can have multiple element types; data frames are lists of vectors]{.secondary}
+
+
+## Tibbles
+
+[These are `{tidyverse}` data frames]{.secondary}
+
+```{r}
+(dat2 <- tibble(z = 1:5, b = z + 5, c = letters[z]))
+class(dat2)
+```
+
+We'll return to classes in a moment. A `tbl_df` is a "subclass" of `data.frame`.
+
+Anything that `data.frame` can do, `tbl_df` can do (better).
+
+For instance, the printing is more informative.
+
+Also, you can construct one by referencing previously constructed columns.
+
+
+
+# Functions
+
+## Functions in R
+
+A function is a mapping from inputs to outputs, and is defined with the `function` keyword. 
+
+The function's body is wrapped in curly braces, and its output is given by the `return` keyword (or the last evaluated statement)
+
+
+```{r}
+f <- function(x, y){
+  x+y 
+}
+
+f(3,5)
+```
+
+```{r}
+f <- function(x, y){
+  return(x+y)
+}
+
+f(3,5)
+```
+
+
+
+## Function Signatures
+
+```{r}
+#| code-fold: true
+sig <- sig::sig
+```
+
+```{r}
+sig(lm)
+sig(`+`)
+sig(dplyr::filter)
+sig(stats::filter)
+sig(rnorm)
+```
+
+
+## These are all the same
+
+```{r}
+set.seed(12345)
+rnorm(3)
+set.seed(12345)
+rnorm(n = 3, mean = 0)
+set.seed(12345)
+rnorm(3, 0, 1)
+set.seed(12345)
+rnorm(sd = 1, n = 3, mean = 0)
+```
+
+* Functions can have default values.
+* You may, but don't have to, name the arguments
+* If you name them, you can pass them out of order (but you shouldn't).
+
+
+# Write lots of functions.
+
+## Outputs vs. Side Effects
+
+::: flex
+
+::: w-50
+```{r functions}
+f <- function(arg1, arg2, arg3 = 12, ...) {
+  stuff <- arg1 * arg3
+  stuff2 <- stuff + arg2
+  plot(arg1, stuff2, ...)
+  return(stuff2)
+}
+x <- rnorm(100)
+```
+:::
+
+
+::: w-50
+
+```{r plot-it}
+y1 <- f(x, 3, 15, col = 4, pch = 19)
+str(y1)
+```
+
+:::
+:::
+
+## Outputs vs. Side Effects
+
+::: flex
+::: w-50
+* Side effects are things a function changes in global scope
+* Outputs can be assigned to variables
+* A good example is the `hist` function
+* You have probably only seen the side effect which is to plot the histogram
+
+```{r}
+my_histogram <- hist(rnorm(1000))
+```
+
+:::
+
+
+::: w-50
+
+
+```{r}
+str(my_histogram)
+class(my_histogram)
+```
+
+:::
+:::
+
+
+
+## When writing functions, program defensively, ensure behaviour
+
+::: flex
+::: w-50
+
+```{r}
+#| error: TRUE
+incrementer <- function(x, inc_by = 1) {
+  x + 1
+}
+  
+incrementer(2)
+incrementer(1:4)
+incrementer("a")
+```
+
+```{r}
+#| error: TRUE
+incrementer <- function(x, inc_by = 1) {
+  stopifnot(is.numeric(x))
+  return(x + 1)
+}
+incrementer("a")
+```
+
+:::
+
+
+::: w-50
+
+
+```{r}
+#| error: TRUE
+incrementer <- function(x, inc_by = 1) {
+  if (!is.numeric(x)) {
+    stop("`x` must be numeric")
+  }
+  x + 1
+}
+incrementer("a")
+incrementer(2, -3) ## oops!
+incrementer <- function(x, inc_by = 1) {
+  if (!is.numeric(x)) {
+    stop("`x` must be numeric")
+  }
+  x + inc_by
+}
+incrementer(2, -3)
+```
+:::
+:::
+
+
+## Unit Testing
+
+When you write functions, *test them!*
+
+Use `testthat`: check a few usual values and **corner cases**
+
+::: flex
+::: w-50
+
+```{r}
+#| error: true
+library(testthat)
+incrementer <- function(x, inc_by = 1) {
+  if (!is.numeric(x)) {
+    stop("`x` must be numeric")
+  }
+  if (!is.numeric(inc_by)) {
+    stop("`inc_by` must be numeric")
+  }
+  x + inc_by
+}
+expect_error(incrementer("a"))
+expect_equal(incrementer(1:3), 2:4)
+expect_equal(incrementer(2, -3), -1)
+expect_error(incrementer(1, "b"))
+expect_identical(incrementer(1:3), 2:4)
+```
+:::
+
+
+::: w-50
+
+
+```{r}
+is.integer(2:4)
+is.integer(incrementer(1:3))
+expect_identical(incrementer(1:3, 1L), 2:4)
+```
+:::
+:::
+
+. . .
+
+::: callout-important
+Don't copy code; write a function. Validate your arguments. Write tests to check if inputs result in predicted outputs.
+:::
+
+
+
+# Classes and methods
+
+
+
+## Classes
+
+::: flex
+::: w-50
+
+We saw some of these earlier:
+
+```{r}
+tib <- tibble(
+  x1 = rnorm(100), 
+  x2 = rnorm(100), 
+  y = x1 + 2 * x2 + rnorm(100)
+)
+mdl <- lm(y ~ ., data = tib )
+class(tib)
+class(mdl)
+```
+
+The class allows for the use of "methods"
+
+```{r}
+print(mdl)
+```
+
+:::
+
+
+::: w-50
+
+
+* `R` "knows what to do" when you `print()` an object of class `"lm"`.
+
+* `print()` is called a "generic" function. 
+
+* You can create "methods" that get dispatched.
+
+* For any generic, `R` looks for a method for the class.
+
+* If available, it calls that function.
+
+:::
+:::
+
+## Viewing the dispatch chain
+
+```{r}
+sloop::s3_dispatch(print(incrementer))
+sloop::s3_dispatch(print(tib))
+sloop::s3_dispatch(print(mdl))
+```
+
+
+## Generic Methods
+
+There are [lots]{.secondary} of generic functions in `R`
+
+Common ones are `print()`, `summary()`, and `plot()`.
+
+Also, lots of important statistical modelling concepts:
+`residuals()` `coef()` 
+
+(In `python`, these work the opposite way: `obj.residuals`. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)  
+
+* The convention is
+that the specialized function is named `method.class()`, e.g., `summary.lm()`.
+
+* If no specialized function is defined, R will try to use `method.default()`.
+
+For this reason, `R` programmers try to avoid `.` in names of functions or objects.
+
+
+## Wherefore methods?
+
+
+* The advantage is that you don't have to learn a totally
+new syntax to grab residuals or plot things
+
+* You just use `residuals(mdl)` whether `mdl` has class `lm` or any other class
+you expect to have residuals
+
+* The one draw-back is the help pages for the generic methods tend
+to be pretty vague
+
+* Compare `?summary` with `?summary.lm`.  
+
+
+
+# Environments 
+
+
+## Different environments
+
+(known as *scope* in other languages) 
+
+* These are often tricky, but are very common.
+
+* Most programming languages have this concept in one way or another.
+
+* In `R` code run in the Console produces objects in the "Global environment"
+
+* You can see what you create in the "Environment" tab.
+
+* But there's lots of other stuff.
+
+* Many packages are automatically loaded at startup, so you have access to the functions and data inside
+
+For example `mean()`, `lm()`, `plot()`, `iris` (technically `iris` is lazy-loaded, meaning it's not in memory until you call it, but it is available)
+
+
+
+##
+
+* Other packages require you to load them with `library(pkg)` before their functions are available.
+
+* But, you can call those functions by prefixing the package name `ggplot2::ggplot()`.
+
+* You can also access functions that the package developer didn't "export" for use with `:::` like `dplyr:::as_across_fn_call()`
+
+::: {.notes}
+
+That is all about accessing "objects in package environments"
+
+:::
+
+
+## Other issues with environments
+
+
+As one might expect, functions create an environment inside the function.
+```{r}
+z <- 1
+fun <- function(x) {
+  z <- x
+  print(z)
+  invisible(z)
+}
+fun(14)
+```
+
+. . .
+
+Non-trivial cases are `data-masking` environments.
+
+```{r}
+#| error: TRUE
+tib <- tibble(x1 = rnorm(100),  x2 = rnorm(100),  y = x1 + 2 * x2)
+mdl <- lm(y ~ x2, data = tib)
+x2
+```
+
+* `lm()` looks "inside" the `tib` to find `y` and `x2`
+* The data variables are added to the `lm()` environment
+
+
+## Other issues with environments
+
+[When Knit, `.Rmd` files run in their OWN environment.]{.fourth-colour}
+
+They are run from top to bottom, with code chunks depending on previous
+
+This makes them reproducible.
+
+<!--
+Jupyter notebooks don't do this. 😱
+-->
+
+Objects in your local environment are not available in the `.Rmd`
+
+Objects in the `.Rmd` are not available locally.
+
+::: {.callout-tip}
+The most frequent error I see is:
+
+* running chunks individually, 1-by-1, and it works
+* Knitting, and it fails
+
+The reason is almost always that the chunks refer to objects in the Environment that don't exist in the `.Rmd`
+:::
+
+##
+
+
+### This error also happens because:
+
+* `library()` calls were made globally but not in the `.Rmd` 
+    * so the packages aren't loaded
+
+* paths to data or other objects are not relative to the `.Rmd` in your file system 
+    * they must be
+
+
+* Carefully keeping Labs / Assignments in their current location will help to avoid some of these.
+
+::: {.callout-tip}
+Knit frequently throughout your homework / lab so that you encounter environment errors
+*early* and *often*!
+:::
+
+
+# Debugging
+
+
+
+## How to fix code
+
+* If you're using a function in a package, start with `?function` to see the help
+    * Make sure you're calling the function correctly.
+    * Try running the examples.
+    * paste the error into Google (if you share the error on Slack, I often do this first)
+    * Go to the package website if it exists, and browse around
+    
+* If your `.Rmd` won't Knit
+    * Did you make the mistake on the last slide?
+    * Did it Knit before? Then the bug is in whatever you added.
+    * Did you never Knit it? Why not?
+    * Call `rstudioapi::restartSession()`, then run the Chunks 1-by-1
+    
+## Adding `browser()`
+
+(known as a *breakpoint* in any other language)
+
+* Only useful with your own functions.
+* Open the script with the function, and add `browser()` to the code somewhere
+* Then call your function.
+* The execution will Stop where you added `browser()` and you'll have access to the local environment to play around
+
+
+## Reproducible examples
+
+::: {.callout-tip}
+## Question I frequently get:
+
+"I ran this code, but it didn't work."
+:::
+
+* If you want to ask me why the code doesn't work, you need to show me what's wrong.
+
+::: {.callout-warning}
+## Don't just paste a screenshot!
+
+Unless you get lucky, I won't be able to figure it out from that. And we'll both get frustrated.
+:::
+
+What you need is a Reproducible Example or `reprex`.
+
+* This is a small chunk of code that 
+    1. runs in it's own environment 
+    1. and produces the error.
+
+
+---
+
+::: flex
+::: w-50
+![](gfx/reprex_github_1.png){fig-align="center" fig-alt="Reprex example 1"}
+:::
+
+::: w-50
+![](gfx/reprex_github_2.png){fig-align="center" fig-alt="Reprex example 2"}
+:::
+:::
+
+
+## The `{reprex}` package
+
+
+1. Open a new `.R` script.
+
+1. Paste your buggy code in the file (no need to save)
+
+1. Edit your code to make sure it's "enough to produce the error" and nothing more. (By rerunning the code a few times.)
+
+1. Copy your code (so that it's on the clipboard)
+
+1. Call `reprex::reprex(venue = "r")` from the console. This will run your code in a new environment and show the result in the Viewer tab. Does it create the error you expect?
+
+1. If it creates other errors, that may be the problem. You may fix the bug on your own!
+
+1. If it doesn't have errors, then your global environment is Farblunget.
+
+1. The Output is now on your clipboard. Go to Slack and paste it in a message. Then press `Cmd+Shift+Enter` (on Mac) or `Ctrl+Shift+Enter` (Windows/Linux). Under Type, select `R`.
+
+1. Send the message, perhaps with more description and an SOS emoji.
+
+::: {.callout-note}
+Because Reprex runs in it's own environment, it doesn't have access to any of the libraries you loaded or the stuff in your global environment. You'll have to load these things in the script.
+:::
+
+
+## R Pitfalls
+
+- R is *very permissive*, and this leads to frequent *silent errors*
+    - nonstandard evaluation of arguments, data masking
+    - allows dots in names (even though they mean something syntactically!)
+    - allows accessing attributes that don't exist
+    - promotion of ints to floats, floats to strings 😱
+- Lots of unusual design decisions
+    - many assignment operators (`->`, `<-`, `->>`, `<<-`, `=`)
+    - many accessors (`a$b` is `a[["b"]]` but not `a["b"]`)
+    - lacking basic data types (e.g., hash maps)
+    - informal classes (`class(x) <- "a weird new class!"`)
+    - tonnes of functions/data/objects in the global namespace
+    - `3 == "3"` (evaluates to TRUE?!!?!)
+- Rscript executable treats code *differently than the R REPL*
+
+# Understanding `{tidyverse}`
+
+## `{tidyverse}` is huge
+
+Core `tidyverse` is ~30 different packages, but we're going to just talk about a few.
+
+Load all of them by calling `library(tidyverse)`
+
+Packages fall roughly into a few categories:
+
+1. [Convenience functions:]{.secondary} `{magrittr}` and many many others.
+1. [Data processing:]{.secondary} `{dplyr}` and many others.
+1. [Graphing:]{.secondary} `{ggplot2}` and some others like `{scales}`.
+1. [Utilities]{.secondary}
+
+
+. . .
+
+<hr>
+
+We're going to talk quickly about some of it, but ignore much of 2.
+
+There's a lot that's great about these packages, especially ease of data processing.
+
+But it doesn't always jive with base `R` (it's almost a separate proglang at this point).
+
+## When in doubt...
+
+:::: {.columns}
+::: {.column width="35%"}
+
+![](https://datasciencebook.ca/img/frontmatter/ds-a-first-intro-cover.jpg)
+
+:::
+
+::: {.column width="65%"}
+
+Read the first 4 chapters (especially 3 and 4!)
+
+[https://datasciencebook.ca](https://datasciencebook.ca)
+
+:::
+
+::::
+
+
+
+## Piping with `{magrittr}`
+
+This was introduced by `{magrittr}` as `%>%`, 
+
+but is now in base R (>=4.1.0) as `|>`.
+
+Note: there are other pipes in `{magrittr}` (e.g. `%$%` and `%T%`) but I've never used them.
+
+The point of the pipe is to [logically sequence nested operations]{.secondary}
+
+The pipe *passes the left hand side as the first argument of the right hand side*
+
+## Example
+
+:::: {.columns}
+::: {.column width="50%"}
+
+```{r}
+select(filter(mtcars, cyl == 6), mpg)
+```
+
+```{r}
+mse1 <- print(
+  sum(
+    residuals(
+      lm(y~., data = mutate(
+        tib, 
+        x3 = x1^2,
+        x4 = log(x2 + abs(min(x2)) + 1)
+      )
+      )
+    )^2
+  )
+)
+```
+
+:::
+
+
+::: {.column width="50%"}
+
+```{r}
+mtcars |> filter(cyl == 6) |> select(mpg)
+```
+
+```{r}
+mse2 <- tib |>
+  mutate(
+    x3 = x1^2, 
+    x4 = log(x2 + abs(min(x2)) + 1)
+  ) %>% # base pipe only goes to first arg
+  lm(y ~ ., data = .) |> # note the use of `.`
+  residuals() |>
+  magrittr::raise_to_power(2) |> # same as `^`(2)
+  sum() |>
+  print()
+```
+
+:::
+::::
+
+## 
+
+It may seem like we should push this all the way
+
+```{r}
+tib |>
+  mutate(
+    x3 = x1^2, 
+    x4 = log(x2 + abs(min(x2)) + 1)
+  ) %>% # base pipe only goes to first arg
+  lm(y ~ ., data = .) |> # note the use of `.`
+  residuals() |>
+  magrittr::raise_to_power(2) |> # same as `^`(2)
+  sum() ->
+  mse3
+```
+
+This technically works...but at a minimum it makes it hard to extend pipe sequences.
+
+. . .
+
+::: callout-note
+**Opinion zone:** It's also just weird. Don't encourage the R devs.
+:::
+
+
+
+<!--
+## A new one...
+
+R loves weird pipes. Just stick to `|>`, it results in clear code.
+
+```{r}
+library(magrittr)
+tib <- tibble(x = 1:5, z = 6:10)
+tib <- tib |> mutate(b = x + z)
+tib
+# start over
+tib <- tibble(x = 1:5, z = 6:10)
+tib %<>% mutate(b = x + z)
+tib
+```
+-->
+
+
+## Data processing in `{dplyr}` {.smaller}
+
+This package has all sorts of things. And it interacts with `{tibble}` generally.
+
+The basic idea is "tibble in, tibble out".
+
+Satisfies [data masking]{.secondary} which means you can refer to columns by name or use helpers like `ends_with("_rate")`
+
+Majorly useful operations:
+
+1. `select()` (chooses columns to keep)
+1. `mutate()` (showed this already)
+1. `group_by()`
+1. `pivot_longer()` and `pivot_wider()`
+1. `left_join()` and `full_join()`
+1. `summarise()`
+
+::: {.callout-note}
+`filter()` and `select()` are functions in Base R.
+
+Sometimes you get 🐞 because it called the wrong version.
+
+To be sure, prefix it like `dplyr::select()`.
+:::
+
+## A useful data frame
+
+<!--
+Old code that breaks if you don't have an API key; replaced
+this with just a covid.csv file in the data/ folder
+Keeping this block here though so that later instructors can see
+where the data came from
+```
+library(epidatr)
+covid <- pub_covidcast(
+  source = "jhu-csse",
+  signals = "confirmed_7dav_incidence_prop,deaths_7dav_incidence_prop",
+  time_type = "day",
+  geo_type = "state",
+  time_values = epirange(20220801, 20220821),
+  geo_values = "ca,wa") |>
+  select(geo_value, time_value, signal, value)
+
+covid
+```
+-->
+
+7-day rolling avg COVID case/death counts for CA and WA from Aug 1-21, 2022 from Johns Hopkins
+
+```{r message=FALSE}
+library(tidyverse)
+covid <- read_csv("data/covid.csv") |>
+  select(geo_value, time_value, signal, value)
+
+covid
+```
+
+## Examples
+
+Rename the `signal` to something short.
+
+```{r}
+covid <- covid |> 
+  mutate(signal = case_when(
+    str_starts(signal, "confirmed") ~ "case_rate", 
+    TRUE ~ "death_rate"
+  ))
+```
+
+
+Sort by `time_value` then `geo_value`
+
+```{r}
+covid <- covid |> arrange(time_value, geo_value)
+```
+
+Calculate grouped medians
+
+```{r}
+covid |> 
+  group_by(geo_value, signal) |>
+  summarise(med = median(value), .groups = "drop")
+```
+
+## Examples
+
+Split the data into two tibbles by signal
+
+```{r}
+cases <- covid |> 
+  filter(signal == "case_rate") |>
+  rename(case_rate = value) |> select(-signal)
+deaths <- covid |> 
+  filter(signal == "death_rate") |>
+  rename(death_rate = value) |> select(-signal)
+```
+
+Join them together
+```{r}
+joined <- full_join(cases, deaths, by = c("geo_value", "time_value"))
+```
+
+Do the same thing by pivoting
+```{r}
+covid |> pivot_wider(names_from = signal, values_from = value)
+```
+
+
+
+## Plotting with `{ggplot2}`
+
+* Everything you can do with `ggplot()`, you can do with `plot()`. But the 
+defaults are _much_ prettier.
+
+* It's also much easier to adjust by aesthetics / panels by factors.
+
+* It also uses "data masking": data goes into `ggplot(data = mydata)`, then the columns are available to the rest.
+
+* It (sort of) pipes, but by adding [layers]{.secondary} with `+`
+
+* It [strongly prefers]{.secondary} "long" data frames over "wide" data frames.
+
+<hr>
+
+I'll give a very fast overview of some confusing bits.
+
+# 
+
+I suggest exploring
+
+🔗 [This slide deck](https://djnavarro.net/slides-starting-ggplot/)
+
+for more help
+
+
+
+---
+
+
+```{r adding-geoms}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  data = covid |> 
+    filter(signal == "case_rate")
+) +
+  geom_point(
+    mapping = aes(
+      x = time_value,
+      y = value
+    )
+  ) + 
+  geom_smooth( 
+    mapping = aes( 
+      x = time_value, 
+      y = value 
+    ) 
+  ) 
+```
+
+
+
+::: {.notes}
+
+* The complete code
+* Data is specified in the ggplot, passed along
+* (we show only case_rate)
+
+
+* The Grey SE shading is pretty ugly
+* And there are two states mashed together
+* That trend is awfully wiggly
+
+:::
+
+---
+
+
+```{r adding-geoms2}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  data = covid |> filter(signal == "case_rate")
+) +
+  geom_point(
+    mapping = aes(
+      x = time_value,
+      y = value,
+      colour = geo_value
+    )
+  ) + 
+  geom_smooth( 
+    mapping = aes( 
+      x = time_value, 
+      y = value,
+      colour = geo_value
+    ),
+    se = FALSE,
+    method = "lm"
+  ) 
+```
+
+::: {.notes}
+
+* Separate out the states by colour
+* straight lines instead
+* no more grey shading
+* Why do I keep writing all that mapping = stuff?
+
+:::
+
+---
+
+
+```{r adding-geoms3}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  data = covid |> filter(signal == "case_rate"),
+  mapping = aes(
+    x = time_value,
+    y = value,
+    colour = geo_value
+  )
+) +
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "lm") 
+```
+
+::: {.notes}
+
+mapping in the `ggplot()` call is shared across the rest
+
+:::
+
+---
+
+
+```{r adding-geoms4}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  covid |> filter(signal == "case_rate"),
+  aes(time_value, value, colour = geo_value)
+) +
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "lm") 
+```
+
+::: {.notes}
+Don't need to name the arguments.
+
+This is typically what ggplot code looks like.
+
+Let's go a bit further to spruce this up.
+
+:::
+
+---
+
+```{r adding-geoms5}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  covid, 
+  aes(time_value, value, colour = geo_value)
+) +
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "lm") +
+  facet_grid(signal ~ geo_value) +
+  scale_colour_manual(
+    name = NULL, 
+    values = c(blue, orange)) +
+  theme(legend.position = "bottom")
+```
+
+::: {.notes}
+
+* use facet_grid to split out states / show both signals (formula)
+* change the colour scaling, remove the annoying title
+* put the legend on the bottom
+* But the y-axis scale is shared, measurements are on different scales
+
+:::
+
+---
+
+
+```{r adding-geoms6}
+#| output-location: column
+#| fig-width: 8
+#| fig-height: 5
+ggplot(
+  covid, 
+  aes(time_value, value, colour = geo_value)
+) +
+  geom_point() + 
+  geom_smooth(se = FALSE, method = "lm") +
+  facet_grid(signal ~ geo_value, scales = "free_y") +
+  scale_colour_manual(
+    name = NULL, 
+    values = c(blue, orange)) +
+  theme(legend.position = "bottom")
+```
+
