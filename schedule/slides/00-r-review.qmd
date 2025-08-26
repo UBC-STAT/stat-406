@@ -1,23 +1,11 @@
 ---
 lecture: "00 R, Rmarkdown, code, and `{tidyverse}`: <br> A whirlwind tour"
 format: revealjs
-metadata-files: 
+metadata-files:
   - _metadata.yml
 ---
 
 {{< include _titleslide.qmd >}}
-
-## Housekeeping
-
-1. Introduction
-1. My office hours will be in *(room redacted)* after class **today only**
-    - I'm trying to book this room for future OHs
-1. This week's lab is due **Friday 23:00** (to help with setup issues)
-    - **only for this week.** After that, 23:00 on night of the lab
-1. Reminders 
-    - 4 students still haven't done Quiz 0
-    - 25 students need to accept the GitHub invite
-    - 8 students need to enroll in a lab section
 
 
 # The basics
@@ -94,7 +82,7 @@ x[c(1,3),  2:3]
 
 [All elements of a vector/matrix must be of the same type]{.secondary}
 
-## Basic data structures
+## Basic data structures (cont.)
 
 ::: flex
 ::: w-50
@@ -102,8 +90,8 @@ x[c(1,3),  2:3]
 ### Lists
 ```{r}
 (l <- list(
-  a = letters[1:2], 
-  b = 1:4, 
+  a = letters[1:2],
+  b = 1:4,
   c = list(a = 1)))
 l$a
 l$c$a
@@ -117,8 +105,8 @@ l["b"] # compare to l[["b"]] == l$b
 ### Data frames
 ```{r}
 (dat <- data.frame(
-  z = 1:5, 
-  b = 6:10, 
+  z = 1:5,
+  b = 6:10,
   c = letters[1:5]))
 class(dat)
 dat$b
@@ -131,7 +119,7 @@ dat[1,]
 [Lists can have multiple element types; data frames are lists of vectors]{.secondary}
 
 
-## Tibbles
+# Tibbles
 
 [These are `{tidyverse}` data frames]{.secondary}
 
@@ -154,14 +142,14 @@ Also, you can construct one by referencing previously constructed columns.
 
 ## Functions in R
 
-A function is a mapping from inputs to outputs, and is defined with the `function` keyword. 
+A function is a mapping from inputs to outputs, and is defined with the `function` keyword.
 
 The function's body is wrapped in curly braces, and its output is given by the `return` keyword (or the last evaluated statement)
 
 
 ```{r}
 f <- function(x, y){
-  x+y 
+  x+y
 }
 
 f(3,5)
@@ -279,7 +267,7 @@ class(my_histogram)
 incrementer <- function(x, inc_by = 1) {
   x + 1
 }
-  
+
 incrementer(2)
 incrementer(1:4)
 incrementer("a")
@@ -384,8 +372,8 @@ We saw some of these earlier:
 
 ```{r}
 tib <- tibble(
-  x1 = rnorm(100), 
-  x2 = rnorm(100), 
+  x1 = rnorm(100),
+  x2 = rnorm(100),
   y = x1 + 2 * x2 + rnorm(100)
 )
 mdl <- lm(y ~ ., data = tib )
@@ -407,7 +395,7 @@ print(mdl)
 
 * `R` "knows what to do" when you `print()` an object of class `"lm"`.
 
-* `print()` is called a "generic" function. 
+* `print()` is called a "generic" function.
 
 * You can create "methods" that get dispatched.
 
@@ -434,9 +422,9 @@ There are [lots]{.secondary} of generic functions in `R`
 Common ones are `print()`, `summary()`, and `plot()`.
 
 Also, lots of important statistical modelling concepts:
-`residuals()` `coef()` 
+`residuals()` `coef()`
 
-(In `python`, these work the opposite way: `obj.residuals`. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)  
+(In `python`, these work the opposite way: `obj.residuals`. The dot after the object accesses methods defined for that type of object. But the dispatch behaviour is less robust.)
 
 * The convention is
 that the specialized function is named `method.class()`, e.g., `summary.lm()`.
@@ -458,16 +446,16 @@ you expect to have residuals
 * The one draw-back is the help pages for the generic methods tend
 to be pretty vague
 
-* Compare `?summary` with `?summary.lm`.  
+* Compare `?summary` with `?summary.lm`.
 
 
 
-# Environments 
+# Environments
 
 
 ## Different environments
 
-(known as *scope* in other languages) 
+(known as *scope* in other languages)
 
 * These are often tricky, but are very common.
 
@@ -559,10 +547,10 @@ The reason is almost always that the chunks refer to objects in the Environment 
 
 ### This error also happens because:
 
-* `library()` calls were made globally but not in the `.Rmd` 
+* `library()` calls were made globally but not in the `.Rmd`
     * so the packages aren't loaded
 
-* paths to data or other objects are not relative to the `.Rmd` in your file system 
+* paths to data or other objects are not relative to the `.Rmd` in your file system
     * they must be
 
 
@@ -585,13 +573,13 @@ Knit frequently throughout your homework / lab so that you encounter environment
     * Try running the examples.
     * paste the error into Google (if you share the error on Slack, I often do this first)
     * Go to the package website if it exists, and browse around
-    
+
 * If your `.Rmd` won't Knit
     * Did you make the mistake on the last slide?
     * Did it Knit before? Then the bug is in whatever you added.
     * Did you never Knit it? Why not?
     * Call `rstudioapi::restartSession()`, then run the Chunks 1-by-1
-    
+
 ## Adding `browser()`
 
 (known as a *breakpoint* in any other language)
@@ -620,8 +608,8 @@ Unless you get lucky, I won't be able to figure it out from that. And we'll both
 
 What you need is a Reproducible Example or `reprex`.
 
-* This is a small chunk of code that 
-    1. runs in it's own environment 
+* This is a small chunk of code that
+    1. runs in it's own environment
     1. and produces the error.
 
 
@@ -729,7 +717,7 @@ Read the first 4 chapters (especially 3 and 4!)
 
 ## Piping with `{magrittr}`
 
-This was introduced by `{magrittr}` as `%>%`, 
+This was introduced by `{magrittr}` as `%>%`,
 
 but is now in base R (>=4.1.0) as `|>`.
 
@@ -753,7 +741,7 @@ mse1 <- print(
   sum(
     residuals(
       lm(y~., data = mutate(
-        tib, 
+        tib,
         x3 = x1^2,
         x4 = log(x2 + abs(min(x2)) + 1)
       )
@@ -775,7 +763,7 @@ mtcars |> filter(cyl == 6) |> select(mpg)
 ```{r}
 mse2 <- tib |>
   mutate(
-    x3 = x1^2, 
+    x3 = x1^2,
     x4 = log(x2 + abs(min(x2)) + 1)
   ) %>% # base pipe only goes to first arg
   lm(y ~ ., data = .) |> # note the use of `.`
@@ -788,14 +776,14 @@ mse2 <- tib |>
 :::
 ::::
 
-## 
+##
 
 It may seem like we should push this all the way
 
 ```{r}
 tib |>
   mutate(
-    x3 = x1^2, 
+    x3 = x1^2,
     x4 = log(x2 + abs(min(x2)) + 1)
   ) %>% # base pipe only goes to first arg
   lm(y ~ ., data = .) |> # note the use of `.`
@@ -895,9 +883,9 @@ covid
 Rename the `signal` to something short.
 
 ```{r}
-covid <- covid |> 
+covid <- covid |>
   mutate(signal = case_when(
-    str_starts(signal, "confirmed") ~ "case_rate", 
+    str_starts(signal, "confirmed") ~ "case_rate",
     TRUE ~ "death_rate"
   ))
 ```
@@ -912,7 +900,7 @@ covid <- covid |> arrange(time_value, geo_value)
 Calculate grouped medians
 
 ```{r}
-covid |> 
+covid |>
   group_by(geo_value, signal) |>
   summarise(med = median(value), .groups = "drop")
 ```
@@ -922,10 +910,10 @@ covid |>
 Split the data into two tibbles by signal
 
 ```{r}
-cases <- covid |> 
+cases <- covid |>
   filter(signal == "case_rate") |>
   rename(case_rate = value) |> select(-signal)
-deaths <- covid |> 
+deaths <- covid |>
   filter(signal == "death_rate") |>
   rename(death_rate = value) |> select(-signal)
 ```
@@ -944,7 +932,7 @@ covid |> pivot_wider(names_from = signal, values_from = value)
 
 ## Plotting with `{ggplot2}`
 
-* Everything you can do with `ggplot()`, you can do with `plot()`. But the 
+* Everything you can do with `ggplot()`, you can do with `plot()`. But the
 defaults are _much_ prettier.
 
 * It's also much easier to adjust by aesthetics / panels by factors.
@@ -959,7 +947,7 @@ defaults are _much_ prettier.
 
 I'll give a very fast overview of some confusing bits.
 
-# 
+#
 
 I suggest exploring
 
@@ -977,7 +965,7 @@ for more help
 #| fig-width: 8
 #| fig-height: 5
 ggplot(
-  data = covid |> 
+  data = covid |>
     filter(signal == "case_rate")
 ) +
   geom_point(
@@ -985,13 +973,13 @@ ggplot(
       x = time_value,
       y = value
     )
-  ) + 
-  geom_smooth( 
-    mapping = aes( 
-      x = time_value, 
-      y = value 
-    ) 
-  ) 
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = time_value,
+      y = value
+    )
+  )
 ```
 
 
@@ -1025,16 +1013,16 @@ ggplot(
       y = value,
       colour = geo_value
     )
-  ) + 
-  geom_smooth( 
-    mapping = aes( 
-      x = time_value, 
+  ) +
+  geom_smooth(
+    mapping = aes(
+      x = time_value,
       y = value,
       colour = geo_value
     ),
     se = FALSE,
     method = "lm"
-  ) 
+  )
 ```
 
 ::: {.notes}
@@ -1061,8 +1049,8 @@ ggplot(
     colour = geo_value
   )
 ) +
-  geom_point() + 
-  geom_smooth(se = FALSE, method = "lm") 
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm")
 ```
 
 ::: {.notes}
@@ -1082,8 +1070,8 @@ ggplot(
   covid |> filter(signal == "case_rate"),
   aes(time_value, value, colour = geo_value)
 ) +
-  geom_point() + 
-  geom_smooth(se = FALSE, method = "lm") 
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm")
 ```
 
 ::: {.notes}
@@ -1102,14 +1090,14 @@ Let's go a bit further to spruce this up.
 #| fig-width: 8
 #| fig-height: 5
 ggplot(
-  covid, 
+  covid,
   aes(time_value, value, colour = geo_value)
 ) +
-  geom_point() + 
+  geom_point() +
   geom_smooth(se = FALSE, method = "lm") +
   facet_grid(signal ~ geo_value) +
   scale_colour_manual(
-    name = NULL, 
+    name = NULL,
     values = c(blue, orange)) +
   theme(legend.position = "bottom")
 ```
@@ -1131,14 +1119,14 @@ ggplot(
 #| fig-width: 8
 #| fig-height: 5
 ggplot(
-  covid, 
+  covid,
   aes(time_value, value, colour = geo_value)
 ) +
-  geom_point() + 
+  geom_point() +
   geom_smooth(se = FALSE, method = "lm") +
   facet_grid(signal ~ geo_value, scales = "free_y") +
   scale_colour_manual(
-    name = NULL, 
+    name = NULL,
     values = c(blue, orange)) +
   theme(legend.position = "bottom")
 ```
