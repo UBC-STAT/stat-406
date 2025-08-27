@@ -1,8 +1,16 @@
-# Lecture 3: Classification and Logistic Regression
+---
+title: "Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression"
+author: "Geoff Pleiss"
+date: last-modified
+format:
+  html: default
+  pdf: default
+---
 
 ## Learning Objectives
 
 By the end of this lecture, you will be able to:
+
 1. Define the log-odds statistical model for binary classification, and justify its advantages
 2. Derive logistic regression through MLE and ERM
 3. Construct predictions for classifiers based on different notions of risk
@@ -12,14 +20,15 @@ By the end of this lecture, you will be able to:
 In the previous lecture, we developed a statistical perspective of the supervised learning procedure, and we worked through the steps of the learning procedure in a regression context.
 
 | Step | CS Perspective | Statistical Perspective | Example: Linear Regression |
-|------|----------------|------------------------|----------------------------|
-| 2 | Hypothesis Class | Statistical Model | $\mathbb E[Y \mid X = x] = x^\top \beta$ |
-| 3 | Training |  Estimation | $\hat \beta_\mathrm{OLS} = \hat \beta_\mathrm{ERM} = \hat \beta_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y $
-| 6 | Testing (Inference) | Prediction | $\hat Y_\mathrm{new} = X_\mathrm{new}^\top \hat \beta$ |
+| ---- | -------------- | ----------------------- | -------------------------- |
+| 2    | Hypothesis Class | Statistical Model     | $\mathbb{E}[Y \mid X = x] = x^\top \beta$ |
+| 3    | Training       | Estimation              | $\hat{\beta}_\mathrm{MLE/OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}$ |
+| 6    | Testing (Inference) | Prediction         | $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$ |
 
 In this lecture, we will work through the same steps, but this time for **classification** problems.
 
 **Classification versus regression**:
+
 - In **regression**, the response variable $Y$ is continuous (i.e. $\mathcal Y = \mathbb{R}$).
 - In **binary classification**, the response variable $Y$ is boolean (i.e. $\mathcal Y = \{0, 1\}$), where
    - $Y = 1$ represents the "positive" class
@@ -60,6 +69,7 @@ Let's now derive a statistical model estimation procedure, and prediction rule f
   - If $x^\top \beta < 0$, then $\pi_1(x) = P(Y=1|X=x) < 0$, which is also not a valid probability.
 
 **Modelling the log-odds**
+
 - Instead of defining distributions through $P(Y = 1 \mid X = x)$ directly, we will instead define distributions through the **log-odds ratio**
 
 - The **log-odds ratio** is then:
@@ -111,13 +121,14 @@ Going a bit out of order, let's discuss how we can make predictions using the lo
 **Making predictions:**
 
 Given
+
 - a $\hat \beta$ estimate
 - a new observation $X_{\text{new}}$
 - a **loss function** $L(Y, \hat{Y})$ that quantifies how "bad" a prediction is
 
 recall that we make predictions by minimizing the expected loss:
 
-$$\hat{Y}_{\text{new}} = \argmin_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]$$
+$$\hat{Y}_{\text{new}} = \mathrm{argmin}_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]$$
 
 **0/1 Loss:**
 
@@ -127,11 +138,10 @@ $$L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 & \text{if 
 
 - Under our logistic model, we have:
 
-$$
 \begin{align*}
-\hat{Y}_{\text{new}} &= \argmin_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
-&= \argmin_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
-&= \argmin_{\hat{y}} \left[
+\hat{Y}_{\text{new}} &= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
+&= \mathrm{argmin}_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
+&= \mathrm{argmin}_{\hat{y}} \left[
    \underbrace{P(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
    \underbrace{P(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
 &= \begin{cases}
@@ -139,7 +149,6 @@ $$
 0 & \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5
 \end{cases}
 \end{align*}.
-$$
 
 **Decision boundary:**
 
@@ -178,7 +187,7 @@ As with regression, we will derive estimators for the logistic regression parame
 
 Recall the MLE estimator is given by
 
-$$\hat{\beta}_\mathrm{MLE} = \argmax_{\beta} \mathcal L(\beta) = \argmax_{\beta} \ell(\beta)$$
+$$\hat{\beta}_\mathrm{MLE} = \mathrm{argmax}_{\beta} \mathcal L(\beta) = \mathrm{argmax}_{\beta} \ell(\beta)$$
 
 where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the log-likelihood function.
 
@@ -186,12 +195,10 @@ where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the l
 
 - Given training data $\mathcal{D} = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$, recall that the likelihood/log-likelihood function is:
 
-   $$
    \begin{gather}
    \mathcal{L}(\beta) = \prod_{i=1}^n P(Y_i \mid X_i; \beta) \\
    \ell(\beta) = \sum_{i=1}^n \log P(Y_i \mid X_i; \beta)
    \end{gather}
-   $$
 
 - Plugging in our model, we have that:
 
@@ -217,7 +224,7 @@ where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the l
 **Computing the MLE estimator:**
 
 $$
-\hat \beta_\mathrm{MLE} = \argmin_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
+\hat \beta_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
 $$
 
 - Unlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.
@@ -230,7 +237,7 @@ $$
 
 Recall the ERM estimator is given by
 
-$$\hat{\beta}_\mathrm{MLE} = \argmin_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)$$
+$$\hat{\beta}_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)$$
 
 where $L$ is a loss function of our choosing.
 
@@ -241,7 +248,7 @@ $$L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \b
 
 - However, this loss leads to a hard minimization problem:
 
-$$\argmin_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta > 0))$$
+$$\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta > 0))$$
 
 - This optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.
 
@@ -262,20 +269,18 @@ $$L_{\text{logistic}}(Y, \mathbb{I}(X_i^\top \beta > 0)) \approx \left[ (1-Y) \s
 
 - Substituting this loss into the ERM estimator yields a **convex optimization problem**, which are (relatively) easy to solve numerically:
 
-$$\hat{\beta}_\mathrm{ERM} = \argmin_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]$$
+$$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]$$
 
 - A little manipulation will show that this is equalivalent to the MLE optimization problem!
 
-$$
 \begin{align*}
-\hat{\beta}_\mathrm{ERM} &= \argmin_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
-&= \argmax_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
-&= \argmax_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
+\hat{\beta}_\mathrm{ERM} &= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
+&= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
+&= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
  = \hat{\beta}_\mathrm{MLE}.
-\end{align*}$$
+\end{align*}
 
 **Key insight**: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.
-
 
 
 ## Summary
