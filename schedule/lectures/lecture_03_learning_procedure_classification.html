@@ -7,8 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-08-28">
 
-<title>lecture_03_learning_procedure_classification – UBC Stat406 2025 W1</title>
+<title>Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression – UBC Stat406 2025 W1</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -39,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8601374965b5aae9b60399aa83673985.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-9ffefcbb3209bb130540c167f329099c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -159,9 +160,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#lecture-3-classification-and-logistic-regression" id="toc-lecture-3-classification-and-logistic-regression" class="nav-link active" data-scroll-target="#lecture-3-classification-and-logistic-regression">Lecture 3: Classification and Logistic Regression</a>
-  <ul class="collapse">
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
   <li><a href="#supervised-learning-for-classification-statistical-perspective" id="toc-supervised-learning-for-classification-statistical-perspective" class="nav-link" data-scroll-target="#supervised-learning-for-classification-statistical-perspective">Supervised Learning for Classification: Statistical Perspective</a></li>
   <li><a href="#statistical-model-linear-log-odds" id="toc-statistical-model-linear-log-odds" class="nav-link" data-scroll-target="#statistical-model-linear-log-odds">Statistical Model: Linear Log-Odds</a></li>
   <li><a href="#prediction-and-different-notions-of-risk" id="toc-prediction-and-different-notions-of-risk" class="nav-link" data-scroll-target="#prediction-and-different-notions-of-risk">Prediction and Different Notions of Risk</a></li>
@@ -171,7 +170,6 @@ window.Quarto = {
   <li><a href="#empirical-risk-minimization-erm" id="toc-empirical-risk-minimization-erm" class="nav-link" data-scroll-target="#empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</a></li>
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
-  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_03_learning_procedure_classification.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_03_learning_procedure_classification.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
     </div>
@@ -180,6 +178,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
+<h1 class="title">Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression</h1>
 </div>
 
 
@@ -193,6 +192,12 @@ window.Quarto = {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 28, 2025</p>
+    </div>
+  </div>
   
     
   </div>
@@ -202,21 +207,24 @@ window.Quarto = {
 </header>
 
 
-<section id="lecture-3-classification-and-logistic-regression" class="level1">
-<h1>Lecture 3: Classification and Logistic Regression</h1>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
-<p>By the end of this lecture, you will be able to: 1. Define the log-odds statistical model for binary classification, and justify its advantages 2. Derive logistic regression through MLE and ERM 3. Construct predictions for classifiers based on different notions of risk</p>
+<p>By the end of this lecture, you will be able to:</p>
+<ol type="1">
+<li>Define the log-odds statistical model for binary classification, and justify its advantages</li>
+<li>Derive logistic regression through MLE and ERM</li>
+<li>Construct predictions for classifiers based on different notions of risk</li>
+</ol>
 </section>
 <section id="supervised-learning-for-classification-statistical-perspective" class="level2">
 <h2 class="anchored" data-anchor-id="supervised-learning-for-classification-statistical-perspective">Supervised Learning for Classification: Statistical Perspective</h2>
 <p>In the previous lecture, we developed a statistical perspective of the supervised learning procedure, and we worked through the steps of the learning procedure in a regression context.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 8%">
-<col style="width: 21%">
-<col style="width: 32%">
-<col style="width: 37%">
+<col style="width: 5%">
+<col style="width: 20%">
+<col style="width: 34%">
+<col style="width: 38%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -231,24 +239,34 @@ window.Quarto = {
 <td>2</td>
 <td>Hypothesis Class</td>
 <td>Statistical Model</td>
-<td><span class="math inline">\(\mathbb E[Y \mid X = x] = x^\top \beta\)</span></td>
+<td><span class="math inline">\(\mathbb{E}[Y \mid X = x] = x^\top \beta\)</span></td>
 </tr>
 <tr class="even">
 <td>3</td>
 <td>Training</td>
 <td>Estimation</td>
-<td>$<em> = </em> = _ = (X<sup>X)</sup>{-1} X^Y $</td>
+<td><span class="math inline">\(\hat{\beta}_\mathrm{MLE/OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}\)</span></td>
 </tr>
 <tr class="odd">
 <td>6</td>
 <td>Testing (Inference)</td>
 <td>Prediction</td>
-<td><span class="math inline">\(\hat Y_\mathrm{new} = X_\mathrm{new}^\top \hat \beta\)</span></td>
+<td><span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span></td>
 </tr>
 </tbody>
 </table>
 <p>In this lecture, we will work through the same steps, but this time for <strong>classification</strong> problems.</p>
-<p><strong>Classification versus regression</strong>: - In <strong>regression</strong>, the response variable <span class="math inline">\(Y\)</span> is continuous (i.e.&nbsp;<span class="math inline">\(\mathcal Y = \mathbb{R}\)</span>). - In <strong>binary classification</strong>, the response variable <span class="math inline">\(Y\)</span> is boolean (i.e.&nbsp;<span class="math inline">\(\mathcal Y = \{0, 1\}\)</span>), where - <span class="math inline">\(Y = 1\)</span> represents the “positive” class - <span class="math inline">\(Y = 0\)</span> represents the “negative” class - (You might see <span class="math inline">\(Y = -1\)</span> used to denote the negative class. It doesn’t make a huge difference, but we’ll stick with <span class="math inline">\(Y=0\)</span> for mathematical simplicity.) - The goal remains the same: learn a function <span class="math inline">\(\hat{f}: \mathbb{R}^d \to \{0, 1\}\)</span> that accurately predicts the class label for new observations.</p>
+<p><strong>Classification versus regression</strong>:</p>
+<ul>
+<li>In <strong>regression</strong>, the response variable <span class="math inline">\(Y\)</span> is continuous (i.e.&nbsp;<span class="math inline">\(\mathcal Y = \mathbb{R}\)</span>).</li>
+<li>In <strong>binary classification</strong>, the response variable <span class="math inline">\(Y\)</span> is boolean (i.e.&nbsp;<span class="math inline">\(\mathcal Y = \{0, 1\}\)</span>), where
+<ul>
+<li><span class="math inline">\(Y = 1\)</span> represents the “positive” class</li>
+<li><span class="math inline">\(Y = 0\)</span> represents the “negative” class</li>
+<li>(You might see <span class="math inline">\(Y = -1\)</span> used to denote the negative class. It doesn’t make a huge difference, but we’ll stick with <span class="math inline">\(Y=0\)</span> for mathematical simplicity.)</li>
+</ul></li>
+<li>The goal remains the same: learn a function <span class="math inline">\(\hat{f}: \mathbb{R}^d \to \{0, 1\}\)</span> that accurately predicts the class label for new observations.</li>
+</ul>
 <p>Let’s now derive a statistical model estimation procedure, and prediction rule for binary classification!</p>
 <p><strong>Sneak peak: logistic regression</strong></p>
 <ul>
@@ -288,8 +306,9 @@ window.Quarto = {
 <li>If <span class="math inline">\(x^\top \beta &lt; 0\)</span>, then <span class="math inline">\(\pi_1(x) = P(Y=1|X=x) &lt; 0\)</span>, which is also not a valid probability.</li>
 </ul></li>
 </ul>
-<p><strong>Modelling the log-odds</strong> - Instead of defining distributions through <span class="math inline">\(P(Y = 1 \mid X = x)\)</span> directly, we will instead define distributions through the <strong>log-odds ratio</strong></p>
+<p><strong>Modelling the log-odds</strong></p>
 <ul>
+<li><p>Instead of defining distributions through <span class="math inline">\(P(Y = 1 \mid X = x)\)</span> directly, we will instead define distributions through the <strong>log-odds ratio</strong></p></li>
 <li><p>The <strong>log-odds ratio</strong> is then: <span class="math display">\[r(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)\]</span></p></li>
 <li><p>I claim that this ratio can take any real value, i.e.&nbsp;<span class="math inline">\(r(x) \in \mathbb{R}\)</span>.</p>
 <table class="caption-top table">
@@ -346,9 +365,14 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="prediction-and-different-notions-of-risk">Prediction and Different Notions of Risk</h2>
 <p>Going a bit out of order, let’s discuss how we can make predictions using the logistic regression model.</p>
 <p><strong>Making predictions:</strong></p>
-<p>Given - a <span class="math inline">\(\hat \beta\)</span> estimate - a new observation <span class="math inline">\(X_{\text{new}}\)</span> - a <strong>loss function</strong> <span class="math inline">\(L(Y, \hat{Y})\)</span> that quantifies how “bad” a prediction is</p>
+<p>Given</p>
+<ul>
+<li>a <span class="math inline">\(\hat \beta\)</span> estimate</li>
+<li>a new observation <span class="math inline">\(X_{\text{new}}\)</span></li>
+<li>a <strong>loss function</strong> <span class="math inline">\(L(Y, \hat{Y})\)</span> that quantifies how “bad” a prediction is</li>
+</ul>
 <p>recall that we make predictions by minimizing the expected loss:</p>
-<p><span class="math display">\[\hat{Y}_{\text{new}} = \argmin_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]\]</span></p>
+<p><span class="math display">\[\hat{Y}_{\text{new}} = \mathrm{argmin}_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]\]</span></p>
 <p><strong>0/1 Loss:</strong></p>
 <ul>
 <li>The most natural loss function for classification is the <strong>0/1 loss</strong>:</li>
@@ -357,19 +381,17 @@ window.Quarto = {
 <ul>
 <li>Under our logistic model, we have:</li>
 </ul>
-<p><span class="math display">\[
-\begin{align*}
-\hat{Y}_{\text{new}} &amp;= \argmin_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
-&amp;= \argmin_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
-&amp;= \argmin_{\hat{y}} \left[
+<p><span class="math display">\[\begin{align*}
+\hat{Y}_{\text{new}} &amp;= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
+&amp;= \mathrm{argmin}_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
+&amp;= \mathrm{argmin}_{\hat{y}} \left[
    \underbrace{P(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
    \underbrace{P(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
 &amp;= \begin{cases}
 1 &amp; \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) &gt; 0.5 \\
 0 &amp; \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5
 \end{cases}
-\end{align*}.
-\]</span></p>
+\end{align*}\]</span>.</p>
 <p><strong>Decision boundary:</strong></p>
 <ul>
 <li><p>Note that</p>
@@ -408,17 +430,15 @@ window.Quarto = {
 <section id="maximum-likelihood-estimation-mle" class="level3">
 <h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</h3>
 <p>Recall the MLE estimator is given by</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \argmax_{\beta} \mathcal L(\beta) = \argmax_{\beta} \ell(\beta)\]</span></p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \mathrm{argmax}_{\beta} \mathcal L(\beta) = \mathrm{argmax}_{\beta} \ell(\beta)\]</span></p>
 <p>where <span class="math inline">\(\mathcal{L}(\beta)\)</span> is the likelihood function and <span class="math inline">\(\ell(\beta)\)</span> is the log-likelihood function.</p>
 <p><strong>Log likelihood of the linear log-odds model:</strong></p>
 <ul>
 <li><p>Given training data <span class="math inline">\(\mathcal{D} = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}\)</span>, recall that the likelihood/log-likelihood function is:</p>
-<p><span class="math display">\[
-\begin{gather}
+<p><span class="math display">\[\begin{gather}
 \mathcal{L}(\beta) = \prod_{i=1}^n P(Y_i \mid X_i; \beta) \\
 \ell(\beta) = \sum_{i=1}^n \log P(Y_i \mid X_i; \beta)
-\end{gather}
-\]</span></p></li>
+\end{gather}\]</span></p></li>
 <li><p>Plugging in our model, we have that:</p>
 <p><span class="math display">\[
 P(Y_i \mid X_i; \beta) = \begin{cases}
@@ -436,7 +456,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 </ul>
 <p><strong>Computing the MLE estimator:</strong></p>
 <p><span class="math display">\[
-\hat \beta_\mathrm{MLE} = \argmin_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
+\hat \beta_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
 \]</span></p>
 <ul>
 <li><p>Unlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.</p></li>
@@ -446,13 +466,13 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <section id="empirical-risk-minimization-erm" class="level3">
 <h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</h3>
 <p>Recall the ERM estimator is given by</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \argmin_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
 <p>where <span class="math inline">\(L\)</span> is a loss function of our choosing.</p>
 <p><strong>Loss function for classification:</strong> - Using the <strong>0/1 loss</strong> , as well as its corresponding prediction rule that we derived above, we have <span class="math display">\[L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \beta &gt; 0)\]</span></p>
 <ul>
 <li>However, this loss leads to a hard minimization problem:</li>
 </ul>
-<p><span class="math display">\[\argmin_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta &gt; 0))\]</span></p>
+<p><span class="math display">\[\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta &gt; 0))\]</span></p>
 <ul>
 <li><p>This optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.</p></li>
 <li><p>Computationally, it is NP-hard, meaning it will take <span class="math inline">\(O(2^n)\)</span> time to solve in the worse case!</p></li>
@@ -494,15 +514,14 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <ul>
 <li>Substituting this loss into the ERM estimator yields a <strong>convex optimization problem</strong>, which are (relatively) easy to solve numerically:</li>
 </ul>
-<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \argmin_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]\]</span></p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]\]</span></p>
 <ul>
 <li>A little manipulation will show that this is equalivalent to the MLE optimization problem!</li>
 </ul>
-<p><span class="math display">\[
-\begin{align*}
-\hat{\beta}_\mathrm{ERM} &amp;= \argmin_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
-&amp;= \argmax_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
-&amp;= \argmax_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
+<p><span class="math display">\[\begin{align*}
+\hat{\beta}_\mathrm{ERM} &amp;= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
+&amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
+&amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
 = \hat{\beta}_\mathrm{MLE}.
 \end{align*}\]</span></p>
 <p><strong>Key insight</strong>: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.</p>
@@ -520,7 +539,6 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <p>In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

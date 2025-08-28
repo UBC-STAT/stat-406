@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-08-26">
+<meta name="dcterms.date" content="2025-08-28">
 
 <title>Lecture 2: Introduction to Learning, Regression – UBC Stat406 2025 W1</title>
 <style>
@@ -40,7 +40,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-8601374965b5aae9b60399aa83673985.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-9ffefcbb3209bb130540c167f329099c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -207,7 +207,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 26, 2025</p>
+      <p class="date">August 28, 2025</p>
     </div>
   </div>
   
@@ -219,10 +219,6 @@ window.Quarto = {
 </header>
 
 
-<p><span class="math display">\[
-\DeclareMathOperator*{\argmin}{argmin}
-\DeclareMathOperator*{\argmax}{argmax}
-\]</span></p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
 <p>By the end of this lecture, you will be able to:</p>
@@ -301,7 +297,7 @@ In this class, we will formulate these algorithms from first statistical princip
 <li><strong>Training</strong>: Define a training algorithm (a procedure to choose a <span class="math inline">\(\hat \beta\)</span> from the training data) and apply it to <span class="math inline">\(\mathcal{D}_\mathrm{train}\)</span>.
 <ul>
 <li>Most training algorithms involve minimizing a <strong>loss function</strong> over training data.</li>
-<li>For linear models, we often choose <span class="math inline">\(\hat f\)</span> to minimize the <strong>squared error loss</strong> over training data. <span class="math display">\[L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \argmin_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). \]</span></li>
+<li>For linear models, we often choose <span class="math inline">\(\hat f\)</span> to minimize the <strong>squared error loss</strong> over training data. <span class="math display">\[L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). \]</span></li>
 </ul></li>
 <li><strong>Validation</strong>: Test performance on withheld validation data.
 <ul>
@@ -447,7 +443,7 @@ In this class, we will formulate these algorithms from first statistical princip
 <li><p>Taking the log of the likelihood function, log-likelihood: <span class="math display">\[\ell(\beta, \sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
 <li><p>The logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.</p></li>
 <li><p>The <span class="math inline">\(-\frac{n}{2}\log(2\pi\sigma^2)\)</span> constant and the <span class="math inline">\(\frac{1}{2\sigma^2}\)</span> scaling term also don’t affect the maximum, so we can ignore them.</p></li>
-<li><p>Thus, the maximum likelihood estimate of <span class="math inline">\(\beta\)</span> is found by minimizing: <span class="math display">\[\argmin_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,\]</span></p></li>
+<li><p>Thus, the maximum likelihood estimate of <span class="math inline">\(\beta\)</span> is found by minimizing: <span class="math display">\[\mathrm{argmin}_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,\]</span></p></li>
 <li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
 </ul>
 <p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results!</p>
@@ -466,27 +462,25 @@ In this class, we will formulate these algorithms from first statistical princip
 <p><strong>Decision theory for predictions</strong>: We want a principled reason for using this prediction rule.</p>
 <ul>
 <li><p><strong>Decision theory</strong>: choose a prediction <span class="math inline">\(\hat{Y}_\mathrm{new}\)</span> that minimizes the expected loss:</p>
-<p><span class="math display">\[\hat{Y}_\mathrm{new} = \argmin_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
+<p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
 <li><p>According to our estimated model, we have</p>
 <p><span class="math display">\[P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).\]</span></p></li>
 <li><p>Plugging in the squared error loss function into this formula, we get:</p>
-<p><span class="math display">\[
-\begin{align*}
-    \hat{Y}_\mathrm{new} &amp;= \argmin_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new} - \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
-    &amp;= \argmin_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2 \mid X_\mathrm{new}, \hat \beta]}_{
+<p><span class="math display">\[\begin{align*}
+    \hat{Y}_\mathrm{new} &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new} - \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
+    &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2 \mid X_\mathrm{new}, \hat \beta]}_{
        \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
        \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
     } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{X_\mathrm{new}^\top \beta}
     + \hat{y}_\mathrm{new}^2 \right) \\
-    &amp;= \argmin_{\hat{y}_\mathrm{new}} \left(
+    &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
        \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
           (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
        }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
     \right)
-\end{align*}
-\]</span></p></li>
+\end{align*}\]</span></p></li>
 <li><p>We can drop the <span class="math inline">\(\sigma^2\)</span> constant, since it doesn’t affect the minimum, and we are left with:</p>
-<p><span class="math display">\[\hat{Y}_\mathrm{new} = \argmin_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
+<p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
 <p>which, after taking the derivative and setting to zero, gives us: <span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span>.</p></li>
 </ul>
 <p><strong>Important!</strong> If we had chosen a different loss function, we would have derived a different prediction rule.</p>
