@@ -1,0 +1,603 @@
+---
+lecture: "Methods for Statistical Learning"
+format: revealjs
+metadata-files:
+  - _metadata.yml
+---
+
+{{< include _titleslide.qmd >}}
+
+## Who am I?
+
+::: flex
+
+::: w-50
+**Geoff Pleiss**
+
+- [geoff.pleiss\@stat.ubc.ca](mailto:geoff.pleiss@stat.ubc.ca){.email}
+- <http://geoffpleiss.com/>
+- Assistant Professor, Department of Statistics
+- Research interests: machine learning
+  - Uncertainty quantification
+  - Sequential decision making
+  - Deep learning
+  - ML for science
+:::
+
+::: w-50
+<img src="https://geoffpleiss.com/static/media/me.0c3be0b6.jpg" alt="Geoff Pleiss" width="350px" style="border-radius: 50%" />
+:::
+:::
+
+
+## Who are You?
+
+::: {.incremental}
+- Stats major?
+- Took STAT 306?
+- Took CPSC 340?
+- Feel "knowledgable" about ML?
+- Need this course to graduate?
+:::
+
+## This Course
+
+**Goal**:
+
+- Develop deep statistical intuitions about prediction and learning
+- Draw connections between modelling/learning paradigms
+
+**Assumptions**:
+
+- You have familiarity with linear models (STAT 306) or ML basics (CPSC 340)
+- You are willing to put in the work!
+
+## Differences from Prior Courses
+
+<br/>
+
+::: {.columns}
+::: {.column}
+### If You've Taken STAT306
+
+- Risks analyses
+- High dimensional learning methods
+- Non-linear learning methods
+- Non-parametric learning methods
+- Unsupervised learning methods
+- "Modern" methods (deep learning/ensembles)
+:::
+
+::: {.column}
+### If You've Taken CPSC340
+
+- Surface level: mostly same content
+- Under the hood: more depth/stats
+  - Statistical modelling/model selection
+  - Bias-variance tradeoff
+  - Curse of dimensionality
+  - Ensembling
+  - Generative versus discrminative modelling
+:::
+:::
+
+
+## What is Statistical Learning?
+
+*A history lesson*
+
+<!-- . . . -->
+
+::: {.columns}
+::: {.column .m-5 width="60%"}
+### Early AI, Summers, and Winters
+- 1950s: "intelligent machines", Turing test, sci-fi
+- 1960s: Early perceptrons, hype cycle
+- 1970s: AI Winter
+- Early 1980s: Rule-based systems
+- Late 1980s: Another winter
+:::
+
+::: {.column .ml-5 width="40%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Alan_turing_header.jpg/250px-Alan_turing_header.jpg){width="40%"}
+![](https://upload.wikimedia.org/wikipedia/commons/3/3b/Frank_Rosenblatt.jpg){width="40%"}
+:::
+:::
+
+## What is Statistical Learning?
+
+### Meanwhile, in Statistics Land...
+
+Statisticians are developing frameworks for reasoning, predicting, and making decision from data.
+
+- 1800s (Legendre and Gauss): predicting form data (least squares)
+- 1910s (Fisher): estimating unknown parameters (MLE)
+- 1940s (Shannon): quantifying information in data (information theory)
+- 1950s (Wald): making decisions from data (decision theory)
+- 1970s-80s: blackbox computer-based algorithms (bootstrap, MCMC)
+
+🧐 Aren't these the same goals as AI? 🧐
+
+## What is Statistical Learning?
+
+### Statistians Guide AI
+
+::: {.columns}
+::: {.column width="70%"}
+- 1980s (Vapnik, Chervonenkis): statistical learning theory
+  - Study learning general knowledge from data
+  - Mathematical formalism for when learning is possible
+- 1990s-2000s: new algorithms based on stats\
+    - Support vector machines
+    - Bagging/random forests
+    - Topic modelling
+- Applications in the new internet economy (search, ads, product recommendations)
+- AI $\rightarrow$ machine learning
+:::
+::: {.column width="30%"}
+![](https://m.media-amazon.com/images/I/61-TrX6+yKL._UF1000,1000_QL80_.jpg)
+:::
+:::
+
+## What is Statistical Learning?
+
+### Statisticians Play Catch-Up
+
+::: {.columns}
+::: {.column width="60%"}
+- 2010s (Hinton, Bengio, LeCun): neural network revolution
+    - Stats: ideas as "unprincipled"
+    - CS: see lots of empirical success
+    - Stats: backfill theory to explain phenomena
+- 2020s: generative AI
+    - Breakthroughs come from scale (more data, more compute)
+    - Big gap between theory and practice
+    - Core ideas are stat. learning principles
+:::
+::: {.column width="40%"}
+![](https://miro.medium.com/v2/resize:fit:380/1*2vyKzFlzIHfSmOU_lnQE4A.png)
+:::
+:::
+
+# This Course
+
+## Learning Outcomes
+
+1. **Formulate and analyze** machine learning algorithms from a statistical perspective
+2. **Categorize** learning methods through multiple criteria
+3. **Draw connections** between any two learning algorithms and paradigms
+4. **Reason** about which methods are most appropriate for a given situation
+5. **Apply** these methods correctly, troubleshoot common pitfalls, and identify probable steps for improving
+6. **Implement** and utilize models in R using best coding practices
+
+## 6 Modules
+
+Each module has a **technical content theme** (*and a statistical principles theme*)
+
+1.  **Basic regression/classification** (*statistical modelling/selection*)
+2.  **Linear methods, regularization, featurization** (*bias-variance tradeoff*)
+3.  **Nonparametric methods** (*curse of dimensionality*)
+4.  **Trees, ensembles** (*bias/variance reduction*)
+5.  **Unsupervised learning** (*generative vs. discriminative modelling*)
+6.  **Deep learning**
+
+
+# Logistics / Syllabus
+
+
+## Course Components
+
+1. **In-Class** *(discussion, mathematical derivations)*
+2. **Labs** *(coding, tools, how-tos)*
+3. **Homework Assignments** *(synthesis, debugging, analysis)*
+4. **Final Exam** *(all of the above)*
+
+## Grading Structure
+
+::: {.columns}
+::: {.column}
+### Knowledge Based (40 points)
+
+| Component   | Points        |
+|-------------|---------------|
+| Midterm     | 10 points     |
+| Final       | 30 points     |
+| **Total**   | **40 points** |
+:::
+
+::: {.column}
+### Effort Based (60 points)
+
+| Component   | Points        |
+|-------------|---------------|
+| In-Class    | 15 points     |
+| Labs        | 20 points     |
+| Homework    | 40 points     |
+| **Total**   | **60 points** |
+:::
+:::
+
+## 🧐 15 + 20 + 40 > 60??? 🧐
+
+:::{.columns}
+:::{.column}
+
+| Component   | Points        |
+|-------------|---------------|
+| In-Class    | 15 points     |
+| Labs        | 20 points     |
+| Homework    | 40 points     |
+| **Total**   | **60 points** |
+
+:::
+:::{.column}
+
+![](https://upload.wikimedia.org/wikipedia/en/6/64/Math_Lady_meme.jpg)
+
+:::
+:::
+
+. . .
+
+$$\text{effort} = \min\left\{60, \text{class} + \text{lab} + \text{hw}\right\}$$
+
+### Get 60 of the 75 total points any way your want
+- Skip class + perfect on labs/homework = 60 points
+- Miss 1 homework + get in-class points = 60 points
+- (More on this later)
+
+# In-Class
+
+## Class Structure
+
+- **Lecture**: I'll go over content
+- **Derivations**: You'll do math in groups
+- **Discussions**: We'll analyze content together
+- **Clickers**: You'll apply your knowledge (in pairs)
+
+## 8AM is hard 😫
+
+. . .
+
+::: {.center}
+**Attendance is optional.**
+:::
+
+## Reasons to Skip Class
+
+1. **If you're sleep deprived**\
+*Getting more sleep may be beneficial to your learning in the long run*
+
+2. **If you're not going to engage/participate**\
+*Lectures are recorded, watch on your own time*
+
+3. **If you're going to have your laptop open**\
+*Do your homework/social media browsing/k-pop video watching in the comfort of your own home; then revisit the course material on your own time*
+
+
+## Reasons to Attend Class (without Distractions)
+
+### 1. Time to Think/Digest/Struggle with the Material
+- Developing deep intuitions takes time/effort.
+- Class gives you 3 hours/week to chew on the material.
+- I'll pace the material accordingly
+
+
+## Reasons to Attend Class (without Distractions)
+
+### 2. In-Class is Where We Wrestle with Math
+- There is lots of math in the course
+- We will spend time in class working through derivations together
+- Working through derivations builds intuitions and deep knowledge
+- Few opportunities on labs/homeworks for this kind of work
+
+
+## Reasons to Attend Class (without Distractions)
+
+### 3. Questions and Discussions
+- There's plenty of online materials that teach you this content (books, videos, etc)
+- There's few opportunities to discuss content with peers/experts
+- *If you're graduating this year, this course may be one of your last opportunities for this type of learning!*
+
+## Reasons to Attend Class (without Distractions)
+
+### 4. Effort-Based Points
+- If you skip class, you'll need to get a perfect grade on labs/homeworks to get a maximum effort-based grade
+- If you attend class, you can skip a homework, mess up on all of them, and still get a perfect grade!
+
+## Reasons to Attend Class (without Distractions)
+### 5. Recommendation Letters
+
+:::{.columns .fragment}
+:::{.column}
+**What I Write for Students who Attend/Participate/Ask Questions**
+![](gfx/good_rec.png)
+:::
+
+:::{.column .fragment}
+**What I Write for Students who Just "Show Up"**
+
+*I don't get to know you, so all I can talk about is your grade.*
+
+![](gfx/okay_rec.png)
+:::
+:::
+
+
+
+
+## In Closing
+
+- Waking up early, avoiding distractions, and participating is hard
+- If you don't have the energy or mental bandwidth on any given day, give yourself the gift of staying home.
+- If you come in, engage, and put in the effort, you'll get a lot out of this course.
+
+## Earning Points
+
+::: {.columns}
+::: {.column .fragment}
+### Participation (5 points)
+
+- We will (try to) use [Agora](https://www.cs.ubc.ca/~hzarkoob/participation_app.html) for virtual "hand-raising"
+- 1 point for "raising" your hand
+- 1 point if you are called on (assigned randomly by Agora)
+- Grade: $\min\left\{ 5, 5 \frac{n_\mathrm{points}}{n_\mathrm{classes}} \right\}$
+:::
+::: {.column .fragment}
+### Clickers (10 points)
+-   We will use [iClicker](https://lthub.ubc.ca/guides/iclicker-cloud-student-guide/) for questions that are similar to the midterm/final
+-   0 points for skipping, 2 points for trying, 4 points for correct
+    -   Average of 3 = 10 points (the max)
+    -   Average of 2 = 5 points
+    -   Average of 1 = 0 points
+- Grade: $\max\left\{ 0, \min\left\{ 5 \frac{n_\mathrm{points}}{n_\mathrm{classes}} - 5, 10 \right\} \right\}$
+-   Be sure to sync your device in Canvas.
+:::
+:::
+
+# Labs / Assignments
+
+## Mechanics and Grading
+
+The goal is to "Do the work"
+
+::: {.columns}
+::: {.column}
+### Assignments
+
+* Not easy, especially the first 2, especially if you are unfamiliar with R / Rmarkdown / ggplot
+
+* You may revise to raise your score to 7/10, see [Syllabus](https://ubc-stat.github.io/stat-406/syllabus/). Only if you lose 3+ for content (penalties can't be redeemed).
+
+* Don't leave these for the last minute
+:::
+
+::: {.column}
+### Labs
+
+* Labs should give you practice, allow for questions with the TAs.
+
+* They are due at 2300 on the day of your lab, lightly graded.
+
+* You may do them at home, but you must submit individually (in lab, you may share submission)
+
+* Labs are lightly graded
+:::
+:::
+
+## Generative AI Policy
+
+- **AI tools are quite capable** with this material (I used them to help develop course content)
+- **Strong recommendation: Use AI as little as possible** to maximize learning
+- If you use AI, use it to **supplement your thinking** (code completion, rewriting) not **replace your thinking** (feeding entire assignments to chatbots)
+
+## Why Minimize AI Use?
+
+1. **Deep intuitions require struggle**\
+*The only way to develop intuitions about challenging material is to wrestle with content*
+
+2. **Stand out from the crowd**\
+*Anyone can use Claude/Copilot for simple ML. Demonstrate thinking beyond these tools will make you more hireable/trusted*
+
+3. **Course-specific subtleties**\
+*Even with good prompting, chatbots likely won't score above 7-8 on assignments*
+
+4. **No AI on exams**\
+*Don't become too dependent on tools you can't use during midterm/final*
+
+## If you Use Generative AI...
+
+<br />
+
+**Self-reporting required:**
+
+- Describe your AI usage on all assignments and labs.
+- Include all prompts you use.
+- Please be honest (it'll help me improve the course/your learning experience)
+- No grade penalty
+
+## Late policy
+
+If you have not submitted your lab/assignment by the time grading starts,
+you will get a 0.
+
+. . .
+
+<br>
+
+| **When you submit**     | **Likelihood that your submission gets a 0** |
+|-------------------------|------------------------------------------------------------|
+| Before 11pm on due date\ (i.e. on time) | 0%                                        |
+| 11:01pm on due date     | 0.01%                                                       |
+| 9am after due date      | 50%                                                        |
+| 2 weeks after due date  | 99.99999999%                                               |
+
+
+## Late policy
+
+We will only make exceptions when you have grounds for academic consession.
+(See the [UBC policy](https://science.ubc.ca/students/concession).)
+
+:::callout-tip
+**Remember**: you can still get a "perfect" effort grade even if you get a 0 on one assignment.
+:::
+
+# Reading/Textbook
+
+## Textbooks
+
+::: {.columns}
+::: {.column}
+::: callout-important
+## An Introduction to Statistical Learning
+
+James, Witten, Hastie, Tibshirani, 2013, Springer, New York. (denoted \[ISLR\])
+
+Available **free** online: http://statlearning.com/
+:::
+:::
+
+::: {.column}
+::: callout-tip
+## The Elements of Statistical Learning
+
+Hastie, Tibshirani, Friedman, 2009, Second Edition, Springer, New York. (denoted \[ESL\])
+
+Also available **free** online: https://web.stanford.edu/\~hastie/ElemStatLearn/
+:::
+:::
+:::
+
+- Each class has a "required" reading from *Introduction to Statistical Learning*\
+*No quizzes/knowledge demonstration/accountability for not reading, but please do them!*
+- Reading before class will improve your preparation/ability to engage
+
+
+# Knowledge-Based Assessment
+
+## Exams
+
+::: {.columns}
+::: {.column}
+### Midterm Exam
+
+-   In-class, October 23
+-   It is hard
+-   Computer-based
+-   T/F, multiple choice, etc.
+
+:::
+::: {.column}
+### Final Exam
+
+-   Scheduled by the university.
+-   It is hard
+-   The median last year was 50% $\Rightarrow$ A-
+-   Format: TBD
+
+:::
+:::
+
+. . .
+
+</br>
+
+### Philosophy
+
+- If you put in the effort, you're guaranteed a C+.
+- To get an A+, you need to deeply understand the material.
+- No penalty for skipping the midterm/final.
+
+
+
+
+
+## Time expectations per week:
+
+-   Coming to class -- 3 hours
+
+-   Reading the book -- 1 hour
+
+-   Labs -- 1 hour
+
+-   Homework -- 4 hours
+
+-   Study / thinking / playing -- 1 hour
+
+
+. . .
+
+<br />
+
+### Questions?
+
+# Resources
+
+## Computer
+
+::: {.columns}
+::: {.column}
+![](https://upload.wikimedia.org/wikipedia/commons/0/06/Apple_IIe_running_ProDOS.jpg)
+:::
+
+::: {.column}
+* We will use R and we assume some background knowledge.
+
+* Suggest you use **RStudio** IDE
+
+* See <https://ubc-stat.github.io/stat-406/> for what you need to install for the whole term.
+
+* Links to useful supplementary resources are available on the website.
+
+:::
+:::
+
+
+## Other Resources
+
+1. **Course website**\
+All the material (slides, extra worksheets) <https://ubc-stat.github.io/stat-406>
+
+2. **Canvas (minimal)**\
+Quiz 0, grades, course time/location info, links to videos from class
+
+3. **Slack**\
+Discussion board, questions
+
+4. **Github**\
+Homework / Lab submission
+
+
+## Final Words of Wisdom
+
+::: {.fragment}
+- 8am is hard. But you can do it!
+    - I strongly urge you to get up at the same time everyday.
+:::
+
+::: {.fragment}
+- If you need help, please ask!
+    - I'm here to encourage you, get you un-stuck, and ponder ML mysteries with you
+:::
+
+::: {.fragment}
+- Think of this course as preparation for a race/performance/etc.
+    - You have to work out/practice, and there's no shortcuts.
+    - Training is hard, but you'll be pleased with the outcome if you put in the work.
+    - We're here to help you stay excited and motivated on your journey!
+:::
+
+::: {.fragment}
+- Join me on a fun exploration of cool material!
+:::
+
+# Questions?
+
+# TODOs
+
+1. Read the syllabus
+2. Install the R package, read documentation, check your LaTeX installation\
+*BE SURE to follow the Computer Setup instructions on the website!*
+3. Take Quiz 00 on Canvas **by EOD tomorrow!!!**
+4. Sign up for Slack (see Canvas)
+5. View the Course GitHub (once you have access)
