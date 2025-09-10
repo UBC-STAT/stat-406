@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-09-09">
+<meta name="dcterms.date" content="2025-09-10">
 
 <title>Lecture 2: Introduction to Learning, Regression – UBC Stat406 2025 W1</title>
 <style>
@@ -207,7 +207,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 9, 2025</p>
+      <p class="date">September 10, 2025</p>
     </div>
   </div>
   
@@ -260,6 +260,28 @@ window.Quarto = {
 <li>Given a set of new covariates <span class="math inline">\(X_\mathrm{new}\)</span> (e.g.&nbsp;a new house that we don’t know the price of)</li>
 <li>We predict <span class="math inline">\(\hat Y_\mathrm{new} = \hat f(X_\mathrm{new})\)</span> (e.g.&nbsp;our predicted price for the new house)</li>
 <li>Our goal is for <span class="math inline">\(\hat Y_\mathrm{new} \approx Y_\mathrm{new}\)</span>: the true (but unknown) price of the new house.</li>
+</ul>
+<p><strong>Assumptions: what is random?</strong></p>
+<ul>
+<li>Using the notation from <a href="../../schedule/lectures/lecture_01_probability.html">last lecture</a>, you’ll note that the training data <span class="math inline">\((X_i, Y_i)\)</span> and the test data <span class="math inline">\((X_\mathrm{new}, Y_\mathrm{new})\)</span> are random variables.</li>
+<li>This is a modelling choice. As statisticians, our primary tool for reasoning about the learning process is assuming something is random.</li>
+<li>In particular, we’re going to make the following assumptions about our data:
+<ol type="1">
+<li>There is some joint distribution <span class="math inline">\(P(X, Y)\)</span> that governs the covariate/response pairs we see in the world</li>
+<li>Our training data are i.i.d. (independently and identically distributed) <em>random samples</em> from that distribution</li>
+<li>Our test data are also i.i.d. <em>random samples</em> from that distribution.</li>
+</ol></li>
+</ul>
+<p><strong>But isn’t our data given to us?</strong></p>
+<ul>
+<li>In the real world, your training data will actually be some set of numbers. For example, your boss may hand you a CSV with covariate/response pairs. How are these quantities random, if the data are fixed and handed to us?</li>
+<li>Again, <strong>randomness is a modelling assumption that we use to simplify our lives.</strong> So how does this assumption help us?</li>
+<li><strong>What we want to codify in our model:</strong> the data we make predictions on (our test data) are “sufficiently similar” to our training data</li>
+<li>How do we codify “sufficiently similar” in a probabilistic way?
+<ul>
+<li>One way is to assume that they come from the same population distribution.</li>
+<li>To “come from the same population distribution” means that, mathematically, we treat them as random samples from <span class="math inline">\(P(Y, X)\)</span>.</li>
+</ul></li>
 </ul>
 <section id="prediction-versus-inference" class="level3">
 <h3 class="anchored" data-anchor-id="prediction-versus-inference">Prediction versus Inference</h3>
@@ -354,7 +376,7 @@ In this class, we will formulate these algorithms from first statistical princip
 <li>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = X^\top \beta + \varepsilon\]</span>
 <ul>
 <li><span class="math inline">\(\beta\)</span> is the vector of parameters that we are trying to estimate.</li>
-<li><span class="math inline">\(\varepsilon\)</span> is the random error term, which is typicall i.i.d. <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma^2 &gt; 0\)</span>.</li>
+<li><span class="math inline">\(\varepsilon\)</span> is the random error term, which is typically i.i.d. <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma^2 &gt; 0\)</span>.</li>
 <li>(You may notice that we don’t have an intercept term <span class="math inline">\(\beta_0\)</span> in this model. We assume that <span class="math inline">\(X\)</span> has an “all-ones” covariate, i.e.&nbsp;<span class="math inline">\(X = [1, X_1, X_2, \ldots, X_p]\)</span>, so that the intercept term <span class="math inline">\(\beta_0\)</span> is included with the other <span class="math inline">\(\beta\)</span> terms, i.e.&nbsp;<span class="math inline">\(X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p\)</span>.)</li>
 </ul></li>
 <li>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</li>
@@ -363,6 +385,35 @@ In this class, we will formulate these algorithms from first statistical princip
 <ul>
 <li>We refer to <span class="math inline">\(\beta\)</span> as the <strong>parameters</strong> of the model, as a given value of <span class="math inline">\(\beta\)</span> specifies a particular distribution within the set.</li>
 </ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Exercise: What is Random?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise: What is Random?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Going back to the linear model <span class="math inline">\(Y = X^\top \beta + \varepsilon,\)</span> which of these values are random?</p>
+<details>
+<summary>
+Answer
+</summary>
+<p><span class="math display">\[ \underbrace{Y}_\text{random} = \underbrace{X^\top}_\text{random} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} \]</span></p>
+<ul>
+<li><p><span class="math inline">\(\varepsilon\)</span> is random; note that above we are assuming that <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span></p>
+<ul>
+<li><span class="math inline">\(X\)</span> is random; again we make the assumption that our data are random samples from a distribution (also it’s noted as a capital letter!)</li>
+<li><span class="math inline">\(\beta\)</span> is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span></li>
+<li><span class="math inline">\(Y\)</span> is also random; again by assumption, but also because <span class="math inline">\(Y\)</span> equals some function involving random variables</li>
+</ul>
+<p>Note that if we instead consider <span class="math inline">\(Y \mid X = x\)</span>, then</p>
+<p><span class="math display">\[ \underbrace{Y \mid X=x}_\text{random} = \underbrace{x^\top}_\text{fixed} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} \]</span></p></li>
+</ul>
+</details>
+</div>
+</div>
 </section>
 <section id="other-models" class="level3">
 <h3 class="anchored" data-anchor-id="other-models">Other Models</h3>
@@ -463,6 +514,22 @@ In this class, we will formulate these algorithms from first statistical princip
 <ul>
 <li><p><strong>Decision theory</strong>: choose a prediction <span class="math inline">\(\hat{Y}_\mathrm{new}\)</span> that minimizes the expected loss:</p>
 <p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
+<li><p>Solving this optimization problem gives us</p>
+<p><span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\]</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
 <li><p>According to our estimated model, we have</p>
 <p><span class="math display">\[P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).\]</span></p></li>
 <li><p>Plugging in the squared error loss function into this formula, we get:</p>
@@ -483,6 +550,9 @@ In this class, we will formulate these algorithms from first statistical princip
 <p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
 <p>which, after taking the derivative and setting to zero, gives us: <span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span>.</p></li>
 </ul>
+</div>
+</div>
+</div>
 <p><strong>Important!</strong> If we had chosen a different loss function, we would have derived a different prediction rule.</p>
 </section>
 <section id="summary" class="level2">
