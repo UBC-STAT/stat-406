@@ -11,9 +11,9 @@ By the end of this lecture, you will be able to:
 
 1. Distinguish between "learning," "supervised learning," "prediction," and "inference."
 2. Translate between algorithmic and statistical perspectives on learning
-   - Define a statistical model
-   - Define an estimator
-   - Define a prediction rule
+  - Define a statistical model
+  - Define an estimator
+  - Define a prediction rule
 3. Define the standard linear regression model
 4. Derive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework
 
@@ -31,7 +31,7 @@ $$ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in \mathbb R^p 
 
 where:
 
-- $X_i \in \mathbb R^p$ are the $d$-dimensional covariates (e.g. size, location, number of bedrooms, etc. for each house)
+- $X_i \in \mathbb R^p$ are the $p$-dimensional covariates (e.g. size, location, number of bedrooms, etc. for each house)
 - $Y_i \in \mathcal Y$ is the response variable (e.g. house price)
 - $\mathcal Y$ is the space of possible responses.
   - For our problem and other **regression problems**, $\mathcal Y = \mathbb R$.
@@ -48,9 +48,9 @@ From this training set, we want to *learn* a function $\hat f : \mathbb R^p \to 
 - Using the notation from [last lecture](./lecture_01_probability.qmd), you'll note that the training data $(X_i, Y_i)$ and the test data $(X_\mathrm{new}, Y_\mathrm{new})$ are random variables.
 - This is a modelling choice. As statisticians, our primary tool for reasoning about the learning process is assuming something is random.
 - In particular, we're going to make the following assumptions about our data:
-   1. There is some joint distribution $P(X, Y)$ that governs the covariate/response pairs we see in the world
-   2. Our training data are i.i.d. (independently and identically distributed) *random samples* from that distribution
-   3. Our test data are also i.i.d. *random samples* from that distribution.
+    1. There is some joint distribution $P(X, Y)$ that governs the covariate/response pairs we see in the world
+    2. Our training data are i.i.d. (independently and identically distributed) *random samples* from that distribution
+    3. Our test data are also i.i.d. *random samples* from that distribution.
 
 **But isn't our data given to us?**
 
@@ -60,8 +60,8 @@ From this training set, we want to *learn* a function $\hat f : \mathbb R^p \to 
 - Again, **randomness is a modelling assumption that we use to simplify our lives.** So how does this assumption help us?
 - **What we want to codify in our model:** the data we make predictions on (our test data) are "sufficiently similar" to our training data
 - How do we codify "sufficiently similar" in a probabilistic way?
-   - One way is to assume that they come from the same population distribution.
-   - To "come from the same population distribution" means that, mathematically, we treat them as random samples from $P(Y, X)$.
+  - One way is to assume that they come from the same population distribution.
+  - To "come from the same population distribution" means that, mathematically, we treat them as random samples from $P(Y, X)$.
 
 ### Prediction versus Inference
 
@@ -81,18 +81,18 @@ In this class, we will formulate these algorithms from first statistical princip
 
 ### CS/Algorithmic Perspective
 
-Learning is often presented as an algorithm for producing a prediction rule $\hat f$ from data $\mathcal{D}$. This algorithm consist of 6 steps, which we will examine in the context of linear regression:
+Learning is often presented as an algorithm for producing a prediction rule $\hat f$ from data $\mathcal{D}$. This algorithm consists of 6 steps, which we will examine in the context of linear regression:
 
 1. **Train/val/test split**: Divide data into training and testing sets
-   - Given our dataset $\mathcal{D}$, we split it into a training set $\mathcal{D}_\mathrm{train}$, a validation set $\mathcal{D}_\mathrm{val}$, and a test set $\mathcal{D}_\mathrm{test}$.
+    - Given our dataset $\mathcal{D}$, we split it into a training set $\mathcal{D}_\mathrm{train}$, a validation set $\mathcal{D}_\mathrm{val}$, and a test set $\mathcal{D}_\mathrm{test}$.
 
 2. **Hypothesis class**: Select a set of candidate $\hat f$ which might make a good prediction rule.
-   - For linear regression, the hypothesis class is linear functions of the form $\hat f(x) = x^\top \hat\beta$ for some $\hat \beta$.
+    - For linear regression, the hypothesis class is linear functions of the form $\hat f(x) = x^\top \hat\beta$ for some $\hat \beta$.
 
 3. **Training**: Define a training algorithm (a procedure to choose a $\hat \beta$ from the training data) and apply it to $\mathcal{D}_\mathrm{train}$.
-   - Most training algorithms involve minimizing a **loss function** over training data.
-   - For linear models, we often choose $\hat f$ to minimize the **squared error loss** over training data.
-     $$L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). $$
+    - Most training algorithms involve minimizing a **loss function** over training data.
+    - For linear models, we often choose $\hat f$ to minimize the **squared error loss** over training data.
+      $$L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). $$
 4. **Validation**: Test performance on withheld validation data.
    - We compute the average loss on the validation set to evaluate how well our model generalizes to unseen data.
 5. **Iteration**: Refine model based on evaluation results
@@ -119,7 +119,8 @@ A **statistical model** defines the possible relationships between the covariate
 ### The Linear Regression Model
 
 - From STAT 306, you may recall that we typically assume that the relationship between $X$ and $Y$ can be described as:
-$$Y = X^\top \beta + \varepsilon$$
+  $$Y = X^\top \beta + \varepsilon$$
+
   - $\beta$ is the vector of parameters that we are trying to estimate.
   - $\varepsilon$ is the random error term, which is typically i.i.d. $\varepsilon \sim N(0, \sigma^2)$ for some $\sigma^2 > 0$.
   - (You may notice that we don't have an intercept term $\beta_0$ in this model. We assume that $X$ has an "all-ones" covariate, i.e. $X = [1, X_1, X_2, \ldots, X_p]$, so that the intercept term $\beta_0$ is included with the other $\beta$ terms, i.e. $X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p$.)
@@ -136,46 +137,117 @@ $$\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), 
 Going back to the linear model $Y = X^\top \beta + \varepsilon,$ which of these values are random?
 
 <details>
-   <summary>Answer</summary>
-   $$ \underbrace{Y}_\text{random} = \underbrace{X^\top}_\text{random} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
+  <summary>Answer</summary>
+  $$ \underbrace{Y}_\text{random} = \underbrace{X^\top}_\text{random} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
 
-   - $\varepsilon$ is random; note that above we are assuming that $\varepsilon \sim N(0, \sigma^2)$
-   - $X$ is random; again we make the assumption that our data are random samples from a distribution (also it's noted as a capital letter!)
-   - $\beta$ is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates $X$ and $Y$
-   - $Y$ is also random; again by assumption, but also because $Y$ equals some function involving random variables
+  - $\varepsilon$ is random; note that above we are assuming that $\varepsilon \sim N(0, \sigma^2)$
+  - $X$ is random; again we make the assumption that our data are random samples from a distribution (also it's noted as a capital letter!)
+  - $\beta$ is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates $X$ and $Y$
+  - $Y$ is also random; again by assumption, but also because $Y$ equals some function involving random variables
 
-   Note that if we instead consider $Y \mid X = x$, then
+  Note that if we instead consider $Y \mid X = x$, then
 
-   $$ \underbrace{Y \mid X=x}_\text{random} = \underbrace{x^\top}_\text{fixed} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
+  $$ \underbrace{Y \mid X=x}_\text{random} = \underbrace{x^\top}_\text{fixed} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
 </details>
 
 :::
 
 ### Other Models
 
-This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distribution can be used instead. For example:
+This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distributions can be used instead. For example:
 
 1. **The more general linear regression model**: we could consider the slightly more general case of conditional distributions defined by an expected value condition:
-   $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}$$
+  $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}$$
 
-   - Note that $\mathbb E[\mathcal{N}(x^\top\beta, \sigma^2)] = x^\top \beta$, and so the linear regression model is a *subset* of this more general model.
-   - However, this model allows for the possibility of non-normal residuals.
+    - Note that $\mathbb E[\mathcal{N}(x^\top\beta, \sigma^2)] = x^\top \beta$, and so the linear regression model is a *subset* of this more general model.
+    - However, this model allows for the possibility of non-normal residuals.
 
 2. **The polynomial regression model**: we could instead consider the slightly more general case where the expectation is a polynomial function of $X$, rather than just a linear function:
-   $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}$$
-   - Note again that our general linear model is a special case; however this model allows for more complex relationships between $X$ and $Y$.
-   - This model also has parameters (the coefficients of the polynomial). though they are not explicit in this formulation.
+  $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}$$
+
+    - Note again that our general linear model is a special case; however this model allows for more complex relationships between $X$ and $Y$.
+    - This model also has parameters (the coefficients of the polynomial), though they are not explicit in this formulation.
 
 3. **All possible distributions**: what if we used the most general set of distributions?
-   $$\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}$$
-   - While this is a valid set, it turns out that it is too general for the purposes of learning.
-   - Specifically, the **no free lunch theorem** states that we will not be able to identify a "good" model from this set even if we were given infinite training data!
-   - (We need to have some "structure" or simplifying assumptions in our model to be able to learn from data.)
+  $$\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}$$
+
+    - While this is a valid set, it turns out that it is too general for the purposes of learning.
+    - Specifically, the **no free lunch theorem** states that we will not be able to identify a "good" model from this set even if we were given infinite training data!
+    - (We need to have some "structure" or simplifying assumptions in our model to be able to learn from data.)
+
+
+## Prediction
+
+Going a bit out of order, let's discuss how we make predictions on new data
+once we've selected a **specific distribution** from our **statistical model**
+to describe our data.
+
+- Working with the linear statistical model, each distribution is parameterized by some coefficients $\beta \in \mathbb R^p$.
+- Once we have chosen some $\hat{\beta}$ (i.e. the parameters of the distribution that "best" describes our data) we can make predictions on new data points $X_\mathrm{new}$.
+- For linear models, we often use the prediction rule:
+  $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}$$
+
+  But where does that come from?
+
+**Decision theory for predictions**:
+We want a principled reason for using this prediction rule.
+
+- First, we need a way of judging the quality of *any single prediction.*
+
+- We define a **loss** function $L(Y, \hat Y)$ that measures how bad our prediction $\hat Y$
+  matches the true response $Y$
+
+  - A common loss function for regression is the **squared error** $L(Y, \hat Y) = (Y - \hat Y)^2$.
+
+  - Note that $L(Y, \hat Y)$ only equals 0 when $Y = \hat Y$, and is $> 0$ when $Y \ne \hat Y$.
+
+- **Decision theory**: choose a prediction $\hat{Y}_\mathrm{new}$ that minimizes the expected loss:
+
+  $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].$$
+
+- Solving this optimization problem for the squared error loss gives us
+
+  $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$$
+
+:::{.callout-note collapse="true" title="Derivation"}
+
+- According to the distribution parameterized by $\hat \beta$, we have
+
+   $$P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).$$
+
+- Plugging in the squared error loss function into this formula, we get:
+
+  \begin{align*}
+    \hat{Y}_\mathrm{new} &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new}- \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
+    &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2\mid X_\mathrm{new}, \hat \beta]}_{
+      \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
+      \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
+    } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat\beta]}_{X_\mathrm{new}^\top \hat{\beta}}
+    + \hat{y}_\mathrm{new}^2 \right) \\
+    &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
+      \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
+        (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
+      }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
+    \right)
+  \end{align*}
+
+- We can drop the $\sigma^2$ constant, since it doesn't affect the minimum, and we are left with:
+
+  $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,$$
+
+  which, after taking the derivative and setting to zero, gives us: $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$.
+
+:::
+
+**Important!** If we had chosen a different loss function, we could end up with a different prediction rule.
+
 
 ## Estimation
 
-- Once we have chosen a statistical model, the **estimation** step involves us choosing a specific distribution from the model that best fits our training data.
-- Alternatively, we can think of it as estimating a set of **parameters** that define a distribution within our model that describe the training data.
+We've talked about making predictions from a distribution selected by our statistical model.
+But how did we choose that distribution? (Or alternatively, how did we choose $\hat\beta$?)
+
+- The **estimation** step involves us choosing a specific distribution from the model (or alternatively, the parameters $\hat \beta$ defining the distribution) that best fits our training data.
 - There are many statistically valid estimation procedures. We'll derive two that you've likely seen before: **Maximum Likelihood Estimation (MLE)** and **Empirical Risk Minimization (ERM)**. (We'll talk about others throughout this course.)
 
 We will work through these two procedures using the linear regression model as our statistical model.
@@ -185,36 +257,38 @@ We will work through these two procedures using the linear regression model as o
 **Goal**: Find the parameters that minimize the loss on our training data.
 
 - From STAT 306, you may remember a procedure known as **Ordinary Least Squares (OLS)** to estimate the parameters of a linear regression model.
-- This procedures is a special case of a more general procedure **Empirical Risk Minimization (ERM)** for reasons that we will see in a few lectures.
+- This procedure is a special case of a more general procedure **Empirical Risk Minimization (ERM)** for reasons that we will see in a few lectures.
 
 **The OLS/ERM Procedure:**
 
-1. **Define a loss function**
-   - We need to quantify what we mean by "least bad."
-   - A **loss function** measures how well a particular $P[Y \mid X=X_i]$ distribution fits the true label $Y_i$.
-   - Given a $\beta$ for our linear regression model, a common choice of loss function is the **squared error loss**:
-   $$L(Y_i, \hat{Y_i}) = (Y_i - \hat{Y_i})^2, \qquad \hat{Y_i} = X_i^\top\beta.$$
+The goal of ERM is to choose the distribution (i.e. set of parameters) that minimizes the loss over predictions on our training data.
 
-2. **Minimize the average loss over the training data**
-   - The **empirical risk** is defined as the average loss over our training data:
+  - Given a set of parameters $\hat \beta$,
+    let $\hat Y_i$ be the predictions that we make on the training data
+    using the prediction rule derived from the loss $L(Y, \hat Y)$.
 
-      $$\hat{R}(\beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2$$
+  - The **empirical risk** is defined as the total loss over our training data:
 
-   - The **OLS (ERM) estimator** is the set of parameters $\hat{\beta}$ (i.e. the distribution from our model) that minimizes this empirical risk:
+    $$\hat{R}(\hat \beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i)$$
 
-      $$\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2$$
+    where we (typically) use the same loss that governs our prediction rule.
+    Using the squared loss, $\hat{R}(\hat\beta) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top \hat\beta)^2$
 
-   - Taking the derivative and setting to zero:
+  - The **ERM estimator** is the set of parameters $\hat{\beta}$ (i.e. the distribution from our model) that minimizes this empirical risk:
 
-      $$\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0$$
+    $$\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2$$
 
-   - By arranging all of our training data into a matrix $\boldsymbol X \in \mathbb{R}^{n \times d}$ and a vector $\boldsymbol Y \in \mathbb{R}^n$, with
+  - Taking the derivative and setting to zero:
 
-      $$\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times d}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},$$
+    $$\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0$$
 
-      we get:
+  - By arranging all of our training data into a matrix $\boldsymbol X \in \mathbb{R}^{n \times p}$ and a vector $\boldsymbol Y \in \mathbb{R}^n$, with
 
-      $$\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.$$
+    $$\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},$$
+
+    we get:
+
+    $$\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.$$
 
 
 
@@ -231,7 +305,7 @@ $$\mathcal{L} (\beta, \sigma^2) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \e
 
 - The term inside the product is the density of the normal distribution $\mathcal{N}(X_i^\top\beta, \sigma^2)$ evaluated at $Y_i$.
 - We take the product over all $n$ training examples $(X_i, Y_i)$ because we assume that the data points are i.i.d.
-- We choose $\beta$ to maximize the likelihood function, i.e. the $\beta$ that make observed data most probable.
+- We choose $\hat\beta$ to maximize the likelihood function, i.e. the $\hat\beta$ that make observed data most probable.
 
 **Log-likelihoods are easier to work with**.
 
@@ -239,9 +313,16 @@ $$\mathcal{L} (\beta, \sigma^2) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \e
 $$\ell(\beta, \sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2$$
 
 - The logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.
-- The $-\frac{n}{2}\log(2\pi\sigma^2)$ constant and the $\frac{1}{2\sigma^2}$ scaling term also don't affect the maximum, so we can ignore them.
-- Thus, the maximum likelihood estimate of $\beta$ is found by minimizing:
-$$\mathrm{argmin}_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,$$
+
+- The maximizer of this log likelihood function (and thus the maximum of the likelihood function) is thus equal to:
+$$\mathrm{argmax}_{\beta} -\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = \mathrm{argmin}_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,$$
+
+  <details>
+    <summary>Details:</summary>
+
+    The $-\frac{n}{2}\log(2\pi\sigma^2)$ constant and the $\frac{1}{2\sigma^2}$ scaling term  also don't affect the maximum, so we can ignore them.
+  </details>
+
 - This is exactly the same optimization problem we derived for ERM! Thus,
 $$ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} $$
 
@@ -250,54 +331,7 @@ $$ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbo
 - If we had used a different loss function (e.g. $L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|$), the ERM estimator would not be the same as the OLS/MLE estimator.
 - There are many possible loss functions with different properties, and we will explore them in future lectures.
 
-## Prediction
 
-- Once we have estimated $\hat{\beta}$ and selected the distribution that "best" describes our data, we can make predictions on new data points $X_\mathrm{new}$.
-- For linear models, we often use the prediction rule:
-$$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}$$
-
-**Decision theory for predictions**:
-We want a principled reason for using this prediction rule.
-
-- **Decision theory**: choose a prediction $\hat{Y}_\mathrm{new}$ that minimizes the expected loss:
-
-   $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].$$
-
-- Solving this optimization problem gives us
-
-   $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$$
-
-:::{.callout-tip collapse="true" title="Derivation"}
-
-- According to our estimated model, we have
-
-   $$P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).$$
-
-- Plugging in the squared error loss function into this formula, we get:
-
-   \begin{align*}
-      \hat{Y}_\mathrm{new} &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new} - \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
-      &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2 \mid X_\mathrm{new}, \hat \beta]}_{
-         \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
-         \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
-      } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{X_\mathrm{new}^\top \beta}
-      + \hat{y}_\mathrm{new}^2 \right) \\
-      &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
-         \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
-            (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
-         }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
-      \right)
-   \end{align*}
-
-- We can drop the $\sigma^2$ constant, since it doesn't affect the minimum, and we are left with:
-
-   $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,$$
-
-   which, after taking the derivative and setting to zero, gives us: $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$.
-
-:::
-
-**Important!** If we had chosen a different loss function, we would have derived a different prediction rule.
 
 ## Summary
 

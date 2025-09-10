@@ -19,12 +19,12 @@ By the end of this lecture, you will be able to:
 
 - **Example**: Let's say you want to grab a coffee at Loafe and you want to know how long you'll have to wait in line.
 - Denote this time by the variable $A$
-- $Y$ depends on a multitude of factors:
+- $A$ depends on a multitude of factors:
   - How hot it is outside
   - What day of the week it is
   - How late Josh and his friends were up playing video games, thus leading them to take up spots in line
 - While we could try to model all of these factors, it would be infeasible to do so.
-- Instead, we can treat $Y$ as a **random variable**: a variable whose value is *randomly* sampled from some distribution.
+- Instead, we can treat $A$ as a **random variable**: a variable whose value is *randomly* sampled from some distribution.
 
 ### Notation
 
@@ -46,12 +46,12 @@ By the end of this lecture, you will be able to:
 
 - Given two random variables \(A\) and \(B\), we can describe this relationship through a **joint probability distribution**
 
-    $$
-    \begin{cases}
-        P(A=a, B=b) & \text{for discrete random variables} \\
-        f_{A,B}(a, b) & \text{for continuous random variables}
-    \end{cases}
-    $$
+  $$
+  \begin{cases}
+      P(A=a, B=b) & \text{for discrete random variables} \\
+      f_{A,B}(a, b) & \text{for continuous random variables}
+  \end{cases}
+  $$
 
 - Without loss of generality, we will use the discrete random variable notation throughout the rest of this lecture (and throughout most of the course).
 - We can also describe \(A\) and \(B\) through:
@@ -77,9 +77,9 @@ P(A=a, B=b) &= P(A=a|B=b)P(B=b) \\
 
 - By the product rule, for independent random variables we have that
 
-    $$ P(A=a) P(B=b) = P(A=a, B=b) = P(A=a | B=b) P(B=b), $$
+  $$ P(A=a) P(B=b) = P(A=a, B=b) = P(A=a | B=b) P(B=b), $$
 
-    and, through some algebra, that $P(A=a) = P(A=a | B=b)$. (Similarly, $P(B=b) = P(B=b | A=a)$.)
+  and, through some algebra, that $P(A=a) = P(A=a | B=b)$. (Similarly, $P(B=b) = P(B=b | A=a)$.)
 
 - In other words, when $A$ and $B$ are independent, the occurrence of $B$ does not affect the probability of $A$, and vice versa.
 
@@ -105,60 +105,122 @@ $$ P(A=a) = \int_{b} P(A=a, B=b) \: \mathrm{d}b. $$
 
 - We define the **expected value** of $A$ as:
 
-    $$ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. $$
+  $$ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. $$
 
 - Similarly, the expected value of some function of $A$ and $B$ is defined as:
 
-    $$ \mathbb{E}[f(A, B)] := \int_a \int_b f(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. $$
+  $$ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. $$
 
 - We can use the sum rule in conjunction with [Fubini's theorem](https://en.wikipedia.org/wiki/Fubini%27s_theorem) to derive one of the most important formulas in all of probability:
 
-    \begin{align*}
-    \mathbb{E}[A + B]
-    &= \int_a \int_b (a + b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\
-    &= \int_a \int_b a P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\ &\quad + \int_a \int_b b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\
-    &= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\ &\quad + \int_b b \int_a P(A=a, B=b) \: \mathrm{d}a \: \mathrm{d}b
-    \\
-    &= \int_a a P(A=a) \: \mathrm{d}a + \int_b b P(B=b) \: \mathrm{d}b
-    \\
-    &= \mathbb{E}[A] + \mathbb{E}[B]
-    \end{align*}
+  $$ \mathbb E[A + B] = \mathbb E[A] + \mathbb E[B] $$
+
+:::{.callout-note collapse="true" title="Derivation"}
+
+  \begin{align*}
+  \mathbb{E}[A + B]
+  &= \int_a \int_b (a + b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &= \int_a \int_b a P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &\quad + \int_a \int_b b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &\quad + \int_b b \int_a P(A=a, B=b) \: \mathrm{d}a \: \mathrm{d}b
+  \\
+  &= \int_a a P(A=a) \: \mathrm{d}a + \int_b b P(B=b) \: \mathrm{d}b
+  \\
+  &= \mathbb{E}[A] + \mathbb{E}[B]
+  \end{align*}
+
+:::
 
 - This formula, known as **linearity of expectation**, holds *even when $A$ and $B$ are not independent!* We will use this fact constantly throughout the course.
 
 - As a fun challenge problem, try using this formula to derive the famous **inclusion-exclusion principle**:
 
-    $$ P(A \cup B) = P(A) + P(B) - P(A \cap B). $$
+  $$ P(A \cup B) = P(A) + P(B) - P(A \cap B). $$
 
-    *Hint: note that $P(A) = \mathbb{E}[\mathbf{1}_A]$, where $\mathbf{1}_A$ is the indicator random variable for event $A$. Similarly, $P(A \cap B) = \mathbb{E}[\mathbf{1}_A \mathbf{1}_B]$ and $P(A \cup B) = 1 - P(\overline{A} \cap \overline{B})$*.
+  *Hint: note that $P(A) = \mathbb{E}[\mathbf{1}_A]$, where $\mathbf{1}_A$ is the indicator random variable for event $A$. Similarly, $P(A \cap B) = \mathbb{E}[\mathbf{1}_A \mathbf{1}_B]$ and $P(A \cup B) = 1 - P(\overline{A} \cap \overline{B})$*.
 
-### The Tower Rule
+### Conditional Expectations and The Tower Rule
 
-- We define the **expected value** of $A$ as:
+- The **conditional expectation** of $A$ given $B=b$ is defined as:
 
-    $$ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. $$
+  $$ \mathbb{E}[A \mid B = b] := \int_{a} a \: P(A=a \mid B=b) \: \mathrm{d}a. $$
 
-- Using the sum rule and product rule gives us:
+  It is the average value that $A$ takes when we have the additional information that the random variable $B$ takes on the value $b$.
 
-    \begin{align*}
-    \mathbb{E}[A] &= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\
-    &= \int_a a \int_b P(A=a \mid B=b) P(B=b) \: \mathrm{d}b \: \mathrm{d}a
-    \\
-    &= \int_b \left( \int_a a P(A=a \mid B=b) \: \mathrm{d}a \right) P(B=b) \: \mathrm{d}b
-    \\
-    &= \int_b \mathbb{E}[A \mid B=b] P(B=b) \: \mathrm{d}b
-    \\
-    &= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
-    \end{align*}
+- Note that this conditional expectation is a function of $b$; i.e. we can write
+
+  $$ \mathbb{E}[A \mid B = b] = g(b) \qquad \text{for some function} g.$$
+
+- The expression $\mathbb{E} [A \mid B]$ should then be read as:
+
+  $$ \mathbb{E}[A \mid B] = g(B). $$
+
+  I.e. that we are applying the conditional expectation function to the *random variable* $B$
+  rather than to a specific realization $b$.
+
+- To relate $\mathbb E[A \mid B]$ to $\mathbb E[A]$, we can use the sum and product rules to get:
+
+  $$ \mathbb E[A] = \mathbb E[ \mathbb E[ A \mid B]] $$
+
+:::{.callout-note collapse="true" title="Derivation"}
+
+  \begin{align*}
+  \mathbb{E}[A] &= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &= \int_a a \int_b P(A=a \mid B=b) P(B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &= \int_b \left( \int_a a P(A=a \mid B=b) \: \mathrm{d}a \right) P(B=b) \: \mathrm{d}b
+  \\
+  &= \int_b \mathbb{E}[A \mid B=b] P(B=b) \: \mathrm{d}b
+  \\
+  &= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
+  \end{align*}
+
+:::
 
 - This rule is known as the **Tower Rule**. It allows us to express marginal expectations as recursive applications of conditional expectations.
 
 - *This notation is often confusing and scary the first few times you encounter it. Try translating it back into probabilities via the sum and product rules, and you'll fluently understand it in no time!*
+
+:::{.callout-important title="Important: What is Random?"}
+
+- A (standard) expectation $\mathbb E[A]$ is **not** a random variable (despite the fact that there's a random variable inside the expectation).
+
+  <details>
+    <summary>Why?</summary>
+
+    If we go back to the definition: $ \mathbb E[A] = \int a P(A=a) da $,
+    note that the two terms in the integral $a$, $P(A=a)$ are functions of $a$,
+    which is a realized quantity and therefore **not random**.
+    So we're integrating non-random quantities together, giving us a non-random output.
+
+  </details>
+
+- The conditional expectation $\mathbb E[A \mid B=b]$ is also **not** a random variable.
+
+  <details>
+    <summary>Why?</summary>
+
+    Again going back to the definition: $ \mathbb E[A \mid B=b] = \int a P(A=a \mid B=b) da$,
+    the terms inside the integral are functions of $a$ and $b$ (realized quantities, not random variables).
+  </details>
+
+- However, the conditional expectation $\mathbb E[A \mid B]$ **is a random variable**.
+
+  <details>
+    <summary>Why?</summary>
+
+    Recall that we can view $\mathbb E[A \mid B=b]$ as some function of $b$; i.e.
+    $\mathbb E[A \mid B=b] = g(b)$. When we plug a realization (i.e. not a random variable) into $g$, the output is a fixed (not random) quantity.
+
+    However, when we plug in a *random variable* into $g$, the output is a random quantity!
+    So $\mathbb E[A \mid B] = g(B)$ is a *random variable* due to the randomness in $B$.
+  </details>
+
+:::
 
 ## Conclusion
 

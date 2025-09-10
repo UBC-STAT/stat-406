@@ -32,11 +32,11 @@ In this lecture, we will work through the same steps, but this time for **classi
    - $Y = 1$ represents the "positive" class
    - $Y = 0$ represents the "negative" class
    - (You might see $Y = -1$ used to denote the negative class. It doesn't make a huge difference, but we'll stick with $Y=0$ for mathematical simplicity.)
-- The goal remains the same: learn a function $\hat{f}: \mathbb{R}^d \to \{0, 1\}$ that accurately predicts the class label for new observations.
+- The goal remains the same: learn a function $\hat{f}: \mathbb{R}^p \to \{0, 1\}$ that accurately predicts the class label for new observations.
 
 Let's now derive a statistical model estimation procedure, and prediction rule for binary classification!
 
-**Sneak peak: logistic regression**
+**Sneak peek: logistic regression**
 
 - We will ultimately derive **logistic regression**,
 
@@ -50,7 +50,7 @@ Let's now derive a statistical model estimation procedure, and prediction rule f
    - $\pi_0(x) := P(Y = 0 \mid X = x)$ (probability of negative class)
    - Note that $\pi_0(x) = 1 - \pi_1(x)$.
 
-**Sneak peak: the logistic regression model**
+**Sneak peek: the logistic regression model**
 
 - You may remember from STAT 406 or CPSC 340 a set of distributions that look like:
    $$P(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}$$
@@ -88,12 +88,19 @@ We're now ready to define a statistical model for binary classification.
 
    $$\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta$$
 
+- Thus our statistical model is the following set of distributions:
+
+$$\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}$$
+
+:::{.callout-note collapse="true" title="Derivation"}
+- Start with $\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta$
+
 - By substituting $\pi_0(x) = 1 - \pi_1(x)$ and then solving for $\pi_1(x)$, we get:
 
    $$\pi_1(x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}$$
 
-- Thus our statistical model is the following set of distributions:
-$$\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^d \right\}$$
+- Our statistical model is then the set of distributions $P(Y=1 \mid X=x)$ that can take the form of $\pi_1$.
+:::
 
 **The logistic function:**
 
@@ -114,7 +121,7 @@ $$\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \
 
 ## Prediction and Different Notions of Risk
 
-Going a bit out of order, let's discuss how we can make predictions using the logistic regression model.
+Let's discuss how we can make predictions using the logistic regression model.
 
 **Making predictions:**
 
@@ -166,7 +173,7 @@ $$L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 & \text{if 
 
 **Other losses:**
 
-There are other losses that we could use to generated different prediction rules:
+There are other losses that we could use to generate different prediction rules:
 
 1. **Probabilistic loss**: $L_\mathrm{prob}(Y, \hat{Y}) = -\log P(Y = \hat Y)$
    - This loss produces "soft" predictions (e.g. $\hat{Y}_{\text{new}} = 0.273$) that give a probability estimate of the positive class.
@@ -217,7 +224,6 @@ where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the l
    \ell(\beta) = \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
    $$
 
-   where $\pi_1(X_i) = \sigma(\beta_0 + X_i^\top\beta)$ and $\pi_0(X_i) = 1 - \pi_1(X_i)$.
 
 **Computing the MLE estimator:**
 
@@ -235,7 +241,7 @@ $$
 
 Recall the ERM estimator is given by
 
-$$\hat{\beta}_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)$$
+$$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)$$
 
 where $L$ is a loss function of our choosing.
 
@@ -248,7 +254,7 @@ $$L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \b
 
 $$\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta > 0))$$
 
-- This optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.
+- This optimization problem not only has no closed-form solution, but numerical solutions to it are intractable to compute.
 
 - Computationally, it is NP-hard, meaning it will take $O(2^n)$ time to solve in the worse case!
 
@@ -269,14 +275,16 @@ $$L_{\text{logistic}}(Y, \mathbb{I}(X_i^\top \beta > 0)) \approx \left[ (1-Y) \s
 
 $$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]$$
 
-- A little manipulation will show that this is equalivalent to the MLE optimization problem!
+- A little manipulation will show that this is equivalent to the MLE optimization problem!
 
+:::{.callout-info collapse="true" title="Derivation"}
 \begin{align*}
 \hat{\beta}_\mathrm{ERM} &= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
 &= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
 &= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
  = \hat{\beta}_\mathrm{MLE}.
 \end{align*}
+:::
 
 **Key insight**: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.
 
@@ -289,7 +297,7 @@ This lecture extended the statistical framework from regression to classificatio
 
 2. **Prediction**: The optimal prediction rule depends on the loss function.
 
-3. **Linear Decision Boundary**: Under the $0/1 loss$, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \beta = 0$.
+3. **Linear Decision Boundary**: Under the $0/1$ loss, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \beta = 0$.
 
 2. **Estimation**: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.
 
