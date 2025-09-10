@@ -43,6 +43,26 @@ From this training set, we want to *learn* a function $\hat f : \mathbb R^p \to 
 - We predict $\hat Y_\mathrm{new} = \hat f(X_\mathrm{new})$ (e.g. our predicted price for the new house)
 - Our goal is for $\hat Y_\mathrm{new} \approx Y_\mathrm{new}$: the true (but unknown) price of the new house.
 
+**Assumptions: what is random?**
+
+- Using the notation from [last lecture](./lecture_01_probability.qmd), you'll note that the training data $(X_i, Y_i)$ and the test data $(X_\mathrm{new}, Y_\mathrm{new})$ are random variables.
+- This is a modelling choice. As statisticians, our primary tool for reasoning about the learning process is assuming something is random.
+- In particular, we're going to make the following assumptions about our data:
+   1. There is some joint distribution $P(X, Y)$ that governs the covariate/response pairs we see in the world
+   2. Our training data are i.i.d. (independently and identically distributed) *random samples* from that distribution
+   3. Our test data are also i.i.d. *random samples* from that distribution.
+
+**But isn't our data given to us?**
+
+- In the real world, your training data will actually be some set of numbers.
+  For example, your boss may hand you a CSV with covariate/response pairs.
+  How are these quantities random, if the data are fixed and handed to us?
+- Again, **randomness is a modelling assumption that we use to simplify our lives.** So how does this assumption help us?
+- **What we want to codify in our model:** the data we make predictions on (our test data) are "sufficiently similar" to our training data
+- How do we codify "sufficiently similar" in a probabilistic way?
+   - One way is to assume that they come from the same population distribution.
+   - To "come from the same population distribution" means that, mathematically, we treat them as random samples from $P(Y, X)$.
+
 ### Prediction versus Inference
 
 In learning we are primarily concerned with **prediction** over **inference**.
@@ -101,7 +121,7 @@ A **statistical model** defines the possible relationships between the covariate
 - From STAT 306, you may recall that we typically assume that the relationship between $X$ and $Y$ can be described as:
 $$Y = X^\top \beta + \varepsilon$$
   - $\beta$ is the vector of parameters that we are trying to estimate.
-  - $\varepsilon$ is the random error term, which is typicall i.i.d. $\varepsilon \sim N(0, \sigma^2)$ for some $\sigma^2 > 0$.
+  - $\varepsilon$ is the random error term, which is typically i.i.d. $\varepsilon \sim N(0, \sigma^2)$ for some $\sigma^2 > 0$.
   - (You may notice that we don't have an intercept term $\beta_0$ in this model. We assume that $X$ has an "all-ones" covariate, i.e. $X = [1, X_1, X_2, \ldots, X_p]$, so that the intercept term $\beta_0$ is included with the other $\beta$ terms, i.e. $X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p$.)
 
 - For any given $\beta$, if we are given $X = x$, then we have that $Y \sim \mathcal{N}(x^\top\beta, \sigma^2)$.
@@ -110,6 +130,26 @@ Thus, the corresponding statistical model/set of possible conditional distributi
 $$\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.$$
 
 - We refer to $\beta$ as the **parameters** of the model, as a given value of $\beta$ specifies a particular distribution within the set.
+
+:::{.callout-tip title="Exercise: What is Random?"}
+
+Going back to the linear model $Y = X^\top \beta + \varepsilon,$ which of these values are random?
+
+<details>
+   <summary>Answer</summary>
+   $$ \underbrace{Y}_\text{random} = \underbrace{X^\top}_\text{random} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
+
+   - $\varepsilon$ is random; note that above we are assuming that $\varepsilon \sim N(0, \sigma^2)$
+   - $X$ is random; again we make the assumption that our data are random samples from a distribution (also it's noted as a capital letter!)
+   - $\beta$ is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates $X$ and $Y$
+   - $Y$ is also random; again by assumption, but also because $Y$ equals some function involving random variables
+
+   Note that if we instead consider $Y \mid X = x$, then
+
+   $$ \underbrace{Y \mid X=x}_\text{random} = \underbrace{x^\top}_\text{fixed} \underbrace{\beta}_\text{fixed} + \underbrace{\varepsilon}_\text{random} $$
+</details>
+
+:::
 
 ### Other Models
 
@@ -223,6 +263,12 @@ We want a principled reason for using this prediction rule.
 
    $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].$$
 
+- Solving this optimization problem gives us
+
+   $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$$
+
+:::{.callout-tip collapse="true" title="Derivation"}
+
 - According to our estimated model, we have
 
    $$P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).$$
@@ -248,6 +294,8 @@ We want a principled reason for using this prediction rule.
    $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,$$
 
    which, after taking the derivative and setting to zero, gives us: $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$.
+
+:::
 
 **Important!** If we had chosen a different loss function, we would have derived a different prediction rule.
 
