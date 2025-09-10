@@ -265,10 +265,10 @@ window.Quarto = {
 <li><span class="math inline">\(Y = 0\)</span> represents the “negative” class</li>
 <li>(You might see <span class="math inline">\(Y = -1\)</span> used to denote the negative class. It doesn’t make a huge difference, but we’ll stick with <span class="math inline">\(Y=0\)</span> for mathematical simplicity.)</li>
 </ul></li>
-<li>The goal remains the same: learn a function <span class="math inline">\(\hat{f}: \mathbb{R}^d \to \{0, 1\}\)</span> that accurately predicts the class label for new observations.</li>
+<li>The goal remains the same: learn a function <span class="math inline">\(\hat{f}: \mathbb{R}^p \to \{0, 1\}\)</span> that accurately predicts the class label for new observations.</li>
 </ul>
 <p>Let’s now derive a statistical model estimation procedure, and prediction rule for binary classification!</p>
-<p><strong>Sneak peak: logistic regression</strong></p>
+<p><strong>Sneak peek: logistic regression</strong></p>
 <ul>
 <li>We will ultimately derive <strong>logistic regression</strong>,</li>
 </ul>
@@ -288,7 +288,7 @@ window.Quarto = {
 <li>Note that <span class="math inline">\(\pi_0(x) = 1 - \pi_1(x)\)</span>.</li>
 </ul></li>
 </ul>
-<p><strong>Sneak peak: the logistic regression model</strong></p>
+<p><strong>Sneak peek: the logistic regression model</strong></p>
 <ul>
 <li>You may remember from STAT 406 or CPSC 340 a set of distributions that look like: <span class="math display">\[P(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}\]</span>
 <ul>
@@ -338,10 +338,30 @@ window.Quarto = {
 <ul>
 <li><p>We will consider</p>
 <p><span class="math display">\[\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta\]</span></p></li>
+<li><p>Thus our statistical model is the following set of distributions:</p></li>
+</ul>
+<p><span class="math display">\[\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Start with <span class="math inline">\(\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta\)</span></p></li>
 <li><p>By substituting <span class="math inline">\(\pi_0(x) = 1 - \pi_1(x)\)</span> and then solving for <span class="math inline">\(\pi_1(x)\)</span>, we get:</p>
 <p><span class="math display">\[\pi_1(x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}\]</span></p></li>
-<li><p>Thus our statistical model is the following set of distributions: <span class="math display">\[\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^d \right\}\]</span></p></li>
+<li><p>Our statistical model is then the set of distributions <span class="math inline">\(P(Y=1 \mid X=x)\)</span> that can take the form of <span class="math inline">\(\pi_1\)</span>.</p></li>
 </ul>
+</div>
+</div>
+</div>
 <p><strong>The logistic function:</strong></p>
 <ul>
 <li><p>The function in the above equation is known as the <strong>logistic function</strong> or <strong>sigmoid function</strong>:</p>
@@ -363,7 +383,7 @@ window.Quarto = {
 </section>
 <section id="prediction-and-different-notions-of-risk" class="level2">
 <h2 class="anchored" data-anchor-id="prediction-and-different-notions-of-risk">Prediction and Different Notions of Risk</h2>
-<p>Going a bit out of order, let’s discuss how we can make predictions using the logistic regression model.</p>
+<p>Let’s discuss how we can make predictions using the logistic regression model.</p>
 <p><strong>Making predictions:</strong></p>
 <p>Given</p>
 <ul>
@@ -411,7 +431,7 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>Other losses:</strong></p>
-<p>There are other losses that we could use to generated different prediction rules:</p>
+<p>There are other losses that we could use to generate different prediction rules:</p>
 <ol type="1">
 <li><strong>Probabilistic loss</strong>: <span class="math inline">\(L_\mathrm{prob}(Y, \hat{Y}) = -\log P(Y = \hat Y)\)</span>
 <ul>
@@ -451,8 +471,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <li><p>Thus the log likelihood function is:</p>
 <p><span class="math display">\[
 \ell(\beta) = \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
-\]</span></p>
-<p>where <span class="math inline">\(\pi_1(X_i) = \sigma(\beta_0 + X_i^\top\beta)\)</span> and <span class="math inline">\(\pi_0(X_i) = 1 - \pi_1(X_i)\)</span>.</p></li>
+\]</span></p></li>
 </ul>
 <p><strong>Computing the MLE estimator:</strong></p>
 <p><span class="math display">\[
@@ -466,7 +485,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <section id="empirical-risk-minimization-erm" class="level3">
 <h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</h3>
 <p>Recall the ERM estimator is given by</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
 <p>where <span class="math inline">\(L\)</span> is a loss function of our choosing.</p>
 <p><strong>Loss function for classification:</strong> - Using the <strong>0/1 loss</strong> , as well as its corresponding prediction rule that we derived above, we have <span class="math display">\[L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \beta &gt; 0)\]</span></p>
 <ul>
@@ -474,7 +493,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 </ul>
 <p><span class="math display">\[\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta &gt; 0))\]</span></p>
 <ul>
-<li><p>This optimization problem not only has no closed-form solution, but numerical solutions to it are intractible to compute.</p></li>
+<li><p>This optimization problem not only has no closed-form solution, but numerical solutions to it are intractable to compute.</p></li>
 <li><p>Computationally, it is NP-hard, meaning it will take <span class="math inline">\(O(2^n)\)</span> time to solve in the worse case!</p></li>
 </ul>
 <p><strong>Logistic Loss as a Surrogate</strong></p>
@@ -516,14 +535,16 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 </ul>
 <p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]\]</span></p>
 <ul>
-<li>A little manipulation will show that this is equalivalent to the MLE optimization problem!</li>
+<li>A little manipulation will show that this is equivalent to the MLE optimization problem!</li>
 </ul>
+<div class="callout-info" data-collapse="true" title="Derivation">
 <p><span class="math display">\[\begin{align*}
 \hat{\beta}_\mathrm{ERM} &amp;= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
 &amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
 &amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
 = \hat{\beta}_\mathrm{MLE}.
 \end{align*}\]</span></p>
+</div>
 <p><strong>Key insight</strong>: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.</p>
 </section>
 </section>
@@ -533,7 +554,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <ol type="1">
 <li><p><strong>Statistical Model</strong>: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in <span class="math inline">\([0, 1]\)</span>.</p></li>
 <li><p><strong>Prediction</strong>: The optimal prediction rule depends on the loss function.</p></li>
-<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1 loss\)</span>, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \beta = 0\)</span>.</p></li>
+<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> loss, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \beta = 0\)</span>.</p></li>
 <li><p><strong>Estimation</strong>: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.</p></li>
 </ol>
 <p>In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.</p>

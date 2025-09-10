@@ -175,12 +175,12 @@ window.Quarto = {
   <li><a href="#the-linear-regression-model" id="toc-the-linear-regression-model" class="nav-link" data-scroll-target="#the-linear-regression-model">The Linear Regression Model</a></li>
   <li><a href="#other-models" id="toc-other-models" class="nav-link" data-scroll-target="#other-models">Other Models</a></li>
   </ul></li>
+  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
   <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a>
   <ul class="collapse">
   <li><a href="#empirical-risk-minimization-erm" id="toc-empirical-risk-minimization-erm" class="nav-link" data-scroll-target="#empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</a></li>
   <li><a href="#maximum-likelihood-estimation-mle" id="toc-maximum-likelihood-estimation-mle" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</a></li>
   </ul></li>
-  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
@@ -224,12 +224,14 @@ window.Quarto = {
 <p>By the end of this lecture, you will be able to:</p>
 <ol type="1">
 <li>Distinguish between “learning,” “supervised learning,” “prediction,” and “inference.”</li>
-<li>Translate between algorithmic and statistical perspectives on learning
+<li>Translate between algorithmic and statistical perspectives on learning</li>
+</ol>
 <ul>
 <li>Define a statistical model</li>
 <li>Define an estimator</li>
 <li>Define a prediction rule</li>
-</ul></li>
+</ul>
+<ol start="3" type="1">
 <li>Define the standard linear regression model</li>
 <li>Derive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework</li>
 </ol>
@@ -247,7 +249,7 @@ window.Quarto = {
 <p>We are given a <strong>training dataset</strong>: <span class="math display">\[ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in \mathbb R^p \times \mathcal Y\]</span></p>
 <p>where:</p>
 <ul>
-<li><span class="math inline">\(X_i \in \mathbb R^p\)</span> are the <span class="math inline">\(d\)</span>-dimensional covariates (e.g.&nbsp;size, location, number of bedrooms, etc. for each house)</li>
+<li><span class="math inline">\(X_i \in \mathbb R^p\)</span> are the <span class="math inline">\(p\)</span>-dimensional covariates (e.g.&nbsp;size, location, number of bedrooms, etc. for each house)</li>
 <li><span class="math inline">\(Y_i \in \mathcal Y\)</span> is the response variable (e.g.&nbsp;house price)</li>
 <li><span class="math inline">\(\mathcal Y\)</span> is the space of possible responses.
 <ul>
@@ -306,7 +308,7 @@ You may have been exposed to algorithms in CPSC 340 that accomplish this procedu
 In this class, we will formulate these algorithms from first statistical principles and derive algorithms that satisfy these principles. -->
 <section id="csalgorithmic-perspective" class="level3">
 <h3 class="anchored" data-anchor-id="csalgorithmic-perspective">CS/Algorithmic Perspective</h3>
-<p>Learning is often presented as an algorithm for producing a prediction rule <span class="math inline">\(\hat f\)</span> from data <span class="math inline">\(\mathcal{D}\)</span>. This algorithm consist of 6 steps, which we will examine in the context of linear regression:</p>
+<p>Learning is often presented as an algorithm for producing a prediction rule <span class="math inline">\(\hat f\)</span> from data <span class="math inline">\(\mathcal{D}\)</span>. This algorithm consists of 6 steps, which we will examine in the context of linear regression:</p>
 <ol type="1">
 <li><strong>Train/val/test split</strong>: Divide data into training and testing sets
 <ul>
@@ -373,13 +375,13 @@ In this class, we will formulate these algorithms from first statistical princip
 <section id="the-linear-regression-model" class="level3">
 <h3 class="anchored" data-anchor-id="the-linear-regression-model">The Linear Regression Model</h3>
 <ul>
-<li>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = X^\top \beta + \varepsilon\]</span>
+<li><p>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = X^\top \beta + \varepsilon\]</span></p>
 <ul>
 <li><span class="math inline">\(\beta\)</span> is the vector of parameters that we are trying to estimate.</li>
 <li><span class="math inline">\(\varepsilon\)</span> is the random error term, which is typically i.i.d. <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma^2 &gt; 0\)</span>.</li>
 <li>(You may notice that we don’t have an intercept term <span class="math inline">\(\beta_0\)</span> in this model. We assume that <span class="math inline">\(X\)</span> has an “all-ones” covariate, i.e.&nbsp;<span class="math inline">\(X = [1, X_1, X_2, \ldots, X_p]\)</span>, so that the intercept term <span class="math inline">\(\beta_0\)</span> is included with the other <span class="math inline">\(\beta\)</span> terms, i.e.&nbsp;<span class="math inline">\(X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p\)</span>.)</li>
 </ul></li>
-<li>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</li>
+<li><p>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</p></li>
 </ul>
 <p><span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.\]</span></p>
 <ul>
@@ -417,7 +419,7 @@ Answer
 </section>
 <section id="other-models" class="level3">
 <h3 class="anchored" data-anchor-id="other-models">Other Models</h3>
-<p>This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distribution can be used instead. For example:</p>
+<p>This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distributions can be used instead. For example:</p>
 <ol type="1">
 <li><p><strong>The more general linear regression model</strong>: we could consider the slightly more general case of conditional distributions defined by an expected value condition: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}\]</span></p>
 <ul>
@@ -427,7 +429,7 @@ Answer
 <li><p><strong>The polynomial regression model</strong>: we could instead consider the slightly more general case where the expectation is a polynomial function of <span class="math inline">\(X\)</span>, rather than just a linear function: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}\]</span></p>
 <ul>
 <li>Note again that our general linear model is a special case; however this model allows for more complex relationships between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
-<li>This model also has parameters (the coefficients of the polynomial). though they are not explicit in this formulation.</li>
+<li>This model also has parameters (the coefficients of the polynomial), though they are not explicit in this formulation.</li>
 </ul></li>
 <li><p><strong>All possible distributions</strong>: what if we used the most general set of distributions? <span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}\]</span></p>
 <ul>
@@ -438,86 +440,29 @@ Answer
 </ol>
 </section>
 </section>
-<section id="estimation" class="level2">
-<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
-<ul>
-<li>Once we have chosen a statistical model, the <strong>estimation</strong> step involves us choosing a specific distribution from the model that best fits our training data.</li>
-<li>Alternatively, we can think of it as estimating a set of <strong>parameters</strong> that define a distribution within our model that describe the training data.</li>
-<li>There are many statistically valid estimation procedures. We’ll derive two that you’ve likely seen before: <strong>Maximum Likelihood Estimation (MLE)</strong> and <strong>Empirical Risk Minimization (ERM)</strong>. (We’ll talk about others throughout this course.)</li>
-</ul>
-<p>We will work through these two procedures using the linear regression model as our statistical model.</p>
-<section id="empirical-risk-minimization-erm" class="level3">
-<h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</h3>
-<p><strong>Goal</strong>: Find the parameters that minimize the loss on our training data.</p>
-<ul>
-<li>From STAT 306, you may remember a procedure known as <strong>Ordinary Least Squares (OLS)</strong> to estimate the parameters of a linear regression model.</li>
-<li>This procedures is a special case of a more general procedure <strong>Empirical Risk Minimization (ERM)</strong> for reasons that we will see in a few lectures.</li>
-</ul>
-<p><strong>The OLS/ERM Procedure:</strong></p>
-<ol type="1">
-<li><strong>Define a loss function</strong>
-<ul>
-<li>We need to quantify what we mean by “least bad.”</li>
-<li>A <strong>loss function</strong> measures how well a particular <span class="math inline">\(P[Y \mid X=X_i]\)</span> distribution fits the true label <span class="math inline">\(Y_i\)</span>.</li>
-<li>Given a <span class="math inline">\(\beta\)</span> for our linear regression model, a common choice of loss function is the <strong>squared error loss</strong>: <span class="math display">\[L(Y_i, \hat{Y_i}) = (Y_i - \hat{Y_i})^2, \qquad \hat{Y_i} = X_i^\top\beta.\]</span></li>
-</ul></li>
-<li><strong>Minimize the average loss over the training data</strong>
-<ul>
-<li><p>The <strong>empirical risk</strong> is defined as the average loss over our training data:</p>
-<p><span class="math display">\[\hat{R}(\beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
-<li><p>The <strong>OLS (ERM) estimator</strong> is the set of parameters <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the distribution from our model) that minimizes this empirical risk:</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
-<li><p>Taking the derivative and setting to zero:</p>
-<p><span class="math display">\[\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0\]</span></p></li>
-<li><p>By arranging all of our training data into a matrix <span class="math inline">\(\boldsymbol X \in \mathbb{R}^{n \times d}\)</span> and a vector <span class="math inline">\(\boldsymbol Y \in \mathbb{R}^n\)</span>, with</p>
-<p><span class="math display">\[\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times d}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},\]</span></p>
-<p>we get:</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
-</ul></li>
-</ol>
-</section>
-<section id="maximum-likelihood-estimation-mle" class="level3">
-<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</h3>
-<p><strong>Goal</strong>: Find the parameters that maximize the likelihood of observing our data.</p>
-<ul>
-<li>The <strong>likelihood function</strong> maps a distribution from our model (parameterized by <span class="math inline">\(\beta\)</span>) to the probability density of our observed training data.</li>
-</ul>
-<p><strong>Likelihood function for linear regression.</strong></p>
-<ul>
-<li><p>For the linear regression model with normal errors, the likelihood function is: <span class="math display">\[\mathcal{L} (\beta, \sigma^2) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(Y_i - X_i^\top\beta)^2}{2\sigma^2}\right)\]</span></p></li>
-<li><p>The term inside the product is the density of the normal distribution <span class="math inline">\(\mathcal{N}(X_i^\top\beta, \sigma^2)\)</span> evaluated at <span class="math inline">\(Y_i\)</span>.</p></li>
-<li><p>We take the product over all <span class="math inline">\(n\)</span> training examples <span class="math inline">\((X_i, Y_i)\)</span> because we assume that the data points are i.i.d.</p></li>
-<li><p>We choose <span class="math inline">\(\beta\)</span> to maximize the likelihood function, i.e.&nbsp;the <span class="math inline">\(\beta\)</span> that make observed data most probable.</p></li>
-</ul>
-<p><strong>Log-likelihoods are easier to work with</strong>.</p>
-<ul>
-<li><p>Taking the log of the likelihood function, log-likelihood: <span class="math display">\[\ell(\beta, \sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
-<li><p>The logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.</p></li>
-<li><p>The <span class="math inline">\(-\frac{n}{2}\log(2\pi\sigma^2)\)</span> constant and the <span class="math inline">\(\frac{1}{2\sigma^2}\)</span> scaling term also don’t affect the maximum, so we can ignore them.</p></li>
-<li><p>Thus, the maximum likelihood estimate of <span class="math inline">\(\beta\)</span> is found by minimizing: <span class="math display">\[\mathrm{argmin}_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,\]</span></p></li>
-<li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
-</ul>
-<p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results!</p>
-<ul>
-<li>If we had used a different loss function (e.g.&nbsp;<span class="math inline">\(L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|\)</span>), the ERM estimator would not be the same as the OLS/MLE estimator.</li>
-<li>There are many possible loss functions with different properties, and we will explore them in future lectures.</li>
-</ul>
-</section>
-</section>
 <section id="prediction" class="level2">
 <h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
+<p>Going a bit out of order, let’s discuss how we make predictions on new data once we’ve selected a <strong>specific distribution</strong> from our <strong>statistical model</strong> to describe our data.</p>
 <ul>
-<li>Once we have estimated <span class="math inline">\(\hat{\beta}\)</span> and selected the distribution that “best” describes our data, we can make predictions on new data points <span class="math inline">\(X_\mathrm{new}\)</span>.</li>
-<li>For linear models, we often use the prediction rule: <span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}\]</span></li>
+<li><p>Working with the linear statistical model, each distribution is parameterized by some coefficients <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
+<li><p>Once we have chosen some <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the parameters of the distribution that “best” describes our data) we can make predictions on new data points <span class="math inline">\(X_\mathrm{new}\)</span>.</p></li>
+<li><p>For linear models, we often use the prediction rule: <span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}\]</span></p>
+<p>But where does that come from?</p></li>
 </ul>
 <p><strong>Decision theory for predictions</strong>: We want a principled reason for using this prediction rule.</p>
 <ul>
+<li><p>First, we need a way of judging the quality of <em>any single prediction.</em></p></li>
+<li><p>We define a <strong>loss</strong> function <span class="math inline">\(L(Y, \hat Y)\)</span> that measures how bad our prediction <span class="math inline">\(\hat Y\)</span> matches the true response <span class="math inline">\(Y\)</span></p>
+<ul>
+<li><p>A common loss function for regression is the <strong>squared error</strong> <span class="math inline">\(L(Y, \hat Y) = (Y - \hat Y)^2\)</span>.</p></li>
+<li><p>Note that <span class="math inline">\(L(Y, \hat Y)\)</span> only equals 0 when <span class="math inline">\(Y = \hat Y\)</span>, and is <span class="math inline">\(&gt; 0\)</span> when <span class="math inline">\(Y \ne \hat Y\)</span>.</p></li>
+</ul></li>
 <li><p><strong>Decision theory</strong>: choose a prediction <span class="math inline">\(\hat{Y}_\mathrm{new}\)</span> that minimizes the expected loss:</p>
 <p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
-<li><p>Solving this optimization problem gives us</p>
+<li><p>Solving this optimization problem for the squared error loss gives us</p>
 <p><span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\]</span></p></li>
 </ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="Derivation">
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
@@ -530,21 +475,21 @@ Derivation
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
-<li><p>According to our estimated model, we have</p>
+<li><p>According to the distribution parameterized by <span class="math inline">\(\hat \beta\)</span>, we have</p>
 <p><span class="math display">\[P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).\]</span></p></li>
 <li><p>Plugging in the squared error loss function into this formula, we get:</p>
 <p><span class="math display">\[\begin{align*}
-    \hat{Y}_\mathrm{new} &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new} - \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
-    &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2 \mid X_\mathrm{new}, \hat \beta]}_{
-       \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
-       \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
-    } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{X_\mathrm{new}^\top \beta}
-    + \hat{y}_\mathrm{new}^2 \right) \\
-    &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
-       \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
-          (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
-       }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
-    \right)
+  \hat{Y}_\mathrm{new} &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new}- \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
+  &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2\mid X_\mathrm{new}, \hat \beta]}_{
+    \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
+    \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
+  } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat\beta]}_{X_\mathrm{new}^\top \hat{\beta}}
+  + \hat{y}_\mathrm{new}^2 \right) \\
+  &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
+    \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
+      (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
+    }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
+  \right)
 \end{align*}\]</span></p></li>
 <li><p>We can drop the <span class="math inline">\(\sigma^2\)</span> constant, since it doesn’t affect the minimum, and we are left with:</p>
 <p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
@@ -553,7 +498,72 @@ Derivation
 </div>
 </div>
 </div>
-<p><strong>Important!</strong> If we had chosen a different loss function, we would have derived a different prediction rule.</p>
+<p><strong>Important!</strong> If we had chosen a different loss function, we could end up with a different prediction rule.</p>
+</section>
+<section id="estimation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<p>We’ve talked about making predictions from a distribution selected by our statistical model. But how did we choose that distribution? (Or alternatively, how did we choose <span class="math inline">\(\hat\beta\)</span>?)</p>
+<ul>
+<li>The <strong>estimation</strong> step involves us choosing a specific distribution from the model (or alternatively, the parameters <span class="math inline">\(\hat \beta\)</span> defining the distribution) that best fits our training data.</li>
+<li>There are many statistically valid estimation procedures. We’ll derive two that you’ve likely seen before: <strong>Maximum Likelihood Estimation (MLE)</strong> and <strong>Empirical Risk Minimization (ERM)</strong>. (We’ll talk about others throughout this course.)</li>
+</ul>
+<p>We will work through these two procedures using the linear regression model as our statistical model.</p>
+<section id="empirical-risk-minimization-erm" class="level3">
+<h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</h3>
+<p><strong>Goal</strong>: Find the parameters that minimize the loss on our training data.</p>
+<ul>
+<li>From STAT 306, you may remember a procedure known as <strong>Ordinary Least Squares (OLS)</strong> to estimate the parameters of a linear regression model.</li>
+<li>This procedure is a special case of a more general procedure <strong>Empirical Risk Minimization (ERM)</strong> for reasons that we will see in a few lectures.</li>
+</ul>
+<p><strong>The OLS/ERM Procedure:</strong></p>
+<p>The goal of ERM is to choose the distribution (i.e.&nbsp;set of parameters) that minimizes the loss over predictions on our training data.</p>
+<ul>
+<li><p>Given a set of parameters <span class="math inline">\(\hat \beta\)</span>, let <span class="math inline">\(\hat Y_i\)</span> be the predictions that we make on the training data using the prediction rule derived from the loss <span class="math inline">\(L(Y, \hat Y)\)</span>.</p></li>
+<li><p>The <strong>empirical risk</strong> is defined as the total loss over our training data:</p>
+<p><span class="math display">\[\hat{R}(\hat \beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
+<p>where we (typically) use the same loss that governs our prediction rule. Using the squared loss, <span class="math inline">\(\hat{R}(\hat\beta) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top \hat\beta)^2\)</span></p></li>
+<li><p>The <strong>ERM estimator</strong> is the set of parameters <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the distribution from our model) that minimizes this empirical risk:</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
+<li><p>Taking the derivative and setting to zero:</p>
+<p><span class="math display">\[\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0\]</span></p></li>
+<li><p>By arranging all of our training data into a matrix <span class="math inline">\(\boldsymbol X \in \mathbb{R}^{n \times p}\)</span> and a vector <span class="math inline">\(\boldsymbol Y \in \mathbb{R}^n\)</span>, with</p>
+<p><span class="math display">\[\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},\]</span></p>
+<p>we get:</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
+</ul>
+</section>
+<section id="maximum-likelihood-estimation-mle" class="level3">
+<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</h3>
+<p><strong>Goal</strong>: Find the parameters that maximize the likelihood of observing our data.</p>
+<ul>
+<li>The <strong>likelihood function</strong> maps a distribution from our model (parameterized by <span class="math inline">\(\beta\)</span>) to the probability density of our observed training data.</li>
+</ul>
+<p><strong>Likelihood function for linear regression.</strong></p>
+<ul>
+<li><p>For the linear regression model with normal errors, the likelihood function is: <span class="math display">\[\mathcal{L} (\beta, \sigma^2) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(Y_i - X_i^\top\beta)^2}{2\sigma^2}\right)\]</span></p></li>
+<li><p>The term inside the product is the density of the normal distribution <span class="math inline">\(\mathcal{N}(X_i^\top\beta, \sigma^2)\)</span> evaluated at <span class="math inline">\(Y_i\)</span>.</p></li>
+<li><p>We take the product over all <span class="math inline">\(n\)</span> training examples <span class="math inline">\((X_i, Y_i)\)</span> because we assume that the data points are i.i.d.</p></li>
+<li><p>We choose <span class="math inline">\(\hat\beta\)</span> to maximize the likelihood function, i.e.&nbsp;the <span class="math inline">\(\hat\beta\)</span> that make observed data most probable.</p></li>
+</ul>
+<p><strong>Log-likelihoods are easier to work with</strong>.</p>
+<ul>
+<li><p>Taking the log of the likelihood function, log-likelihood: <span class="math display">\[\ell(\beta, \sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2\sigma^2}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
+<li><p>The logarithm is a monotonic function, so maximizing the likelihood is equivalent to maximizing the log-likelihood.</p></li>
+<li><p>The maximizer of this log likelihood function (and thus the maximum of the likelihood function) is thus equal to: <span class="math display">\[\mathrm{argmax}_{\beta} -\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = \mathrm{argmin}_{\beta} \sum_{i=1}^n (Y_i - X_i^\top\beta)^2,\]</span></p>
+<details>
+<summary>
+<p>Details:</p>
+</summary>
+<p>The <span class="math inline">\(-\frac{n}{2}\log(2\pi\sigma^2)\)</span> constant and the <span class="math inline">\(\frac{1}{2\sigma^2}\)</span> scaling term also don’t affect the maximum, so we can ignore them.</p>
+</details></li>
+<li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
+</ul>
+<p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results!</p>
+<ul>
+<li>If we had used a different loss function (e.g.&nbsp;<span class="math inline">\(L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|\)</span>), the ERM estimator would not be the same as the OLS/MLE estimator.</li>
+<li>There are many possible loss functions with different properties, and we will explore them in future lectures.</li>
+</ul>
+</section>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>

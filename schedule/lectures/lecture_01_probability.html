@@ -176,7 +176,7 @@ window.Quarto = {
   <li><a href="#the-sum-rule" id="toc-the-sum-rule" class="nav-link" data-scroll-target="#the-sum-rule">The Sum Rule</a>
   <ul class="collapse">
   <li><a href="#linearity-of-expectation" id="toc-linearity-of-expectation" class="nav-link" data-scroll-target="#linearity-of-expectation">Linearity of Expectation</a></li>
-  <li><a href="#the-tower-rule" id="toc-the-tower-rule" class="nav-link" data-scroll-target="#the-tower-rule">The Tower Rule</a></li>
+  <li><a href="#conditional-expectations-and-the-tower-rule" id="toc-conditional-expectations-and-the-tower-rule" class="nav-link" data-scroll-target="#conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
@@ -232,14 +232,14 @@ window.Quarto = {
 <ul>
 <li><strong>Example</strong>: Let’s say you want to grab a coffee at Loafe and you want to know how long you’ll have to wait in line.</li>
 <li>Denote this time by the variable <span class="math inline">\(A\)</span></li>
-<li><span class="math inline">\(Y\)</span> depends on a multitude of factors:
+<li><span class="math inline">\(A\)</span> depends on a multitude of factors:
 <ul>
 <li>How hot it is outside</li>
 <li>What day of the week it is</li>
 <li>How late Josh and his friends were up playing video games, thus leading them to take up spots in line</li>
 </ul></li>
 <li>While we could try to model all of these factors, it would be infeasible to do so.</li>
-<li>Instead, we can treat <span class="math inline">\(Y\)</span> as a <strong>random variable</strong>: a variable whose value is <em>randomly</em> sampled from some distribution.</li>
+<li>Instead, we can treat <span class="math inline">\(A\)</span> as a <strong>random variable</strong>: a variable whose value is <em>randomly</em> sampled from some distribution.</li>
 </ul>
 </section>
 <section id="notation" class="level3">
@@ -270,11 +270,11 @@ window.Quarto = {
 <ul>
 <li><p>Given two random variables (A) and (B), we can describe this relationship through a <strong>joint probability distribution</strong></p>
 <p><span class="math display">\[
-  \begin{cases}
-      P(A=a, B=b) &amp; \text{for discrete random variables} \\
-      f_{A,B}(a, b) &amp; \text{for continuous random variables}
-  \end{cases}
-  \]</span></p></li>
+\begin{cases}
+    P(A=a, B=b) &amp; \text{for discrete random variables} \\
+    f_{A,B}(a, b) &amp; \text{for continuous random variables}
+\end{cases}
+\]</span></p></li>
 <li><p>Without loss of generality, we will use the discrete random variable notation throughout the rest of this lecture (and throughout most of the course).</p></li>
 <li><p>We can also describe (A) and (B) through:</p>
 <ul>
@@ -327,8 +327,22 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
 <li><p>We define the <strong>expected value</strong> of <span class="math inline">\(A\)</span> as:</p>
 <p><span class="math display">\[ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. \]</span></p></li>
 <li><p>Similarly, the expected value of some function of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> is defined as:</p>
-<p><span class="math display">\[ \mathbb{E}[f(A, B)] := \int_a \int_b f(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. \]</span></p></li>
+<p><span class="math display">\[ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. \]</span></p></li>
 <li><p>We can use the sum rule in conjunction with <a href="https://en.wikipedia.org/wiki/Fubini%27s_theorem">Fubini’s theorem</a> to derive one of the most important formulas in all of probability:</p>
+<p><span class="math display">\[ \mathbb E[A + B] = \mathbb E[A] + \mathbb E[B] \]</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p><span class="math display">\[\begin{align*}
   \mathbb{E}[A + B]
   &amp;= \int_a \int_b (a + b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
@@ -342,19 +356,43 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
   &amp;= \int_a a P(A=a) \: \mathrm{d}a + \int_b b P(B=b) \: \mathrm{d}b
   \\
   &amp;= \mathbb{E}[A] + \mathbb{E}[B]
-  \end{align*}\]</span></p></li>
+  \end{align*}\]</span></p>
+</div>
+</div>
+</div>
+<ul>
 <li><p>This formula, known as <strong>linearity of expectation</strong>, holds <em>even when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are not independent!</em> We will use this fact constantly throughout the course.</p></li>
 <li><p>As a fun challenge problem, try using this formula to derive the famous <strong>inclusion-exclusion principle</strong>:</p>
 <p><span class="math display">\[ P(A \cup B) = P(A) + P(B) - P(A \cap B). \]</span></p>
 <p><em>Hint: note that <span class="math inline">\(P(A) = \mathbb{E}[\mathbf{1}_A]\)</span>, where <span class="math inline">\(\mathbf{1}_A\)</span> is the indicator random variable for event <span class="math inline">\(A\)</span>. Similarly, <span class="math inline">\(P(A \cap B) = \mathbb{E}[\mathbf{1}_A \mathbf{1}_B]\)</span> and <span class="math inline">\(P(A \cup B) = 1 - P(\overline{A} \cap \overline{B})\)</span></em>.</p></li>
 </ul>
 </section>
-<section id="the-tower-rule" class="level3">
-<h3 class="anchored" data-anchor-id="the-tower-rule">The Tower Rule</h3>
+<section id="conditional-expectations-and-the-tower-rule" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</h3>
 <ul>
-<li><p>We define the <strong>expected value</strong> of <span class="math inline">\(A\)</span> as:</p>
-<p><span class="math display">\[ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. \]</span></p></li>
-<li><p>Using the sum rule and product rule gives us:</p>
+<li><p>The <strong>conditional expectation</strong> of <span class="math inline">\(A\)</span> given <span class="math inline">\(B=b\)</span> is defined as:</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B = b] := \int_{a} a \: P(A=a \mid B=b) \: \mathrm{d}a. \]</span></p>
+<p>It is the average value that <span class="math inline">\(A\)</span> takes when we have the additional information that the random variable <span class="math inline">\(B\)</span> takes on the value <span class="math inline">\(b\)</span>.</p></li>
+<li><p>Note that this conditional expectation is a function of <span class="math inline">\(b\)</span>; i.e.&nbsp;we can write</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B = b] = g(b) \qquad \text{for some function} g.\]</span></p></li>
+<li><p>The expression <span class="math inline">\(\mathbb{E} [A \mid B]\)</span> should then be read as:</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B] = g(B). \]</span></p>
+<p>I.e. that we are applying the conditional expectation function to the <em>random variable</em> <span class="math inline">\(B\)</span> rather than to a specific realization <span class="math inline">\(b\)</span>.</p></li>
+<li><p>To relate <span class="math inline">\(\mathbb E[A \mid B]\)</span> to <span class="math inline">\(\mathbb E[A]\)</span>, we can use the sum and product rules to get:</p>
+<p><span class="math display">\[ \mathbb E[A] = \mathbb E[ \mathbb E[ A \mid B]] \]</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p><span class="math display">\[\begin{align*}
   \mathbb{E}[A] &amp;= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
   \\
@@ -365,10 +403,50 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
   &amp;= \int_b \mathbb{E}[A \mid B=b] P(B=b) \: \mathrm{d}b
   \\
   &amp;= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
-  \end{align*}\]</span></p></li>
+  \end{align*}\]</span></p>
+</div>
+</div>
+</div>
+<ul>
 <li><p>This rule is known as the <strong>Tower Rule</strong>. It allows us to express marginal expectations as recursive applications of conditional expectations.</p></li>
 <li><p><em>This notation is often confusing and scary the first few times you encounter it. Try translating it back into probabilities via the sum and product rules, and you’ll fluently understand it in no time!</em></p></li>
 </ul>
+<div class="callout callout-style-default callout-important callout-titled" title="Important: What is Random?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important: What is Random?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>A (standard) expectation <span class="math inline">\(\mathbb E[A]\)</span> is <strong>not</strong> a random variable (despite the fact that there’s a random variable inside the expectation).</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>If we go back to the definition: $ E[A] = a P(A=a) da $, note that the two terms in the integral <span class="math inline">\(a\)</span>, <span class="math inline">\(P(A=a)\)</span> are functions of <span class="math inline">\(a\)</span>, which is a realized quantity and therefore <strong>not random</strong>. So we’re integrating non-random quantities together, giving us a non-random output.</p>
+</details></li>
+<li><p>The conditional expectation <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> is also <strong>not</strong> a random variable.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>Again going back to the definition: $ E[A B=b] = a P(A=a B=b) da$, the terms inside the integral are functions of <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> (realized quantities, not random variables).</p>
+</details></li>
+<li><p>However, the conditional expectation <span class="math inline">\(\mathbb E[A \mid B]\)</span> <strong>is a random variable</strong>.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>Recall that we can view <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> as some function of <span class="math inline">\(b\)</span>; i.e. <span class="math inline">\(\mathbb E[A \mid B=b] = g(b)\)</span>. When we plug a realization (i.e.&nbsp;not a random variable) into <span class="math inline">\(g\)</span>, the output is a fixed (not random) quantity.</p>
+<p>However, when we plug in a <em>random variable</em> into <span class="math inline">\(g\)</span>, the output is a random quantity! So <span class="math inline">\(\mathbb E[A \mid B] = g(B)\)</span> is a <em>random variable</em> due to the randomness in <span class="math inline">\(B\)</span>.</p>
+</details></li>
+</ul>
+</div>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level2">
