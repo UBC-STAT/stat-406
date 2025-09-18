@@ -186,7 +186,7 @@ We will explore these losses, as well as metrics derived from these losses, in a
 
 ## Estimation
 
-As with regression, we will derive estimators for the logistic regression parameters $\beta$ through the principles of *maximum likelihood estimation (MLE)* and *empirical risk minimization (ERM)*.
+As with regression, we will derive estimators for the logistic regression parameters $\beta$ through the principle of *maximum likelihood estimation (MLE)*.
 
 ### Maximum Likelihood Estimation (MLE)
 
@@ -238,55 +238,45 @@ $$
 
 ### Empirical Risk Minimization (ERM)
 
+- What about ERM?
+- With the 0/1 loss, the optimization problem becomes
 
-Recall the ERM estimator is given by
+$$\hat \beta_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \mathbb{I}(Y_i \neq \hat{Y}_i)
+= \begin{cases} 1 & Y_i = 1, X_i^\top \beta < 0 \\ 1 & Y_i = 0, X_i^\top \beta > 0 \\ 0 & \mathrm{o.w.} \end{cases}$$
 
-$$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)$$
+- Unfortunately, this optimization is **NP-hard** (i.e. computationally intractable), and so we can't even solve it numerically for large values of $n$!
 
-where $L$ is a loss function of our choosing.
+- Alternative loss functions can yield numerically-solvable ERM solutions. For example, the "probabilistic loss" $L(Y, \hat{Y}) = - (1 - Y_i) \log \hat Y - Y_i \log (1 - \hat Y_i)$, lead to the same optimization problem as MLE.
 
-**Loss function for classification:**
-- Using the **0/1 loss** , as well as its corresponding prediction rule that we derived above, we have
-$$L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \beta > 0)$$
+:::{.callout-note collapse="true" title="Derivation of ERM with Probabilistic Loss"}
+Under the probabilistic loss $L(Y, \hat{Y}) = - Y_i \log \hat Y - (1 - Y_i) \log (1 - \hat Y_i)$,
+the prediction rule for logistic regression becomes:
 
-
-- However, this loss leads to a hard minimization problem:
-
-$$\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta > 0))$$
-
-- This optimization problem not only has no closed-form solution, but numerical solutions to it are intractable to compute.
-
-- Computationally, it is NP-hard, meaning it will take $O(2^n)$ time to solve in the worse case!
-
-**Logistic Loss as a Surrogate**
-
-- Instead, we can substitute $L(Y, \hat Y)$ with the following approximation:
-
-$$L_{\text{logistic}}(Y, \mathbb{I}(X_i^\top \beta > 0)) \approx \left[ (1-Y) \sigma(X^\top \beta) + Y (1 - \sigma(X^\top \beta)) \right]$$
-
-- This approximation will be close to the 0/1 loss when $X_i^\top \beta$ is very positive or very negative:
-
-| $X_i^\top \beta$ | $\sigma(X_i^\top \beta)$ | $(1 - \sigma(X_i^\top \beta)$ |
-|-------------------|------------|-------------------------------------|
-| $\gg 0$ | $\approx 1$ | $\approx 0$ |
-| $\ll 0$ | $\approx 0$ | $\approx 1$ |
-
-- Substituting this loss into the ERM estimator yields a **convex optimization problem**, which are (relatively) easy to solve numerically:
-
-$$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]$$
-
-- A little manipulation will show that this is equivalent to the MLE optimization problem!
-
-:::{.callout-note collapse="true" title="Derivation"}
 \begin{align*}
-\hat{\beta}_\mathrm{ERM} &= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
-&= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
-&= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
- = \hat{\beta}_\mathrm{MLE}.
+\hat{Y}_{\text{new}} &= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ - Y \log \hat y - (1 - Y) \log (1 - \hat y) \mid X_{\text{new}}, \hat \beta] \\
+&= \mathrm{argmin}_{\hat{y}} - \mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] \log \hat y - \mathbb{E}[1 - Y \mid X_{\text{new}}, \hat \beta] \log (1 - \hat y) \\
+&= \mathrm{argmin}_{\hat{y}} - \sigma(X_\mathrm{new}^\top \hat \beta) \log \hat y - (1 - \sigma(X_\mathrm{new}^\top \hat \beta)) \log (1 - \hat y) \\
 \end{align*}
-:::
 
-**Key insight**: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.
+where the second line follows from linearity of expectation, and the third line follows from our logistic model
+(and recognizing that $\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = P(Y=1 \mid X_{\text{new}}, \hat \beta)$).
+
+Solving for when the derivative is zero, we get:
+
+$$ \frac{\sigma(X_\mathrm{new}^\top \hat \beta)}{\hat Y_\mathrm{new}} - \frac{1 - \sigma(X_\mathrm{new}^\top \hat \beta)}{1 - \hat Y_\mathrm{new}} = 0, $$
+
+and thus $\hat Y_\mathrm{new} = \sigma(X_\mathrm{new}^\top \hat \beta)$.
+
+With this prediction rule, the ERM optimization becomes:
+
+\begin{align*}
+\hat \beta_\mathrm{ERM} &= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat Y_i) \\
+&= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n - Y_i \log(\sigma(X_i^\top \beta)) - (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \\
+&= \mathrm{argmax}_{\beta} \frac{1}{n} \sum_{i=1}^n Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)),
+\end{align*}
+
+which is the same optimization problem as MLE!
+:::
 
 
 ## Summary
@@ -299,7 +289,7 @@ This lecture extended the statistical framework from regression to classificatio
 
 3. **Linear Decision Boundary**: Under the $0/1$ loss, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \beta = 0$.
 
-2. **Estimation**: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.
+2. **Estimation**: The MLE solution cannot be computed analytically; it requires a numerical methods.
 
 
 In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.
