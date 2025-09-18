@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-09-16">
+<meta name="dcterms.date" content="2025-09-18">
 
 <title>Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression – UBC Stat406 2025 W1</title>
 <style>
@@ -198,7 +198,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 16, 2025</p>
+      <p class="date">September 18, 2025</p>
     </div>
   </div>
   
@@ -449,7 +449,7 @@ window.Quarto = {
 </section>
 <section id="estimation" class="level2">
 <h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
-<p>As with regression, we will derive estimators for the logistic regression parameters <span class="math inline">\(\beta\)</span> through the principles of <em>maximum likelihood estimation (MLE)</em> and <em>empirical risk minimization (ERM)</em>.</p>
+<p>As with regression, we will derive estimators for the logistic regression parameters <span class="math inline">\(\beta\)</span> through the principle of <em>maximum likelihood estimation (MLE)</em>.</p>
 <section id="maximum-likelihood-estimation-mle" class="level3">
 <h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</h3>
 <p>Recall the MLE estimator is given by</p>
@@ -487,81 +487,48 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 </section>
 <section id="empirical-risk-minimization-erm" class="level3">
 <h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</h3>
-<p>Recall the ERM estimator is given by</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
-<p>where <span class="math inline">\(L\)</span> is a loss function of our choosing.</p>
-<p><strong>Loss function for classification:</strong> - Using the <strong>0/1 loss</strong> , as well as its corresponding prediction rule that we derived above, we have <span class="math display">\[L(Y, \hat Y) = \mathbb{I}(Y \neq \hat Y), \qquad \hat Y = \mathbb{I}(X^\top \beta &gt; 0)\]</span></p>
 <ul>
-<li>However, this loss leads to a hard minimization problem:</li>
+<li>What about ERM?</li>
+<li>With the 0/1 loss, the optimization problem becomes</li>
 </ul>
-<p><span class="math display">\[\mathrm{argmin}_{\beta} \sum_{i=1}^n \mathbb{I}(Y_i \neq \mathbb{I}(X_i^\top \beta &gt; 0))\]</span></p>
+<p><span class="math display">\[\hat \beta_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \mathbb{I}(Y_i \neq \hat{Y}_i)
+= \begin{cases} 1 &amp; Y_i = 1, X_i^\top \beta &lt; 0 \\ 1 &amp; Y_i = 0, X_i^\top \beta &gt; 0 \\ 0 &amp; \mathrm{o.w.} \end{cases}\]</span></p>
 <ul>
-<li><p>This optimization problem not only has no closed-form solution, but numerical solutions to it are intractable to compute.</p></li>
-<li><p>Computationally, it is NP-hard, meaning it will take <span class="math inline">\(O(2^n)\)</span> time to solve in the worse case!</p></li>
+<li><p>Unfortunately, this optimization is <strong>NP-hard</strong> (i.e.&nbsp;computationally intractable), and so we can’t even solve it numerically for large values of <span class="math inline">\(n\)</span>!</p></li>
+<li><p>Alternative loss functions can yield numerically-solvable ERM solutions. For example, the “probabilistic loss” <span class="math inline">\(L(Y, \hat{Y}) = - (1 - Y_i) \log \hat Y - Y_i \log (1 - \hat Y_i)\)</span>, lead to the same optimization problem as MLE.</p></li>
 </ul>
-<p><strong>Logistic Loss as a Surrogate</strong></p>
-<ul>
-<li>Instead, we can substitute <span class="math inline">\(L(Y, \hat Y)\)</span> with the following approximation:</li>
-</ul>
-<p><span class="math display">\[L_{\text{logistic}}(Y, \mathbb{I}(X_i^\top \beta &gt; 0)) \approx \left[ (1-Y) \sigma(X^\top \beta) + Y (1 - \sigma(X^\top \beta)) \right]\]</span></p>
-<ul>
-<li>This approximation will be close to the 0/1 loss when <span class="math inline">\(X_i^\top \beta\)</span> is very positive or very negative:</li>
-</ul>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 27%">
-<col style="width: 17%">
-<col style="width: 54%">
-</colgroup>
-<thead>
-<tr class="header">
-<th><span class="math inline">\(X_i^\top \beta\)</span></th>
-<th><span class="math inline">\(\sigma(X_i^\top \beta)\)</span></th>
-<th><span class="math inline">\((1 - \sigma(X_i^\top \beta)\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><span class="math inline">\(\gg 0\)</span></td>
-<td><span class="math inline">\(\approx 1\)</span></td>
-<td><span class="math inline">\(\approx 0\)</span></td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\ll 0\)</span></td>
-<td><span class="math inline">\(\approx 0\)</span></td>
-<td><span class="math inline">\(\approx 1\)</span></td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>Substituting this loss into the ERM estimator yields a <strong>convex optimization problem</strong>, which are (relatively) easy to solve numerically:</li>
-</ul>
-<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right]\]</span></p>
-<ul>
-<li>A little manipulation will show that this is equivalent to the MLE optimization problem!</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation of ERM with Probabilistic Loss">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
+<span class="screen-reader-only">Note</span>Derivation of ERM with Probabilistic Loss
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Under the probabilistic loss <span class="math inline">\(L(Y, \hat{Y}) = - Y_i \log \hat Y - (1 - Y_i) \log (1 - \hat Y_i)\)</span>, the prediction rule for logistic regression becomes:</p>
 <p><span class="math display">\[\begin{align*}
-\hat{\beta}_\mathrm{ERM} &amp;= \mathrm{argmin}_{\beta} \sum_{i=1}^n \left[ (1-Y_i) \sigma(X_i^\top \beta) + Y_i (1 - \sigma(X_i^\top \beta)) \right] \\
-&amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ (Y_i - 1) \log(\sigma(X_i^\top \beta)) + (-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right] \\
-&amp;= \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1-Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
-= \hat{\beta}_\mathrm{MLE}.
+\hat{Y}_{\text{new}} &amp;= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ - Y \log \hat y - (1 - Y) \log (1 - \hat y) \mid X_{\text{new}}, \hat \beta] \\
+&amp;= \mathrm{argmin}_{\hat{y}} - \mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] \log \hat y - \mathbb{E}[1 - Y \mid X_{\text{new}}, \hat \beta] \log (1 - \hat y) \\
+&amp;= \mathrm{argmin}_{\hat{y}} - \sigma(X_\mathrm{new}^\top \hat \beta) \log \hat y - (1 - \sigma(X_\mathrm{new}^\top \hat \beta)) \log (1 - \hat y) \\
 \end{align*}\]</span></p>
+<p>where the second line follows from linearity of expectation, and the third line follows from our logistic model (and recognizing that <span class="math inline">\(\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = P(Y=1 \mid X_{\text{new}}, \hat \beta)\)</span>).</p>
+<p>Solving for when the derivative is zero, we get:</p>
+<p><span class="math display">\[ \frac{\sigma(X_\mathrm{new}^\top \hat \beta)}{\hat Y_\mathrm{new}} - \frac{1 - \sigma(X_\mathrm{new}^\top \hat \beta)}{1 - \hat Y_\mathrm{new}} = 0, \]</span></p>
+<p>and thus <span class="math inline">\(\hat Y_\mathrm{new} = \sigma(X_\mathrm{new}^\top \hat \beta)\)</span>.</p>
+<p>With this prediction rule, the ERM optimization becomes:</p>
+<p><span class="math display">\[\begin{align*}
+\hat \beta_\mathrm{ERM} &amp;= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat Y_i) \\
+&amp;= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n - Y_i \log(\sigma(X_i^\top \beta)) - (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \\
+&amp;= \mathrm{argmax}_{\beta} \frac{1}{n} \sum_{i=1}^n Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)),
+\end{align*}\]</span></p>
+<p>which is the same optimization problem as MLE!</p>
 </div>
 </div>
 </div>
-<p><strong>Key insight</strong>: For logistic regression, MLE and ERM (with the logistic loss approximation) are equivalent.</p>
 </section>
 </section>
 <section id="summary" class="level2">
@@ -571,7 +538,7 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <li><p><strong>Statistical Model</strong>: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in <span class="math inline">\([0, 1]\)</span>.</p></li>
 <li><p><strong>Prediction</strong>: The optimal prediction rule depends on the loss function.</p></li>
 <li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> loss, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \beta = 0\)</span>.</p></li>
-<li><p><strong>Estimation</strong>: Both MLE and ERM (with logistic loss) lead to the same optimization problem, requiring numerical methods.</p></li>
+<li><p><strong>Estimation</strong>: The MLE solution cannot be computed analytically; it requires a numerical methods.</p></li>
 </ol>
 <p>In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.</p>
 
