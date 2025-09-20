@@ -1,0 +1,123 @@
+---
+title: "Lecture 5: The Bias-Variance Tradeoff"
+author: "Geoff Pleiss"
+date: last-modified
+format: html
+---
+
+## Learning Objectives
+
+By the end of this lecture, you should be able to:
+
+1. Implement ridge regression using both constrained and penalized formulations
+2. Derive the closed-form solution for ridge regression
+3. Articulate how the regularization parameter affects bias, variance, and the learned parameters
+
+## Overview
+
+- In the last lecture, we saw that the risk of a learned model decomposes into three components: bias, variance, and irreducible error.
+- We also saw that there is often a tradeoff between bias and variance: more flexible models tend to have lower bias but higher variance, while less flexible models tend to have higher bias but lower variance.
+- Over the next few lectures, we will explore a set of techniques to help us navigate this tradeoff.
+- We have already seen one such technique: adding (or removing) covariates to our model to reduce bias (or reduce variance).
+- We will start with **ridge regularization**, a technique that will help us reduce the variance of our learned models by introducing some bias.
+
+## Motivation: Risk Analysis of Ordinary Least Squares
+
+- Consider the OLS estimator for linear regression:
+
+$$ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y. $$
+
+- Now let's assume that our data i.i.d. generated according to the linear model
+  $$ Y = X^\top \beta + \epsilon, \qquad \epsilon \sim \mathcal N(0, \sigma^2), $$
+
+  for some true parameter vector $\beta \in \mathbb R^p$.
+
+- By this model (and again assuming that our data are i.i.d.), we can write the following model for our training data in *matrix form*:
+
+$$ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \epsilon, \qquad \boldsymbol \epsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). $$
+
+- Let's now analyze the bias and variance of the OLS estimator $\hat{\beta}_\mathrm{OLS}$ under this model!
+
+- (Important note: we are not analyzing the bias and variance of the **risk** of the OLS estimator, but you should be able to derive those following the techniques that we are about to use!)
+
+### Bias of OLS
+
+I claim that the OLS estimator is unbiased, i.e.,
+
+$$ \mathbb E[\hat{\beta}_\mathrm{OLS}] = \beta. $$
+
+:::{.callout-tip collapse="true" title="Derivation"}
+\begin{align*}
+\mathbb E[\hat{\beta}_\mathrm{OLS}]
+&= \mathbb E\left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y \right] \\
+&= \mathbb E\left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \underbrace{\mathbb E \left[ \boldsymbol Y \mid \boldsymbol X \right]}_{= \boldsymbol X \beta} \right] \\
+&= \mathbb E\left[ \underbrace{(\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X}_{= \boldsymbol I} \beta \right] \\
+&= \beta
+\end{align*}
+:::
+
+Since we have an unbiased estimator, our **average model** ($\mathbb E[\hat f_\mathcal{D}(X) \mid X ]$ from last lecture) will produce the prediction $X^\top \beta$,
+so the bias component of the risk will be zero!
+
+:::{.callout-caution title="Check Your Assumptions!"}
+We have shown that the bias associated with OLS is zero *under the assumption that the linear model is correct*.
+
+In practice, it's very unlikely that the linear model is exactly correct (i.e. the true value of $Y$ may depend on covariates we don't have access to, interaction terms, etc.). In that case (i.e. when the linear model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.
+:::
+
+### (Co-)Variance of OLS
+
+The covariance of this estimator is a little more complicated to derive, but we can use similar techniques to show that:
+
+$$ \text{Cov}(\hat{\beta}_\mathrm{OLS}) = \mathbb E \left[ \left( \hat \beta_\mathrm{OLS}  - \beta \right) \left(\hat \beta_\mathrm{OLS} - \beta \right)^\top \right]= \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right]. $$
+
+:::{.callout-tip collapse="true" title="Derivation"}
+\begin{align*}
+\text{Cov}(\hat{\beta}_\mathrm{OLS})
+&= \mathbb E \left[ \hat \beta_\mathrm{OLS} \hat \beta_\mathrm{OLS} \right] - \beta \beta^\top \\
+&= \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \underbrace{\mathbb E \left[ \boldsymbol Y \boldsymbol Y^\top \mid \boldsymbol X \right]}_{\boldsymbol X \beta \beta^\top \boldsymbol X^\top + \sigma^2 \boldsymbol I} \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1} \right] - \beta \beta^\top \\
+&= \mathbb E \left[ \underbrace{(\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X}_{= \boldsymbol I} \beta \beta^\top \underbrace{\boldsymbol X^\top \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1}}_{= \boldsymbol I} \right] \\
+  &\:\:\:+ \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1} \right]
+  - \beta \beta^\top \\
+&= \beta \beta^\top - \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right] - \beta \beta^\top \\
+&= \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right].
+\end{align*}
+:::
+
+### When is Variance Large? (An SVD Analysis)
+
+## Intuition: Fight Variance by "Shrinking" Large Coefficients
+
+### Constrained Optimization Problem
+
+### Graphical Perspective
+
+## Ridge Regression
+
+### Regularization
+
+### Closed Form
+
+### Shrinkage
+
+## Effect on Bias/Variance
+
+### Picking the Regularization Parameter
+
+## Example
+
+```{r process-prostate, echo=TRUE, dev="svg", message=FALSE,warning=FALSE, fig.height = 4, fig.width=8, fig.align='center'}
+data(prostate, package = "ElemStatLearn")
+
+Y <- prostate$lpsa
+X <- model.matrix(~ ., data = prostate |> dplyr::select(-train, -lpsa))
+library(glmnet)
+ridge <- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
+plot(ridge, xvar = "lambda", lwd = 3)
+```
+```{r, fig.width=11,fig.align="center",dev="svg",fig.height=4}
+ridge <- cv.glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
+plot(ridge, main = "Ridge")
+```
+
+## Summary
