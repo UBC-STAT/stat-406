@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-09-22">
+
+<title>Lecture 6: Ridge Regression – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-3bdcbcac399d3d4942cd9e49013b1926.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#motivation-risk-analysis-of-ordinary-least-squares" id="toc-motivation-risk-analysis-of-ordinary-least-squares" class="nav-link" data-scroll-target="#motivation-risk-analysis-of-ordinary-least-squares">Motivation: Risk Analysis of Ordinary Least Squares</a>
+  <ul class="collapse">
+  <li><a href="#bias-of-ols" id="toc-bias-of-ols" class="nav-link" data-scroll-target="#bias-of-ols">Bias of OLS</a></li>
+  <li><a href="#co-variance-of-ols" id="toc-co-variance-of-ols" class="nav-link" data-scroll-target="#co-variance-of-ols">(Co-)Variance of OLS</a></li>
+  <li><a href="#when-is-variance-large-an-svd-analysis" id="toc-when-is-variance-large-an-svd-analysis" class="nav-link" data-scroll-target="#when-is-variance-large-an-svd-analysis">When is Variance Large? (An SVD Analysis)</a></li>
+  </ul></li>
+  <li><a href="#intuition-fight-variance-by-shrinking-large-coefficients" id="toc-intuition-fight-variance-by-shrinking-large-coefficients" class="nav-link" data-scroll-target="#intuition-fight-variance-by-shrinking-large-coefficients">Intuition: Fight Variance by “Shrinking” Large Coefficients</a>
+  <ul class="collapse">
+  <li><a href="#constrained-optimization-problem" id="toc-constrained-optimization-problem" class="nav-link" data-scroll-target="#constrained-optimization-problem">Constrained Optimization Problem</a></li>
+  <li><a href="#graphical-perspective" id="toc-graphical-perspective" class="nav-link" data-scroll-target="#graphical-perspective">Graphical Perspective</a></li>
+  </ul></li>
+  <li><a href="#ridge-regression" id="toc-ridge-regression" class="nav-link" data-scroll-target="#ridge-regression">Ridge Regression</a>
+  <ul class="collapse">
+  <li><a href="#regularization" id="toc-regularization" class="nav-link" data-scroll-target="#regularization">Regularization</a></li>
+  <li><a href="#closed-form" id="toc-closed-form" class="nav-link" data-scroll-target="#closed-form">Closed Form</a></li>
+  <li><a href="#shrinkage" id="toc-shrinkage" class="nav-link" data-scroll-target="#shrinkage">Shrinkage</a></li>
+  </ul></li>
+  <li><a href="#effect-on-biasvariance" id="toc-effect-on-biasvariance" class="nav-link" data-scroll-target="#effect-on-biasvariance">Effect on Bias/Variance</a>
+  <ul class="collapse">
+  <li><a href="#picking-the-regularization-parameter" id="toc-picking-the-regularization-parameter" class="nav-link" data-scroll-target="#picking-the-regularization-parameter">Picking the Regularization Parameter</a></li>
+  </ul></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_06_ridge_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_06_ridge_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 6: Ridge Regression</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 22, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Implement ridge regression using both constrained and penalized formulations</li>
+<li>Derive the closed-form solution for ridge regression</li>
+<li>Articulate how the regularization parameter affects bias, variance, and the learned parameters</li>
+</ol>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<ul>
+<li>In the last lecture, we saw that the risk of a learned model decomposes into three components: bias, variance, and irreducible error.</li>
+<li>We also saw that there is often a tradeoff between bias and variance: more flexible models tend to have lower bias but higher variance, while less flexible models tend to have higher bias but lower variance.</li>
+<li>Over the next few lectures, we will explore a set of techniques to help us navigate this tradeoff.</li>
+<li>We have already seen one such technique: adding (or removing) covariates to our model to reduce bias (or reduce variance).</li>
+<li>We will start with <strong>ridge regularization</strong>, a technique that will help us reduce the variance of our learned models by introducing some bias.</li>
+</ul>
+</section>
+<section id="motivation-risk-analysis-of-ordinary-least-squares" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-risk-analysis-of-ordinary-least-squares">Motivation: Risk Analysis of Ordinary Least Squares</h2>
+<ul>
+<li><p>Consider the OLS estimator for linear regression:</p>
+<p><span class="math display">\[ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y. \]</span></p>
+<p>where <span class="math inline">\(\boldsymbol X \in \mathbb R^{n \times p}\)</span> is the design matrix (with rows <span class="math inline">\(x_i^\top\)</span>) and <span class="math inline">\(\boldsymbol Y \in \mathbb R^n\)</span> is the vector of training responses.</p></li>
+<li><p>Now let’s assume that our data i.i.d. generated according to the linear model <span class="math display">\[ Y = X^\top \beta + \epsilon, \qquad \epsilon \sim \mathcal N(0, \sigma^2), \]</span></p>
+<p>for some true parameter vector <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
+<li><p>By this model (and again assuming that our data are i.i.d.), we can write the following model for our training data in <em>matrix form</em>:</p></li>
+</ul>
+<p><span class="math display">\[ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \epsilon, \qquad \boldsymbol \epsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). \]</span></p>
+<ul>
+<li>Let’s now analyze the bias and variance of the OLS estimator <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span> under this model!</li>
+</ul>
+<section id="bias-of-ols" class="level3">
+<h3 class="anchored" data-anchor-id="bias-of-ols">Bias of OLS</h3>
+<p>I claim that the OLS estimator is unbiased, i.e.,</p>
+<p><span class="math display">\[ \mathbb E[\hat{\beta}_\mathrm{OLS}] = \beta. \]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\begin{align*}
+\mathbb E[\hat{\beta}_\mathrm{OLS}]
+&amp;= \mathbb E\left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y \right] \\
+&amp;= \mathbb E\left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \underbrace{\mathbb E \left[ \boldsymbol Y \mid \boldsymbol X \right]}_{= \boldsymbol X \beta} \right] \\
+&amp;= \mathbb E\left[ \underbrace{(\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X}_{= \boldsymbol I} \beta \right] \\
+&amp;= \beta
+\end{align*}\]</span></p>
+</div>
+</div>
+</div>
+<p>Since we have an unbiased estimator, our <strong>average model</strong> (<span class="math inline">\(\mathbb E[\hat f_\mathcal{D}(X) \mid X ]\)</span> from last lecture) will produce the prediction <span class="math inline">\(X^\top \beta\)</span>, so the bias component of the risk will be zero!</p>
+<div class="callout callout-style-default callout-caution callout-titled" title="Check Your Assumptions!">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Caution</span>Check Your Assumptions!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We have shown that the bias associated with OLS is zero <em>under the assumption that the linear model is correct</em>.</p>
+<p>In practice, it’s very unlikely that the linear model is exactly correct (i.e.&nbsp;the true value of <span class="math inline">\(Y\)</span> may depend on covariates we don’t have access to, interaction terms, etc.). In that case (i.e.&nbsp;when the linear model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.</p>
+</div>
+</div>
+</section>
+<section id="co-variance-of-ols" class="level3">
+<h3 class="anchored" data-anchor-id="co-variance-of-ols">(Co-)Variance of OLS</h3>
+<p>The covariance of this estimator is a little more complicated to derive, but we can use similar techniques to show that:</p>
+<p><span class="math display">\[ \text{Cov}(\hat{\beta}_\mathrm{OLS}) = \mathbb E \left[ \left( \hat \beta_\mathrm{OLS}  - \beta \right) \left(\hat \beta_\mathrm{OLS} - \beta \right)^\top \right]= \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right]. \]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\begin{align*}
+\text{Cov}(\hat{\beta}_\mathrm{OLS})
+&amp;= \mathbb E \left[ \hat \beta_\mathrm{OLS} \hat \beta_\mathrm{OLS} \right] - \beta \beta^\top \\
+&amp;= \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \underbrace{\mathbb E \left[ \boldsymbol Y \boldsymbol Y^\top \mid \boldsymbol X \right]}_{\boldsymbol X \beta \beta^\top \boldsymbol X^\top + \sigma^2 \boldsymbol I} \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1} \right] - \beta \beta^\top \\
+&amp;= \mathbb E \left[ \underbrace{(\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X}_{= \boldsymbol I} \beta \beta^\top \underbrace{\boldsymbol X^\top \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1}}_{= \boldsymbol I} \right] \\
+  &amp;\:\:\:+ \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol X (\boldsymbol X^\top \boldsymbol X)^{-1} \right]
+  - \beta \beta^\top \\
+&amp;= \beta \beta^\top - \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right] - \beta \beta^\top \\
+&amp;= \sigma^2 \mathbb E \left[ (\boldsymbol X^\top \boldsymbol X)^{-1} \right].
+\end{align*}\]</span></p>
+</div>
+</div>
+</div>
+</section>
+<section id="when-is-variance-large-an-svd-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="when-is-variance-large-an-svd-analysis">When is Variance Large? (An SVD Analysis)</h3>
+<ul>
+<li><p>To understand when the variance of OLS becomes problematic, we can use the <strong>singular value decomposition</strong> (SVD) of <span class="math inline">\(\boldsymbol X\)</span>.</p></li>
+<li><p>Recall that any rectangular <span class="math inline">\(n \times p\)</span> matrix <span class="math inline">\(\boldsymbol X\)</span> has an SVD <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="SVD Review">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>SVD Review
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p><span class="math inline">\(\boldsymbol U\)</span> is <span class="math inline">\(n \times n\)</span> and orthonormal: <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I\)</span></p></li>
+<li><p><span class="math inline">\(\boldsymbol V\)</span> is <span class="math inline">\(p \times p\)</span> and orthonormal: <span class="math inline">\(\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I\)</span></p></li>
+<li><p><span class="math inline">\(\boldsymbol D\)</span> is rectangular <span class="math inline">\(n \times p\)</span>, diagonal, and nonnegative (contains the singular values)</p></li>
+<li><p>Using the SVD, we can rewrite the covariance of OLS as:</p></li>
+</ul>
+<p><span class="math display">\[\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^\top \boldsymbol D)^{-1} \boldsymbol V^\top\]</span></p>
+</div>
+</div>
+</div>
+<ul>
+<li><p>This means that <span class="math inline">\(\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 \boldsymbol V \text{diag}(d_1^{-2}, d_2^{-2}, \ldots, d_p^{-2}) \boldsymbol V^\top\)</span>, where <span class="math inline">\(d_1, d_2, \ldots, d_p\)</span> are the singular values.</p></li>
+<li><p><strong>Key insight</strong>: When <span class="math inline">\(\boldsymbol X\)</span> has small singular values (i.e., when <span class="math inline">\(d_j \approx 0\)</span> for some <span class="math inline">\(j\)</span>), then <span class="math inline">\(d_j^{-2}\)</span> becomes very large, leading to high variance in <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span>.</p></li>
+<li><p>This situation arises when <span class="math inline">\(\boldsymbol X\)</span> is <strong>ill-conditioned</strong> or <strong>nearly rank-deficient</strong>, which happens when we have <strong>multicollinearity</strong>: a linear combination of predictor variables is nearly equal to another predictor variable.</p></li>
+<li><p>In such cases, <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span> has large, unstable values with high variance.</p></li>
+</ul>
+</section>
+</section>
+<section id="intuition-fight-variance-by-shrinking-large-coefficients" class="level2">
+<h2 class="anchored" data-anchor-id="intuition-fight-variance-by-shrinking-large-coefficients">Intuition: Fight Variance by “Shrinking” Large Coefficients</h2>
+<ul>
+<li><strong>Main idea</strong>: To combat the high variance problem, we can constrain the values of <span class="math inline">\(\beta\)</span> to be small.</li>
+</ul>
+<section id="constrained-optimization-problem" class="level3">
+<h3 class="anchored" data-anchor-id="constrained-optimization-problem">Constrained Optimization Problem</h3>
+<ul>
+<li><p>Instead of solving the unconstrained OLS problem: <span class="math display">\[\min_\beta \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2\]</span></p></li>
+<li><p>We can solve a <strong>constrained</strong> optimization problem for some <span class="math inline">\(s &gt; 0\)</span>: <span class="math display">\[\min_\beta \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_2^2 \leq s\]</span></p></li>
+<li><p>Here, <span class="math inline">\(\|\beta\|_2^2 = \sum_{j=1}^p \beta_j^2\)</span> is the squared <span class="math inline">\(\ell_2\)</span>-norm of <span class="math inline">\(\beta\)</span>.</p></li>
+<li><p>This constraint prevents the coefficients from becoming arbitrarily large, which may happen when <span class="math inline">\(\boldsymbol X\)</span> is ill-conditioned (and thus <span class="math inline">\(\mathbb E[(\boldsymbol X^\top \boldsymbol X)^{-1}]\)</span> has large entries).</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/ridge.svg" class="img-fluid figure-img"></p>
+<figcaption>Illustration of constrained vs.&nbsp;unconstrained optimization solutions (<span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span> vs <span class="math inline">\(\hat \beta_\mathrm{ridge}\)</span>) on a 2D toy problem. Contours represent level sets of mean squared error (MSE), i.e.&nbsp;<span class="math inline">\(\frac{1}{N} \Vert \boldsymbol Y - \boldsymbol X \hat \beta \Vert_2^2\)</span>, for various values of <span class="math inline">\(\hat \beta\)</span></figcaption>
+</figure>
+</div>
+</section>
+<section id="graphical-perspective" class="level3">
+<h3 class="anchored" data-anchor-id="graphical-perspective">Graphical Perspective</h3>
+<ul>
+<li><p>Intuitively, why does this constraint reduce variance?</p></li>
+<li><p>Recall from the previous lecture that high variance indicates that our learned model is very sensitive to the training data.</p></li>
+<li><p>The OLS solution <span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span> depends on the training data <span class="math inline">\(\mathcal D = \{(x_i, y_i)\}_{i=1}^n\)</span>.</p></li>
+<li><p>If we had a different training set <span class="math inline">\(\mathcal D'\)</span>, we can change the OLS optimization landscape a lot, which can lead to a solution <span class="math inline">\(\hat \beta_\mathrm{OLS}'\)</span> that is very far away from <span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span>.</p></li>
+<li><p>If we are instead constrained to have our solution inside the ball of radius <span class="math inline">\(\sqrt{s}\)</span>, then the optimal solutions for <span class="math inline">\(\mathcal D\)</span> and <span class="math inline">\(\mathcal D'\)</span> (<span class="math inline">\(\hat \beta_s\)</span> and <span class="math inline">\(\hat \beta'_s\)</span>) will be less far apart!</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/ridge_two_datasets.svg" class="img-fluid figure-img"></p>
+<figcaption>Illustration of why ridge reduces variance. Two different training samples (<span class="math inline">\(\mathcal D\)</span> and <span class="math inline">\(\mathcal D'\)</span>) yield different mean squared error (MSE) optimization problems with different solutions that may be far apart. If we instead constrain the MSE to live inside a ball, the resulting solutions will be less far apart.</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled" title="The Trade-off">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The Trade-off
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>By constraining the coefficients, we can gain a significant reduction in variance, though we will introduce some bias (as we will soon see).</p>
+</div>
+</div>
+</section>
+</section>
+<section id="ridge-regression" class="level2">
+<h2 class="anchored" data-anchor-id="ridge-regression">Ridge Regression</h2>
+<section id="regularization" class="level3">
+<h3 class="anchored" data-anchor-id="regularization">Regularization</h3>
+<ul>
+<li><p>An equivalent way to write the constrained optimization problem <span class="math display">\[\hat{\beta}_s = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_2^2 \leq s\]</span> is as a <strong>regularized</strong> (or <strong>penalized</strong>) optimization with regularization weight <span class="math inline">\(\lambda\)</span>: <span class="math display">\[\hat{\beta}_\lambda = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 + \lambda \|\beta\|_2^2\]</span></p></li>
+<li><p>For every <span class="math inline">\(\lambda\)</span> there is a unique <span class="math inline">\(s\)</span> (and vice versa) that makes <span class="math inline">\(\hat{\beta}_s = \hat{\beta}_\lambda\)</span>. We will work with the <span class="math inline">\(\lambda\)</span> formulation.</p></li>
+</ul>
+</section>
+<section id="closed-form" class="level3">
+<h3 class="anchored" data-anchor-id="closed-form">Closed Form</h3>
+<ul>
+<li><p>Ridge regression has a closed-form solution (set the derivative with respect to <span class="math inline">\(\beta\)</span> to zero): <span class="math display">\[\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y\]</span></p></li>
+<li><p>Compare to OLS: <span class="math inline">\(\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y\)</span></p></li>
+<li><p>The <span class="math inline">\(+ \lambda \boldsymbol I\)</span> term <strong>stabilizes</strong> the inversion when <span class="math inline">\(\boldsymbol X^\top \boldsymbol X\)</span> is ill-conditioned, preventing division by near-zero singular values.</p></li>
+</ul>
+</section>
+<section id="shrinkage" class="level3">
+<h3 class="anchored" data-anchor-id="shrinkage">Shrinkage</h3>
+<ul>
+<li><p>Using the SVD <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>, we can show that: <span class="math display">\[\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top \boldsymbol Y\]</span></p></li>
+<li><p>Notice that OLS depends on <span class="math inline">\(d_j/d_j^2 = 1/d_j\)</span> while ridge depends on <span class="math inline">\(d_j/(d_j^2 + \lambda)\)</span>.</p></li>
+<li><p><strong>Shrinkage effect</strong>: Ridge regression makes the coefficients smaller relative to OLS, but when <span class="math inline">\(\boldsymbol X\)</span> has small singular values, ridge compensates with <span class="math inline">\(\lambda\)</span> in the denominator.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Key Observations">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Key Observations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><span class="math inline">\(\lambda = 0\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda = \hat{\beta}_\mathrm{OLS}\)</span></li>
+<li><span class="math inline">\(\lambda \to \infty\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda \to \boldsymbol{0}\)</span></li>
+<li>Any <span class="math inline">\(0 &lt; \lambda &lt; \infty\)</span> penalizes larger values of <span class="math inline">\(\beta\)</span>, effectively shrinking them</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="effect-on-biasvariance" class="level2">
+<h2 class="anchored" data-anchor-id="effect-on-biasvariance">Effect on Bias/Variance</h2>
+<ul>
+<li><strong>Effect on Bias</strong>: Ridge regression introduces some bias because it shrinks the unbiased OLS coefficients towards zero.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="A Fun Mathematical Interpretation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A Fun Mathematical Interpretation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Note that we can rewrite the ridge estimator as:</p>
+<p><span class="math display">\[\begin{align*}
+\hat{\beta}_\lambda
+&amp;= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} {\color{blue} \boldsymbol I} \boldsymbol X^\top \boldsymbol Y \\
+&amp;= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} {\color{blue} \boldsymbol X^\top \boldsymbol X} \underbrace{{\color{blue} \left( \boldsymbol X^\top \boldsymbol X \right)} \boldsymbol X^\top \boldsymbol Y}_{\hat \beta_\mathrm{OLS}} \\
+&amp;= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol X \hat \beta_\mathrm{OLS}.
+\end{align*}\]</span></p>
+<p>So <span class="math inline">\(\hat{\beta}_\lambda\)</span> is a transformed version of <span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span>. Since <span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span> is unbiased, and <span class="math inline">\((\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol X\)</span> is not the identity, <span class="math inline">\(\hat{\beta}_\lambda\)</span> must be biased!</p>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Effect on Variance</strong>: As we’ve discussed, ridge regression reduces variance by preventing coefficients from becoming too large.</li>
+</ul>
+<section id="picking-the-regularization-parameter" class="level3">
+<h3 class="anchored" data-anchor-id="picking-the-regularization-parameter">Picking the Regularization Parameter</h3>
+<ul>
+<li>With ridge regression, we’re accepting a slight increase in bias with the hope that we’ll get a large decrease in variance.</li>
+<li>As <span class="math inline">\(\lambda\)</span> increases, bias increases and variance decreases.</li>
+<li>We want to choose the best value of <span class="math inline">\(\lambda\)</span> that hits the sweet spot in the bias-variance tradeoff.</li>
+<li>We can use <strong>cross-validation</strong> to select the value of <span class="math inline">\(\lambda\)</span> that minimizes risk.</li>
+</ul>
+</section>
+</section>
+<section id="example" class="level2">
+<h2 class="anchored" data-anchor-id="example">Example</h2>
+<p>Let’s see ridge regression in action on the prostate cancer dataset from Lab 1:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span> ., <span class="at">data =</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> .<span class="dv">00001</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">lwd =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_06_ridge_regression_files/figure-html/process-prostate-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>This first plot shows the values of the <span class="math inline">\(\hat \beta_\mathrm{OLS}\)</span> coefficients as a function of <span class="math inline">\(\log(\lambda)\)</span>.</li>
+<li>When <span class="math inline">\(\log(\lambda)\)</span> is very negative (i.e., <span class="math inline">\(\lambda\)</span> is close to zero), the coefficients are at their largest values.</li>
+<li>As <span class="math inline">\(\log(\lambda)\)</span> increases, the coefficients shrink towards zero.</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>, <span class="at">lambda.min.ratio =</span> .<span class="dv">00001</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_06_ridge_regression_files/figure-html/unnamed-chunk-1-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" width="1056"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>This second plot shows the cross-validation estimation of risk as a function of <span class="math inline">\(\log(\lambda)\)</span>.</li>
+<li>We can see that the risk is minimized at some intermediate value of <span class="math inline">\(\lambda\)</span>, indicating that it is worthwhile introducing some bias to reduce variance!</li>
+<li>However, the risk with <span class="math inline">\(\lambda = 0\)</span> (i.e., OLS) is not much worse than the optimal risk, indicating that we may not have been in the high-variance regime with our OLS estimator.</li>
+<li>(Maybe we’re actually in the high bias regime? We’ll learn some techniques to address that soon!)</li>
+</ul>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><p>We have now introduced our first method to help us navigate the bias-variance tradeoff: ridge regression, which introduces bias to reduce variance.</p></li>
+<li><p><strong>The Problem</strong>: OLS has high variance when <span class="math inline">\(\boldsymbol X\)</span> is ill-conditioned (multicollinearity), which occurs when some singular values are near zero, making <span class="math inline">\((\boldsymbol X^\top \boldsymbol X)^{-1}\)</span> unstable.</p></li>
+<li><p><strong>The Solution</strong>: Ridge regression constrains coefficients via <span class="math inline">\(\|\beta\|_2^2 \leq s\)</span> (or equivalently adds penalty <span class="math inline">\(\lambda \|\beta\|_2^2\)</span>), which shrinks coefficients toward zero and stabilizes the solution with closed form <span class="math inline">\(\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y\)</span>.</p></li>
+<li><p><strong>The Tradeoff</strong>: Ridge introduces bias but significantly reduces variance, and we can use cross-validation to find the optimal <span class="math inline">\(\lambda\)</span> that minimizes prediction risk in the bias-variance tradeoff.</p></li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_06_ridge_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_06_ridge_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
