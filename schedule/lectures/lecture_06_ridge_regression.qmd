@@ -1,5 +1,5 @@
 ---
-title: "Lecture 5: The Bias-Variance Tradeoff"
+title: "Lecture 6: Ridge Regression"
 author: "Geoff Pleiss"
 date: last-modified
 format: html
@@ -25,7 +25,9 @@ By the end of this lecture, you should be able to:
 
 - Consider the OLS estimator for linear regression:
 
-$$ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y. $$
+  $$ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y. $$
+
+    where $\boldsymbol X \in \mathbb R^{n \times p}$ is the design matrix (with rows $x_i^\top$) and $\boldsymbol Y \in \mathbb R^n$ is the vector of training responses.
 
 - Now let's assume that our data i.i.d. generated according to the linear model
   $$ Y = X^\top \beta + \epsilon, \qquad \epsilon \sim \mathcal N(0, \sigma^2), $$
@@ -37,8 +39,6 @@ $$ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbo
 $$ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \epsilon, \qquad \boldsymbol \epsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). $$
 
 - Let's now analyze the bias and variance of the OLS estimator $\hat{\beta}_\mathrm{OLS}$ under this model!
-
-- (Important note: we are not analyzing the bias and variance of the **risk** of the OLS estimator, but you should be able to derive those following the techniques that we are about to use!)
 
 ### Bias of OLS
 
@@ -86,25 +86,136 @@ $$ \text{Cov}(\hat{\beta}_\mathrm{OLS}) = \mathbb E \left[ \left( \hat \beta_\ma
 
 ### When is Variance Large? (An SVD Analysis)
 
+- To understand when the variance of OLS becomes problematic, we can use the **singular value decomposition** (SVD) of $\boldsymbol X$.
+
+- Recall that any rectangular $n \times p$ matrix $\boldsymbol X$ has an SVD $\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top$
+
+:::{.callout-tip collapse="true" title="SVD Review"}
+
+- $\boldsymbol U$ is $n \times n$ and orthonormal: $\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I$
+- $\boldsymbol V$ is $p \times p$ and orthonormal: $\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I$
+- $\boldsymbol D$ is rectangular $n \times p$, diagonal, and nonnegative (contains the singular values)
+
+- Using the SVD, we can rewrite the covariance of OLS as:
+
+$$\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^\top \boldsymbol D)^{-1} \boldsymbol V^\top$$
+
+:::
+
+- This means that $\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 \boldsymbol V \text{diag}(d_1^{-2}, d_2^{-2}, \ldots, d_p^{-2}) \boldsymbol V^\top$, where $d_1, d_2, \ldots, d_p$ are the singular values.
+
+- **Key insight**: When $\boldsymbol X$ has small singular values (i.e., when $d_j \approx 0$ for some $j$), then $d_j^{-2}$ becomes very large, leading to high variance in $\hat{\beta}_\mathrm{OLS}$.
+
+- This situation arises when $\boldsymbol X$ is **ill-conditioned** or **nearly rank-deficient**, which happens when we have **multicollinearity**: a linear combination of predictor variables is nearly equal to another predictor variable.
+
+- In such cases, $\hat{\beta}_\mathrm{OLS}$ has large, unstable values with high variance.
+
 ## Intuition: Fight Variance by "Shrinking" Large Coefficients
+
+- **Main idea**: To combat the high variance problem, we can constrain the values of $\beta$ to be small.
 
 ### Constrained Optimization Problem
 
+- Instead of solving the unconstrained OLS problem:
+  $$\min_\beta \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2$$
+
+- We can solve a **constrained** optimization problem for some $s > 0$:
+  $$\min_\beta \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_2^2 \leq s$$
+
+- Here, $\|\beta\|_2^2 = \sum_{j=1}^p \beta_j^2$ is the squared $\ell_2$-norm of $\beta$.
+
+- This constraint prevents the coefficients from becoming arbitrarily large,
+  which may happen when $\boldsymbol X$ is ill-conditioned (and thus $\mathbb E[(\boldsymbol X^\top \boldsymbol X)^{-1}]$ has large entries).
+
+![Illustration of constrained vs. unconstrained optimization solutions ($\hat \beta_\mathrm{OLS}$ vs $\hat \beta_\mathrm{ridge}$) on a 2D toy problem. Contours represent level sets of mean squared error (MSE), i.e. $\frac{1}{N} \Vert \boldsymbol Y - \boldsymbol X \hat \beta \Vert_2^2$, for various values of $\hat \beta$](../figures/ridge.svg)
+
+
 ### Graphical Perspective
+
+- Intuitively, why does this constraint reduce variance?
+
+- Recall from the previous lecture that high variance indicates that our learned model is very sensitive to the training data.
+
+- The OLS solution $\hat \beta_\mathrm{OLS}$ depends on the training data $\mathcal D = \{(x_i, y_i)\}_{i=1}^n$.
+
+- If we had a different training set $\mathcal D'$, we can change the OLS optimization landscape a lot,
+which can lead to a solution $\hat \beta_\mathrm{OLS}'$ that is very far away from $\hat \beta_\mathrm{OLS}$.
+
+- If we are instead constrained to have our solution inside the ball of radius $\sqrt{s}$,
+then the optimal solutions for $\mathcal D$ and $\mathcal D'$ ($\hat \beta_s$ and $\hat \beta'_s$) will be less far apart!
+
+![Illustration of why ridge reduces variance. Two different training samples ($\mathcal D$ and $\mathcal D'$) yield different mean squared error (MSE) optimization problems with different solutions that may be far apart. If we instead constrain the MSE to live inside a ball, the resulting solutions will be less far apart.](../figures/ridge_two_datasets.svg)
+
+:::{.callout-warning title="The Trade-off"}
+By constraining the coefficients, we can gain a significant reduction in variance, though we will introduce some bias (as we will soon see).
+:::
 
 ## Ridge Regression
 
 ### Regularization
 
+- An equivalent way to write the constrained optimization problem
+  $$\hat{\beta}_s = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_2^2 \leq s$$
+  is as a **regularized** (or **penalized**) optimization with regularization weight $\lambda$:
+  $$\hat{\beta}_\lambda = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 + \lambda \|\beta\|_2^2$$
+
+- For every $\lambda$ there is a unique $s$ (and vice versa) that makes $\hat{\beta}_s = \hat{\beta}_\lambda$. We will work with the $\lambda$ formulation.
+
 ### Closed Form
+
+- Ridge regression has a closed-form solution (set the derivative with respect to $\beta$ to zero):
+  $$\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$$
+
+- Compare to OLS: $\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y$
+
+- The $+ \lambda \boldsymbol I$ term **stabilizes** the inversion when $\boldsymbol X^\top \boldsymbol X$ is ill-conditioned, preventing division by near-zero singular values.
 
 ### Shrinkage
 
+- Using the SVD $\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top$, we can show that:
+  $$\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top \boldsymbol Y$$
+
+- Notice that OLS depends on $d_j/d_j^2 = 1/d_j$ while ridge depends on $d_j/(d_j^2 + \lambda)$.
+
+- **Shrinkage effect**: Ridge regression makes the coefficients smaller relative to OLS, but when $\boldsymbol X$ has small singular values, ridge compensates with $\lambda$ in the denominator.
+
+:::{.callout-note title="Key Observations"}
+- $\lambda = 0$ makes $\hat{\beta}_\lambda = \hat{\beta}_\mathrm{OLS}$
+- $\lambda \to \infty$ makes $\hat{\beta}_\lambda \to \boldsymbol{0}$
+- Any $0 < \lambda < \infty$ penalizes larger values of $\beta$, effectively shrinking them
+:::
+
 ## Effect on Bias/Variance
+
+- **Effect on Bias**: Ridge regression introduces some bias because it shrinks the unbiased OLS coefficients towards zero.
+
+:::{.callout-tip collapse="true" title="A Fun Mathematical Interpretation"}
+Note that we can rewrite the ridge estimator as:
+
+\begin{align*}
+\hat{\beta}_\lambda
+&= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} {\color{blue} \boldsymbol I} \boldsymbol X^\top \boldsymbol Y \\
+&= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} {\color{blue} \boldsymbol X^\top \boldsymbol X} \underbrace{{\color{blue} \left( \boldsymbol X^\top \boldsymbol X \right)} \boldsymbol X^\top \boldsymbol Y}_{\hat \beta_\mathrm{OLS}} \\
+&= (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol X \hat \beta_\mathrm{OLS}.
+\end{align*}
+
+So $\hat{\beta}_\lambda$ is a transformed version of $\hat \beta_\mathrm{OLS}$.
+Since $\hat \beta_\mathrm{OLS}$ is unbiased,
+and $(\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol X$ is not the identity, $\hat{\beta}_\lambda$ must be biased!
+:::
+
+- **Effect on Variance**: As we've discussed, ridge regression reduces variance by preventing coefficients from becoming too large.
 
 ### Picking the Regularization Parameter
 
+- With ridge regression, we're accepting a slight increase in bias with the hope that we'll get a large decrease in variance.
+- As $\lambda$ increases, bias increases and variance decreases.
+- We want to choose the best value of $\lambda$ that hits the sweet spot in the bias-variance tradeoff.
+- We can use **cross-validation** to select the value of $\lambda$ that minimizes risk.
+
 ## Example
+
+Let's see ridge regression in action on the prostate cancer dataset from Lab 1:
 
 ```{r process-prostate, echo=TRUE, dev="svg", message=FALSE,warning=FALSE, fig.height = 4, fig.width=8, fig.align='center'}
 data(prostate, package = "ElemStatLearn")
@@ -115,9 +226,30 @@ library(glmnet)
 ridge <- glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
 plot(ridge, xvar = "lambda", lwd = 3)
 ```
+
+- This first plot shows the values of the $\hat \beta_\mathrm{OLS}$ coefficients as a function of $\log(\lambda)$.
+- When $\log(\lambda)$ is very negative (i.e., $\lambda$ is close to zero), the coefficients are at their largest values.
+- As $\log(\lambda)$ increases, the coefficients shrink towards zero.
+
 ```{r, fig.width=11,fig.align="center",dev="svg",fig.height=4}
 ridge <- cv.glmnet(x = X, y = Y, alpha = 0, lambda.min.ratio = .00001)
 plot(ridge, main = "Ridge")
 ```
 
+- This second plot shows the cross-validation estimation of risk as a function of $\log(\lambda)$.
+- We can see that the risk is minimized at some intermediate value of $\lambda$,
+indicating that it is worthwhile introducing some bias to reduce variance!
+- However, the risk with $\lambda = 0$ (i.e., OLS) is not much worse than the optimal risk,
+indicating that we may not have been in the high-variance regime with our OLS estimator.
+- (Maybe we're actually in the high bias regime? We'll learn some techniques to address that soon!)
+
 ## Summary
+
+- We have now introduced our first method to help us navigate the bias-variance tradeoff:
+  ridge regression, which introduces bias to reduce variance.
+
+- **The Problem**: OLS has high variance when $\boldsymbol X$ is ill-conditioned (multicollinearity), which occurs when some singular values are near zero, making $(\boldsymbol X^\top \boldsymbol X)^{-1}$ unstable.
+
+- **The Solution**: Ridge regression constrains coefficients via $\|\beta\|_2^2 \leq s$ (or equivalently adds penalty $\lambda \|\beta\|_2^2$), which shrinks coefficients toward zero and stabilizes the solution with closed form $\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$.
+
+- **The Tradeoff**: Ridge introduces bias but significantly reduces variance, and we can use cross-validation to find the optimal $\lambda$ that minimizes prediction risk in the bias-variance tradeoff.
