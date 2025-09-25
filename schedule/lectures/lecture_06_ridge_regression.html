@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-09-22">
+<meta name="dcterms.date" content="2025-09-25">
 
 <title>Lecture 6: Ridge Regression – UBC Stat406 2025 W1</title>
 <style>
@@ -76,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-3bdcbcac399d3d4942cd9e49013b1926.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -248,7 +248,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 22, 2025</p>
+      <p class="date">September 25, 2025</p>
     </div>
   </div>
   
@@ -384,12 +384,12 @@ window.Quarto = {
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
-<li><p><span class="math inline">\(\boldsymbol U\)</span> is <span class="math inline">\(n \times n\)</span> and orthonormal: <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I\)</span></p></li>
-<li><p><span class="math inline">\(\boldsymbol V\)</span> is <span class="math inline">\(p \times p\)</span> and orthonormal: <span class="math inline">\(\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I\)</span></p></li>
-<li><p><span class="math inline">\(\boldsymbol D\)</span> is rectangular <span class="math inline">\(n \times p\)</span>, diagonal, and nonnegative (contains the singular values)</p></li>
+<li><p><span class="math inline">\(\boldsymbol U\)</span> is <span class="math inline">\(n \times p\)</span> with orthonormal columns: <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol I\)</span></p></li>
+<li><p><span class="math inline">\(\boldsymbol V\)</span> is <span class="math inline">\(p \times p\)</span> and orthonormal (rows and columns): <span class="math inline">\(\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I\)</span></p></li>
+<li><p><span class="math inline">\(\boldsymbol D\)</span> is <span class="math inline">\(p \times p\)</span>, diagonal, and nonnegative (contains the singular values)</p></li>
 <li><p>Using the SVD, we can rewrite the covariance of OLS as:</p></li>
 </ul>
-<p><span class="math display">\[\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^\top \boldsymbol D)^{-1} \boldsymbol V^\top\]</span></p>
+<p><span class="math display">\[\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^2 \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^2)^{-1} \boldsymbol V^\top\]</span></p>
 </div>
 </div>
 </div>
@@ -471,7 +471,7 @@ window.Quarto = {
 <section id="shrinkage" class="level3">
 <h3 class="anchored" data-anchor-id="shrinkage">Shrinkage</h3>
 <ul>
-<li><p>Using the SVD <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>, we can show that: <span class="math display">\[\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top \boldsymbol Y\]</span></p></li>
+<li><p>Using the SVD <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>, we can show that: <span class="math display">\[\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^2 + \lambda \boldsymbol I)^{-1} \boldsymbol D \boldsymbol U^\top \boldsymbol Y\]</span></p></li>
 <li><p>Notice that OLS depends on <span class="math inline">\(d_j/d_j^2 = 1/d_j\)</span> while ridge depends on <span class="math inline">\(d_j/(d_j^2 + \lambda)\)</span>.</p></li>
 <li><p><strong>Shrinkage effect</strong>: Ridge regression makes the coefficients smaller relative to OLS, but when <span class="math inline">\(\boldsymbol X\)</span> has small singular values, ridge compensates with <span class="math inline">\(\lambda\)</span> in the denominator.</p></li>
 </ul>
@@ -486,9 +486,24 @@ window.Quarto = {
 </div>
 <div class="callout-body-container callout-body">
 <ul>
-<li><span class="math inline">\(\lambda = 0\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda = \hat{\beta}_\mathrm{OLS}\)</span></li>
-<li><span class="math inline">\(\lambda \to \infty\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda \to \boldsymbol{0}\)</span></li>
-<li>Any <span class="math inline">\(0 &lt; \lambda &lt; \infty\)</span> penalizes larger values of <span class="math inline">\(\beta\)</span>, effectively shrinking them</li>
+<li><p><span class="math inline">\(\lambda = 0\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda = \hat{\beta}_\mathrm{OLS}\)</span></p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>When <span class="math inline">\(\lambda = 0\)</span>, <span class="math inline">\((\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol y = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol y = \hat \beta_\mathrm{OLS}\)</span>.</p>
+</details></li>
+<li><p><span class="math inline">\(\lambda \to \infty\)</span> makes <span class="math inline">\(\hat{\beta}_\lambda \to \boldsymbol{0}\)</span></p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>We can write <span class="math inline">\((\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} = \frac{1}{\lambda} (\frac{1}{\lambda} \boldsymbol X^\top \boldsymbol X + \boldsymbol I)^{-1}\)</span>.</li>
+<li>As <span class="math inline">\(\lambda \to \infty\)</span>, <span class="math inline">\(\frac{1}{\lambda} \to 0\)</span>, so <span class="math inline">\(\frac{1}{\lambda} (\frac{1}{\lambda} \boldsymbol X^\top \boldsymbol X + \boldsymbol I)^{-1} \to \frac{1}{\lambda} \boldsymbol I^{-1} = \boldsymbol 0\)</span>.</li>
+</ul>
+</details></li>
+<li><p>Any <span class="math inline">\(0 &lt; \lambda &lt; \infty\)</span> penalizes larger values of <span class="math inline">\(\beta\)</span>, effectively shrinking them</p></li>
 </ul>
 </div>
 </div>
