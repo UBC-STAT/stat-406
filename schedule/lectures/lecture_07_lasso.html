@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-09-25">
+
+<title>Lecture 7: LASSO Regression – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#recap-ridge-regression-shrinkage-versus-variable-selection" id="toc-recap-ridge-regression-shrinkage-versus-variable-selection" class="nav-link" data-scroll-target="#recap-ridge-regression-shrinkage-versus-variable-selection">Recap: Ridge Regression, Shrinkage versus Variable Selection</a></li>
+  <li><a href="#goal-automatic-variable-selection" id="toc-goal-automatic-variable-selection" class="nav-link" data-scroll-target="#goal-automatic-variable-selection">Goal: Automatic Variable Selection?</a>
+  <ul class="collapse">
+  <li><a href="#solution-diamond-constraint-regions" id="toc-solution-diamond-constraint-regions" class="nav-link" data-scroll-target="#solution-diamond-constraint-regions">Solution: Diamond Constraint Regions</a></li>
+  </ul></li>
+  <li><a href="#lasso-regression" id="toc-lasso-regression" class="nav-link" data-scroll-target="#lasso-regression">LASSO Regression</a>
+  <ul class="collapse">
+  <li><a href="#constrained-formulation" id="toc-constrained-formulation" class="nav-link" data-scroll-target="#constrained-formulation">Constrained Formulation</a></li>
+  <li><a href="#regularized-penalized-formulation" id="toc-regularized-penalized-formulation" class="nav-link" data-scroll-target="#regularized-penalized-formulation">Regularized (Penalized) Formulation</a></li>
+  <li><a href="#computing-the-lasso-estimator" id="toc-computing-the-lasso-estimator" class="nav-link" data-scroll-target="#computing-the-lasso-estimator">Computing the LASSO Estimator</a></li>
+  </ul></li>
+  <li><a href="#aside-regularization-with-other-vector-norms" id="toc-aside-regularization-with-other-vector-norms" class="nav-link" data-scroll-target="#aside-regularization-with-other-vector-norms">Aside: Regularization with Other Vector Norms</a>
+  <ul class="collapse">
+  <li><a href="#important-special-cases" id="toc-important-special-cases" class="nav-link" data-scroll-target="#important-special-cases">Important Special Cases</a></li>
+  </ul></li>
+  <li><a href="#example-lasso-versus-ridge-regression" id="toc-example-lasso-versus-ridge-regression" class="nav-link" data-scroll-target="#example-lasso-versus-ridge-regression">Example: LASSO versus Ridge Regression</a></li>
+  <li><a href="#when-should-i-consider-using-ridge-over-lasso" id="toc-when-should-i-consider-using-ridge-over-lasso" class="nav-link" data-scroll-target="#when-should-i-consider-using-ridge-over-lasso">When Should I Consider using Ridge over LASSO?</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_07_lasso.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_07_lasso.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 7: LASSO Regression</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 25, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Implement LASSO regression using both constrained and penalized formulations</li>
+<li>Identify norm penalties that enforce sparsity versus shrinkage in parameter space</li>
+<li>Compare and contrast ridge regression vs LASSO in terms of variable selection and shrinkage</li>
+<li>Reason about when LASSO, ridge, or variants are the most appropriate for a given problem</li>
+<li>Construct a model selection procedure to choose between LASSO versus ridge</li>
+</ol>
+</section>
+<section id="recap-ridge-regression-shrinkage-versus-variable-selection" class="level2">
+<h2 class="anchored" data-anchor-id="recap-ridge-regression-shrinkage-versus-variable-selection">Recap: Ridge Regression, Shrinkage versus Variable Selection</h2>
+<p>So far we have discussed two modelling choices to reduce variance in linear regression:</p>
+<ol type="1">
+<li><strong>Variable selection</strong>: use a subset of the features (e.g., best subset selection, forward stepwise selection, LAR)</li>
+<li><strong>Ridge regularization</strong>: apply a <span class="math inline">\(\lambda \Vert \beta \Vert_2^2\)</span> penalty to the optimization objective to shrink coefficients towards zero</li>
+<li>(There’s always the option of adding more training data.)</li>
+</ol>
+<ul>
+<li>It’s important to note that ridge and variable selection are doing VERY different things!</li>
+<li>Ridge regression shrinks coefficients towards zero, but does not set any coefficients exactly to zero.</li>
+<li>Variable selection methods (best subset, forward stepwise, LAR) set some coefficients exactly to zero, but do not shrink the non-zero coefficients.</li>
+</ul>
+</section>
+<section id="goal-automatic-variable-selection" class="level2">
+<h2 class="anchored" data-anchor-id="goal-automatic-variable-selection">Goal: Automatic Variable Selection?</h2>
+<ul>
+<li><p>Ridge added a constraint to our OLS optimization problem to limit the size of the coefficients.</p></li>
+<li><p>Maybe we could add a similar constraint to limit the number of non-zero coefficients?</p></li>
+<li><p>(Note that having <span class="math inline">\(&lt; p\)</span> non-zero coefficients, or having <span class="math inline">\(&gt; 0\)</span> coefficients set to zero, is equivalent to removing some covariates from the model.)</p></li>
+<li><p>Such a constraint would yield the following optimization problem:</p>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat \beta} \frac 1 n \sum_{i=1}^n (y_i - x_i^T \hat\beta)^2 \quad \text{subject to } \Vert \hat\beta \Vert_0 &lt; s\]</span></p>
+<p>where <span class="math inline">\(\Vert \hat\beta \Vert_0\)</span> is the number of non-zero entries in <span class="math inline">\(\hat\beta\)</span>.</p></li>
+<li><p>Unfortunately, this optimization problem takes <span class="math inline">\(O(2^p)\)</span> time to solve.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>Mathematically, it is a NP-hard optimization problem.</li>
+<li>Intuitively, solving this problem is equivalent to <em>exhaustive subset search</em> that you probably learned about in STAT 306. There are <span class="math inline">\(2^p\)</span> possible subsets of <span class="math inline">\(p\)</span> features, and we would need to evaluate the training error for each subset to find the best one.</li>
+</ul>
+</details></li>
+<li><p>Fortunately, we can solve a simpler optimization problem that encourages sparsity in the coefficients. (Mathematically, we solve a <strong>convex relaxation</strong>).</p></li>
+</ul>
+<section id="solution-diamond-constraint-regions" class="level3">
+<h3 class="anchored" data-anchor-id="solution-diamond-constraint-regions">Solution: Diamond Constraint Regions</h3>
+<ul>
+<li>Recall that ridge constrained our solutions so that the <span class="math inline">\(\beta\)</span> vector lied within a circle (or sphere, or hypersphere) of radius <span class="math inline">\(s\)</span>.</li>
+<li>Instead, what if we set our constraint region to be a diamond?</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/lasso.svg" class="img-fluid figure-img"></p>
+<figcaption>Illustration of the diamond constraint region for linear regression. It’s likely that, for a “tight-enough” diamond constraint, the minimal solution in the constraint region will live in one of the corners of the diamond, which corresponds to zero-ing out one or more coefficients.</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>The minimum sum-of-squares solution under this constraint will (not always, but often) be at a corner of the diamond, which is where one or more coefficients are exactly zero.</p></li>
+<li><p>Crucially, the sum-of-squares objective with this diamond constraint is a convex optimization problem that can be solved efficiently!</p></li>
+</ul>
+</section>
+</section>
+<section id="lasso-regression" class="level2">
+<h2 class="anchored" data-anchor-id="lasso-regression">LASSO Regression</h2>
+<ul>
+<li>LASSO regression aims to (approximately) do automated variable selection using this diamond constraint.</li>
+<li>It is another <strong>regularized regression</strong> method, like ridge regression, which will reduce variance (at the expense of a bit of bias).</li>
+<li>Unlike ridge regression, the constraint/regularization yields a different effect on the learned coefficients: it encourages sparsity (i.e.&nbsp;some coefficients exactly zero) rather than just shrinkage (i.e.&nbsp;all coefficients small but non-zero).</li>
+</ul>
+<section id="constrained-formulation" class="level3">
+<h3 class="anchored" data-anchor-id="constrained-formulation">Constrained Formulation</h3>
+<ul>
+<li><p>This diamond constraint region is mathematically defined by the set of all <span class="math inline">\(\hat \beta\)</span> where</p>
+<p><span class="math display">\[ \Vert \hat\beta \Vert_1 := \sum_{j=1}^p |\hat\beta_j| &lt; s\]</span></p>
+<p>which yields the constrained optimization problem</p>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat \beta} \frac 1 n  \sum_{i=1}^n (y_i - x_i^T \hat\beta)^2 \quad \text{subject to } \Vert \hat\beta \Vert_1 &lt; s\]</span></p></li>
+<li><p>Compare this to the ridge regression constrained optimization problem. For ridge, the constraint was <span class="math inline">\(\Vert \hat\beta \Vert_2^2 &lt; s\)</span> (i.e.&nbsp;a circle/sphere/hypersphere constraint rather than a diamond). Otherwise the problems are identical.</p></li>
+</ul>
+</section>
+<section id="regularized-penalized-formulation" class="level3">
+<h3 class="anchored" data-anchor-id="regularized-penalized-formulation">Regularized (Penalized) Formulation</h3>
+<ul>
+<li><p>As with ridge regression, we can rewrite the constrained optimization problem as a penalized optimization problem:</p>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat \beta} \frac 1 n  \sum_{i=1}^n (y_i - x_i^T \hat\beta)^2 + \lambda \Vert \hat\beta \Vert_1 \]</span></p>
+<p>where again each value of <span class="math inline">\(s\)</span> in our constrained formulation corresponds to a value of <span class="math inline">\(\lambda\)</span> in our penalized formulation.</p></li>
+</ul>
+</section>
+<section id="computing-the-lasso-estimator" class="level3">
+<h3 class="anchored" data-anchor-id="computing-the-lasso-estimator">Computing the LASSO Estimator</h3>
+<ul>
+<li>Unlike ridge regression, there is no closed-form solution for the LASSO estimator <span class="math inline">\(\hat\beta_\lambda\)</span>.</li>
+<li>Instead, we must use numerical optimization to solve the penalized optimization problem.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="How do we Numerically Optimize the LASSO Objective?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>How do we Numerically Optimize the LASSO Objective?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(Advanced content for those who are interested)</strong></p>
+<ul>
+<li>The LASSO problem is a convex optimization problem, so typically optimizers like gradient descent will (in theory) converge to the global optimum.</li>
+<li>However, gradient descent doesn’t do well with the non-differentiable corners of the <span class="math inline">\(\ell_1\)</span> norm.</li>
+<li>Instead, it’s common to use <strong>coordinate descent</strong> (which is what <code>glmnet</code> uses).</li>
+<li><strong>Proximal gradient descent algorithms</strong> are also popular for solving the LASSO problem.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="aside-regularization-with-other-vector-norms" class="level2">
+<h2 class="anchored" data-anchor-id="aside-regularization-with-other-vector-norms">Aside: Regularization with Other Vector Norms</h2>
+<ul>
+<li><p>The ridge regularization penalty (<span class="math inline">\(\Vert \beta \Vert_2^2\)</span>), the LASSO regularization penalty (<span class="math inline">\(\Vert \beta \Vert_1\)</span>), and the “sparsity” penalty (<span class="math inline">\(\Vert \beta \Vert_0\)</span>) are all examples of <strong>vector norm penalties</strong>.</p></li>
+<li><p>More specifically, each is an example of a <strong><span class="math inline">\(\ell_p\)</span>-norm</strong>, where the general form is given by:</p>
+<p><span class="math display">\[\Vert \beta \Vert_p = \left( \sum_{j=1}^p |\beta_j|^p \right)^{1/p}\]</span></p></li>
+<li><p>Below is a plot of values of the constraint <span class="math inline">\(\Vert \beta \Vert_p = 1\)</span> for various values of <span class="math inline">\(p\)</span>:</p></li>
+<li><p>Any of these norms could be used as a regularization penalty in linear regression (though some may yield hard-to-solve optimization problems).</p></li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>normBall <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">q =</span> <span class="dv">1</span>, <span class="at">len =</span> <span class="dv">1000</span>) {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  tg <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length =</span> len)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">cos</span>(tg)) <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">b =</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">abs</span>(x)<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q), <span class="at">bm =</span> <span class="sc">-</span>b) <span class="sc">|&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gather</span>(<span class="at">key =</span> <span class="st">"lab"</span>, <span class="at">value =</span> <span class="st">"y"</span>, <span class="sc">-</span>x)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  out<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"["</span>, <span class="fu">signif</span>(q, <span class="dv">2</span>), <span class="st">"]"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ellipseData <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">Sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">5</span>), <span class="dv">2</span>)) {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">seq</span>(xlim[<span class="dv">1</span>], xlim[<span class="dv">2</span>], <span class="at">length.out =</span> n),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">seq</span>(ylim[<span class="dv">1</span>], ylim[<span class="dv">2</span>], <span class="at">length.out =</span> n)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>z <span class="ot">&lt;-</span> <span class="fu">dmvnorm</span>(df, mean, Sigma)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>lballmax <span class="ot">&lt;-</span> <span class="cf">function</span>(ed, <span class="at">q =</span> <span class="dv">1</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  ed <span class="ot">&lt;-</span> <span class="fu">filter</span>(ed, x <span class="sc">&gt;</span> <span class="dv">0</span>, y <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>) {</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    ff <span class="ot">&lt;-</span> <span class="fu">abs</span>((ed<span class="sc">$</span>x<span class="sc">^</span>q <span class="sc">+</span> ed<span class="sc">$</span>y<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;</span> tol</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">sum</span>(ff) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="cf">break</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    tol <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> tol</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  best <span class="ot">&lt;-</span> ed[ff, ]</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  best[<span class="fu">which.max</span>(best<span class="sc">$</span>z), ]</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>nbs <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>qs <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">5</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>, <span class="dv">20</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (ii <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>) nbs[[ii]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(qs[ii <span class="sc">-</span> <span class="dv">1</span>])</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">1</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[0.0]"</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">4</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[1.0]"</span>)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>nbs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(nbs)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>nbs<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">factor</span>(nbs<span class="sc">$</span>lab, <span class="at">levels =</span> <span class="fu">unique</span>(nbs<span class="sc">$</span>lab))</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>seg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">lab =</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)[<span class="dv">1</span>],</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">x0 =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="at">x1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">y0 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">y1 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(seg<span class="sc">$</span>lab) <span class="ot">&lt;-</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nbs, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(.<span class="sc">~</span>lab, <span class="at">labeller =</span> label_parsed) <span class="sc">+</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> seg, <span class="fu">aes</span>(<span class="at">x =</span> x0, <span class="at">xend =</span> x1, <span class="at">y =</span> y0, <span class="at">yend =</span> y1), <span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_07_lasso_files/figure-html/plotting-functions-1.png" class="img-fluid figure-img" width="1536"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="important-special-cases" class="level3">
+<h3 class="anchored" data-anchor-id="important-special-cases">Important Special Cases</h3>
+<ul>
+<li><span class="math inline">\(p = 0\)</span> is the number of non-zero entries in <span class="math inline">\(\beta\)</span> (the “sparsity” penalty)</li>
+<li><span class="math inline">\(p = \infty\)</span> is the maximum absolute value of any entry in <span class="math inline">\(\beta\)</span> (the “max” penalty)</li>
+<li><span class="math inline">\(p \geq 1\)</span> gives a <strong>convex</strong> function of <span class="math inline">\(\beta\)</span>, which makes optimization nice</li>
+<li><span class="math inline">\(p &lt; 2\)</span> gives a norm with “corners” (i.e., non-differentiable points on the axes), which encourage sparsity</li>
+</ul>
+</section>
+</section>
+<section id="example-lasso-versus-ridge-regression" class="level2">
+<h2 class="anchored" data-anchor-id="example-lasso-versus-ridge-regression">Example: LASSO versus Ridge Regression</h2>
+<ul>
+<li>Here we’re going to run both ridge and LASSO regression on the prostate cancer dataset from Lab 01.</li>
+<li>I will do a CV sweep to find the best regularization parameter <span class="math inline">\(\lambda\)</span> for each method.</li>
+<li>Again we’ll use <code>glmnet</code> to fit both models.
+<ul>
+<li>The argument <code>alpha = 1</code> in <code>cv.glmnet</code> specifies LASSO, while <code>alpha = 0</code> specifies ridge regression.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa) <span class="sc">|&gt;</span>  <span class="fu">as.matrix</span>()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y) <span class="co"># alpha = 1 by default</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ul>
+<li>Now let’s plot the CV curves and coefficient paths for both ridge and LASSO as functions of their regularization parameter <span class="math inline">\(\lambda\)</span>.</li>
+<li>Note that we cannot compare the <span class="math inline">\(\lambda\)</span> values directly between ridge and LASSO, since they are on different scales.</li>
+<li>(The <span class="math inline">\(\lambda\)</span> values also don’t have any intrinsic meaning. Larger values imply more regularization, but a <span class="math inline">\(\lambda = 4.7\)</span> means nothing in isolation.)</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get y-axis range for consistent scaling</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ridge_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(ridge<span class="sc">$</span>cvm <span class="sc">-</span> ridge<span class="sc">$</span>cvsd, ridge<span class="sc">$</span>cvm <span class="sc">+</span> ridge<span class="sc">$</span>cvsd))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>lasso_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(lasso<span class="sc">$</span>cvm <span class="sc">-</span> lasso<span class="sc">$</span>cvsd, lasso<span class="sc">$</span>cvm <span class="sc">+</span> lasso<span class="sc">$</span>cvsd))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>ylim_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_mse, lasso_mse)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"LASSO CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get coefficient range for consistent scaling</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>ridge_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>lasso_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(lasso<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>coef_ylim <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_coef_range, lasso_coef_range)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"Ridge Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"LASSO Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_07_lasso_files/figure-html/lasso-ridge-plots-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>The numbers on the top of the plots indicate the number of non-zero coefficients at each value of <span class="math inline">\(\lambda\)</span>.</li>
+<li>Notice that ridge regression always has all 8 coefficients non-zero, while LASSO sets some coefficients exactly to zero for larger values of <span class="math inline">\(\lambda\)</span>.</li>
+</ul>
+</section>
+<section id="when-should-i-consider-using-ridge-over-lasso" class="level2">
+<h2 class="anchored" data-anchor-id="when-should-i-consider-using-ridge-over-lasso">When Should I Consider using Ridge over LASSO?</h2>
+<ol type="1">
+<li><p>If all of the covariates are truly relevant, and dropping too many of them would hurt accuracy</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>LASSO tends to select only a few variables, and set the rest to zero. If all variables are relevant, this can lead to underfitting.</li>
+<li>Ridge regression, on the other hand, shrinks all coefficients towards zero, but keeps them all in the model.
+</li></ul></details></li>
+
+<li><p>If I create a one-hot encoding of a categorical variable with many levels (e.g., ZIP code)</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>LASSO might drop some of the levels but not others, which can be hard to interpret</li>
+<li>Ridge regression will tend to keep all levels, but shrink them towards zero</li>
+<li>A variant of LASSO called the <strong>group LASSO</strong> can be used to select or drop all levels of a categorical variable together.
+</li></ul></details></li>
+
+<li><p>If computational resources are limited</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>LASSO requires numerical optimization to solve, while ridge regression has a closed-form solution.</li>
+<li>We have to run multiple optimization problems for each value of <span class="math inline">\(\lambda\)</span> we want to test in cross-validation.</li>
+<li>Ridge regression only requires a single SVD, which can be reused for all values of <span class="math inline">\(\lambda\)</span>.</li>
+<li>Moreover, as we will see in a later lecture, we can compute the LOO-CV risk estimate for ridge almost for free, while LASSO requires refitting the model <span class="math inline">\(n\)</span> times.
+</li></ul></details></li>
+
+</ol>
+<div class="callout callout-style-default callout-caution callout-titled" title="When Should I Avoid Using Both Ridge and LASSO?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Caution</span>When Should I Avoid Using Both Ridge and LASSO?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If I’m in a high-bias/low-variance regime to begin with, I shouldn’t use either method.</p>
+<details>
+<summary>
+Why?
+</summary>
+<ul>
+<li>Regularization (both ridge and LASSO) increases bias but reduces variance.
+<ul>
+<li>If the un-regularized model is already low variance, regularization will likely hurt performance.</li>
+</ul>
+</li></ul></details>
+
+<p>:::</p>
+<section id="important-practical-considerations-when-using-lasso-or-ridge-regression" class="level2">
+<h2 class="anchored" data-anchor-id="important-practical-considerations-when-using-lasso-or-ridge-regression">Important Practical Considerations when Using LASSO or Ridge Regression</h2>
+<ol type="1">
+<li><p>The intercept <span class="math inline">\(\hat \beta_0\)</span> is never penalized!</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>The intercept parameter is an estimate of the mean of <span class="math inline">\(Y\)</span>, and we generally do not want to shrink this estimate.</li>
+<li>In practice, we usually standardize the response to have mean zero and variance one before fitting a regularized regression model.
+</li></ul></details></li>
+
+<li><p>It’s important to center the features (i.e.&nbsp;subtract off each covariate’s empirical mean) before fitting.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>If the features are not centered, the intercept will implicitly be penalized, which can lead to suboptimal performance.</li>
+<li>Centering the features ensures that the intercept is the mean of <span class="math inline">\(Y\)</span> when all other covariates are zero.</li>
+<li>Standardizing the features (i.e.&nbsp;scaling them to have unit variance) is also common, but not strictly necessary for LASSO or ridge regression.
+</li></ul></details></li>
+
+<li><p>Categorical parameters require special care with LASSO.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<ul>
+<li>See above
+</li></ul></details></li>
+
+<li><p>Ridge or LASSO penalties can be used in other (non-linear regression) models.</p></li>
+</ol>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Ridge regression applies an <span class="math inline">\(\ell_2\)</span> penalty to shrink coefficients towards zero, but does not set any coefficients exactly to zero.</li>
+<li>LASSO regression applies an <span class="math inline">\(\ell_1\)</span> penalty to encourage sparsity in the coefficients, setting some coefficients exactly to zero.</li>
+<li>LASSO requires numerical optimization to solve, and care is needed when using categorical variables.</li>
+<li>Both ridge and LASSO increase bias but reduce variance.</li>
+<li>The choice between ridge and LASSO depends on the specific problem and goals of the analysis.</li>
+</ul>
+
+
+</section>
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_07_lasso.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_07_lasso.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
