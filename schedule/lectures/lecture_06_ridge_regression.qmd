@@ -92,13 +92,13 @@ $$ \text{Cov}(\hat{\beta}_\mathrm{OLS}) = \mathbb E \left[ \left( \hat \beta_\ma
 
 :::{.callout-tip collapse="true" title="SVD Review"}
 
-- $\boldsymbol U$ is $n \times n$ and orthonormal: $\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I$
-- $\boldsymbol V$ is $p \times p$ and orthonormal: $\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I$
-- $\boldsymbol D$ is rectangular $n \times p$, diagonal, and nonnegative (contains the singular values)
+- $\boldsymbol U$ is $n \times p$ with orthonormal columns: $\boldsymbol U^\top \boldsymbol U = \boldsymbol I$
+- $\boldsymbol V$ is $p \times p$ and orthonormal (rows and columns): $\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I$
+- $\boldsymbol D$ is $p \times p$, diagonal, and nonnegative (contains the singular values)
 
 - Using the SVD, we can rewrite the covariance of OLS as:
 
-$$\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^\top \boldsymbol D)^{-1} \boldsymbol V^\top$$
+$$\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^2 \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^2)^{-1} \boldsymbol V^\top$$
 
 :::
 
@@ -173,7 +173,7 @@ By constraining the coefficients, we can gain a significant reduction in varianc
 ### Shrinkage
 
 - Using the SVD $\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top$, we can show that:
-  $$\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top \boldsymbol Y$$
+  $$\hat{\beta}_\lambda = \boldsymbol V (\boldsymbol D^2 + \lambda \boldsymbol I)^{-1} \boldsymbol D \boldsymbol U^\top \boldsymbol Y$$
 
 - Notice that OLS depends on $d_j/d_j^2 = 1/d_j$ while ridge depends on $d_j/(d_j^2 + \lambda)$.
 
@@ -181,7 +181,21 @@ By constraining the coefficients, we can gain a significant reduction in varianc
 
 :::{.callout-note title="Key Observations"}
 - $\lambda = 0$ makes $\hat{\beta}_\lambda = \hat{\beta}_\mathrm{OLS}$
+
+  <details>
+    <summary>Why?</summary>
+  When $\lambda = 0$, $(\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol y = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol y = \hat \beta_\mathrm{OLS}$.
+  </details>
+
 - $\lambda \to \infty$ makes $\hat{\beta}_\lambda \to \boldsymbol{0}$
+
+  <details>
+    <summary>Why?</summary>
+
+  - We can write $(\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} = \frac{1}{\lambda} (\frac{1}{\lambda} \boldsymbol X^\top \boldsymbol X + \boldsymbol I)^{-1}$.
+  - As $\lambda \to \infty$, $\frac{1}{\lambda} \to 0$, so $\frac{1}{\lambda} (\frac{1}{\lambda} \boldsymbol X^\top \boldsymbol X + \boldsymbol I)^{-1} \to \frac{1}{\lambda} \boldsymbol I^{-1} = \boldsymbol 0$.
+  </details>
+
 - Any $0 < \lambda < \infty$ penalizes larger values of $\beta$, effectively shrinking them
 :::
 
