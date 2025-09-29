@@ -9,7 +9,7 @@
 <meta name="author" content="Geoff Pleiss">
 <meta name="dcterms.date" content="2025-09-29">
 
-<title>Lecture 5: The Bias-Variance Tradeoff – UBC Stat406 2025 W1</title>
+<title>Lecture 9: Information Criteria – UBC Stat406 2025 W1</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -164,36 +164,21 @@ window.Quarto = {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
-  <ul class="collapse">
-  <li><a href="#this-module" id="toc-this-module" class="nav-link" data-scroll-target="#this-module">This Module</a></li>
-  </ul></li>
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a>
-  <ul class="collapse">
-  <li><a href="#expected-label" id="toc-expected-label" class="nav-link" data-scroll-target="#expected-label">Expected Label</a></li>
-  <li><a href="#expected-model" id="toc-expected-model" class="nav-link" data-scroll-target="#expected-model">Expected Model</a></li>
-  </ul></li>
-  <li><a href="#warmup-decomposition-estimation-versus-prediction-error" id="toc-warmup-decomposition-estimation-versus-prediction-error" class="nav-link" data-scroll-target="#warmup-decomposition-estimation-versus-prediction-error">Warmup Decomposition (Estimation versus Prediction Error)</a>
-  <ul class="collapse">
-  <li><a href="#estimation-versus-irreducible-error" id="toc-estimation-versus-irreducible-error" class="nav-link" data-scroll-target="#estimation-versus-irreducible-error">Estimation versus Irreducible Error</a></li>
-  </ul></li>
-  <li><a href="#the-bias-variance-decomposition" id="toc-the-bias-variance-decomposition" class="nav-link" data-scroll-target="#the-bias-variance-decomposition">The Bias-Variance Decomposition</a>
-  <ul class="collapse">
-  <li><a href="#bias-versus-variance" id="toc-bias-versus-variance" class="nav-link" data-scroll-target="#bias-versus-variance">Bias Versus Variance</a></li>
-  <li><a href="#detecting-high-bias-and-high-variance" id="toc-detecting-high-bias-and-high-variance" class="nav-link" data-scroll-target="#detecting-high-bias-and-high-variance">Detecting High Bias and High Variance</a></li>
-  <li><a href="#regime-1-high-variance" id="toc-regime-1-high-variance" class="nav-link" data-scroll-target="#regime-1-high-variance">Regime 1: High Variance</a></li>
-  <li><a href="#regime-2-high-bias" id="toc-regime-2-high-bias" class="nav-link" data-scroll-target="#regime-2-high-bias">Regime 2: High Bias</a></li>
-  </ul></li>
+  <li><a href="#overview-and-motivation" id="toc-overview-and-motivation" class="nav-link" data-scroll-target="#overview-and-motivation">Overview and Motivation</a></li>
+  <li><a href="#review-loo-cv-formula-for-ols" id="toc-review-loo-cv-formula-for-ols" class="nav-link" data-scroll-target="#review-loo-cv-formula-for-ols">Review: LOO-CV Formula For OLS</a></li>
+  <li><a href="#the-magic-loo-cv-formula-for-ols-and-some-other-linear-models" id="toc-the-magic-loo-cv-formula-for-ols-and-some-other-linear-models" class="nav-link" data-scroll-target="#the-magic-loo-cv-formula-for-ols-and-some-other-linear-models">The Magic LOO-CV Formula for OLS (and Some Other Linear Models)</a></li>
+  <li><a href="#generalized-cross-validation-gcv" id="toc-generalized-cross-validation-gcv" class="nav-link" data-scroll-target="#generalized-cross-validation-gcv">Generalized Cross-Validation (GCV)</a></li>
+  <li><a href="#what-happens-to-gcv-when-p-geq-n" id="toc-what-happens-to-gcv-when-p-geq-n" class="nav-link" data-scroll-target="#what-happens-to-gcv-when-p-geq-n">What Happens to GCV When <span class="math inline">\(p \geq n\)</span>?</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_05_bias_variance_tradeoff.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_05_bias_variance_tradeoff.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_09_information_criteria.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_09_information_criteria.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lecture 5: The Bias-Variance Tradeoff</h1>
+<h1 class="title">Lecture 9: Information Criteria</h1>
 </div>
 
 
@@ -226,238 +211,272 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
 <p>By the end of this lecture, you should be able to:</p>
 <ol type="1">
-<li>Derive the bias-variance decomposition for squared loss</li>
-<li>Connect bias and variance to overfitting and underfitting</li>
-<li>Predict factors that affect bias and variance in linear regression</li>
-<li>Identify high-bias and high-variance settings through metrics</li>
+<li>Compute degrees of freedom for OLS/ridge/basis regression models</li>
+<li>Apply GCV formulas to select regularization parameters</li>
+<li>Identify nested models and when GCV/information criteria can and cannot be used for model selection</li>
+<li>Connect degrees of freedom to the bias-variance tradeoff</li>
 </ol>
 </section>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>In the previous lecture, we:</p>
-<ol type="1">
-<li>decided that <strong>risk</strong> (<span class="math inline">\(\mathbb E[ L(Y, f_\mathcal{D}(X)) ]\)</span>) is the metric to quantify ``goodness’’ of a learned model <span class="math inline">\(f_\mathcal{D}\)</span>, and</li>
-<li>used estimated quantities of risk (e.g.&nbsp;via cross-validation) to select between different models.</li>
-</ol>
-<p>As it stands right now, this model selection procedure is a bit like guess-and-check. We make a change to our model (i.e.&nbsp;add a covariate, change the model class, etc.), and then see if it improves our estimated risk.</p>
-<section id="this-module" class="level3">
-<h3 class="anchored" data-anchor-id="this-module">This Module</h3>
-<p>The goal of this module is to make this process a bit more systematic by:</p>
-<ol type="1">
-<li>quantifying factors that influence risk, and</li>
-<li>categorizing model changes based on how they affect these factors.</li>
-</ol>
-<p>This lecture will focus on the first point. We will introduce the <strong>bias-variance decomposition</strong> of risk, which is one of the cornerstones of statistical learning theory. In subsequent lectures, we will introduce modeling and estimation procedures for linear models that specifically target these factors.</p>
-</section>
-</section>
-<section id="setup" class="level2">
-<h2 class="anchored" data-anchor-id="setup">Setup</h2>
-<p>Given a learned model <span class="math inline">\(f_\mathcal{D}: \mathcal{X} \to \mathcal{Y}\)</span>, recall our definition of <strong>risk</strong> from the previous lecture:</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E[ L(Y, f_\mathcal{D}(X)) ]  = \mathbb E\left[ \mathbb E[ L(Y, f_\mathcal{D}(X)) \mid \mathcal D \right]. \]</span></p>
-<p>This lecture will focus specifically on the square loss (though the ideas will apply to other losses):</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] \]</span></p>
-<p>Crucially, risk is an expectation over <em>all sources of randomness</em>, including:</p>
+<section id="overview-and-motivation" class="level2">
+<h2 class="anchored" data-anchor-id="overview-and-motivation">Overview and Motivation</h2>
+<p>Today is our last lecture on the bias-variance tradeoff for linear models (though this trade-off will come up again and again in this course). We’ve discussed a few methods for reducing risk, whose applicability depends on whether we’re in the high variance or high bias regime.</p>
+<p><strong>Techniques for reducing variance:</strong></p>
 <ul>
-<li>the training data <span class="math inline">\(\mathcal D = \{(X_i, Y_i)\}_{i=1}^n \overset{\text{i.i.d.}}{\sim} P(Y, X)\)</span></li>
-<li>the test data <span class="math inline">\((X, Y) \sim P(Y, X)\)</span></li>
-<li>(any randomness in the estimation procedure).</li>
+<li>Adding more training data</li>
+<li>Variable selection (manually removing predictors, LASSO regularization)</li>
+<li>Shrinkage (ridge regularization)</li>
 </ul>
-<p>Our goal is to decompose this expectation into semantically meaningful components that we can reason about. Before we do so, we need to introduce some terms/ideas:</p>
-<section id="expected-label" class="level3">
-<h3 class="anchored" data-anchor-id="expected-label">Expected Label</h3>
-<p>For any given set of covariates <span class="math inline">\(X\)</span>, there is a distribution <span class="math inline">\(P(Y \mid X)\)</span> over possible labels. We can consider the expected label:</p>
-<p><span class="math display">\[ \bar{Y}(X) = \mathbb E[ Y \mid X ]. \]</span></p>
+<p><strong>Techniques for reducing bias:</strong></p>
 <ul>
-<li><span class="math inline">\(\bar{Y}(X)\)</span> is sometimes called the <strong>regression function</strong>.</li>
-<li>If we had access to the regression function to make predictions, i.e.&nbsp;<span class="math inline">\(\hat Y = \bar{Y}(X)\)</span>, it would obtain minimum risk over <em>all</em> possible prediction rules <span class="math inline">\(\hat Y = f(X)\)</span> (which we will prove in a moment!)</li>
-<li>However, the regression function is just a theoretical construct, and we will never know it. (If we did, we wouldn’t need to learn from data!)</li>
+<li>Variable selection (manually adding predictors)</li>
+<li>Basis expansions (polynomial, splines, etc.)</li>
+</ul>
+<p>Today, we’ll revisit the concept of model selection, the concluding topic of the first module, but this time with an eye towards the bias-variance tradeoff.</p>
+<ul>
+<li>We’ll learn a fun trick for computing the LOO-CV estimate of risk for OLS, ridge, and basis regression models without having to refit the model <span class="math inline">\(n\)</span> times.</li>
+<li>We’ll also learn a new risk estimate, <strong>generalized cross-validation (GCV)</strong>, which is rarely used in practice these days but which gives us a lot of insight into the bias-variance tradeoff.</li>
 </ul>
 </section>
-<section id="expected-model" class="level3">
-<h3 class="anchored" data-anchor-id="expected-model">Expected Model</h3>
-<p>Our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is a random variable because it depends on the (random) training data <span class="math inline">\(\mathcal D\)</span>. We can consider the <strong>expected model</strong>:</p>
-<p><span class="math display">\[ \bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]. \]</span></p>
+<section id="review-loo-cv-formula-for-ols" class="level2">
+<h2 class="anchored" data-anchor-id="review-loo-cv-formula-for-ols">Review: LOO-CV Formula For OLS</h2>
 <ul>
-<li>Here, we are averaging over training datasets <span class="math inline">\(\mathcal D\)</span>, but nothing else.</li>
-<li><strong>Intuition</strong>: imagine we were to train many models on different training datasets <span class="math inline">\(\mathcal D_1, \ldots, \mathcal D_M\)</span>. Each model will make a different prediction because they are trained on different data. The expected model <span class="math inline">\(\bar{f}(X)\)</span> is the average of these predictions.</li>
+<li><p>Recall that LOO-CV is an almost-unbiased estimate of the risk of a predictive model <span class="math inline">\(\mathcal R = \mathbb E[(Y - \hat{f}(X))^2]\)</span> (where here we are assuming the use of the squared error loss).</p></li>
+<li><p>Consider our OLS estimator:</p>
+<p><span class="math display">\[
+\hat{\beta}_{\text{OLS}} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}
+\]</span></p>
+<p>where, again, <span class="math inline">\(\boldsymbol X\)</span> and <span class="math inline">\(\boldsymbol Y\)</span> are the concatenations of our training data <span class="math inline">\(\{ (X_i, Y_i) \}_{i=1}^n\)</span>:</p>
+<p><span class="math display">\[
+\boldsymbol{X} = \begin{bmatrix}--- &amp; X_1^\top &amp; --- \\
+--- &amp; X_2^\top &amp; --- \\
+&amp; \vdots &amp; \\
+--- &amp; X_n^\top &amp; --- \end{bmatrix} \in \mathbb R^{n \times p}
+\quad \text{and} \quad
+\boldsymbol{Y} = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix} \in \mathbb R^{n}.
+\]</span></p></li>
+<li><p>Our OLS predictions on the training data are:</p>
+<p><span class="math display">\[
+\hat{\boldsymbol{Y}} = \boldsymbol{X} \hat{\beta}_{\text{OLS}} = \overbrace{\boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top}^{:= \boldsymbol H} \boldsymbol{Y} = \boldsymbol{H} \boldsymbol{Y}.
+\]</span></p></li>
+<li><p>The matrix <span class="math inline">\(\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top\)</span> is often referred to as the <strong>hat matrix</strong>, and it will be important in a second.</p></li>
+<li><p>The LOO-CV estimate of risk involves, for each <span class="math inline">\(i = 1, \ldots, n\)</span>, computing the OLS estimator for the dataset <span class="math inline">\(\boldsymbol X_{-i}, \boldsymbol Y_{-i}\)</span> (which is <span class="math inline">\(\boldsymbol X, \boldsymbol Y\)</span> with the <span class="math inline">\(i^\mathrm{th}\)</span> row removed, and make predictions on <span class="math inline">\(X_i\)</span>:</p>
+<p><span class="math display">\[
+\hat{Y}^{-i}(X_i) = X_i^\top \hat{\beta}_{\text{OLS}}^{-i} = X_i^\top (\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1} \boldsymbol{X}_{-i}^\top \boldsymbol{Y}_{-i}.
+\]</span></p></li>
 </ul>
 </section>
-</section>
-<section id="warmup-decomposition-estimation-versus-prediction-error" class="level2">
-<h2 class="anchored" data-anchor-id="warmup-decomposition-estimation-versus-prediction-error">Warmup Decomposition (Estimation versus Prediction Error)</h2>
+<section id="the-magic-loo-cv-formula-for-ols-and-some-other-linear-models" class="level2">
+<h2 class="anchored" data-anchor-id="the-magic-loo-cv-formula-for-ols-and-some-other-linear-models">The Magic LOO-CV Formula for OLS (and Some Other Linear Models)</h2>
 <ul>
-<li><p>To decompose risk into multiple meaningful terms, we are going to play a mathematician’s favorite trick: adding zero.</p></li>
-<li><p>More specifically, we are going to add and subtract a very specific quantity, the expected label <span class="math inline">\(\bar{Y}(X)\)</span>, within the square loss portion of risk:</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] = \mathbb E\left[ \left( Y \overbrace{- \bar{Y}(X) + \bar{Y}(X)}^{= 0} - f_\mathcal{D}(X) \right)^2 \right] \]</span></p></li>
-<li><p>So far, this is dumb. But watch what happens when we group terms…</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ \left( \underbrace{(Y - \bar{Y}(X))}_{A} + \underbrace{(\bar{Y}(X) - f_\mathcal{D}(X))}_{B} \right)^2 \right] \]</span></p></li>
-<li><p>… and then expand the square into <span class="math inline">\(A^2 + 2AB + B^2\)</span>. After simplifying…</p>
-<details>
-<summary>
-<p>(see steps here)</p>
-</summary>
-<p><span class="math display">\[\begin{align*}
-    \mathcal R &amp;= \mathbb E\left[ A^2 + B^2 + 2AB \right] \\
-    &amp;= \mathbb E\left[ A^2 \right] + \mathbb E\left[ B^2 \right] + 2\mathbb E\left[ AB \right]
-    \end{align*}\]</span></p>
-<p>Consider <span class="math inline">\(\mathbb E\left[ AB \right] = \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \right]\)</span>. Applying the tower property, we have that:</p>
-<p><span class="math display">\[ \mathbb E\left[ AB \right] = \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right]. \]</span></p>
-<p>Within the inner expectation, <span class="math inline">\(Y\)</span> is the only random term after conditioning on <span class="math inline">\(\mathcal D\)</span> and <span class="math inline">\(X\)</span>. Since <span class="math inline">\(Y\)</span> is independent of our training data, we have that <span class="math inline">\(\mathbb E[ Y \mid X, \mathcal D ] = \mathbb E[ Y \mid X ] = \bar{Y}(X)\)</span>. Therefore,</p>
-<p><span class="math display">\[\begin{align*}
-      \mathbb E\left[ AB \right]
-      &amp;= \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right] \\
-      &amp;= \mathbb E\left[ \left( \mathbb E[ Y \mid X, \mathcal D] - \bar{Y}(X) \right) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] \\
-      &amp;= \mathbb E\left[ (\bar{Y}(X) - \bar{Y}(X)) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] = 0.
-    \end{align*}\]</span></p>
-<p>Thus, the cross term vanishes, and we are left with</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ A^2 \right] + \mathbb E\left[ B^2 \right].\]</span></p>
-<p>Plugging back in the definitions of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>…</p>
-</details>
-<p>… we get that</p>
-<p><span class="math display">\[ \mathcal R = \underbrace{\mathbb E\left[ \left( Y - \bar{Y}(X) \right)^2 \right]}_\text{irreducible error} + \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error} \]</span></p></li>
+<li><p>The LOO-CV estimate above requires <span class="math inline">\(n\)</span> matrix inversions <span class="math inline">\((\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1}\)</span>, which is computationally expensive.</p></li>
+<li><p>Moreover, the matrix inversion <span class="math inline">\((\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1}\)</span> is not too different from the matrix inversion <span class="math inline">\((\boldsymbol{X}^\top \boldsymbol{X})^{-1}\)</span> that we already computed to get <span class="math inline">\(\boldsymbol H\)</span>. Shouldn’t we be able to reuse that computation somehow?</p></li>
+<li><p>It turns out that we can! With some ugly linear algebra, we can show that the LOO-CV predictions for OLS can be computed as:</p>
+<p><span class="math display">\[
+\hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - Y_i}{1 - H_{ii}},
+\]</span></p>
+<p>where <span class="math inline">\(\hat{Y}_i\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> entry of <span class="math inline">\(\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y}\)</span>, and <span class="math inline">\(H_{ii}\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> diagonal entry of the hat matrix <span class="math inline">\(\boldsymbol{H}\)</span>.</p></li>
 </ul>
-<section id="estimation-versus-irreducible-error" class="level3">
-<h3 class="anchored" data-anchor-id="estimation-versus-irreducible-error">Estimation versus Irreducible Error</h3>
-<p>I claim these two terms have intuitive interpretations:</p>
-<ol type="1">
-<li><p>The first term, the <strong>irreducible error</strong>, quantifies the inherent uncertainty in the response variable. Even if we were to perfectly know the conditional distribution <span class="math inline">\(P(Y \mid X)\)</span>, we would not be able to perfectly predict <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> due to some inherent randomness in <span class="math inline">\(Y \mid X\)</span>.</p></li>
-<li><p>The second term, the <strong>estimation error</strong>, quantifies how far off our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is from the optimal prediction rule <span class="math inline">\(\bar{Y}(X)\)</span>. It quantifies how well our learned model approximates the <strong>regression function</strong>; i.e.&nbsp;the optimal prediction rule.</p></li>
-</ol>
-<p>The irreducible error is <strong>independent</strong> of our model/learning procedure. In general, we have no control over this term; it’s always there.</p>
-<div class="callout callout-style-default callout-warning callout-titled" title="Caveat">
+<div class="callout callout-style-default callout-tip callout-titled" title="Deriving the Magic Formula">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Caveat
+<span class="screen-reader-only">Tip</span>Deriving the Magic Formula
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Technically, we can reduce the “irreducible” error by expanding our set of covariates <span class="math inline">\(X\)</span>.</p>
-<p>Consider, for example, if we are trying to predict the temperature outside <span class="math inline">\(Y\)</span> given the time of day <span class="math inline">\(X\)</span>. If we were to add the additional covariate of the day of the year <span class="math inline">\(X'\)</span>, then <span class="math inline">\(E[Y \mid X, X']\)</span> would be a better predictor of <span class="math inline">\(Y\)</span> than <span class="math inline">\(E[Y \mid X]\)</span> alone.</p>
+<p>The derivation of this formula is tedious (and not for the faint of heart), but all it requires is some linear algebra. The key idea is to express</p>
+<p><span class="math display">\[(\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1} = (\boldsymbol{X}^\top \boldsymbol{X} - X_i X_i^\top)^{-1}\]</span></p>
+<p>and then use the <a href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula">Sherman-Morrison formula</a> for inverting rank-one updates to a matrix. (Come see me in office hours if want to suffer through the details!)</p>
 </div>
 </div>
 </div>
-<p>The estimation error is the term we control with our model/estimation/prediction procedures. It will always be non-negative because we can only estimate <span class="math inline">\(\bar Y(X)\)</span> so well from limited data.</p>
-<div class="callout callout-style-default callout-note callout-titled">
+<ul>
+<li>Applying this formula to estimate the risk associated with the square loss, the LOO-CV estimate of OLS risk is given by:</li>
+</ul>
+<p><span class="math display">\[
+\widehat{\mathcal{R}}_{\text{LOO}}
+= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
+= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+\]</span></p>
+<div class="callout callout-style-default callout-note callout-titled" title="LOO-CV Formula for Ridge and Basis Regression">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+<span class="screen-reader-only">Note</span>LOO-CV Formula for Ridge and Basis Regression
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>I also claim that this decomposition proves my earlier statement that the regression function <span class="math inline">\(\bar{Y}(X)\)</span> is the optimal prediction rule.</p>
-<details>
-<summary>
-Why?
-</summary>
+<p>This formula holds for any so-called <strong>linear smoother</strong>, where the predictions on the training data can be expressed as:</p>
+<p><span class="math display">\[\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y} \quad \text{for some } \boldsymbol H \in \mathbb R^{n \times n}.\]</span></p>
+<p>Here’s some examples of linear smoothers (and their corresponding <span class="math inline">\(\boldsymbol H\)</span> matrices):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 76%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th><span class="math inline">\(\boldsymbol{H}\)</span> Matrix</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OLS</td>
+<td><span class="math inline">\(\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top\)</span></td>
+</tr>
+<tr class="even">
+<td>Ridge Regression</td>
+<td><span class="math inline">\(\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X} + \lambda \boldsymbol{I})^{-1} \boldsymbol{X}^\top\)</span></td>
+</tr>
+<tr class="odd">
+<td>Basis Regression</td>
+<td><span class="math inline">\(\boldsymbol H = \widetilde{\boldsymbol{X}} (\widetilde{\boldsymbol{X}}^\top \widetilde{\boldsymbol{X}})^{-1} \widetilde{\boldsymbol{X}}^\top\)</span></td>
+</tr>
+<tr class="even">
+<td><del>Lasso Regression</del></td>
+<td><del>N/A (cannot be expressed as a linear smoother)</del></td>
+</tr>
+</tbody>
+</table>
+<p>where the <span class="math inline">\(\widetilde{\boldsymbol{X}}\)</span> matrix is the design matrix after applying basis expansions to the features; i.e.:</p>
+<p><span class="math display">\[ \widetilde{\boldsymbol{X}} = \begin{bmatrix}--- &amp; \phi(X_1)^\top &amp; --- \\
+--- &amp; \phi(X_2)^\top &amp; --- \\
+&amp; \vdots &amp; \\
+--- &amp; \phi(X_n)^\top &amp; --- \end{bmatrix} \in \mathbb R^{n \times d}, \]</span></p>
+<p>where <span class="math inline">\(\phi: \mathbb R^p \to \mathbb R^d\)</span> is the function that produces the basis expansion of a feature vector.</p>
+</div>
+</div>
+</section>
+<section id="generalized-cross-validation-gcv" class="level2">
+<h2 class="anchored" data-anchor-id="generalized-cross-validation-gcv">Generalized Cross-Validation (GCV)</h2>
 <ul>
-<li>The first term, the prediction error, does not depend on our model <span class="math inline">\(f_\mathcal{D}\)</span> at all. It is a property of the data distribution <span class="math inline">\(P(X, Y)\)</span>, and it is non-negative.</li>
-<li>The second term, the estimation error, is non-negative because it is an expectation of a squared term. It will be minimized when it equals zero, which happens when <span class="math inline">\(f_\mathcal{D}(X) = \bar{Y}(X)\)</span> for all <span class="math inline">\(X\)</span>.</li>
+<li><p>To better understand the bias-variance tradeoff, it helps to simplify the LOO-CV formula above.</p></li>
+<li><p>Consider what happens if we replace each <span class="math inline">\(H_{ii}\)</span> with the average value of the diagonal entries of <span class="math inline">\(\boldsymbol H\)</span>:</p>
+<p><span class="math display">\[
+\frac{1}{n} \sum_{i=1}^n H_{ii} = \frac{1}{n} \text{trace}(\boldsymbol{H}) = \frac{\text{df}}{n},
+\]</span></p>
+<p>where <span class="math inline">\(\text{df} := \text{trace}(\boldsymbol{H})\)</span> is called the <strong>degrees of freedom</strong> of the model.</p></li>
+<li><p>The resulting estimate is called the <strong>generalized cross-validation (GCV)</strong> estimate of risk:</p>
+<p><span class="math display">\[
+\widehat{\mathcal{R}}_{\text{GCV}}
+= \frac{\frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}_i)^2}{(1 - \text{df}/n)^2}
+= \frac{\mathrm{MSE}_\mathrm{train}}{(1 - \text{df}/n)^2},
+\]</span></p>
+<p>where <span class="math inline">\(\mathrm{MSE}_\mathrm{train} = \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}_i)^2\)</span> is the mean squared error on the training set.</p></li>
 </ul>
-</details>
+<div class="callout callout-style-default callout-tip callout-titled" title="Degrees of Freedom for Linear Models">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Degrees of Freedom for Linear Models
 </div>
 </div>
-</section>
-</section>
-<section id="the-bias-variance-decomposition" class="level2">
-<h2 class="anchored" data-anchor-id="the-bias-variance-decomposition">The Bias-Variance Decomposition</h2>
-<p>Now for the real deal. Can we further decompose our estimation error term into meaningful components that we can reason about?</p>
-<p>Let’s play the adding-zero trick again, this time adding and subtracting the expected model <span class="math inline">\(\bar{f}(X)\)</span>:</p>
-<p><span class="math display">\[ \mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]
-= \mathbb E\left[ \left( \underbrace{\left( \bar{Y}(X) - \bar{f}(X) \right)}_{C} - \underbrace{\left( f_\mathcal{D}(X) - \bar{f}(X) \right)}_{D} \right)^2 \right]. \]</span></p>
-<p>A similar game will play out after we (1) expand the square and (2) apply linearity of expectation: the cross term will vanish…</p>
+<div class="callout-body-container callout-body">
+<p>The degrees of freedom <span class="math inline">\(\text{df} = \text{trace}(\boldsymbol{H})\)</span> has an intuitive interpretation as the “effective number of parameters” in the model.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Degrees of Freedom</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OLS</td>
+<td><span class="math inline">\(\text{df} = \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top) = p\)</span></td>
+</tr>
+<tr class="even">
+<td>Ridge Regression</td>
+<td><span class="math inline">\(\text{df} = \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top) = \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda} &lt; p\)</span></td>
+</tr>
+<tr class="odd">
+<td>Basis Regression</td>
+<td><span class="math inline">\(\text{df} = \mathrm{tr}(\widetilde{\boldsymbol X} ( \widetilde{\boldsymbol X}^\top \widetilde{\boldsymbol X})^{-1} \widetilde{\boldsymbol X}^\top) = d\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>where <span class="math inline">\(d_1, \ldots, d_p\)</span> are the singular values of <span class="math inline">\(\boldsymbol X\)</span>.</p>
 <details>
 <summary>
-(details here)
+Derivation
 </summary>
-<p>If we take the cross term…</p>
-<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \right] \]</span></p>
-<p>… and again apply the tower property (this time only conditioning on <span class="math inline">\(X\)</span>)…</p>
-<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] \]</span></p>
-<p>… then the only term in the inner expectation that is random (after conditioning on <span class="math inline">\(X\)</span>) is <span class="math inline">\(f_\mathcal{D}(X)\)</span>. Since <span class="math inline">\(\bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]\)</span>, we have that</p>
+<p>Each of these can be derived using the singular value decomposition (SVD) of <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span> (or <span class="math inline">\(\widetilde{\boldsymbol X} = \widetilde{\boldsymbol U} \widetilde{\boldsymbol D} \widetilde{\boldsymbol V}^\top\)</span> for basis regression). Let’s look at ridge regression:</p>
 <span class="math display">\[\begin{align*}
-    \mathbb E\left[ CD \right]
-    &amp;= \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] \\
-    &amp;= \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \mathbb E\left[ f_\mathcal{D}(X) \mid X \right] \right)\right] \\
-    &amp;= \mathbb E\left[ (\bar{Y}(X) - \bar{f}(X)) (\bar{f}(X) - \bar{f}(X)) \right] = 0.
-  \end{align*}\]</span>
+\text{df} &amp;= \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top) \\
+&amp;= \mathrm{tr}(\boldsymbol U \boldsymbol D \boldsymbol V^\top (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top + \lambda \boldsymbol I)^{-1} \boldsymbol V \boldsymbol D^\top \boldsymbol U^\top) \\
+&amp;= \mathrm{tr}(\boldsymbol U \boldsymbol D (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top) \\
+&amp;= \mathrm{tr}(\boldsymbol D (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top) \\
+&amp;= \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda}
+\end{align*}\]</span>
 </details>
-<p>… and we will be left with</p>
-<p><span class="math display">\[ \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error}
-= \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right)^2 \right]}_\text{squared bias}
-+ \underbrace{\mathbb E\left[ \left( \bar{f}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{variance}. \]</span></p>
-<section id="bias-versus-variance" class="level3">
-<h3 class="anchored" data-anchor-id="bias-versus-variance">Bias Versus Variance</h3>
-<p>Again, these two components have intuitive (and very important) interpretations:</p>
-<p><strong>Variance</strong> captures how dependent our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is on any particular training dataset <span class="math inline">\(\mathcal D\)</span>. High variance is bad, because it means that our predictions depend more on a particular training sample rather than generalizable patterns in the data.</p>
-<p><strong>Bias</strong>: captures how much “generalizable truth” can actually be learned by our statistical model/estimation procedure. High bias implies that, even if we had access to many training samples to “average out” the noise, we would still only be able to learn a poor approximation of the regression function <span class="math inline">\(\bar{Y}(X)\)</span>.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://www.cs.cornell.edu/courses/cs4780/2024sp/lectures/images/bias_variance/bullseye.png" class="img-fluid figure-img" style="width:4in"></p>
-<figcaption>Cartoon illustration of bias and variance. (Source: http://scott.fortmann-roe.com/docs/BiasVariance.html)</figcaption>
-</figure>
+<p>(Note that the “degrees of freedom” concept exists for methods that don’t admit the closed-form <span class="math inline">\(\boldsymbol H\)</span> matrix, like LASSO, but their derivation is PhD-level work.)</p>
 </div>
-<ul>
-<li>Both bias and variance contribute to the risk/test error of our learned model.</li>
-<li>As you might imagine, these two terms are often in tension with one another.</li>
-<li>For example, a very simple model (e.g.&nbsp;linear regression with few features) will have high bias (it can’t capture complex patterns in the data), but low variance (it won’t change much if we retrain it on a different dataset).</li>
-<li>Conversely, a very complex model (e.g.&nbsp;linear regression with millions of features) will have low bias (it can capture complex patterns in the data), but high variance (it will change a lot if we retrain it on a different dataset).</li>
-<li>Both settings lead to high risk, but for different reasons.</li>
-<li>Optimizing risk requires balancing these two sources of error (e.g.&nbsp;finding the optimal number of features for the linear regression).</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="../figures/biasvariance.png" class="img-fluid figure-img" style="width:4in"></p>
-<figcaption>Bias and variance are at odds with one another. Effect of # of variables on bias/variance. (Figure derived from http://scott.fortmann-roe.com/docs/BiasVariance.html)</figcaption>
-</figure>
 </div>
+<p>From the GCV estimate of risk, we can see how the bias-variance tradeoff plays out. There are two ways for <span class="math inline">\(\widehat{\mathcal{R}}_{\text{GCV}}\)</span> to blow up:</p>
+<ol type="1">
+<li>The training error <span class="math inline">\(\mathrm{MSE}_\mathrm{train}\)</span> is large (causing the numerator to blow up), which happens when the predictive model is unable to fit the training data well (high bias).</li>
+<li>The degrees of freedom <span class="math inline">\(\text{df}\)</span> is close to <span class="math inline">\(n\)</span> (causing the denominator to <span class="math inline">\(\to 0\)</span>), which happens when the predictive model has nearly as many “degrees of freedom” as training data (high variance).</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Information Criteria">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Information Criteria
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The GCV estimate of risk is an example of an <strong>information criterion</strong>, which is a family of risk estimates that do not require a validation set or cross-validation. There are many others that you may encounter in the literature, including:</p>
 <ul>
-<li>We will discuss other factors that affect bias and variance in future lectures (e.g.&nbsp;regularization, basis functions, etc.).</li>
+<li>Akaike Information Criterion (AIC)</li>
+<li>Bayesian Information Criterion (BIC)</li>
+<li>Mallows’ <span class="math inline">\(C_p\)</span> (or Stein’s Unbiased Risk Estimate/SURE)</li>
 </ul>
+<p>Each of these has its own derivation and assumptions, but they all are similar in spirit to GCV. They all involve a tradeoff between training error and model complexity (degrees of freedom); i.e.&nbsp;a bias-variance tradeoff.</p>
+</div>
+</div>
 </section>
-<section id="detecting-high-bias-and-high-variance" class="level3">
-<h3 class="anchored" data-anchor-id="detecting-high-bias-and-high-variance">Detecting High Bias and High Variance</h3>
-<p>If we want to make a modeling/estimation/prediction change to reduce risk, it’s important to know the source of the problem: is it high bias or high variance? As we will discuss in future lectures, these two regimes require different remedies, and applying the wrong remedy can make things worse!</p>
-</section>
-<section id="regime-1-high-variance" class="level3">
-<h3 class="anchored" data-anchor-id="regime-1-high-variance">Regime 1: High Variance</h3>
-<p><strong>Alternative name</strong>: the <strong>overfitting</strong> regime</p>
-<p><strong>Symptom</strong>: training error is much lower than cross validation error</p>
-<p><strong>Remedies</strong>:</p>
+<section id="what-happens-to-gcv-when-p-geq-n" class="level2">
+<h2 class="anchored" data-anchor-id="what-happens-to-gcv-when-p-geq-n">What Happens to GCV When <span class="math inline">\(p \geq n\)</span>?</h2>
 <ul>
-<li>Add more training data</li>
-<li>Reduce model complexity (complex models are prone to high variance)</li>
-<li>(More to come!)</li>
-</ul>
-</section>
-<section id="regime-2-high-bias" class="level3">
-<h3 class="anchored" data-anchor-id="regime-2-high-bias">Regime 2: High Bias</h3>
-<p><strong>Alternative name</strong>: the <strong>underfitting</strong> regime</p>
-<p><strong>Symptoms</strong>: training error and cross validation error are both high</p>
-<p><strong>Remedies</strong>:</p>
+<li><p>When <span class="math inline">\(p = n\)</span>, note that our OLS model has <span class="math inline">\(\text{df} = p = n\)</span>, so the GCV estimate of risk is infinite!</p></li>
+<li><p>When <span class="math inline">\(p &gt; n\)</span>, OLS is no longer defined (because the matrix <span class="math inline">\(\boldsymbol{X}^\top \boldsymbol{X}\)</span> is not invertible), so we can’t even compute the GCV estimate of risk.</p></li>
+<li><p>Ridge regression can still be applied when <span class="math inline">\(p \geq n\)</span>. However, and importantly, its <span class="math inline">\(\text{df}\)</span> does not exceed <span class="math inline">\(n\)</span>.</p>
+<details>
+<summary>
+<p>Why not?</p>
+</summary>
 <ul>
-<li>Add features</li>
-<li>Use a more complex statistical model</li>
-<li>(More to come!)</li>
+<li>For ridge, we have that <span class="math inline">\(\text{df} = \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda}\)</span>, where <span class="math inline">\(d_1, \ldots, d_p\)</span> are the (potentially zero) singular values of <span class="math inline">\(\boldsymbol X\)</span>.</li>
+<li>When <span class="math inline">\(p &gt; n\)</span>, there are only <span class="math inline">\(n\)</span> non-zero singular values, so there are only <span class="math inline">\(n\)</span> non-zero terms in the sum.</li>
+<li>Each of the non-zero terms is strictly less than 1, so <span class="math inline">\(\text{df} &lt; n\)</span>.</li>
 </ul>
-</section>
+</details></li>
+<li><p>We’ll explore this last point a lot more in the next module!</p></li>
+</ul>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <ul>
-<li>We can understand sources of risk via the bias-variance decomposition</li>
-<li>Estimation error (the portion of risk we can control) decomposes into bias and variance</li>
-<li>Bias reflects model assumptions and limitations</li>
-<li>Variance reflects sensitivity to training data</li>
-<li>Different remedies are appropriate for high bias versus high variance scenarios</li>
-<li>Understanding which regime you’re in should guide model selection strategies</li>
+<li>There’s a magical formula for computing LOO-CV risk estimates for OLS, ridge, and basis regression models without having to refit the model <span class="math inline">\(n\)</span> times. Use it!</li>
+<li>The GCV estimate of risk is a simplified version of cross validation that (1) can be applied even when the “magic formula” doesn’t hold, and (2) does not require a validation set.</li>
+<li>The GCV estimate of risk makes the bias-variance tradeoff explicit: risk is high when training error is high (high bias) or when degrees of freedom is close to <span class="math inline">\(n\)</span> (high variance).</li>
+<li>In general, CV/LOO-CV is preferred over GCV/information criteria for model selection, but GCV is a useful tool for understanding the bias-variance tradeoff.</li>
+<li>We will explore what happens when the number of degrees of freedom exceeds the number of training samples in the next lecture!</li>
 </ul>
 
 
@@ -872,7 +891,7 @@ Why?
     </div>   
     <div class="nav-footer-center">
 <p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
-<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_05_bias_variance_tradeoff.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_05_bias_variance_tradeoff.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_09_information_criteria.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_09_information_criteria.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>

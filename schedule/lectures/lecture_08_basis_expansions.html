@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-09-29">
+
+<title>Lecture 8: Basis Expansions – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#warmup-polynomial-basis-expansions-for-p1" id="toc-warmup-polynomial-basis-expansions-for-p1" class="nav-link" data-scroll-target="#warmup-polynomial-basis-expansions-for-p1">Warmup: Polynomial Basis Expansions for <span class="math inline">\(p=1\)</span></a>
+  <ul class="collapse">
+  <li><a href="#bias-reduction" id="toc-bias-reduction" class="nav-link" data-scroll-target="#bias-reduction">Bias Reduction</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#polynomial-basis-expansions-for-p1" id="toc-polynomial-basis-expansions-for-p1" class="nav-link" data-scroll-target="#polynomial-basis-expansions-for-p1">Polynomial Basis Expansions for <span class="math inline">\(p&gt;1\)</span></a></li>
+  <li><a href="#other-basis-expansions" id="toc-other-basis-expansions" class="nav-link" data-scroll-target="#other-basis-expansions">Other Basis Expansions</a>
+  <ul class="collapse">
+  <li><a href="#fourier-basis-expansions" id="toc-fourier-basis-expansions" class="nav-link" data-scroll-target="#fourier-basis-expansions">Fourier Basis Expansions</a></li>
+  <li><a href="#splines" id="toc-splines" class="nav-link" data-scroll-target="#splines">Splines</a></li>
+  <li><a href="#comparison-of-basis-expansions" id="toc-comparison-of-basis-expansions" class="nav-link" data-scroll-target="#comparison-of-basis-expansions">Comparison of Basis Expansions</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_08_basis_expansions.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_08_basis_expansions.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 8: Basis Expansions</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Construct polynomial, spline, and Fourier basis expansions for regression</li>
+<li>Select appropriate basis functions based on problem characteristics</li>
+<li>Articulate how basis expansions affect bias and variance</li>
+<li>Differentiate between linearity and nonlinearity in terms of parameterization versus functional form</li>
+</ol>
+</section>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>We have spent the last few lectures discussing methods to reduce variance in linear models.</p>
+<ol start="0" type="1">
+<li>Manual variable selection</li>
+<li>Ridge regression (shrink all parameters)</li>
+<li>Lasso regression (set some parameters to zero)</li>
+</ol>
+<ul>
+<li>In this lecture, we will focus on the other side of the bias-variance tradeoff, and introduce a method to reduce bias in linear models.</li>
+<li>Crucially, our bias reduction method will allow us to retain linearity with respect to the learned parameters while allowing for nonlinearity with respect to the input features.</li>
+<li>The method, basis expansions, is a generalization of the idea of <strong>interaction terms</strong> that you saw in STAT 306.</li>
+</ul>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li><p>We have typically assumed a statistical model where <span class="math inline">\(\mathbb E[Y \mid X]\)</span> is a linear function of the input features <span class="math inline">\(X\)</span>, i.e.&nbsp;<span class="math inline">\(\mathbb E[Y \mid X] = X^\top \beta\)</span> for some <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
+<li><p>We will now relax this assumption of linearity, and instead assume that</p>
+<p><span class="math display">\[\mathbb E[Y \mid X] = f(X)\]</span></p>
+<p>for some unknown function <span class="math inline">\(f: \mathbb R^p \to \mathbb R\)</span>.</p></li>
+<li><p>Using a predictive model of the form <span class="math inline">\(\hat f_\mathcal{D}(X) = X^\top \hat \beta\)</span>, like what we get from OLS, will not work well if <span class="math inline">\(f\)</span> is highly nonlinear; it will be a high-bias predictor.</p></li>
+</ul>
+<div class="callout callout-style-default callout-important callout-titled" title="But Isn't OLS Unbiased?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>But Isn’t OLS Unbiased?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Recall that OLS is unbiased <strong>only under the assumptions made by the linear statistical model</strong>.</li>
+<li>Under the more general model <span class="math inline">\(\mathbb E[Y \mid X] = f(X)\)</span>, OLS is biased unless <span class="math inline">\(f\)</span> is actually linear.</li>
+<li>To see why this is the case, let’s do a Taylor expansion of <span class="math inline">\(f\)</span> around <span class="math inline">\(0\)</span>.</li>
+</ul>
+<p><span class="math display">\[f(X) = f(0) + \nabla f(0)^\top X + \frac{1}{2} X^\top H_f(0) X + \ldots\]</span></p>
+<p>Even if OLS were to perfectly estimate <span class="math inline">\(\hat \beta = \nabla f(0)\)</span>, the higher-order terms would still be missing, and so <span class="math inline">\(\mathbb E[\hat f_\mathcal{D}(X) \mid X] \neq f(X)\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Quiz: Will Ridge or Lasso Be Beneficial in this Situation?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Quiz: Will Ridge or Lasso Be Beneficial in this Situation?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Probably not.</p>
+<ul>
+<li>Ridge and Lasso reduce variance and introduce bias, and we will likely be in a high-bias situation already.</li>
+<li>More specifically, Ridge and Lasso still produce predictors of the form <span class="math inline">\(\hat f_\mathcal{D}(X) = X^\top \hat \beta\)</span>, which are still missing the higher-order terms that create the bias problem in the first place.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="warmup-polynomial-basis-expansions-for-p1" class="level2">
+<h2 class="anchored" data-anchor-id="warmup-polynomial-basis-expansions-for-p1">Warmup: Polynomial Basis Expansions for <span class="math inline">\(p=1\)</span></h2>
+<ul>
+<li><p>Why don’t we just use a predictive model that includes the higher-order terms?</p></li>
+<li><p>For example, if <span class="math inline">\(p=1\)</span>, we could learn a model of the form:</p>
+<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat \beta_0 + \hat \beta_1 x + \hat \beta_2 x^2 + \ldots + \hat \beta_d x^d.\]</span></p></li>
+<li><p>As <span class="math inline">\(d \to \infty\)</span>, there exists some set of coefficients <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span> such that <span class="math inline">\(f(x) = \sum_{j=0}^d \beta_j x^j\)</span>.</p></li>
+<li><p>This model is known as a <strong>polynomial regression model</strong>, or a <strong>polynomial basis expansion</strong>.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Linearity vs. Nonlinearity">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Linearity vs.&nbsp;Nonlinearity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>This model is <strong>non-linear</strong> in <span class="math inline">\(X\)</span> (because of the <span class="math inline">\(x^2, \ldots, x^d\)</span> terms)</li>
+<li>However, it is still <strong>linear</strong> in the parameters <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span>.</li>
+<li>Therefore, we can pretend as if we have a dataset with <span class="math inline">\(d\)</span> features <span class="math inline">\((X, X^2, \ldots, X^d)\)</span> and use OLS/Ridge/LASSO to learn the parameters <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span>.</li>
+</ul>
+</div>
+</div>
+<section id="bias-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="bias-reduction">Bias Reduction</h3>
+<p>Using higher-order polynomial terms can significantly reduce bias.</p>
+<ul>
+<li><p>Let’s assume that, under our statistical model, <span class="math inline">\(\mathbb E[Y \mid X] = f(x)\)</span> for some <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial <span class="math inline">\(f\)</span>.</p></li>
+<li><p>Let’s also assume that we use a <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial basis expansion to learn a predictor <span class="math inline">\(\hat f_\mathcal{D}(x) = \sum_{j=0}^d \hat \beta_j x^j\)</span> using OLS.</p></li>
+<li><p>Then <span class="math inline">\(\hat f_\mathcal{D}(x)\)</span> is an unbiased estimator of <span class="math inline">\(f(x)\)</span>!</p>
+<details>
+<summary>
+<p>Why</p>
+</summary>
+<ul>
+<li>Again, we can pretend as if we’re working with a dataset with <span class="math inline">\(d\)</span> features <span class="math inline">\((X, X^2, \ldots, X^d)\)</span>.</li>
+<li>Under our statistical model, <span class="math inline">\(\mathbb E[Y \mid X, X^2, \ldots, X^d] = \sum_{i=1}^d \beta_i X^i\)</span></li>
+<li>By what we derived two lectures ago, OLS with the features <span class="math inline">\((X, X^2, \ldots, X^d)\)</span> will be unbiased for estimating <span class="math inline">\(\beta_0, \ldots, \beta_d\)</span>.</li>
+</ul>
+</details></li>
+</ul>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<ul>
+<li>Below we’ll plot the OLS fit using polynomial basis expansions of different orders on the <code>arcuate</code> dataset from the <code>Stat406</code> package.</li>
+<li>The standard linear model (no basis expansion) is a poor fit for the data. This error is likely due to high bias, because there’s enough data to estimate two parameters with little variance, but the linear model is too simple to capture the relationship between <code>position</code> and <code>fa</code>.</li>
+<li>As we increase the order of the polynomial basis expansion, the fit improves significantly, and the bias is reduced.</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>arcuate <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">220</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>arcuate <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">"a"</span>), <span class="at">formula =</span> y <span class="sc">~</span> x, <span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">"b"</span>), <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">poly</span>(x, <span class="dv">4</span>), <span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">"c"</span>), <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">poly</span>(x, <span class="dv">7</span>), <span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="st">"d"</span>), <span class="at">formula =</span> y <span class="sc">~</span> <span class="fu">poly</span>(x, <span class="dv">25</span>), <span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Taylor order"</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"a"</span> <span class="ot">=</span> <span class="st">"grey"</span>, <span class="st">"b"</span> <span class="ot">=</span> <span class="st">"blue"</span>, <span class="st">"c"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"d"</span> <span class="ot">=</span> <span class="st">"green"</span>),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"1 term"</span>, <span class="st">"4 terms"</span>, <span class="st">"7 terms"</span>, <span class="st">"25 terms"</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_08_basis_expansions_files/figure-html/polynomial-orders-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="polynomial-basis-expansions-for-p1" class="level2">
+<h2 class="anchored" data-anchor-id="polynomial-basis-expansions-for-p1">Polynomial Basis Expansions for <span class="math inline">\(p&gt;1\)</span></h2>
+<ul>
+<li><p>For <span class="math inline">\(p&gt;1\)</span>, we have to include a few more terms.</p></li>
+<li><p>For <span class="math inline">\(x \in \mathbb R^p\)</span>, the Taylor expansion of <span class="math inline">\(f(x)\)</span> around <span class="math inline">\(0\)</span> is:</p>
+<p><span class="math display">\[f(X) = f(0) + \nabla f(0)^\top X + \frac{1}{2} X^\top H_f(0) X + \ldots,\]</span></p>
+<p>where <span class="math inline">\(\nabla f(0) \in \mathbb R^p\)</span> is the gradient of <span class="math inline">\(f\)</span> at <span class="math inline">\(0\)</span>, and <span class="math inline">\(H_f(0) \in \mathbb R^{p \times p}\)</span> is the Hessian of <span class="math inline">\(f\)</span> at <span class="math inline">\(0\)</span>.</p></li>
+<li><p>The gradient has <span class="math inline">\(p\)</span> entries, and the Hessian has <span class="math inline">\(p(p+1)/2\)</span> unique entries (since it is a symmetric matrix).</p></li>
+<li><p>Thus, the second-order polynomial basis expansion will be of the form:</p>
+<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_j + \sum_{j=1}^p \sum_{k=j}^p \hat \beta_{jk} x_j x_k.\]</span></p></li>
+<li><p>The <span class="math inline">\(\beta_{jk}\)</span> parameters for <span class="math inline">\(j \neq k\)</span> are called <strong>interaction terms</strong>, which you studied in STAT 306.</p></li>
+<li><p>This model contains <span class="math inline">\(1 + p + p(p+1)/2 = 1 + p(p+3)/2\)</span> parameters, which is <span class="math inline">\(O(p^2)\)</span>.</p></li>
+<li><p>If <span class="math inline">\(n\)</span> is not much larger than <span class="math inline">\(p^2\)</span>, then including these interaction terms could push us back into a high-variance regime.</p></li>
+<li><p>We will come back to this parameter growth issue in the next module.</p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Basis Expansions and Regularization">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Basis Expansions and Regularization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>If <span class="math inline">\(p\)</span> is large, it may be a good idea to use basis expansions in conjunction with Ridge or Lasso.</li>
+<li>Adding <span class="math inline">\(O(p^2)\)</span> interaction terms will reduce bias (at the cost of increased variance), and Ridge/Lasso can help reduce the variance that is introduced.</li>
+<li>This is just one example where we need to use both bias reduction and variance reduction techniques together to get a good predictor!</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="other-basis-expansions" class="level2">
+<h2 class="anchored" data-anchor-id="other-basis-expansions">Other Basis Expansions</h2>
+<ul>
+<li>Besides polynomials, there are two other common basis expansions: <strong>Fourier basis expansions</strong> and <strong>splines</strong>.</li>
+<li>As with polynomials, both create nonlinear functions of the input features while remaining linear in the parameters.</li>
+</ul>
+<section id="fourier-basis-expansions" class="level3">
+<h3 class="anchored" data-anchor-id="fourier-basis-expansions">Fourier Basis Expansions</h3>
+<ul>
+<li><p>Recall that (most) <span class="math inline">\(\mathbb R \to \mathbb R\)</span> functions can be expressed by their <strong>Fourier series</strong>:</p>
+<p><span class="math display">\[f(x) = a_0 + \sum_{j=1}^\infty a_j \cos(j 2 \pi x) + b_j \sin(j 2 \pi x)\]</span></p></li>
+<li><p>We can thus consider a predictive model of the form:</p>
+<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat a_0 + \sum_{j=1}^d \hat a_j \cos(j 2 \pi x) + \hat b_j \sin(j 2 \pi x)\]</span></p>
+<p>for some <span class="math inline">\(d \in \mathbb N\)</span>.</p></li>
+<li><p>Higher values of <span class="math inline">\(d\)</span> will be capable of fitting more complex functions (i.e.&nbsp;reduce bias), but as <span class="math inline">\(d\)</span> gets close to <span class="math inline">\(n\)</span>, we will likely enter a high-variance regime.</p></li>
+</ul>
+</section>
+<section id="splines" class="level3">
+<h3 class="anchored" data-anchor-id="splines">Splines</h3>
+<ul>
+<li><p>A <strong>spline</strong> is a piecewise polynomial function that is smooth at the places where the pieces meet.</p></li>
+<li><p>For example, a <strong>linear spline</strong> is a function of the form:</p>
+<p><span class="math display">\[
+f(x) =
+\begin{cases}
+  \beta_0 + \beta_1 x &amp; x &lt; k_1 \\
+  \beta_0 + \beta_1 x + \beta_2 (x - k_1) &amp; k_1 \leq x &lt; k_2 \\
+  \beta_0 + \beta_1 x + \beta_2 (x - k_1) + \beta_3 (x - k_2) &amp; k_2 \leq x &lt; k_3 \\
+  \ldots
+\end{cases}
+\]</span></p>
+<p>where <span class="math inline">\(k_1, k_2, \ldots\)</span> are called <strong>knots</strong>.</p></li>
+<li><p>The function is continuous at the knots, but not differentiable.</p></li>
+<li><p>Again, increasing the number of knots will reduce bias but increase variance.</p></li>
+</ul>
+</section>
+<section id="comparison-of-basis-expansions" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-of-basis-expansions">Comparison of Basis Expansions</h3>
+<ul>
+<li>Below is a comparison of the first 5 “features” created by each of the three basis expansions we discussed: polynomial, linear splines, and Fourier for a <span class="math inline">\(p=1\)</span> input.</li>
+<li>All three basis expansions can represent (nearly) all functions as <span class="math inline">\(d\to\infty\)</span>, but some basis expansions may be more appropriate for certain problems for a fixed value of <span class="math inline">\(d\)</span>.</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>relu_shifted <span class="ot">&lt;-</span> <span class="cf">function</span>(x, shift) {<span class="fu">pmax</span>(<span class="dv">0</span>, x <span class="sc">-</span> shift)}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a sequence of x values</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>x_vals <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">1000</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a data frame with all the shifted functions</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">rep</span>(x_vals, <span class="dv">5</span>),</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">polynomial =</span> <span class="fu">c</span>(x_vals, x_vals<span class="sc">^</span><span class="dv">2</span>, x_vals<span class="sc">^</span><span class="dv">3</span>, x_vals<span class="sc">^</span><span class="dv">4</span>, x_vals<span class="sc">^</span><span class="dv">5</span>),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">linear.splines =</span> <span class="fu">c</span>(<span class="fu">relu_shifted</span>(x_vals, <span class="dv">2</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="dv">1</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="dv">0</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="sc">-</span><span class="dv">1</span>), <span class="fu">relu_shifted</span>(x_vals, <span class="sc">-</span><span class="dv">2</span>)),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">fourier =</span> <span class="fu">c</span>(<span class="fu">cos</span>(pi <span class="sc">/</span> <span class="dv">2</span> <span class="sc">*</span> x_vals), <span class="fu">sin</span>(pi <span class="sc">/</span> <span class="dv">2</span> <span class="sc">*</span> x_vals), <span class="fu">cos</span>(pi <span class="sc">/</span> <span class="dv">4</span> <span class="sc">*</span> x_vals), <span class="fu">sin</span>(pi <span class="sc">/</span> <span class="dv">4</span> <span class="sc">*</span> x_vals), <span class="fu">cos</span>(pi <span class="sc">*</span> x_vals)),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">function_label =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span>), <span class="at">each =</span> <span class="fu">length</span>(x_vals))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot using ggplot2</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> polynomial, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> linear.splines, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> fourier, <span class="at">color =</span> function_label)) <span class="sc">+</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>, <span class="at">show.legend=</span><span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_08_basis_expansions_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Choosing a Basis Expansion">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Choosing a Basis Expansion
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>There is no universally best basis expansion.</li>
+<li>You can try all three basis expansions and use cross-validation to select the best one.</li>
+<li>You can include combinations of basis expansions (e.g.&nbsp;polynomial + splines), and use LASSO to select the best ones.</li>
+<li>You can also use domain knowledge to select a basis expansion that is appropriate for your problem.</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Basis expansions are a method to reduce bias in linear models by allowing for nonlinearity with respect to the input features while retaining linearity with respect to the parameters.</li>
+<li>Common basis expansions include polynomial basis expansions, Fourier basis expansions, and splines.</li>
+<li>Basis expansions can be used in conjunction with Ridge or Lasso to control variance when the number of parameters grows large.</li>
+<li>There is no universally best basis expansion; you can try multiple basis expansions.</li>
+<li>The number of parameters for basis expansions can grow quickly with the number of input features; we will discuss this issue in more detail in the next module.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_08_basis_expansions.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_08_basis_expansions.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
