@@ -1,0 +1,226 @@
+---
+title: "Lecture 9: Information Criteria"
+author: "Geoff Pleiss"
+date: last-modified
+format: html
+---
+
+## Learning Objectives
+
+By the end of this lecture, you should be able to:
+
+1. Compute degrees of freedom for OLS/ridge/basis regression models
+2. Apply GCV formulas to select regularization parameters
+3. Identify nested models and when GCV/information criteria can and cannot be used for model selection
+4. Connect degrees of freedom to the bias-variance tradeoff
+
+## Overview and Motivation
+
+Today is our last lecture on the bias-variance tradeoff for linear models (though this trade-off will come up again and again in this course). We've discussed a few methods for reducing risk, whose applicability depends on whether we're in the high variance or high bias regime.
+
+**Techniques for reducing variance:**
+
+- Adding more training data
+- Variable selection (manually removing predictors, LASSO regularization)
+- Shrinkage (ridge regularization)
+
+**Techniques for reducing bias:**
+
+- Variable selection (manually adding predictors)
+- Basis expansions (polynomial, splines, etc.)
+
+Today, we'll revisit the concept of model selection, the concluding topic of the first module,
+but this time with an eye towards the bias-variance tradeoff.
+
+- We'll learn a fun trick for computing the LOO-CV estimate of risk for OLS, ridge, and basis regression models without having to refit the model $n$ times.
+- We'll also learn a new risk estimate, **generalized cross-validation (GCV)**, which is rarely used in practice these days but which gives us a lot of insight into the bias-variance tradeoff.
+
+
+## Review: LOO-CV Formula For OLS
+
+- Recall that LOO-CV is an almost-unbiased estimate of the risk of a predictive model $\mathcal R = \mathbb E[(Y - \hat{f}(X))^2]$ (where here we are assuming the use of the squared error loss).
+
+- Consider our OLS estimator:
+
+  $$
+  \hat{\beta}_{\text{OLS}} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}
+  $$
+
+  where, again, $\boldsymbol X$ and $\boldsymbol Y$ are the concatenations of our training data
+  $\{ (X_i, Y_i) \}_{i=1}^n$:
+
+  $$
+  \boldsymbol{X} = \begin{bmatrix}--- & X_1^\top & --- \\
+  --- & X_2^\top & --- \\
+  & \vdots & \\
+  --- & X_n^\top & --- \end{bmatrix} \in \mathbb R^{n \times p}
+  \quad \text{and} \quad
+  \boldsymbol{Y} = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix} \in \mathbb R^{n}.
+  $$
+
+- Our OLS predictions on the training data are:
+
+  $$
+  \hat{\boldsymbol{Y}} = \boldsymbol{X} \hat{\beta}_{\text{OLS}} = \overbrace{\boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top}^{:= \boldsymbol H} \boldsymbol{Y} = \boldsymbol{H} \boldsymbol{Y}.
+  $$
+
+- The matrix $\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top$ is often referred to as the **hat matrix**, and it will be important in a second.
+
+- The LOO-CV estimate of risk involves, for each $i = 1, \ldots, n$, computing the OLS estimator for the dataset $\boldsymbol X_{-i}, \boldsymbol Y_{-i}$ (which is $\boldsymbol X, \boldsymbol Y$ with the $i^\mathrm{th}$ row removed, and make predictions on $X_i$:
+
+  $$
+  \hat{Y}^{-i}(X_i) = X_i^\top \hat{\beta}_{\text{OLS}}^{-i} = X_i^\top (\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1} \boldsymbol{X}_{-i}^\top \boldsymbol{Y}_{-i}.
+  $$
+
+## The Magic LOO-CV Formula for OLS (and Some Other Linear Models)
+
+- The LOO-CV estimate above requires $n$ matrix inversions $(\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1}$, which is computationally expensive.
+
+- Moreover, the matrix inversion $(\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1}$ is not too different from the matrix inversion $(\boldsymbol{X}^\top \boldsymbol{X})^{-1}$ that we already computed to get $\boldsymbol H$. Shouldn't we be able to reuse that computation somehow?
+
+- It turns out that we can! With some ugly linear algebra, we can show that the LOO-CV predictions for OLS can be computed as:
+
+  $$
+  \hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - Y_i}{1 - H_{ii}},
+  $$
+
+  where $\hat{Y}_i$ is the $i^\mathrm{th}$ entry of $\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y}$, and $H_{ii}$ is the $i^\mathrm{th}$ diagonal entry of the hat matrix $\boldsymbol{H}$.
+
+:::{.callout-tip collapse="true" title="Deriving the Magic Formula"}
+The derivation of this formula is tedious (and not for the faint of heart),
+but all it requires is some linear algebra.
+The key idea is to express
+
+$$(\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1} = (\boldsymbol{X}^\top \boldsymbol{X} - X_i X_i^\top)^{-1}$$
+
+and then use the [Sherman-Morrison formula](https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula) for inverting rank-one updates to a matrix.
+(Come see me in office hours if want to suffer through the details!)
+:::
+
+- Applying this formula to estimate the risk associated with the square loss,
+  the LOO-CV estimate of OLS risk is given by:
+
+$$
+\widehat{\mathcal{R}}_{\text{LOO}}
+= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
+= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+$$
+
+:::{.callout-note title="LOO-CV Formula for Ridge and Basis Regression"}
+This formula holds for any so-called **linear smoother**,
+where the predictions on the training data can be expressed as:
+
+$$\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y} \quad \text{for some } \boldsymbol H \in \mathbb R^{n \times n}.$$
+
+Here's some examples of linear smoothers (and their corresponding $\boldsymbol H$ matrices):
+
+| Method            | $\boldsymbol{H}$ Matrix                                      |
+|-------------------|--------------------------------------------------------------|
+| OLS               | $\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top$ |
+| Ridge Regression | $\boldsymbol H = \boldsymbol{X} (\boldsymbol{X}^\top \boldsymbol{X} + \lambda \boldsymbol{I})^{-1} \boldsymbol{X}^\top$ |
+| Basis Regression  | $\boldsymbol H = \widetilde{\boldsymbol{X}} (\widetilde{\boldsymbol{X}}^\top \widetilde{\boldsymbol{X}})^{-1} \widetilde{\boldsymbol{X}}^\top$ |
+| ~~Lasso Regression~~ | ~~N/A (cannot be expressed as a linear smoother)~~ |
+
+where the $\widetilde{\boldsymbol{X}}$ matrix is the design matrix after applying basis expansions to the features; i.e.:
+
+$$ \widetilde{\boldsymbol{X}} = \begin{bmatrix}--- & \phi(X_1)^\top & --- \\
+--- & \phi(X_2)^\top & --- \\
+& \vdots & \\
+--- & \phi(X_n)^\top & --- \end{bmatrix} \in \mathbb R^{n \times d}, $$
+
+where $\phi: \mathbb R^p \to \mathbb R^d$ is the function that produces the basis expansion of a feature vector.
+:::
+
+
+## Generalized Cross-Validation (GCV)
+
+- To better understand the bias-variance tradeoff, it helps to simplify the LOO-CV formula above.
+
+- Consider what happens if we replace each $H_{ii}$ with the average value of the diagonal entries of $\boldsymbol H$:
+
+  $$
+  \frac{1}{n} \sum_{i=1}^n H_{ii} = \frac{1}{n} \text{trace}(\boldsymbol{H}) = \frac{\text{df}}{n},
+  $$
+
+  where $\text{df} := \text{trace}(\boldsymbol{H})$ is called the **degrees of freedom** of the model.
+
+- The resulting estimate is called the **generalized cross-validation (GCV)** estimate of risk:
+
+  $$
+  \widehat{\mathcal{R}}_{\text{GCV}}
+  = \frac{\frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}_i)^2}{(1 - \text{df}/n)^2}
+  = \frac{\mathrm{MSE}_\mathrm{train}}{(1 - \text{df}/n)^2},
+  $$
+
+  where $\mathrm{MSE}_\mathrm{train} = \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}_i)^2$ is the mean squared error on the training set.
+
+:::{.callout-tip title="Degrees of Freedom for Linear Models"}
+The degrees of freedom $\text{df} = \text{trace}(\boldsymbol{H})$ has an intuitive interpretation as the "effective number of parameters" in the model.
+
+| Method            | Degrees of Freedom                                      |
+|-------------------|---------------------------------------------------------|
+| OLS               | $\text{df} = \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top) = p$                                        |
+| Ridge Regression | $\text{df} = \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top) = \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda} < p$  |
+| Basis Regression  | $\text{df} = \mathrm{tr}(\widetilde{\boldsymbol X} ( \widetilde{\boldsymbol X}^\top \widetilde{\boldsymbol X})^{-1} \widetilde{\boldsymbol X}^\top) = d$                                        |
+
+where $d_1, \ldots, d_p$ are the singular values of $\boldsymbol X$.
+
+<details>
+  <summary>Derivation</summary>
+
+Each of these can be derived using the singular value decomposition (SVD) of $\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top$ (or $\widetilde{\boldsymbol X} = \widetilde{\boldsymbol U} \widetilde{\boldsymbol D} \widetilde{\boldsymbol V}^\top$ for basis regression).
+Let's look at ridge regression:
+
+\begin{align*}
+\text{df} &= \mathrm{tr}(\boldsymbol X ( \boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top) \\
+&= \mathrm{tr}(\boldsymbol U \boldsymbol D \boldsymbol V^\top (\boldsymbol V \boldsymbol D^\top \boldsymbol D \boldsymbol V^\top + \lambda \boldsymbol I)^{-1} \boldsymbol V \boldsymbol D^\top \boldsymbol U^\top) \\
+&= \mathrm{tr}(\boldsymbol U \boldsymbol D (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top \boldsymbol U^\top) \\
+&= \mathrm{tr}(\boldsymbol D (\boldsymbol D^\top \boldsymbol D + \lambda \boldsymbol I)^{-1} \boldsymbol D^\top) \\
+&= \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda}
+\end{align*}
+</details>
+
+(Note that the "degrees of freedom" concept exists for methods that don't admit the closed-form $\boldsymbol H$ matrix, like LASSO, but their derivation is PhD-level work.)
+:::
+
+From the GCV estimate of risk, we can see how the bias-variance tradeoff plays out.
+There are two ways for $\widehat{\mathcal{R}}_{\text{GCV}}$ to blow up:
+
+1. The training error $\mathrm{MSE}_\mathrm{train}$ is large (causing the numerator to blow up), which happens when the predictive model is unable to fit the training data well (high bias).
+2. The degrees of freedom $\text{df}$ is close to $n$ (causing the denominator to $\to 0$), which happens when the predictive model has nearly as many "degrees of freedom" as training data (high variance).
+
+:::{.callout-note title="Information Criteria"}
+The GCV estimate of risk is an example of an **information criterion**,
+which is a family of risk estimates that do not require a validation set or cross-validation.
+There are many others that you may encounter in the literature, including:
+
+- Akaike Information Criterion (AIC)
+- Bayesian Information Criterion (BIC)
+- Mallows' $C_p$ (or Stein's Unbiased Risk Estimate/SURE)
+
+Each of these has its own derivation and assumptions, but they all are similar in spirit to GCV. They all involve a tradeoff between training error and model complexity (degrees of freedom); i.e. a bias-variance tradeoff.
+:::
+
+## What Happens to GCV When $p \geq n$?
+
+- When $p = n$, note that our OLS model has $\text{df} = p = n$, so the GCV estimate of risk is infinite!
+- When $p > n$, OLS is no longer defined (because the matrix $\boldsymbol{X}^\top \boldsymbol{X}$ is not invertible), so we can't even compute the GCV estimate of risk.
+- Ridge regression can still be applied when $p \geq n$. However, and importantly, its $\text{df}$ does not exceed $n$.
+
+  <details>
+    <summary>Why not?</summary>
+
+  - For ridge, we have that $\text{df} = \sum_{i=1}^p \frac{d_i^2}{d_i^2 + \lambda}$, where $d_1, \ldots, d_p$ are the (potentially zero) singular values of $\boldsymbol X$.
+  - When $p > n$, there are only $n$ non-zero singular values, so there are only $n$ non-zero terms in the sum.
+  - Each of the non-zero terms is strictly less than 1, so $\text{df} < n$.
+  </details>
+
+- We'll explore this last point a lot more in the next module!
+
+## Summary
+
+- There's a magical formula for computing LOO-CV risk estimates for OLS, ridge, and basis regression models without having to refit the model $n$ times. Use it!
+- The GCV estimate of risk is a simplified version of cross validation that (1) can be applied even when the "magic formula" doesn't hold, and (2) does not require a validation set.
+- The GCV estimate of risk makes the bias-variance tradeoff explicit: risk is high when training error is high (high bias) or when degrees of freedom is close to $n$ (high variance).
+- In general, CV/LOO-CV is preferred over GCV/information criteria for model selection, but GCV is a useful tool for understanding the bias-variance tradeoff.
+- We will explore what happens when the number of degrees of freedom exceeds the number of training samples in the next lecture!
