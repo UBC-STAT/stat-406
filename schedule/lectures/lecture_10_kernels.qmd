@@ -1,0 +1,173 @@
+---
+title: "Lecture 10: Kernel Machines"
+author: "Geoff Pleiss"
+date: last-modified
+format: html
+---
+
+## Learning Objectives
+
+By the end of this lecture, you should be able to:
+
+1. Convert ridge regression into kernel ridge regression using the representor theorem
+2. Compute the degrees of freedom for kernel ridge regressors (and $p > n$ basis regressors)
+3. Identify valid kernel functions, and match them to their corresponding basis expansions (polynomial, Gaussian)
+
+## Overview of This Module
+
+- Last time: we hinted that degrees of freedom was bounded by $n$ (number of training data).
+- In this module, we will discuss predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) $n$, regardless of the number of features $p$
+- These models are called **non-parametric models**, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data
+
+### Non-Parametric vs Parametric Models
+
+- As we will see, these models are often based predictions off of **similarity to other points**, rather than the **amount they express a particular feature**
+- However, these two mechanisms for modelling are deeply intertwined.
+- Today, we will construct our non-parametric model by starting with a parametric model, and then taking the limit as the number of features $p \to \infty$.
+
+### Intuition: Taste versus Smell
+
+- Your mouth has taste receptors for 5 basic tastes: sweet, sour, salty, bitter, and umami.
+  - (For those of you who are unaware, most of what you "taste" is actually smell!)
+- Your nose has millions of smell receptors, each of which responds to a different combination of molecules
+- Think about how you describe "taste" versus "smell"
+  - **Taste**: "It's sweet and a little sour"
+  - **Smell**: "It smells like a mix of pine, citrus, and fresh-cut grass"
+- Taste is described **parametrically**. It can be described by a small number of parameters (the 5 tastes).
+- Smell is described **non-parametrically**. It is described by how similar it is to other smells you have experienced.
+
+### Parametric vs Non-Parametric is a Modelling Choice
+
+- We could describe smell parametrically, by defining the thousands of molecules that might be present in a smell. But this would be unwieldy, not how our brains work, and the non-parametric framework is more advantageous.
+- Similarly, we could describe taste non-parametrically, by describing how similar it is to other tastes we have experienced. But this would be less efficient, and the parametric framework is more advantageous.
+
+## Our First Non-Parametric Model: Kernel Ridge Regression
+
+- Let's begin with ridge regression on 1D data, with $d$-Fourier basis functions:
+
+  \begin{align*}
+  \hat \beta_\mathrm{ridge} = \left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top \boldsymbol Y
+  \end{align*}
+
+  where $\boldsymbol \Phi \in \mathbb R^{n \times d}$ is the design matrix, with the $i^\mathrm{th}$ row given by:
+
+  \begin{align*}
+    \boldsymbol \phi(x_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi x_i), \sin(2 \pi x_i), \ldots, \cos(2 \pi \frac{d}{2} x_i), \sin(2 \pi \frac{d}{2} x_i) \right]
+  \end{align*}
+
+- Note that this is the same as normal ridge regression, except that the entries of the design matrix are given by basis functions $\phi(x_i) \in \mathbb R^d$, rather than the original features $x_i \in \mathbb R$.
+
+- Note that $1 / \sqrt{d}$ normalization constant. It isn't necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!
+
+- I claim that we can also re-write the ridge regression solution in the following way,
+regardless of whether $d < n$ or $d > n$:
+
+  \begin{align*}
+  \hat \beta_\mathrm{ridge} = \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
+  \end{align*}
+
+:::{.callout-tip collapse="true" title="Derivation"}
+
+We can verify this by starting with the right-hand side, and using the SVD of $\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V.$
+
+- For now, let's assume that $d > n$, so that $\boldsymbol \Phi$ has full column rank. Then,
+- $\boldsymbol U \in \mathbb R^{n \times n}$ is orthogonal,
+- $\boldsymbol D \in \mathbb R^{n \times n}$ is diagonal with positive entries, and
+- $\boldsymbol V \in \mathbb R^{d \times n}$ has orthonormal columns.
+
+We have:
+
+\begin{align*}
+\left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top
+&= \left( \boldsymbol V \boldsymbol D^2 \boldsymbol V^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&= \left( \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right) \boldsymbol V^\top \right)^{-1} \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&= \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol V^\top \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&= \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol D \boldsymbol U^\top \\
+&= \boldsymbol V \boldsymbol D \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol U^\top \\
+&= \boldsymbol V \boldsymbol D \boldsymbol U^\top \boldsymbol U \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol U^\top \\
+&= \boldsymbol V \boldsymbol D \boldsymbol U^\top \left( \boldsymbol U \left( \boldsymbol D^2 + \lambda \boldsymbol I \right) \boldsymbol U^\top \right)^{-1} \\
+&= \boldsymbol V \boldsymbol D \boldsymbol U^\top \left( \boldsymbol U \boldsymbol D^2 \boldsymbol U^\top + \lambda \boldsymbol I \right)^{-1} \\
+&= \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1}
+\end{align*}
+
+:::
+
+- When we make predictions at a new point $x$, we have:
+
+  \begin{align*}
+  \hat f(X) &= \boldsymbol \phi(X)^\top \hat \beta_\mathrm{ridge} \\
+  &= \boldsymbol \phi(X)^\top \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y \\
+  &= \underbrace{\left( \boldsymbol \phi(x)^\top \boldsymbol \Phi^\top \right)}_{\text{new } 1 \times n \text{ vector}} \underbrace{\left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} }_{n \times n \text{ matrix}} \boldsymbol Y.
+  \end{align*}
+
+- If I define the function
+
+  \begin{align*}
+  k(x, x') = \boldsymbol \phi(x)^\top \boldsymbol \phi(x')
+  = \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(2 \pi j x) \cos(2 \pi j x') + \sin(2 \pi j x) \sin(2 \pi j x') \right]
+  \end{align*}
+
+  then I can write the prediction as:
+
+  \begin{align*}
+  \hat f(X) &= \underbrace{ \begin{bmatrix}
+  k(x, x_1) & k(x, x_2) & \cdots & k(x, x_n)
+  \end{bmatrix} }_{:= \boldsymbol k(X)^\top} \left( \underbrace{ \begin{bmatrix}
+  k(x_1, x_1) & k(x_1, x_2) & \cdots & k(x_1, x_n) \\
+  k(x_2, x_1) & k(x_2, x_2) & \cdots & k(x_2, x_n) \\
+  \vdots & \vdots & \ddots & \vdots \\
+  k(x_n, x_1) & k(x_n, x_2) & \cdots & k(x_n, x_n)
+  \end{bmatrix} }_{:= \boldsymbol K} + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
+  \end{align*}
+
+    - $\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top$ is the $n \times n$ matrix with entries $K_{ij} = k(X_i, X_j)$ (where $X_i, $X_j$ are training points),
+    - $\boldsymbol k(X)$ is the $n \times 1$ vector with entries $k(X, X_i)$ (where $X$ is the test point, and the $X_i$ are training points).
+
+### Kernel Ridge Regression
+
+- We call $k(X, X')$ the **kernel function**.
+- Let's just assume for a second that it represents a notion of similarity between points $X$ and $X'$
+(we'll make this more precise later).
+- Then, if we define:
+
+  \begin{align*}
+    \left( \boldsymbol K + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y =: \boldsymbol \alpha \in \mathbb R^n,
+  \end{align*}
+
+  then we can write the prediction at a new point $X$ as:
+
+  \begin{align*}
+  \hat f(X) = \sum_{i=1}^n \alpha_i k(X, X_i).
+  \end{align*}
+
+- The weights $k(X, X_i)$ reflect how much we should base our prediction off of the similarity between $X$ and each training point $X_i$.
+
+- The coefficients $\alpha_i$ reflect how much each training point $X_i$ should influence predictions in general.
+
+- Again, this model is **exactly equivalent** to good old ridge regression (with a basis expansion). We can always go back to the stanard ridge formulation we learned in Lecture 6. However, we now have a nice **non-parametric** variant.
+
+### Degrees of Freedom of Kernel Ridge Regression
+
+- Recall that the degrees of freedom of ridge regression is given by:
+
+  \begin{align*}
+  \mathrm{df}(\lambda) = \sum_{j=1}^{\min(n, d)} \frac{d_j^2}{d_j^2 + \lambda}
+  \end{align*}
+
+  where $d_j$ are the singular values of $\boldsymbol \Phi$.
+
+- Note that there are at most $\min(n, d)$ non-zero singular values.
+
+- Even if $d \to \infty$, the degrees of freedom will still be:
+
+  \begin{align*}
+  \mathrm{df}(\lambda) = \sum_{j=1}^{n} \frac{d_j^2}{d_j^2 + \lambda} < n
+  \end{align*}
+
+  where we have the strict inequality because $\lambda > 0$.
+
+- However, note that (if $d \approx \infty$) the degrees of freedom will **increase** as we add more training data.
+
+- Compare this scenario to regression with $p < n$ covariates (or $d < n$ basis functions), where the degrees of freedom stays fixed with $p$ (or $d$).
+
+- Thus, the complexity of our predictive model naturally scales with the amount of training data we have!
