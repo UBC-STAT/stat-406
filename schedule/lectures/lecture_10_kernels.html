@@ -9,7 +9,7 @@
 <meta name="author" content="Geoff Pleiss">
 <meta name="dcterms.date" content="2025-10-07">
 
-<title>Lecture 1: Probability Review – UBC Stat406 2025 W1</title>
+<title>Lecture 10: Kernel Machines – UBC Stat406 2025 W1</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -164,33 +164,26 @@ window.Quarto = {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
-  <li><a href="#random-variables" id="toc-random-variables" class="nav-link" data-scroll-target="#random-variables">Random Variables</a>
+  <li><a href="#overview-of-this-module" id="toc-overview-of-this-module" class="nav-link" data-scroll-target="#overview-of-this-module">Overview of This Module</a>
   <ul class="collapse">
-  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
-  <li><a href="#notation" id="toc-notation" class="nav-link" data-scroll-target="#notation">Notation</a></li>
-  <li><a href="#joint-random-variables" id="toc-joint-random-variables" class="nav-link" data-scroll-target="#joint-random-variables">Joint Random Variables</a></li>
+  <li><a href="#non-parametric-vs-parametric-models" id="toc-non-parametric-vs-parametric-models" class="nav-link" data-scroll-target="#non-parametric-vs-parametric-models">Non-Parametric vs Parametric Models</a></li>
+  <li><a href="#intuition-taste-versus-smell" id="toc-intuition-taste-versus-smell" class="nav-link" data-scroll-target="#intuition-taste-versus-smell">Intuition: Taste versus Smell</a></li>
+  <li><a href="#parametric-vs-non-parametric-is-a-modelling-choice" id="toc-parametric-vs-non-parametric-is-a-modelling-choice" class="nav-link" data-scroll-target="#parametric-vs-non-parametric-is-a-modelling-choice">Parametric vs Non-Parametric is a Modelling Choice</a></li>
   </ul></li>
-  <li><a href="#distributions-and-the-two-rules-of-probability" id="toc-distributions-and-the-two-rules-of-probability" class="nav-link" data-scroll-target="#distributions-and-the-two-rules-of-probability">Distributions and The Two Rules of Probability</a></li>
-  <li><a href="#the-product-rule" id="toc-the-product-rule" class="nav-link" data-scroll-target="#the-product-rule">The Product Rule</a>
+  <li><a href="#our-first-non-parametric-model-kernel-ridge-regression" id="toc-our-first-non-parametric-model-kernel-ridge-regression" class="nav-link" data-scroll-target="#our-first-non-parametric-model-kernel-ridge-regression">Our First Non-Parametric Model: Kernel Ridge Regression</a>
   <ul class="collapse">
-  <li><a href="#independence" id="toc-independence" class="nav-link" data-scroll-target="#independence">Independence</a></li>
-  <li><a href="#bayes-rule" id="toc-bayes-rule" class="nav-link" data-scroll-target="#bayes-rule">Bayes’ Rule</a></li>
+  <li><a href="#kernel-ridge-regression" id="toc-kernel-ridge-regression" class="nav-link" data-scroll-target="#kernel-ridge-regression">Kernel Ridge Regression</a></li>
+  <li><a href="#degrees-of-freedom-of-kernel-ridge-regression" id="toc-degrees-of-freedom-of-kernel-ridge-regression" class="nav-link" data-scroll-target="#degrees-of-freedom-of-kernel-ridge-regression">Degrees of Freedom of Kernel Ridge Regression</a></li>
   </ul></li>
-  <li><a href="#the-sum-rule" id="toc-the-sum-rule" class="nav-link" data-scroll-target="#the-sum-rule">The Sum Rule</a>
-  <ul class="collapse">
-  <li><a href="#linearity-of-expectation" id="toc-linearity-of-expectation" class="nav-link" data-scroll-target="#linearity-of-expectation">Linearity of Expectation</a></li>
-  <li><a href="#conditional-expectations-and-the-tower-rule" id="toc-conditional-expectations-and-the-tower-rule" class="nav-link" data-scroll-target="#conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</a></li>
-  </ul></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_01_probability.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_01_probability.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lecture 1: Probability Review</h1>
+<h1 class="title">Lecture 10: Kernel Machines</h1>
 </div>
 
 
@@ -221,246 +214,173 @@ window.Quarto = {
 
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
-<p>By the end of this lecture, you will be able to:</p>
+<p>By the end of this lecture, you should be able to:</p>
 <ol type="1">
-<li>Define a random variable and understand when to use them to model quantities</li>
-<li>Derive probability rules through the product and sum rules</li>
-<li>Apply linearity of expectation and the law of total expectation to simplify calculations</li>
+<li>Convert ridge regression into kernel ridge regression using the representor theorem</li>
+<li>Compute the degrees of freedom for kernel ridge regressors (and <span class="math inline">\(p &gt; n\)</span> basis regressors)</li>
+<li>Identify valid kernel functions, and match them to their corresponding basis expansions (polynomial, Gaussian)</li>
 </ol>
 </section>
-<section id="random-variables" class="level2">
-<h2 class="anchored" data-anchor-id="random-variables">Random Variables</h2>
-<section id="motivation" class="level3">
-<h3 class="anchored" data-anchor-id="motivation">Motivation</h3>
+<section id="overview-of-this-module" class="level2">
+<h2 class="anchored" data-anchor-id="overview-of-this-module">Overview of This Module</h2>
 <ul>
-<li><strong>Example</strong>: Let’s say you want to grab a coffee at Loafe and you want to know how long you’ll have to wait in line.</li>
-<li>Denote this time by the variable <span class="math inline">\(A\)</span></li>
-<li><span class="math inline">\(A\)</span> depends on a multitude of factors:
+<li>Last time: we hinted that degrees of freedom was bounded by <span class="math inline">\(n\)</span> (number of training data).</li>
+<li>In this module, we will discuss predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) <span class="math inline">\(n\)</span>, regardless of the number of features <span class="math inline">\(p\)</span></li>
+<li>These models are called <strong>non-parametric models</strong>, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data</li>
+</ul>
+<section id="non-parametric-vs-parametric-models" class="level3">
+<h3 class="anchored" data-anchor-id="non-parametric-vs-parametric-models">Non-Parametric vs Parametric Models</h3>
 <ul>
-<li>How hot it is outside</li>
-<li>What day of the week it is</li>
-<li>How late Josh and his friends were up playing video games, thus leading them to take up spots in line</li>
+<li>As we will see, these models are often based predictions off of <strong>similarity to other points</strong>, rather than the <strong>amount they express a particular feature</strong></li>
+<li>However, these two mechanisms for modelling are deeply intertwined.</li>
+<li>Today, we will construct our non-parametric model by starting with a parametric model, and then taking the limit as the number of features <span class="math inline">\(p \to \infty\)</span>.</li>
+</ul>
+</section>
+<section id="intuition-taste-versus-smell" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-taste-versus-smell">Intuition: Taste versus Smell</h3>
+<ul>
+<li>Your mouth has taste receptors for 5 basic tastes: sweet, sour, salty, bitter, and umami.
+<ul>
+<li>(For those of you who are unaware, most of what you “taste” is actually smell!)</li>
 </ul></li>
-<li>While we could try to model all of these factors, it would be infeasible to do so.</li>
-<li>Instead, we can treat <span class="math inline">\(A\)</span> as a <strong>random variable</strong>: a variable whose value is <em>randomly</em> sampled from some distribution.</li>
-</ul>
-</section>
-<section id="notation" class="level3">
-<h3 class="anchored" data-anchor-id="notation">Notation</h3>
+<li>Your nose has millions of smell receptors, each of which responds to a different combination of molecules</li>
+<li>Think about how you describe “taste” versus “smell”
 <ul>
-<li>We (almost) always denote random variables with uppercase letters (e.g., <span class="math inline">\(A\)</span>)</li>
-<li>We (almost) always denote their realizations (i.e., specific values they can take) with lowercase letters (e.g., <span class="math inline">\(a\)</span>).</li>
-</ul>
-</section>
-<section id="joint-random-variables" class="level3">
-<h3 class="anchored" data-anchor-id="joint-random-variables">Joint Random Variables</h3>
-<ul>
-<li>Throughout this class, most of the probability we will encounter will be concerned with relationships between two or more random variables.</li>
-<li><strong>Example</strong>: maybe we want to understand how the temperature outside, denoted by <span class="math inline">\(B\)</span>, affects the Loafe line length.</li>
-<li>Again, <span class="math inline">\(B\)</span> depends on many factors:
-<ul>
-<li>What time of year it is</li>
-<li>Whether or not it’s sunny outside</li>
-<li>How many flights Sarah took last year, thus leading to an increase in greenhouse gases</li>
+<li><strong>Taste</strong>: “It’s sweet and a little sour”</li>
+<li><strong>Smell</strong>: “It smells like a mix of pine, citrus, and fresh-cut grass”</li>
 </ul></li>
-<li>We can treat <span class="math inline">\(B\)</span> as a random variable as well.</li>
-<li><span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are related to one another, potentially in a <em>causal</em> manner. If we treat them as <strong>joint random variables</strong>, we can derive many useful probabilistic representations about their relationship.</li>
+<li>Taste is described <strong>parametrically</strong>. It can be described by a small number of parameters (the 5 tastes).</li>
+<li>Smell is described <strong>non-parametrically</strong>. It is described by how similar it is to other smells you have experienced.</li>
+</ul>
+</section>
+<section id="parametric-vs-non-parametric-is-a-modelling-choice" class="level3">
+<h3 class="anchored" data-anchor-id="parametric-vs-non-parametric-is-a-modelling-choice">Parametric vs Non-Parametric is a Modelling Choice</h3>
+<ul>
+<li>We could describe smell parametrically, by defining the thousands of molecules that might be present in a smell. But this would be unwieldy, not how our brains work, and the non-parametric framework is more advantageous.</li>
+<li>Similarly, we could describe taste non-parametrically, by describing how similar it is to other tastes we have experienced. But this would be less efficient, and the parametric framework is more advantageous.</li>
 </ul>
 </section>
 </section>
-<section id="distributions-and-the-two-rules-of-probability" class="level2">
-<h2 class="anchored" data-anchor-id="distributions-and-the-two-rules-of-probability">Distributions and The Two Rules of Probability</h2>
+<section id="our-first-non-parametric-model-kernel-ridge-regression" class="level2">
+<h2 class="anchored" data-anchor-id="our-first-non-parametric-model-kernel-ridge-regression">Our First Non-Parametric Model: Kernel Ridge Regression</h2>
 <ul>
-<li><p>Given two random variables (A) and (B), we can describe this relationship through a <strong>joint probability distribution</strong></p>
-<p><span class="math display">\[
-\begin{cases}
-    P(A=a, B=b) &amp; \text{for discrete random variables} \\
-    f_{A,B}(a, b) &amp; \text{for continuous random variables}
-\end{cases}
-\]</span></p></li>
-<li><p>Without loss of generality, we will use the discrete random variable notation throughout the rest of this lecture (and throughout most of the course).</p></li>
-<li><p>We can also describe (A) and (B) through:</p>
-<ul>
-<li><strong>Conditional distributions</strong>, i.e., (P(A=a | B=b)) or (P(B=b | A=a))</li>
-<li><strong>Marginal distributions</strong>, i.e., (P(A=a)) or (P(B=b))</li>
-</ul></li>
-<li><p>While there are many fundamental rules of probability to manipulate these distributions, most of them can be derived from two basic rules: the <strong>product rule</strong> and the <strong>sum rule</strong>.</p></li>
-</ul>
-</section>
-<section id="the-product-rule" class="level2">
-<h2 class="anchored" data-anchor-id="the-product-rule">The Product Rule</h2>
-<p>The product rule allows us to decompose a joint distribution into the product of a conditional and marginal probability:</p>
+<li><p>Let’s begin with ridge regression on 1D data, with <span class="math inline">\(d\)</span>-Fourier basis functions:</p>
 <p><span class="math display">\[\begin{align*}
-P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
-&amp;= P(B=b|A=a)P(A=a)
+\hat \beta_\mathrm{ridge} = \left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top \boldsymbol Y
 \end{align*}\]</span></p>
-<ul>
-<li>This rule can be applied recursively in the case of more than two random variables.</li>
-<li>This rule gives rise to lots of useful facts from probability theory.</li>
+<p>where <span class="math inline">\(\boldsymbol \Phi \in \mathbb R^{n \times d}\)</span> is the design matrix, with the <span class="math inline">\(i^\mathrm{th}\)</span> row given by:</p>
+<p><span class="math display">\[\begin{align*}
+  \boldsymbol \phi(x_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi x_i), \sin(2 \pi x_i), \ldots, \cos(2 \pi \frac{d}{2} x_i), \sin(2 \pi \frac{d}{2} x_i) \right]
+\end{align*}\]</span></p></li>
+<li><p>Note that this is the same as normal ridge regression, except that the entries of the design matrix are given by basis functions <span class="math inline">\(\phi(x_i) \in \mathbb R^d\)</span>, rather than the original features <span class="math inline">\(x_i \in \mathbb R\)</span>.</p></li>
+<li><p>Note that <span class="math inline">\(1 / \sqrt{d}\)</span> normalization constant. It isn’t necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!</p></li>
+<li><p>I claim that we can also re-write the ridge regression solution in the following way, regardless of whether <span class="math inline">\(d &lt; n\)</span> or <span class="math inline">\(d &gt; n\)</span>:</p>
+<p><span class="math display">\[\begin{align*}
+\hat \beta_\mathrm{ridge} = \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
+\end{align*}\]</span></p></li>
 </ul>
-<section id="independence" class="level3">
-<h3 class="anchored" data-anchor-id="independence">Independence</h3>
-<ul>
-<li><p>We say that <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <strong>independent</strong> if <span class="math inline">\(P(A=a, B=b) = P(A=a) P(B=b)\)</span>; that is, their joint probability (density) is the product of their marginal probability (densities).</p></li>
-<li><p>By the product rule, for independent random variables we have that</p>
-<p><span class="math display">\[ P(A=a) P(B=b) = P(A=a, B=b) = P(A=a | B=b) P(B=b), \]</span></p>
-<p>and, through some algebra, that <span class="math inline">\(P(A=a) = P(A=a | B=b)\)</span>. (Similarly, <span class="math inline">\(P(B=b) = P(B=b | A=a)\)</span>.)</p></li>
-<li><p>In other words, when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are independent, the occurrence of <span class="math inline">\(B\)</span> does not affect the probability of <span class="math inline">\(A\)</span>, and vice versa.</p></li>
-</ul>
-</section>
-<section id="bayes-rule" class="level3">
-<h3 class="anchored" data-anchor-id="bayes-rule">Bayes’ Rule</h3>
-<p>We can derive Bayes’ formula</p>
-<p><span class="math display">\[ P(B=b | A=a) = \frac{P(A=a | B=b) P(B=b)}{P(A=a)} \]</span></p>
-<p>using the product rule by starting from the identity <span class="math inline">\(P(B=b, A=a) = P(A=a, B=b)\)</span> and simplifying.</p>
-</section>
-</section>
-<section id="the-sum-rule" class="level2">
-<h2 class="anchored" data-anchor-id="the-sum-rule">The Sum Rule</h2>
-<p>The sum rule allows us to obtain a marginal probability for <span class="math inline">\(A\)</span> (or <span class="math inline">\(B\)</span>) from a joint probability over <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>:</p>
-<p><span class="math display">\[ P(A=a) = \int_{b} P(A=a, B=b) \: \mathrm{d}b. \]</span></p>
-<ul>
-<li>Here, we are again assuming <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are continuous and <span class="math inline">\(P\)</span> represents a density. The integral becomes a summation in the case of discrete random variables.</li>
-<li>Again, this rule can be extended to three or more variables recursively.</li>
-<li>This rule is instrumental in establishing properties about expectations:</li>
-</ul>
-<section id="linearity-of-expectation" class="level3">
-<h3 class="anchored" data-anchor-id="linearity-of-expectation">Linearity of Expectation</h3>
-<ul>
-<li><p>We define the <strong>expected value</strong> of <span class="math inline">\(A\)</span> as:</p>
-<p><span class="math display">\[ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. \]</span></p></li>
-<li><p>Similarly, the expected value of some function of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> is defined as:</p>
-<p><span class="math display">\[ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. \]</span></p></li>
-<li><p>We can use the sum rule in conjunction with <a href="https://en.wikipedia.org/wiki/Fubini%27s_theorem">Fubini’s theorem</a> to derive one of the most important formulas in all of probability:</p>
-<p><span class="math display">\[ \mathbb E[A + B] = \mathbb E[A] + \mathbb E[B] \]</span></p></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout callout-style-default callout-tip callout-titled" title="Derivation">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
+<span class="screen-reader-only">Tip</span>Derivation
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>We can verify this by starting with the right-hand side, and using the SVD of <span class="math inline">\(\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V.\)</span></p>
+<ul>
+<li>For now, let’s assume that <span class="math inline">\(d &gt; n\)</span>, so that <span class="math inline">\(\boldsymbol \Phi\)</span> has full column rank. Then,</li>
+<li><span class="math inline">\(\boldsymbol U \in \mathbb R^{n \times n}\)</span> is orthogonal,</li>
+<li><span class="math inline">\(\boldsymbol D \in \mathbb R^{n \times n}\)</span> is diagonal with positive entries, and</li>
+<li><span class="math inline">\(\boldsymbol V \in \mathbb R^{d \times n}\)</span> has orthonormal columns.</li>
+</ul>
+<p>We have:</p>
 <p><span class="math display">\[\begin{align*}
-  \mathbb{E}[A + B]
-  &amp;= \int_a \int_b (a + b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_a \int_b a P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &amp;\quad + \int_a \int_b b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &amp;\quad + \int_b b \int_a P(A=a, B=b) \: \mathrm{d}a \: \mathrm{d}b
-  \\
-  &amp;= \int_a a P(A=a) \: \mathrm{d}a + \int_b b P(B=b) \: \mathrm{d}b
-  \\
-  &amp;= \mathbb{E}[A] + \mathbb{E}[B]
-  \end{align*}\]</span></p>
+\left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top
+&amp;= \left( \boldsymbol V \boldsymbol D^2 \boldsymbol V^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&amp;= \left( \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right) \boldsymbol V^\top \right)^{-1} \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&amp;= \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol V^\top \boldsymbol V \boldsymbol D \boldsymbol U^\top \\
+&amp;= \boldsymbol V \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol D \boldsymbol U^\top \\
+&amp;= \boldsymbol V \boldsymbol D \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol U^\top \\
+&amp;= \boldsymbol V \boldsymbol D \boldsymbol U^\top \boldsymbol U \left( \boldsymbol D^2 + \lambda \boldsymbol I \right)^{-1} \boldsymbol U^\top \\
+&amp;= \boldsymbol V \boldsymbol D \boldsymbol U^\top \left( \boldsymbol U \left( \boldsymbol D^2 + \lambda \boldsymbol I \right) \boldsymbol U^\top \right)^{-1} \\
+&amp;= \boldsymbol V \boldsymbol D \boldsymbol U^\top \left( \boldsymbol U \boldsymbol D^2 \boldsymbol U^\top + \lambda \boldsymbol I \right)^{-1} \\
+&amp;= \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1}
+\end{align*}\]</span></p>
 </div>
 </div>
 </div>
 <ul>
-<li><p>This formula, known as <strong>linearity of expectation</strong>, holds <em>even when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are not independent!</em> We will use this fact constantly throughout the course.</p></li>
-<li><p>As a fun challenge problem, try using this formula to derive the famous <strong>inclusion-exclusion principle</strong>:</p>
-<p><span class="math display">\[ P(A \cup B) = P(A) + P(B) - P(A \cap B). \]</span></p>
-<p><em>Hint: note that <span class="math inline">\(P(A) = \mathbb{E}[\mathbf{1}_A]\)</span>, where <span class="math inline">\(\mathbf{1}_A\)</span> is the indicator random variable for event <span class="math inline">\(A\)</span>. Similarly, <span class="math inline">\(P(A \cap B) = \mathbb{E}[\mathbf{1}_A \mathbf{1}_B]\)</span> and <span class="math inline">\(P(A \cup B) = 1 - P(\overline{A} \cap \overline{B})\)</span></em>.</p></li>
-</ul>
-</section>
-<section id="conditional-expectations-and-the-tower-rule" class="level3">
-<h3 class="anchored" data-anchor-id="conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</h3>
-<ul>
-<li><p>The <strong>conditional expectation</strong> of <span class="math inline">\(A\)</span> given <span class="math inline">\(B=b\)</span> is defined as:</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B = b] := \int_{a} a \: P(A=a \mid B=b) \: \mathrm{d}a. \]</span></p>
-<p>It is the average value that <span class="math inline">\(A\)</span> takes when we have the additional information that the random variable <span class="math inline">\(B\)</span> takes on the value <span class="math inline">\(b\)</span>.</p></li>
-<li><p>Note that this conditional expectation is a function of <span class="math inline">\(b\)</span>; i.e.&nbsp;we can write</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B = b] = g(b) \qquad \text{for some function} g.\]</span></p></li>
-<li><p>The expression <span class="math inline">\(\mathbb{E} [A \mid B]\)</span> should then be read as:</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B] = g(B). \]</span></p>
-<p>I.e. that we are applying the conditional expectation function to the <em>random variable</em> <span class="math inline">\(B\)</span> rather than to a specific realization <span class="math inline">\(b\)</span>.</p></li>
-<li><p>To relate <span class="math inline">\(\mathbb E[A \mid B]\)</span> to <span class="math inline">\(\mathbb E[A]\)</span>, we can use the sum and product rules to get:</p>
-<p><span class="math display">\[ \mathbb E[A] = \mathbb E[ \mathbb E[ A \mid B]] \]</span></p></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
+<li><p>When we make predictions at a new point <span class="math inline">\(x\)</span>, we have:</p>
 <p><span class="math display">\[\begin{align*}
-  \mathbb{E}[A] &amp;= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_a a \int_b P(A=a \mid B=b) P(B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_b \left( \int_a a P(A=a \mid B=b) \: \mathrm{d}a \right) P(B=b) \: \mathrm{d}b
-  \\
-  &amp;= \int_b \mathbb{E}[A \mid B=b] P(B=b) \: \mathrm{d}b
-  \\
-  &amp;= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
-  \end{align*}\]</span></p>
-</div>
-</div>
-</div>
+\hat f(X) &amp;= \boldsymbol \phi(X)^\top \hat \beta_\mathrm{ridge} \\
+&amp;= \boldsymbol \phi(X)^\top \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y \\
+&amp;= \underbrace{\left( \boldsymbol \phi(x)^\top \boldsymbol \Phi^\top \right)}_{\text{new } 1 \times n \text{ vector}} \underbrace{\left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} }_{n \times n \text{ matrix}} \boldsymbol Y.
+\end{align*}\]</span></p></li>
+<li><p>If I define the function</p>
+<p><span class="math display">\[\begin{align*}
+k(x, x') = \boldsymbol \phi(x)^\top \boldsymbol \phi(x')
+= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(2 \pi j x) \cos(2 \pi j x') + \sin(2 \pi j x) \sin(2 \pi j x') \right]
+\end{align*}\]</span></p>
+<p>then I can write the prediction as:</p>
+<p><span class="math display">\[\begin{align*}
+\hat f(X) &amp;= \underbrace{ \begin{bmatrix}
+k(x, x_1) &amp; k(x, x_2) &amp; \cdots &amp; k(x, x_n)
+\end{bmatrix} }_{:= \boldsymbol k(X)^\top} \left( \underbrace{ \begin{bmatrix}
+k(x_1, x_1) &amp; k(x_1, x_2) &amp; \cdots &amp; k(x_1, x_n) \\
+k(x_2, x_1) &amp; k(x_2, x_2) &amp; \cdots &amp; k(x_2, x_n) \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
+\end{bmatrix} }_{:= \boldsymbol K} + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
+\end{align*}\]</span></p>
 <ul>
-<li><p>This rule is known as the <strong>Tower Rule</strong>. It allows us to express marginal expectations as recursive applications of conditional expectations.</p></li>
-<li><p><em>This notation is often confusing and scary the first few times you encounter it. Try translating it back into probabilities via the sum and product rules, and you’ll fluently understand it in no time!</em></p></li>
+<li><span class="math inline">\(\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top\)</span> is the <span class="math inline">\(n \times n\)</span> matrix with entries <span class="math inline">\(K_{ij} = k(X_i, X_j)\)</span> (where $X_i, <span class="math inline">\(X_j\)</span> are training points),</li>
+<li><span class="math inline">\(\boldsymbol k(X)\)</span> is the <span class="math inline">\(n \times 1\)</span> vector with entries <span class="math inline">\(k(X, X_i)\)</span> (where <span class="math inline">\(X\)</span> is the test point, and the <span class="math inline">\(X_i\)</span> are training points).</li>
+</ul></li>
 </ul>
-<div class="callout callout-style-default callout-important callout-titled" title="Important: What is Random?">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Important: What is Random?
-</div>
-</div>
-<div class="callout-body-container callout-body">
+<section id="kernel-ridge-regression" class="level3">
+<h3 class="anchored" data-anchor-id="kernel-ridge-regression">Kernel Ridge Regression</h3>
 <ul>
-<li><p>A (standard) expectation <span class="math inline">\(\mathbb E[A]\)</span> is <strong>not</strong> a random variable (despite the fact that there’s a random variable inside the expectation).</p>
-<details>
-<summary>
-<p>Why?</p>
-</summary>
-<p>If we go back to the definition: $ E[A] = a P(A=a) da $, note that the two terms in the integral <span class="math inline">\(a\)</span>, <span class="math inline">\(P(A=a)\)</span> are functions of <span class="math inline">\(a\)</span>, which is a realized quantity and therefore <strong>not random</strong>. So we’re integrating non-random quantities together, giving us a non-random output.</p>
-</details></li>
-<li><p>The conditional expectation <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> is also <strong>not</strong> a random variable.</p>
-<details>
-<summary>
-<p>Why?</p>
-</summary>
-<p>Again going back to the definition: $ E[A B=b] = a P(A=a B=b) da$, the terms inside the integral are functions of <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> (realized quantities, not random variables).</p>
-</details></li>
-<li><p>However, the conditional expectation <span class="math inline">\(\mathbb E[A \mid B]\)</span> <strong>is a random variable</strong>.</p>
-<details>
-<summary>
-<p>Why?</p>
-</summary>
-<p>Recall that we can view <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> as some function of <span class="math inline">\(b\)</span>; i.e. <span class="math inline">\(\mathbb E[A \mid B=b] = g(b)\)</span>. When we plug a realization (i.e.&nbsp;not a random variable) into <span class="math inline">\(g\)</span>, the output is a fixed (not random) quantity.</p>
-<p>However, when we plug in a <em>random variable</em> into <span class="math inline">\(g\)</span>, the output is a random quantity! So <span class="math inline">\(\mathbb E[A \mid B] = g(B)\)</span> is a <em>random variable</em> due to the randomness in <span class="math inline">\(B\)</span>.</p>
-</details></li>
+<li><p>We call <span class="math inline">\(k(X, X')\)</span> the <strong>kernel function</strong>.</p></li>
+<li><p>Let’s just assume for a second that it represents a notion of similarity between points <span class="math inline">\(X\)</span> and <span class="math inline">\(X'\)</span> (we’ll make this more precise later).</p></li>
+<li><p>Then, if we define:</p>
+<p><span class="math display">\[\begin{align*}
+  \left( \boldsymbol K + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y =: \boldsymbol \alpha \in \mathbb R^n,
+\end{align*}\]</span></p>
+<p>then we can write the prediction at a new point <span class="math inline">\(X\)</span> as:</p>
+<p><span class="math display">\[\begin{align*}
+\hat f(X) = \sum_{i=1}^n \alpha_i k(X, X_i).
+\end{align*}\]</span></p></li>
+<li><p>The weights <span class="math inline">\(k(X, X_i)\)</span> reflect how much we should base our prediction off of the similarity between <span class="math inline">\(X\)</span> and each training point <span class="math inline">\(X_i\)</span>.</p></li>
+<li><p>The coefficients <span class="math inline">\(\alpha_i\)</span> reflect how much each training point <span class="math inline">\(X_i\)</span> should influence predictions in general.</p></li>
+<li><p>Again, this model is <strong>exactly equivalent</strong> to good old ridge regression (with a basis expansion). We can always go back to the stanard ridge formulation we learned in Lecture 6. However, we now have a nice <strong>non-parametric</strong> variant.</p></li>
 </ul>
-</div>
-</div>
 </section>
-</section>
-<section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<section id="degrees-of-freedom-of-kernel-ridge-regression" class="level3">
+<h3 class="anchored" data-anchor-id="degrees-of-freedom-of-kernel-ridge-regression">Degrees of Freedom of Kernel Ridge Regression</h3>
 <ul>
-<li>We will use (jointly-distributed) random variables to model data, models that depend on data, and predictions that depend on models that depend on data.</li>
-<li>You will need to manipulate marginal, joint, and conditional probabilities and expectations of these random variables throughout the course.</li>
-<li>This review has covered most of the probability rules that we’ll use, but just remember that <em>you</em> can always derive any of them through the product and sum rules!</li>
+<li><p>Recall that the degrees of freedom of ridge regression is given by:</p>
+<p><span class="math display">\[\begin{align*}
+\mathrm{df}(\lambda) = \sum_{j=1}^{\min(n, d)} \frac{d_j^2}{d_j^2 + \lambda}
+\end{align*}\]</span></p>
+<p>where <span class="math inline">\(d_j\)</span> are the singular values of <span class="math inline">\(\boldsymbol \Phi\)</span>.</p></li>
+<li><p>Note that there are at most <span class="math inline">\(\min(n, d)\)</span> non-zero singular values.</p></li>
+<li><p>Even if <span class="math inline">\(d \to \infty\)</span>, the degrees of freedom will still be:</p>
+<p><span class="math display">\[\begin{align*}
+\mathrm{df}(\lambda) = \sum_{j=1}^{n} \frac{d_j^2}{d_j^2 + \lambda} &lt; n
+\end{align*}\]</span></p>
+<p>where we have the strict inequality because <span class="math inline">\(\lambda &gt; 0\)</span>.</p></li>
+<li><p>However, note that (if <span class="math inline">\(d \approx \infty\)</span>) the degrees of freedom will <strong>increase</strong> as we add more training data.</p></li>
+<li><p>Compare this scenario to regression with <span class="math inline">\(p &lt; n\)</span> covariates (or <span class="math inline">\(d &lt; n\)</span> basis functions), where the degrees of freedom stays fixed with <span class="math inline">\(p\)</span> (or <span class="math inline">\(d\)</span>).</p></li>
+<li><p>Thus, the complexity of our predictive model naturally scales with the amount of training data we have!</p></li>
 </ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -872,7 +792,7 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
     </div>   
     <div class="nav-footer-center">
 <p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
-<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_01_probability.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_01_probability.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
