@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-10-07">
+<meta name="dcterms.date" content="2025-10-11">
 
 <title>Lecture 10: Kernel Machines – UBC Stat406 2025 W1</title>
 <style>
@@ -175,6 +175,12 @@ window.Quarto = {
   <li><a href="#kernel-ridge-regression" id="toc-kernel-ridge-regression" class="nav-link" data-scroll-target="#kernel-ridge-regression">Kernel Ridge Regression</a></li>
   <li><a href="#degrees-of-freedom-of-kernel-ridge-regression" id="toc-degrees-of-freedom-of-kernel-ridge-regression" class="nav-link" data-scroll-target="#degrees-of-freedom-of-kernel-ridge-regression">Degrees of Freedom of Kernel Ridge Regression</a></li>
   </ul></li>
+  <li><a href="#d-to-infty" id="toc-d-to-infty" class="nav-link" data-scroll-target="#d-to-infty"><span class="math inline">\(d \to \infty\)</span></a>
+  <ul class="collapse">
+  <li><a href="#infinitely-powerful-models-in-closed-form" id="toc-infinitely-powerful-models-in-closed-form" class="nav-link" data-scroll-target="#infinitely-powerful-models-in-closed-form">Infinitely Powerful Models in Closed Form</a></li>
+  <li><a href="#kernel-functions-as-similarity-measures" id="toc-kernel-functions-as-similarity-measures" class="nav-link" data-scroll-target="#kernel-functions-as-similarity-measures">Kernel Functions as Similarity Measures</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_10_kernels.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
     </div>
@@ -200,7 +206,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 7, 2025</p>
+      <p class="date">October 11, 2025</p>
     </div>
   </div>
   
@@ -225,13 +231,13 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="overview-of-this-module">Overview of This Module</h2>
 <ul>
 <li>Last time: we hinted that degrees of freedom was bounded by <span class="math inline">\(n\)</span> (number of training data).</li>
-<li>In this module, we will discuss predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) <span class="math inline">\(n\)</span>, regardless of the number of features <span class="math inline">\(p\)</span></li>
-<li>These models are called <strong>non-parametric models</strong>, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data</li>
+<li>In this module, we will discuss a category of predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) <span class="math inline">\(n\)</span>.</li>
+<li>These models are called <strong>non-parametric models</strong>, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data.</li>
 </ul>
 <section id="non-parametric-vs-parametric-models" class="level3">
 <h3 class="anchored" data-anchor-id="non-parametric-vs-parametric-models">Non-Parametric vs Parametric Models</h3>
 <ul>
-<li>As we will see, these models are often based predictions off of <strong>similarity to other points</strong>, rather than the <strong>amount they express a particular feature</strong></li>
+<li>As we will see, these models often base predictions off of <strong>similarity to other points</strong>, rather than the <strong>amount they express a particular feature</strong></li>
 <li>However, these two mechanisms for modelling are deeply intertwined.</li>
 <li>Today, we will construct our non-parametric model by starting with a parametric model, and then taking the limit as the number of features <span class="math inline">\(p \to \infty\)</span>.</li>
 </ul>
@@ -270,10 +276,10 @@ window.Quarto = {
 \end{align*}\]</span></p>
 <p>where <span class="math inline">\(\boldsymbol \Phi \in \mathbb R^{n \times d}\)</span> is the design matrix, with the <span class="math inline">\(i^\mathrm{th}\)</span> row given by:</p>
 <p><span class="math display">\[\begin{align*}
-  \boldsymbol \phi(x_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi x_i), \sin(2 \pi x_i), \ldots, \cos(2 \pi \frac{d}{2} x_i), \sin(2 \pi \frac{d}{2} x_i) \right]
+  \boldsymbol \phi(X_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi X_i), \sin(2 \pi X_i), \ldots, \cos(2 \pi \frac{d}{2} X_i), \sin(2 \pi \frac{d}{2} X_i) \right]
 \end{align*}\]</span></p></li>
 <li><p>Note that this is the same as normal ridge regression, except that the entries of the design matrix are given by basis functions <span class="math inline">\(\phi(x_i) \in \mathbb R^d\)</span>, rather than the original features <span class="math inline">\(x_i \in \mathbb R\)</span>.</p></li>
-<li><p>Note that <span class="math inline">\(1 / \sqrt{d}\)</span> normalization constant. It isn’t necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!</p></li>
+<li><p>Note the <span class="math inline">\(1 / \sqrt{d}\)</span> normalization constant. It isn’t necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!</p></li>
 <li><p>I claim that we can also re-write the ridge regression solution in the following way, regardless of whether <span class="math inline">\(d &lt; n\)</span> or <span class="math inline">\(d &gt; n\)</span>:</p>
 <p><span class="math display">\[\begin{align*}
 \hat \beta_\mathrm{ridge} = \boldsymbol \Phi^\top \left( \boldsymbol \Phi \boldsymbol \Phi^\top + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
@@ -293,7 +299,7 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <p>We can verify this by starting with the right-hand side, and using the SVD of <span class="math inline">\(\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V.\)</span></p>
 <ul>
-<li>For now, let’s assume that <span class="math inline">\(d &gt; n\)</span>, so that <span class="math inline">\(\boldsymbol \Phi\)</span> has full column rank. Then,</li>
+<li>For now, let’s assume that <span class="math inline">\(d &gt; n\)</span>, so that <span class="math inline">\(\boldsymbol \Phi\)</span> has full row rank. Then,</li>
 <li><span class="math inline">\(\boldsymbol U \in \mathbb R^{n \times n}\)</span> is orthogonal,</li>
 <li><span class="math inline">\(\boldsymbol D \in \mathbb R^{n \times n}\)</span> is diagonal with positive entries, and</li>
 <li><span class="math inline">\(\boldsymbol V \in \mathbb R^{d \times n}\)</span> has orthonormal columns.</li>
@@ -338,7 +344,7 @@ k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
 \end{bmatrix} }_{:= \boldsymbol K} + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
 \end{align*}\]</span></p>
 <ul>
-<li><span class="math inline">\(\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top\)</span> is the <span class="math inline">\(n \times n\)</span> matrix with entries <span class="math inline">\(K_{ij} = k(X_i, X_j)\)</span> (where $X_i, <span class="math inline">\(X_j\)</span> are training points),</li>
+<li><span class="math inline">\(\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top\)</span> is the <span class="math inline">\(n \times n\)</span> matrix with entries <span class="math inline">\(K_{ij} = k(X_i, X_j)\)</span> (where <span class="math inline">\(X_i\)</span>, <span class="math inline">\(X_j\)</span> are training points),</li>
 <li><span class="math inline">\(\boldsymbol k(X)\)</span> is the <span class="math inline">\(n \times 1\)</span> vector with entries <span class="math inline">\(k(X, X_i)\)</span> (where <span class="math inline">\(X\)</span> is the test point, and the <span class="math inline">\(X_i\)</span> are training points).</li>
 </ul></li>
 </ul>
@@ -357,7 +363,7 @@ k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
 \end{align*}\]</span></p></li>
 <li><p>The weights <span class="math inline">\(k(X, X_i)\)</span> reflect how much we should base our prediction off of the similarity between <span class="math inline">\(X\)</span> and each training point <span class="math inline">\(X_i\)</span>.</p></li>
 <li><p>The coefficients <span class="math inline">\(\alpha_i\)</span> reflect how much each training point <span class="math inline">\(X_i\)</span> should influence predictions in general.</p></li>
-<li><p>Again, this model is <strong>exactly equivalent</strong> to good old ridge regression (with a basis expansion). We can always go back to the stanard ridge formulation we learned in Lecture 6. However, we now have a nice <strong>non-parametric</strong> variant.</p></li>
+<li><p>Again, this model is <strong>exactly equivalent</strong> to good old ridge regression (with a basis expansion). We can always go back to the standard ridge formulation we learned in Lecture 6. However, we now have a nice <strong>non-parametric</strong> variant.</p></li>
 </ul>
 </section>
 <section id="degrees-of-freedom-of-kernel-ridge-regression" class="level3">
@@ -378,9 +384,88 @@ k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
 <li><p>Compare this scenario to regression with <span class="math inline">\(p &lt; n\)</span> covariates (or <span class="math inline">\(d &lt; n\)</span> basis functions), where the degrees of freedom stays fixed with <span class="math inline">\(p\)</span> (or <span class="math inline">\(d\)</span>).</p></li>
 <li><p>Thus, the complexity of our predictive model naturally scales with the amount of training data we have!</p></li>
 </ul>
-
-
 </section>
+</section>
+<section id="d-to-infty" class="level2">
+<h2 class="anchored" data-anchor-id="d-to-infty"><span class="math inline">\(d \to \infty\)</span></h2>
+<ul>
+<li><p>The above formula is valid for any <span class="math inline">\(d\)</span>, even if <span class="math inline">\(d \gg n\)</span>.</p></li>
+<li><p>What happens if we let <span class="math inline">\(d \to \infty\)</span>?</p></li>
+<li><p>Imagine that we made our basis expansions <strong>random</strong>, rather than fixed:</p>
+<p><span class="math display">\[\begin{align*}
+  \phi_{2j - 1} (X_i) = \frac{1}{\sqrt d} \cos(W_j X_i),
+  \quad
+  \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
+  \qquad
+  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1)
+\end{align*}\]</span></p>
+<p>i.e.&nbsp;we replace the fixed frequencies <span class="math inline">\(2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}\)</span> with random frequencies <span class="math inline">\(W_i\)</span> drawn from a standard normal distribution.</p></li>
+<li><p>Then our kernel function becomes:</p>
+<p><span class="math display">\[\begin{align*}
+k(x, x') &amp;= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right] \\
+\end{align*}\]</span></p></li>
+<li><p>For a fixed <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the summation terms <span class="math inline">\(\left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right]\)</span> are i.i.d. random variables.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>After fixing <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the only random quantity is <span class="math inline">\(W_j\)</span>. Since the <span class="math inline">\(W_j\)</span> are i.i.d., the summation terms are also i.i.d.</p>
+</details></li>
+<li><p>By the law of large numbers, as <span class="math inline">\(d \to \infty\)</span>, we have:</p>
+<p><span class="math display">\[\begin{align*}
+k(X, X') &amp;\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
+&amp;= e^{-\frac{1}{2} (X - X')^2}
+\end{align*}\]</span></p>
+<p>(Don’t worry about the details of how to compute this expectation; just trust me that it is true!)</p></li>
+</ul>
+<section id="infinitely-powerful-models-in-closed-form" class="level3">
+<h3 class="anchored" data-anchor-id="infinitely-powerful-models-in-closed-form">Infinitely Powerful Models in Closed Form</h3>
+<p>Let’s take a step back and think about what we’ve just done:</p>
+<ul>
+<li><p>We have a basis regressor, where we are including <strong>an infinite number of basis functions</strong>.</p></li>
+<li><p>The degrees of freedom is still bounded by <span class="math inline">\(n\)</span> (the number of training points), but can approach <span class="math inline">\(n\)</span> as <span class="math inline">\(\lambda \to 0\)</span>.</p></li>
+<li><p>Since we have infinitely many features, <span class="math inline">\(d &gt; n\)</span>, so the degrees of freedom (i.e.&nbsp;the complexity of our predictive model) will always increase as we add more training data. In other words, our model is <strong>nonparametric</strong>.</p></li>
+<li><p>However, we are able to compute predictions in <strong>closed form</strong>, using the kernel function <span class="math inline">\(k(X, X')\)</span>:</p>
+<p><span class="math display">\[\begin{gather*}
+\hat f_\infty(X) = \sum_{i=1}^n \alpha_i k(X, X_i)
+= \sum_{i=1}^n e^{-\frac{1}{2} (X - X_i)^2} \alpha_i,
+\\
+\begin{bmatrix} \alpha_1 \\ \vdots \\ \alpha_n \end{bmatrix}
+= \left( \begin{bmatrix}
+  e^{-\frac{1}{2} (X_1 - X_1)^2} &amp; \cdots &amp; e^{-\frac{1}{2} (X_1 - X_n)^2} \\
+  \vdots &amp; \ddots &amp; \vdots \\
+  e^{-\frac{1}{2} (X_n - X_1)^2} &amp; \cdots &amp; e^{-\frac{1}{2} (X_n - X_n)^2}
+\end{bmatrix} + \lambda \boldsymbol I \right)^{-1}
+\begin{bmatrix} Y_1 \\ \vdots \\ Y_n \end{bmatrix}
+\end{gather*}\]</span></p></li>
+<li><p>This last fact should blow your mind 🤯🤯🤯 and it may be hard to wrap your head around. That’s okay! This idea is one of the most powerful but confusing concepts in all of machine learning.</p></li>
+</ul>
+</section>
+<section id="kernel-functions-as-similarity-measures" class="level3">
+<h3 class="anchored" data-anchor-id="kernel-functions-as-similarity-measures">Kernel Functions as Similarity Measures</h3>
+<ul>
+<li><p>Recall that I said that non-parametric models often base predictions off of <strong>similarity to other points</strong>.</p></li>
+<li><p>We can see that clearly with this infinite-basis kernel:</p>
+<p><span class="math display">\[\begin{align*}
+\hat f_\infty(X) = \sum_{i=1}^n e^{-\frac{1}{2} (X - X_i)^2} \alpha_i
+\end{align*}\]</span></p></li>
+<li><p>If <span class="math inline">\(X\)</span> is close to a training point <span class="math inline">\(X_i\)</span>, then <span class="math inline">\(k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 1\)</span>.</p></li>
+<li><p>If <span class="math inline">\(X\)</span> is far from a training point <span class="math inline">\(X_i\)</span>, then <span class="math inline">\(k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 0\)</span>.</p></li>
+<li><p>Therefore, the prediction <span class="math inline">\(\hat f_\infty(X)\)</span> is mostly based off of the <span class="math inline">\(\alpha_i\)</span> coefficients of training points <span class="math inline">\(X_i\)</span> that are similar to <span class="math inline">\(X\)</span>.</p></li>
+</ul>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><p>Most of what we have studied so far are <strong>parametric models</strong>, where the complexity of the model is fixed and the predictive model is based on an explicit set of parameters (e.g., coefficients for each feature).</p></li>
+<li><p><strong>Non-parametric models</strong> are models where the complexity of the model grows with the amount of training data, and predictions are often based on similarity to other points.</p></li>
+<li><p>For ridge regression with <span class="math inline">\(d &gt; n\)</span> basis expansions, we can re-formulate the model in a <strong>non-parametric</strong> way, writing predictions as a weighted sum of kernel functions that measure similarity to training points.</p></li>
+<li><p>We can often even let <span class="math inline">\(d \to \infty\)</span>, resulting in a model with infinitely many basis functions, with a closed-form solution! (Other basis expansions similarly have closed-form solutions, but the kernel function will be different.)</p></li>
+<li><p>The degrees of freedom of these models is still bounded by <span class="math inline">\(n\)</span> (the number of training points), but can approach <span class="math inline">\(n\)</span> as <span class="math inline">\(\lambda \to 0\)</span>.</p></li>
+</ul>
+
+
 </section>
 
 </main> <!-- /main -->
