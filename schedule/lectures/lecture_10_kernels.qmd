@@ -16,12 +16,12 @@ By the end of this lecture, you should be able to:
 ## Overview of This Module
 
 - Last time: we hinted that degrees of freedom was bounded by $n$ (number of training data).
-- In this module, we will discuss predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) $n$, regardless of the number of features $p$
-- These models are called **non-parametric models**, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data
+- In this module, we will discuss a category of predictive models where the degrees of freedom is capable of approaching (but never equaling or exceeding) $n$.
+- These models are called **non-parametric models**, because the effective number of parameters (i.e., degrees of freedom) is not fixed, but rather grows with the amount of training data.
 
 ### Non-Parametric vs Parametric Models
 
-- As we will see, these models are often based predictions off of **similarity to other points**, rather than the **amount they express a particular feature**
+- As we will see, these models often base predictions off of **similarity to other points**, rather than the **amount they express a particular feature**
 - However, these two mechanisms for modelling are deeply intertwined.
 - Today, we will construct our non-parametric model by starting with a parametric model, and then taking the limit as the number of features $p \to \infty$.
 
@@ -52,12 +52,12 @@ By the end of this lecture, you should be able to:
   where $\boldsymbol \Phi \in \mathbb R^{n \times d}$ is the design matrix, with the $i^\mathrm{th}$ row given by:
 
   \begin{align*}
-    \boldsymbol \phi(x_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi x_i), \sin(2 \pi x_i), \ldots, \cos(2 \pi \frac{d}{2} x_i), \sin(2 \pi \frac{d}{2} x_i) \right]
+    \boldsymbol \phi(X_i) = \frac{1}{\sqrt d} \left[ \cos(2 \pi X_i), \sin(2 \pi X_i), \ldots, \cos(2 \pi \frac{d}{2} X_i), \sin(2 \pi \frac{d}{2} X_i) \right]
   \end{align*}
 
 - Note that this is the same as normal ridge regression, except that the entries of the design matrix are given by basis functions $\phi(x_i) \in \mathbb R^d$, rather than the original features $x_i \in \mathbb R$.
 
-- Note that $1 / \sqrt{d}$ normalization constant. It isn't necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!
+- Note the $1 / \sqrt{d}$ normalization constant. It isn't necessary (and basically just changes the scale of the basis features), but it will be useful in a bit!
 
 - I claim that we can also re-write the ridge regression solution in the following way,
 regardless of whether $d < n$ or $d > n$:
@@ -70,7 +70,7 @@ regardless of whether $d < n$ or $d > n$:
 
 We can verify this by starting with the right-hand side, and using the SVD of $\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V.$
 
-- For now, let's assume that $d > n$, so that $\boldsymbol \Phi$ has full column rank. Then,
+- For now, let's assume that $d > n$, so that $\boldsymbol \Phi$ has full row rank. Then,
 - $\boldsymbol U \in \mathbb R^{n \times n}$ is orthogonal,
 - $\boldsymbol D \in \mathbb R^{n \times n}$ is diagonal with positive entries, and
 - $\boldsymbol V \in \mathbb R^{d \times n}$ has orthonormal columns.
@@ -120,7 +120,7 @@ We have:
   \end{bmatrix} }_{:= \boldsymbol K} + \lambda \boldsymbol I \right)^{-1} \boldsymbol Y
   \end{align*}
 
-    - $\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top$ is the $n \times n$ matrix with entries $K_{ij} = k(X_i, X_j)$ (where $X_i, $X_j$ are training points),
+    - $\boldsymbol K = \boldsymbol \Phi \boldsymbol \Phi^\top$ is the $n \times n$ matrix with entries $K_{ij} = k(X_i, X_j)$ (where $X_i$, $X_j$ are training points),
     - $\boldsymbol k(X)$ is the $n \times 1$ vector with entries $k(X, X_i)$ (where $X$ is the test point, and the $X_i$ are training points).
 
 ### Kernel Ridge Regression
@@ -144,7 +144,7 @@ We have:
 
 - The coefficients $\alpha_i$ reflect how much each training point $X_i$ should influence predictions in general.
 
-- Again, this model is **exactly equivalent** to good old ridge regression (with a basis expansion). We can always go back to the stanard ridge formulation we learned in Lecture 6. However, we now have a nice **non-parametric** variant.
+- Again, this model is **exactly equivalent** to good old ridge regression (with a basis expansion). We can always go back to the standard ridge formulation we learned in Lecture 6. However, we now have a nice **non-parametric** variant.
 
 ### Degrees of Freedom of Kernel Ridge Regression
 
@@ -171,3 +171,105 @@ We have:
 - Compare this scenario to regression with $p < n$ covariates (or $d < n$ basis functions), where the degrees of freedom stays fixed with $p$ (or $d$).
 
 - Thus, the complexity of our predictive model naturally scales with the amount of training data we have!
+
+
+## $d \to \infty$
+
+- The above formula is valid for any $d$, even if $d \gg n$.
+
+- What happens if we let $d \to \infty$?
+
+- Imagine that we made our basis expansions **random**, rather than fixed:
+
+  \begin{align*}
+    \phi_{2j - 1} (X_i) = \frac{1}{\sqrt d} \cos(W_j X_i),
+    \quad
+    \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
+    \qquad
+    W_j \sim \text{i.i.d. } \mathcal{N}(0, 1)
+  \end{align*}
+
+  i.e. we replace the fixed frequencies $2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}$ with random frequencies $W_i$ drawn from a standard normal distribution.
+
+- Then our kernel function becomes:
+
+  \begin{align*}
+  k(x, x') &= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right] \\
+  \end{align*}
+
+- For a fixed $x$ and $x'$, the summation terms $\left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right]$ are i.i.d. random variables.
+
+  <details>
+  <summary>Why?</summary>
+  After fixing $x$ and $x'$, the only random quantity is $W_j$. Since the $W_j$ are i.i.d., the summation terms are also i.i.d.
+  </details>
+
+- By the law of large numbers, as $d \to \infty$, we have:
+
+  \begin{align*}
+  k(X, X') &\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
+  &= e^{-\frac{1}{2} (X - X')^2}
+  \end{align*}
+
+  (Don't worry about the details of how to compute this expectation; just trust me that it is true!)
+
+
+### Infinitely Powerful Models in Closed Form
+
+Let's take a step back and think about what we've just done:
+
+- We have a basis regressor, where we are including **an infinite number of basis functions**.
+
+- The degrees of freedom is still bounded by $n$ (the number of training points), but can approach $n$ as $\lambda \to 0$.
+
+- Since we have infinitely many features, $d > n$, so the degrees of freedom (i.e. the complexity of our predictive model) will always increase as we add more training data. In other words, our model is **nonparametric**.
+
+- However, we are able to compute predictions in **closed form**, using the kernel function $k(X, X')$:
+
+  \begin{gather*}
+  \hat f_\infty(X) = \sum_{i=1}^n \alpha_i k(X, X_i)
+  = \sum_{i=1}^n e^{-\frac{1}{2} (X - X_i)^2} \alpha_i,
+  \\
+  \begin{bmatrix} \alpha_1 \\ \vdots \\ \alpha_n \end{bmatrix}
+  = \left( \begin{bmatrix}
+    e^{-\frac{1}{2} (X_1 - X_1)^2} & \cdots & e^{-\frac{1}{2} (X_1 - X_n)^2} \\
+    \vdots & \ddots & \vdots \\
+    e^{-\frac{1}{2} (X_n - X_1)^2} & \cdots & e^{-\frac{1}{2} (X_n - X_n)^2}
+  \end{bmatrix} + \lambda \boldsymbol I \right)^{-1}
+  \begin{bmatrix} Y_1 \\ \vdots \\ Y_n \end{bmatrix}
+  \end{gather*}
+
+- This last fact should blow your mind 🤯🤯🤯 and it may be hard to wrap your head around. That's okay!
+  This idea is one of the most powerful but confusing concepts in all of machine learning.
+
+
+### Kernel Functions as Similarity Measures
+
+- Recall that I said that non-parametric models often base predictions off of **similarity to other points**.
+- We can see that clearly with this infinite-basis kernel:
+
+  \begin{align*}
+  \hat f_\infty(X) = \sum_{i=1}^n e^{-\frac{1}{2} (X - X_i)^2} \alpha_i
+  \end{align*}
+
+- If $X$ is close to a training point $X_i$, then $k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 1$.
+
+- If $X$ is far from a training point $X_i$, then $k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 0$.
+
+- Therefore, the prediction $\hat f_\infty(X)$ is mostly based off of the $\alpha_i$ coefficients of training points $X_i$ that are similar to $X$.
+
+
+
+## Summary
+
+- Most of what we have studied so far are **parametric models**, where the complexity of the model is fixed and the predictive model is based on an explicit set of parameters (e.g., coefficients for each feature).
+
+- **Non-parametric models** are models where the complexity of the model grows with the amount of training data, and predictions are often based on similarity to other points.
+
+- For ridge regression with $d > n$ basis expansions, we can re-formulate the model in a **non-parametric** way, writing predictions as a weighted sum of
+  kernel functions that measure similarity to training points.
+
+- We can often even let $d \to \infty$, resulting in a model with infinitely many basis functions, with a closed-form solution!
+  (Other basis expansions similarly have closed-form solutions, but the kernel function will be different.)
+
+- The degrees of freedom of these models is still bounded by $n$ (the number of training points), but can approach $n$ as $\lambda \to 0$.
