@@ -114,68 +114,7 @@ So far we have discussed two modelling choices to reduce variance in linear regr
 
 - Any of these norms could be used as a regularization penalty in linear regression (though some may yield hard-to-solve optimization problems).
 
-```{r plotting-functions}
-#| code-fold: true
-#| fig-width: 16
-#| fig-height: 8
-library(mvtnorm)
-library(tidyverse)
-normBall <- function(q = 1, len = 1000) {
-  tg <- seq(0, 2 * pi, length = len)
-  out <- data.frame(x = cos(tg)) |>
-    mutate(b = (1 - abs(x)^q)^(1 / q), bm = -b) |>
-    gather(key = "lab", value = "y", -x)
-  out$lab <- paste0('"||" * beta * "||"', "[", signif(q, 2), "]")
-  return(out)
-}
-
-ellipseData <- function(n = 100, xlim = c(-2, 3), ylim = c(-2, 3),
-                        mean = c(1, 1), Sigma = matrix(c(1, 0, 0, .5), 2)) {
-  df <- expand.grid(
-    x = seq(xlim[1], xlim[2], length.out = n),
-    y = seq(ylim[1], ylim[2], length.out = n)
-  )
-  df$z <- dmvnorm(df, mean, Sigma)
-  df
-}
-
-lballmax <- function(ed, q = 1, tol = 1e-6) {
-  ed <- filter(ed, x > 0, y > 0)
-  for (i in 1:20) {
-    ff <- abs((ed$x^q + ed$y^q)^(1 / q) - 1) < tol
-    if (sum(ff) > 0) break
-    tol <- 2 * tol
-  }
-  best <- ed[ff, ]
-  best[which.max(best$z), ]
-}
-
-nbs <- list()
-nbs[[1]] <- normBall(0, 1)
-qs <- c(.5, 1, 1.5, 2, 20)
-for (ii in 2:6) nbs[[ii]] <- normBall(qs[ii - 1])
-nbs[[1]]$lab <- paste0('"||" * beta * "||"', "[0.0]")
-nbs[[4]]$lab <- paste0('"||" * beta * "||"', "[1.0]")
-nbs <- bind_rows(nbs)
-nbs$lab <- factor(nbs$lab, levels = unique(nbs$lab))
-seg <- data.frame(
-  lab = levels(nbs$lab)[1],
-  x0 = c(-1, 0), x1 = c(1, 0), y0 = c(0, -1), y1 = c(0, 1)
-)
-levels(seg$lab) <- levels(nbs$lab)
-ggplot(nbs, aes(x, y)) +
-  geom_path(size = 1.2) +
-  facet_grid(.~lab, labeller = label_parsed) +
-  geom_segment(data = seg, aes(x = x0, xend = x1, y = y0, yend = y1), size = 1.2) +
-  theme_bw(base_family = "", base_size = 24) +
-  coord_equal() +
-  scale_x_continuous(breaks = c(-1, 0, 1)) +
-  scale_y_continuous(breaks = c(-1, 0, 1)) +
-  geom_vline(xintercept = 0, size = .5) +
-  geom_hline(yintercept = 0, size = .5) +
-  xlab(bquote(beta[1])) +
-  ylab(bquote(beta[2]))
-```
+![Illustration of unit norm balls for various values of p.](../figures/norm_balls.svg)
 
 
 ### Important Special Cases
