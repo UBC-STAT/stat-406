@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-10-11">
+<meta name="dcterms.date" content="2025-10-13">
 
 <title>Lecture 7: LASSO Regression – UBC Stat406 2025 W1</title>
 <style>
@@ -243,7 +243,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 11, 2025</p>
+      <p class="date">October 13, 2025</p>
     </div>
   </div>
   
@@ -383,74 +383,11 @@ window.Quarto = {
 <li><p>Below is a plot of values of the constraint <span class="math inline">\(\Vert \beta \Vert_p = 1\)</span> for various values of <span class="math inline">\(p\)</span>:</p></li>
 <li><p>Any of these norms could be used as a regularization penalty in linear regression (though some may yield hard-to-solve optimization problems).</p></li>
 </ul>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>normBall <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">q =</span> <span class="dv">1</span>, <span class="at">len =</span> <span class="dv">1000</span>) {</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  tg <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length =</span> len)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">cos</span>(tg)) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">b =</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">abs</span>(x)<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q), <span class="at">bm =</span> <span class="sc">-</span>b) <span class="sc">|&gt;</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gather</span>(<span class="at">key =</span> <span class="st">"lab"</span>, <span class="at">value =</span> <span class="st">"y"</span>, <span class="sc">-</span>x)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  out<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"["</span>, <span class="fu">signif</span>(q, <span class="dv">2</span>), <span class="st">"]"</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ellipseData <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">3</span>),</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                        <span class="at">mean =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>), <span class="at">Sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, .<span class="dv">5</span>), <span class="dv">2</span>)) {</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">seq</span>(xlim[<span class="dv">1</span>], xlim[<span class="dv">2</span>], <span class="at">length.out =</span> n),</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">seq</span>(ylim[<span class="dv">1</span>], ylim[<span class="dv">2</span>], <span class="at">length.out =</span> n)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>z <span class="ot">&lt;-</span> <span class="fu">dmvnorm</span>(df, mean, Sigma)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  df</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>lballmax <span class="ot">&lt;-</span> <span class="cf">function</span>(ed, <span class="at">q =</span> <span class="dv">1</span>, <span class="at">tol =</span> <span class="fl">1e-6</span>) {</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  ed <span class="ot">&lt;-</span> <span class="fu">filter</span>(ed, x <span class="sc">&gt;</span> <span class="dv">0</span>, y <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>) {</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    ff <span class="ot">&lt;-</span> <span class="fu">abs</span>((ed<span class="sc">$</span>x<span class="sc">^</span>q <span class="sc">+</span> ed<span class="sc">$</span>y<span class="sc">^</span>q)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> q) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;</span> tol</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">sum</span>(ff) <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="cf">break</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    tol <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> tol</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  best <span class="ot">&lt;-</span> ed[ff, ]</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  best[<span class="fu">which.max</span>(best<span class="sc">$</span>z), ]</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>nbs <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>qs <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">5</span>, <span class="dv">1</span>, <span class="fl">1.5</span>, <span class="dv">2</span>, <span class="dv">20</span>)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (ii <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">6</span>) nbs[[ii]] <span class="ot">&lt;-</span> <span class="fu">normBall</span>(qs[ii <span class="sc">-</span> <span class="dv">1</span>])</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">1</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[0.0]"</span>)</span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>nbs[[<span class="dv">4</span>]]<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">'"||" * beta * "||"'</span>, <span class="st">"[1.0]"</span>)</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>nbs <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(nbs)</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>nbs<span class="sc">$</span>lab <span class="ot">&lt;-</span> <span class="fu">factor</span>(nbs<span class="sc">$</span>lab, <span class="at">levels =</span> <span class="fu">unique</span>(nbs<span class="sc">$</span>lab))</span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>seg <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">lab =</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)[<span class="dv">1</span>],</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">x0 =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>), <span class="at">x1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>), <span class="at">y0 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">y1 =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(seg<span class="sc">$</span>lab) <span class="ot">&lt;-</span> <span class="fu">levels</span>(nbs<span class="sc">$</span>lab)</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nbs, <span class="fu">aes</span>(x, y)) <span class="sc">+</span></span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(.<span class="sc">~</span>lab, <span class="at">labeller =</span> label_parsed) <span class="sc">+</span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> seg, <span class="fu">aes</span>(<span class="at">x =</span> x0, <span class="at">xend =</span> x1, <span class="at">y =</span> y0, <span class="at">yend =</span> y1), <span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_family =</span> <span class="st">""</span>, <span class="at">base_size =</span> <span class="dv">24</span>) <span class="sc">+</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">size =</span> .<span class="dv">5</span>) <span class="sc">+</span></span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="fu">bquote</span>(beta[<span class="dv">1</span>])) <span class="sc">+</span></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">bquote</span>(beta[<span class="dv">2</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="lecture_07_lasso_files/figure-html/plotting-functions-1.png" class="img-fluid figure-img" width="1536"></p>
+<p><img src="../figures/norm_balls.svg" class="img-fluid figure-img"></p>
+<figcaption>Illustration of unit norm balls for various values of p.</figcaption>
 </figure>
-</div>
-</div>
 </div>
 <section id="important-special-cases" class="level3">
 <h3 class="anchored" data-anchor-id="important-special-cases">Important Special Cases</h3>
@@ -473,12 +410,12 @@ window.Quarto = {
 </ul></li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa) <span class="sc">|&gt;</span>  <span class="fu">as.matrix</span>()</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y) <span class="co"># alpha = 1 by default</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> prostate <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>train, <span class="sc">-</span>lpsa) <span class="sc">|&gt;</span>  <span class="fu">as.matrix</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>Y <span class="ot">&lt;-</span> prostate<span class="sc">$</span>lpsa</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y) <span class="co"># alpha = 1 by default</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ridge <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ul>
 <li>Now let’s plot the CV curves and coefficient paths for both ridge and LASSO as functions of their regularization parameter <span class="math inline">\(\lambda\)</span>.</li>
@@ -486,22 +423,22 @@ window.Quarto = {
 <li>(The <span class="math inline">\(\lambda\)</span> values also don’t have any intrinsic meaning. Larger values imply more regularization, but a <span class="math inline">\(\lambda = 4.7\)</span> means nothing in isolation.)</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get y-axis range for consistent scaling</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ridge_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(ridge<span class="sc">$</span>cvm <span class="sc">-</span> ridge<span class="sc">$</span>cvsd, ridge<span class="sc">$</span>cvm <span class="sc">+</span> ridge<span class="sc">$</span>cvsd))</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>lasso_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(lasso<span class="sc">$</span>cvm <span class="sc">-</span> lasso<span class="sc">$</span>cvsd, lasso<span class="sc">$</span>cvm <span class="sc">+</span> lasso<span class="sc">$</span>cvsd))</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>ylim_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_mse, lasso_mse)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"LASSO CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get coefficient range for consistent scaling</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>ridge_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>lasso_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(lasso<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>coef_ylim <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_coef_range, lasso_coef_range)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"Ridge Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"LASSO Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Get y-axis range for consistent scaling</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ridge_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(ridge<span class="sc">$</span>cvm <span class="sc">-</span> ridge<span class="sc">$</span>cvsd, ridge<span class="sc">$</span>cvm <span class="sc">+</span> ridge<span class="sc">$</span>cvsd))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lasso_mse <span class="ot">&lt;-</span> <span class="fu">range</span>(<span class="fu">c</span>(lasso<span class="sc">$</span>cvm <span class="sc">-</span> lasso<span class="sc">$</span>cvsd, lasso<span class="sc">$</span>cvm <span class="sc">+</span> lasso<span class="sc">$</span>cvsd))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>ylim_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_mse, lasso_mse)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge, <span class="at">main =</span> <span class="st">"Ridge CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso, <span class="at">main =</span> <span class="st">"LASSO CV"</span>, <span class="at">ylim =</span> ylim_range)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get coefficient range for consistent scaling</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>ridge_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>lasso_coef_range <span class="ot">&lt;-</span> <span class="fu">range</span>(lasso<span class="sc">$</span>glmnet.fit<span class="sc">$</span>beta)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>coef_ylim <span class="ot">&lt;-</span> <span class="fu">range</span>(ridge_coef_range, lasso_coef_range)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ridge<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"Ridge Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(lasso<span class="sc">$</span>glmnet.fit, <span class="at">main =</span> <span class="st">"LASSO Coeffs."</span>, <span class="at">xvar =</span> <span class="st">"lambda"</span>, <span class="at">ylim =</span> coef_ylim)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

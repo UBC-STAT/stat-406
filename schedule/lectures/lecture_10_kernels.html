@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-10-11">
+<meta name="dcterms.date" content="2025-10-13">
 
 <title>Lecture 10: Kernel Machines – UBC Stat406 2025 W1</title>
 <style>
@@ -206,7 +206,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 11, 2025</p>
+      <p class="date">October 13, 2025</p>
     </div>
   </div>
   
@@ -397,9 +397,9 @@ k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
   \quad
   \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
   \qquad
-  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1)
+  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2)
 \end{align*}\]</span></p>
-<p>i.e.&nbsp;we replace the fixed frequencies <span class="math inline">\(2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}\)</span> with random frequencies <span class="math inline">\(W_i\)</span> drawn from a standard normal distribution.</p></li>
+<p>i.e.&nbsp;we replace the fixed frequencies <span class="math inline">\(2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}\)</span> with random frequencies <span class="math inline">\(W_i\)</span> drawn from <span class="math inline">\(\mathcal{N}(0, 1/\gamma^2)\)</span>.</p></li>
 <li><p>Then our kernel function becomes:</p>
 <p><span class="math display">\[\begin{align*}
 k(x, x') &amp;= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right] \\
@@ -414,7 +414,7 @@ k(x, x') &amp;= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \
 <li><p>By the law of large numbers, as <span class="math inline">\(d \to \infty\)</span>, we have:</p>
 <p><span class="math display">\[\begin{align*}
 k(X, X') &amp;\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
-&amp;= e^{-\frac{1}{2} (X - X')^2}
+&amp;= e^{-\frac{1}{2 \gamma^2} (X - X')^2}
 \end{align*}\]</span></p>
 <p>(Don’t worry about the details of how to compute this expectation; just trust me that it is true!)</p></li>
 </ul>
@@ -451,6 +451,7 @@ k(X, X') &amp;\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x'
 \end{align*}\]</span></p></li>
 <li><p>If <span class="math inline">\(X\)</span> is close to a training point <span class="math inline">\(X_i\)</span>, then <span class="math inline">\(k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 1\)</span>.</p></li>
 <li><p>If <span class="math inline">\(X\)</span> is far from a training point <span class="math inline">\(X_i\)</span>, then <span class="math inline">\(k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 0\)</span>.</p></li>
+<li><p>The hyperparameter <span class="math inline">\(\gamma\)</span>, known as the <strong>bandwidth</strong>, controls how quickly similarity decays with distance.</p></li>
 <li><p>Therefore, the prediction <span class="math inline">\(\hat f_\infty(X)\)</span> is mostly based off of the <span class="math inline">\(\alpha_i\)</span> coefficients of training points <span class="math inline">\(X_i\)</span> that are similar to <span class="math inline">\(X\)</span>.</p></li>
 </ul>
 </section>

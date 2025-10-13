@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-10-13">
+
+<title>Lecture 11: k-Nearest Neighbours, Curse of Dimensionality – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a>
+  <ul class="collapse">
+  <li><a href="#the-best-possible-model" id="toc-the-best-possible-model" class="nav-link" data-scroll-target="#the-best-possible-model">The Best Possible Model?</a></li>
+  <li><a href="#the-drawback" id="toc-the-drawback" class="nav-link" data-scroll-target="#the-drawback">The Drawback</a></li>
+  </ul></li>
+  <li><a href="#our-second-nonparametric-model-k-nearest-neighbours" id="toc-our-second-nonparametric-model-k-nearest-neighbours" class="nav-link" data-scroll-target="#our-second-nonparametric-model-k-nearest-neighbours">Our Second Nonparametric Model: k-Nearest Neighbours</a>
+  <ul class="collapse">
+  <li><a href="#bias-and-variance-as-a-function-of-k" id="toc-bias-and-variance-as-a-function-of-k" class="nav-link" data-scroll-target="#bias-and-variance-as-a-function-of-k">Bias and Variance as a Function of k</a></li>
+  <li><a href="#degrees-of-freedom-of-knn" id="toc-degrees-of-freedom-of-knn" class="nav-link" data-scroll-target="#degrees-of-freedom-of-knn">Degrees of Freedom of kNN</a></li>
+  </ul></li>
+  <li><a href="#the-curse-of-dimensionality" id="toc-the-curse-of-dimensionality" class="nav-link" data-scroll-target="#the-curse-of-dimensionality">The Curse of Dimensionality</a>
+  <ul class="collapse">
+  <li><a href="#euclidean-distance-breaks-down-in-high-dimensions" id="toc-euclidean-distance-breaks-down-in-high-dimensions" class="nav-link" data-scroll-target="#euclidean-distance-breaks-down-in-high-dimensions">Euclidean Distance Breaks Down in High Dimensions</a></li>
+  </ul></li>
+  <li><a href="#how-to-overcome-this-curse-of-dimensionality" id="toc-how-to-overcome-this-curse-of-dimensionality" class="nav-link" data-scroll-target="#how-to-overcome-this-curse-of-dimensionality">How to Overcome this Curse of Dimensionality</a>
+  <ul class="collapse">
+  <li><a href="#in-practice" id="toc-in-practice" class="nav-link" data-scroll-target="#in-practice">In Practice</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_11_curse_of_dimensionality.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_11_curse_of_dimensionality.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 11: k-Nearest Neighbours, Curse of Dimensionality</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 13, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Implement k-nearest neighbours/kernel smoothing for regression and classification</li>
+<li>Analyze the bias-variance tradeoff as a function of k/bandwidth</li>
+<li>Estimate the degrees of freedom for kNN/kernel smoothed models</li>
+<li>Derive how prediction error scales with dimensionality for basis expansions, kNN, and kernel smoothing</li>
+<li>Compare the dimensional scaling of parametric vs nonparametric methods</li>
+</ol>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li><p>In the last lecture, we considered ridge regression with <span class="math inline">\(d &gt; n\)</span> basis expansions.</p></li>
+<li><p>When we took ridge regression with Fourier bases to the limit, we ended up with the following predictor:</p>
+<p><span class="math display">\[
+\hat{f}(X) = \sum_{i=1}^n \alpha_i K(X, X_i)
+\]</span></p>
+<ul>
+<li><span class="math inline">\(K(X, X_i) = \exp\left( -\tfrac{1}{2 \gamma^2} \Vert X - X_i \Vert_2^2 \right)\)</span> is a kernel function that measures similarity between <span class="math inline">\(X\)</span> and <span class="math inline">\(X_i\)</span>.</li>
+<li><span class="math inline">\(\gamma\)</span>, the bandwidth, is a hyperparameter that can be tuned with cross validation.</li>
+<li>The coefficients <span class="math inline">\(\alpha_i\)</span> can be computed in closed form, and depend on the ridge penalty <span class="math inline">\(\lambda\)</span>.</li>
+</ul></li>
+<li><p>This <strong>nonparametric model</strong> has two notable properties:</p>
+<ol type="1">
+<li><p>It defines its predictions through similarity between training points (rather than a fixed set of parameters <span class="math inline">\(\beta\)</span>)</p></li>
+<li><p>Its degrees of freedom scales with <span class="math inline">\(n\)</span> (the number of training points) rather than being fixed at <span class="math inline">\(p\)</span> (the number of covariates).</p></li>
+</ol></li>
+</ul>
+<section id="the-best-possible-model" class="level3">
+<h3 class="anchored" data-anchor-id="the-best-possible-model">The Best Possible Model?</h3>
+<p>There are many advantages of this nonparametric model:</p>
+<ol type="1">
+<li><p>It is <strong>infinitely powerful.</strong> Recall that an infinite Fourier series can represent (almost) any function, so this predictive model can represent almost any <span class="math inline">\(\mathbb E[Y|X]\)</span>. (In contrast, linear regression can only represent linear <span class="math inline">\(\mathbb E[Y|X]\)</span>, polynomial regression with <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomials can only represent <span class="math inline">\(\mathbb E[Y|X]\)</span> that are polynomials of degree <span class="math inline">\(d\)</span>, etc.)</p></li>
+<li><p>It is <strong>simple.</strong> Amazingly, we can write this complex model in a single line of math, and we can even derive the <span class="math inline">\(\alpha_i\)</span> coefficients in closed form.</p></li>
+<li><p>We can <strong>control its variance.</strong> Even though the model is infinitely powerful, with a large enough ridge penalty <span class="math inline">\(\lambda\)</span> we can construct a model that balances bias and variance well.</p></li>
+</ol>
+<p>So why would we ever consider using anything else? Why would a linear model ever be preferable to this?</p>
+</section>
+<section id="the-drawback" class="level3">
+<h3 class="anchored" data-anchor-id="the-drawback">The Drawback</h3>
+<ul>
+<li>While this model is extremely powerful (and often very useful), it suffers from a phenomenon known as the <strong>curse of dimensionality</strong>.</li>
+<li>Briefly, this model (potentially) becomes exponentially less effective as we increase the number of covariates <span class="math inline">\(p\)</span>.</li>
+<li>To understand this phenomenon, we will consider a related nonparametric model known as <strong>k-nearest neighbours</strong> (kNN) which will be easier to analyze.</li>
+</ul>
+</section>
+</section>
+<section id="our-second-nonparametric-model-k-nearest-neighbours" class="level2">
+<h2 class="anchored" data-anchor-id="our-second-nonparametric-model-k-nearest-neighbours">Our Second Nonparametric Model: k-Nearest Neighbours</h2>
+<ul>
+<li><p>If we analyze our kernel function:</p>
+<p><span class="math display">\[
+K(X, X_i) = \exp\left( -\tfrac{1}{2 \gamma^2} \Vert X - X_i \Vert_2^2 \right),
+\]</span></p>
+<p>we see that it is largest when <span class="math inline">\(X\)</span> is close to <span class="math inline">\(X_i\)</span>, and decays to zero as <span class="math inline">\(X\)</span> moves away from <span class="math inline">\(X_i\)</span>.</p></li>
+<li><p>It is likely that this kernel function will be <span class="math inline">\(\approx 1\)</span> for only a few training points <span class="math inline">\(X_i\)</span> that are close to <span class="math inline">\(X\)</span>, and <span class="math inline">\(\approx 0\)</span> for most other training points.</p></li>
+<li><p>Therefore, what if we make the following approximation to the kernel function:</p>
+<p><span class="math display">\[
+K(X, X_i) \approx \begin{cases}
+1 &amp; \text{if } X_i \text{ is one of the $k$ nearest neighbours of } X \\
+0 &amp; \text{otherwise}
+\end{cases}
+\]</span></p>
+<p>where the <strong>nearest neighbours</strong> of <span class="math inline">\(X\)</span> are the <span class="math inline">\(k\)</span> training points <span class="math inline">\(X_i\)</span> that are closest to <span class="math inline">\(X\)</span> in Euclidean distance.</p>
+<ul>
+<li><p>Here, <span class="math inline">\(k\)</span> (the number of nearest neighbours) is a hyperparameter that we will touch upon in a second.</p></li>
+<li><p>This plot depicts the <strong>k-nearest neighbours</strong> (kNN) function with <span class="math inline">\(k=3\)</span>. The red points are the 3 nearest training <span class="math inline">\(X_i\)</span>s of <span class="math inline">\(X = 85\)</span> (the red vertical line).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(arcuate, <span class="at">package =</span> <span class="st">"Stat406"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406406</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>arcuate_unif <span class="ot">&lt;-</span> arcuate <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(position)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>test_position <span class="ot">&lt;-</span> <span class="dv">85</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>nn <span class="ot">&lt;-</span>  <span class="dv">3</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>seq_range <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">n =</span> <span class="dv">101</span>) <span class="fu">seq</span>(<span class="fu">min</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">max</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">length.out =</span> n)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>neibs <span class="ot">&lt;-</span> <span class="fu">sort.int</span>(<span class="fu">abs</span>(arcuate_unif<span class="sc">$</span>position <span class="sc">-</span> test_position), <span class="at">index.return =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>ix[<span class="dv">1</span><span class="sc">:</span>nn]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>arcuate_unif<span class="sc">$</span>neighbours <span class="ot">=</span> <span class="fu">seq_len</span>(<span class="dv">40</span>) <span class="sc">%in%</span> neibs</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa, <span class="at">colour =</span> neighbours)) <span class="sc">+</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"red"</span>)) <span class="sc">+</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> test_position, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"rect"</span>, <span class="at">fill =</span> <span class="st">"red"</span>, <span class="at">alpha =</span> .<span class="dv">25</span>, <span class="at">ymin =</span> <span class="sc">-</span><span class="cn">Inf</span>, <span class="at">ymax =</span> <span class="cn">Inf</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>          <span class="at">xmin =</span> <span class="fu">min</span>(arcuate_unif<span class="sc">$</span>position[neibs]),</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>          <span class="at">xmax =</span> <span class="fu">max</span>(arcuate_unif<span class="sc">$</span>position[neibs])</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_11_curse_of_dimensionality_files/figure-html/plot-knn-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ul></li>
+<li><p>We could now approximate the <span class="math inline">\(\alpha_i\)</span> coefficients with an equal weighting of the responses of the <span class="math inline">\(k\)</span> nearest neighbours:</p>
+<p><span class="math display">\[
+\alpha_i \approx \begin{cases}
+\frac{1}{k} Y_i &amp; \text{if } X_i \text{ is one of the $k$ nearest neighbours of } X \\
+0 &amp; \text{otherwise}
+\end{cases}
+\]</span></p></li>
+<li><p>The result is the following <strong>k-nearest neighbours (kNN) predictor</strong>:</p>
+<p><span class="math display">\[
+\hat{f}_\mathcal{D}(X) = \frac{1}{k} \sum_{i \in N_k(X)} Y_i,
+\qquad \frac{1}{k} \sum_{i \in N_k(X)} Y_i \approx \sum_{i=1}^n \alpha_i K(X, X_i)
+\]</span></p>
+<p>where <span class="math inline">\(N_k(X)\)</span> is the set of indices of the <span class="math inline">\(k\)</span> nearest neighbours of <span class="math inline">\(X\)</span>.</p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="kNN is a Common Method">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>kNN is a Common Method
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While we have derived kNN as an approximation to kernel ridge regression, it is a very well-used method in practice. (It is arguably the most common nonparametric method, and used in practice more than kernel ridge regression.)</p>
+</div>
+</div>
+<section id="bias-and-variance-as-a-function-of-k" class="level3">
+<h3 class="anchored" data-anchor-id="bias-and-variance-as-a-function-of-k">Bias and Variance as a Function of k</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plot_knn <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>          arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>          <span class="at">k =</span> k</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        )<span class="sc">$</span>pred</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">colour =</span> <span class="st">"orange"</span>, <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"k ="</span>, k))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">1</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">5</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="fu">length</span>(arcuate_unif<span class="sc">$</span>position))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_11_curse_of_dimensionality_files/figure-html/knn-changing-k-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>The above plots show the kNN regression function for different values of <span class="math inline">\(k\)</span>.</li>
+<li><span class="math inline">\(k=1\)</span> and <span class="math inline">\(k=40\)</span> are poor fits and have high risk, while <span class="math inline">\(k=5\)</span> is likely a good predictor.</li>
+<li>When <span class="math inline">\(k\)</span> is too large or too small, we are not balancing bias and variance well. But which extreme are we in?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="(Intuitive) Bias-Variance Tradeoff for kNN">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>(Intuitive) Bias-Variance Tradeoff for kNN
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>As <span class="math inline">\(k \to 1\)</span>, our prediction at a point <span class="math inline">\(X\)</span> depends only on a single training point <span class="math inline">\((X_i, Y_i)\)</span>, so it is very dependent on our <em>specific training sample</em>.</li>
+<li>As <span class="math inline">\(k \to \infty\)</span>, all of our training points are used to make predictions at any point <span class="math inline">\(X\)</span>. <span class="math inline">\(\hat{f}_\mathcal{D}(X) \to \frac{1}{n} \sum_{i=1}^n Y_i\)</span> becomes the sample mean of the <span class="math inline">\(Y_i\)</span>, which is not going to be a good estimate of <span class="math inline">\(\mathbb E[Y|X]\)</span> regardless of our specific training sample.</li>
+<li>Thus, <strong>small <span class="math inline">\(k\)</span> leads to high variance, while large <span class="math inline">\(k\)</span> leads to high bias.</strong></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="degrees-of-freedom-of-knn" class="level3">
+<h3 class="anchored" data-anchor-id="degrees-of-freedom-of-knn">Degrees of Freedom of kNN</h3>
+<ul>
+<li><p>Another way we can analyze the bias-variance tradeoff of kNN is through its degrees of freedom.</p></li>
+<li><p>First, we note that the predictions on the training data <span class="math inline">\(\hat{\boldsymbol Y} = [ \hat Y_1, \ldots, \hat Y_n ]^\top\)</span> can be written in matrix form as:</p>
+<p><span class="math display">\[
+\hat{\boldsymbol Y} = \underbrace{\boldsymbol H}_{n \times n} \underbrace{\boldsymbol Y}_{n \times 1},
+\qquad
+H_{ij} = \begin{cases}
+\frac{1}{k} &amp; \text{if } X_j \text{ is one of the $k$ nearest neighbours of } X_i \\
+0 &amp; \text{otherwise}
+\end{cases}
+\]</span></p></li>
+<li><p>For predictive models that can be written in this form, recall that the degrees of freedom is given by:</p>
+<p><span class="math display">\[
+\mathrm{df}_\mathrm{kNN} = \mathrm{trace}(\boldsymbol H) = \sum_{i=1}^n H_{ii}
+\]</span></p></li>
+<li><p>Finally, noting that <span class="math inline">\(X_i\)</span> is always a nearest neighbour of itself, we have <span class="math inline">\(H_{ii} = \frac{1}{k}\)</span> for all <span class="math inline">\(i\)</span>, and thus:</p>
+<p><span class="math display">\[
+\mathrm{df}_\mathrm{kNN} = \sum_{i=1}^n H_{ii} = \sum_{i=1}^n \frac{1}{k} = \frac{n}{k}
+\]</span></p></li>
+<li><p>Increasing <span class="math inline">\(k\)</span> leads to fewer degrees of freedom (i.e.&nbsp;a less flexible model, lower variance, etc.), but note that <span class="math inline">\(\mathrm{df} = O(n)\)</span> for any fixed <span class="math inline">\(k\)</span>.</p></li>
+<li><p>Thus, kNN is <strong>non-parametric</strong> because its flexibility increases with the amount of training data.</p></li>
+</ul>
+</section>
+</section>
+<section id="the-curse-of-dimensionality" class="level2">
+<h2 class="anchored" data-anchor-id="the-curse-of-dimensionality">The Curse of Dimensionality</h2>
+<p>Now, onto the bad stuff.</p>
+<ul>
+<li><p>With kNN as our easy-to-analyze nonparametric model, we can now analyze how its performance scales with the number of covariates <span class="math inline">\(p\)</span>.</p></li>
+<li><p>For kNN (or nonparametric models in general) to perform well, <span class="math inline">\(X\)</span> needs to have “similar enough” training points <span class="math inline">\(X_i\)</span> nearby.</p></li>
+<li><p>However, as the number of covariates <span class="math inline">\(p\)</span> increases, Euclidean distance breaks down as a meaningful measure of similarity, making it unlikely that <span class="math inline">\(X\)</span>’s nearest neighbours are actually similar.</p></li>
+</ul>
+<section id="euclidean-distance-breaks-down-in-high-dimensions" class="level3">
+<h3 class="anchored" data-anchor-id="euclidean-distance-breaks-down-in-high-dimensions">Euclidean Distance Breaks Down in High Dimensions</h3>
+<p>To understand why distance breaks down in high dimensions, consider the following thought experiment:</p>
+<ul>
+<li>Suppose we have <span class="math inline">\(x_1, x_2, \ldots, x_n\)</span> training points distributed <em>uniformly</em> within a <span class="math inline">\(p\)</span>-dimensional ball of radius 1.</li>
+<li>For a test point <span class="math inline">\(x\)</span> at the center of the ball, consider its <span class="math inline">\(k = n/10\)</span> nearest neighbours.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_11_curse_of_dimensionality_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>The red points are the <span class="math inline">\(n/10\)</span> nearest neighbours of <span class="math inline">\(x\)</span> (the black point at the center), which are all contained within the inner dotted circle.</li>
+<li>The inner circle is a lot smaller than the outer circle, but this <span class="math inline">\(2D\)</span> plot gives the wrong intuition for higher dimensions!</li>
+</ul>
+<section id="p2" class="level4">
+<h4 class="anchored" data-anchor-id="p2"><span class="math inline">\(p=2\)</span></h4>
+<ul>
+<li><p>What is the radius of the inner circle relative to the outer circle?</p></li>
+<li><p>In expectation, the <span class="math inline">\(n/10\)</span> nearest neighbours of <span class="math inline">\(x\)</span> will take up <span class="math inline">\(10\%\)</span> of the area of the outer circle.</p></li>
+<li><p>Since the area of a circle scales with the square of its radius, the inner circle has a radius of <span class="math inline">\(\sqrt{0.1} \approx 0.316\)</span>.</p></li>
+</ul>
+</section>
+<section id="p3" class="level4">
+<h4 class="anchored" data-anchor-id="p3"><span class="math inline">\(p=3\)</span></h4>
+<ul>
+<li>Now consider <span class="math inline">\(p=3\)</span> dimensions (so that our radius 1 ball is a unit sphere).</li>
+<li>The sub-space containing its <span class="math inline">\(n/10\)</span> nearest neighbours is now a sphere with <span class="math inline">\(10\%\)</span> of the volume of the outer sphere.</li>
+<li>Since the volume of a sphere scales with the cube of its radius, the inner sphere has a radius of <span class="math inline">\(0.1^{1/3} \approx 0.464\)</span>.</li>
+</ul>
+</section>
+<section id="most-points-live-near-the-boundary-as-p-increases" class="level4">
+<h4 class="anchored" data-anchor-id="most-points-live-near-the-boundary-as-p-increases">Most Points Live Near the Boundary as <span class="math inline">\(p\)</span> Increases</h4>
+<p>More generally, for <span class="math inline">\(p\)</span> dimensions, the radius <span class="math inline">\(r\)</span> of the inner ball containing the <span class="math inline">\(n/10\)</span> nearest neighbours is given by:</p>
+<p><span class="math display">\[
+  r = 0.1^{1/p}
+  \]</span></p>
+<p>where <span class="math inline">\(p\)</span> is the number of dimensions (covariates). This number grows very quickly as <span class="math inline">\(p\)</span> increases:</p>
+<ul>
+<li>When <span class="math inline">\(p=10\)</span>, <span class="math inline">\(r = (0.1)^{1/10} \approx 0.794\)</span>(!)</li>
+<li>When <span class="math inline">\(p=100\)</span>, <span class="math inline">\(r = (0.1)^{1/100} \approx 0.977\)</span>(!!)</li>
+<li>When <span class="math inline">\(p=1000\)</span>, <span class="math inline">\(r = (0.1)^{1/1000} \approx 0.999\)</span>(!!!)</li>
+</ul>
+<p>In other words, in a <span class="math inline">\(1000\)</span>-dimensional space, even the <span class="math inline">\(10\%\)</span> of nearest neighbours are going to live on the boundary of the unit ball!</p>
+<p><strong>Why is this problematic?</strong></p>
+<ul>
+<li>As dimensionality increases, all points become maximally far apart from one another.</li>
+<li>With such large distances, we can’t meaningfully distinguish between “similar” and “different” inputs.</li>
+<li>Distance becomes (exponentially) meaningless in high dimensions.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="how-to-overcome-this-curse-of-dimensionality" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-overcome-this-curse-of-dimensionality">How to Overcome this Curse of Dimensionality</h2>
+<ul>
+<li><p>Nonparametric methods, which typically make predictions from distance-based similarity, become exponentially less effective as the number of covariates <span class="math inline">\(p\)</span> increases.</p></li>
+<li><p>To meaningfully distinguish between “similar” and “different” inputs, we need an exponentially large amount of training data <span class="math inline">\(n\)</span> as <span class="math inline">\(p\)</span> increases.</p></li>
+<li><p>The theoretical risk of kNN (and other nonparametric methods) after we tune <span class="math inline">\(k\)</span> to optimally balance bias and variance scales as:</p>
+<p><span class="math display">\[
+R_n^{(\mathrm{kNN})} = \underbrace{\frac{C_1^{(\mathrm{kNN})}}{n^{4/(4+p)}}}_{\mathrm{bias}^2} +
+\underbrace{\frac{C_2^{(\mathrm{kNN})}}{n^{4/(4+p)}}}_{\mathrm{var}} +
+\sigma^2
+\]</span></p>
+<p>where <span class="math inline">\(C_1^{(\mathrm{kNN})}, C_2^{(\mathrm{kNN})}\)</span> are constants that depend on the distribution of <span class="math inline">\((X, Y)\)</span>.</p>
+<ul>
+<li>To halve the bias or variance, we need to increase <span class="math inline">\(n\)</span> by a factor of <span class="math inline">\(2^{(4+p)/4}\)</span>.</li>
+<li>For <span class="math inline">\(p=4\)</span>, this is a factor of <span class="math inline">\(2\)</span>.</li>
+<li>For <span class="math inline">\(p=36\)</span>, this is a factor of <span class="math inline">\(1024\)</span>.</li>
+</ul></li>
+<li><p>In contrast, the risk of linear regression scales as:</p>
+<p><span class="math display">\[
+R_n^{(\mathrm{OLS})} = \underbrace{C_1^{(\mathrm{OLS})}}_{\mathrm{bias}^2} +
+\underbrace{\frac{C_2^{(\mathrm{OLS})}}{n/p}}_{\mathrm{var}} +
+\sigma^2
+\]</span></p>
+<ul>
+<li>To halve the variance, we only need to increase <span class="math inline">\(n\)</span> by a factor of <span class="math inline">\(2\)</span> (regardless of <span class="math inline">\(p\)</span>).</li>
+<li>(Of course, the bias <span class="math inline">\(C_1^{(\mathrm{OLS})}\)</span> may be large if <span class="math inline">\(\mathbb E[Y|X]\)</span> is not linear.)</li>
+</ul></li>
+</ul>
+<section id="in-practice" class="level3">
+<h3 class="anchored" data-anchor-id="in-practice">In Practice</h3>
+<ul>
+<li>Surprisingly, kNN and other nonparametric methods can work well in practice, even for moderate <span class="math inline">\(p\)</span>.</li>
+<li>For example, on the classic classification dataset MNIST (<span class="math inline">\(p=784\)</span>), kNN achieves <span class="math inline">\(97.3\%\)</span> accuracy from just <span class="math inline">\(60,000\)</span> training points.</li>
+<li>The reason for this empirical success cannot be easily formalized, but the intuition is that real-world data often has “low-dimensional structure” (e.g.&nbsp;images of handwritten digits lie on a low-dimensional manifold within <span class="math inline">\(\mathbb R^{784}\)</span>) where Euclidean distance is still meaningful.</li>
+<li>So you should not avoid nonparametric methods altogether on high-dimensional data, but be aware of their limitations.</li>
+</ul>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>kNN is a simple nonparametric method that makes predictions based on the <span class="math inline">\(k\)</span> nearest training points.</li>
+<li>However, nonparametric methods like kNN suffer from the curse of dimensionality, where distance becomes meaningless in high dimensions, and exponentially more training data is required to reduce risk.</li>
+<li>High dimensional spaces are weird and defy our common <span class="math inline">\(\mathbb R^2\)</span> and <span class="math inline">\(\mathbb R^3\)</span> intuitions.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_11_curse_of_dimensionality.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_11_curse_of_dimensionality.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
