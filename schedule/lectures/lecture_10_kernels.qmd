@@ -186,10 +186,10 @@ We have:
     \quad
     \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
     \qquad
-    W_j \sim \text{i.i.d. } \mathcal{N}(0, 1)
+    W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2)
   \end{align*}
 
-  i.e. we replace the fixed frequencies $2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}$ with random frequencies $W_i$ drawn from a standard normal distribution.
+  i.e. we replace the fixed frequencies $2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}$ with random frequencies $W_i$ drawn from $\mathcal{N}(0, 1/\gamma^2)$.
 
 - Then our kernel function becomes:
 
@@ -208,7 +208,7 @@ We have:
 
   \begin{align*}
   k(X, X') &\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
-  &= e^{-\frac{1}{2} (X - X')^2}
+  &= e^{-\frac{1}{2 \gamma^2} (X - X')^2}
   \end{align*}
 
   (Don't worry about the details of how to compute this expectation; just trust me that it is true!)
@@ -255,6 +255,8 @@ Let's take a step back and think about what we've just done:
 - If $X$ is close to a training point $X_i$, then $k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 1$.
 
 - If $X$ is far from a training point $X_i$, then $k(X, X_i) = e^{-\frac{1}{2} (X - X_i)^2} \approx 0$.
+
+- The hyperparameter $\gamma$, known as the **bandwidth**, controls how quickly similarity decays with distance.
 
 - Therefore, the prediction $\hat f_\infty(X)$ is mostly based off of the $\alpha_i$ coefficients of training points $X_i$ that are similar to $X$.
 
