@@ -81,11 +81,11 @@ but this time with an eye towards the bias-variance tradeoff.
 - It turns out that we can! With some ugly linear algebra, we can show that the LOO-CV predictions for OLS can be computed as:
 
   $$
-  \hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - Y_i}{1 - H_{ii}},
+  \hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - H_{ii} Y_i}{1 - H_{ii}}^2,
   $$
 
   where $\hat{Y}_i$ is the $i^\mathrm{th}$ entry of $\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y}$, and $H_{ii}$ is the $i^\mathrm{th}$ diagonal entry of the hat matrix $\boldsymbol{H}$.
-
+`
 :::{.callout-tip collapse="true" title="Deriving the Magic Formula"}
 The derivation of this formula is tedious (and not for the faint of heart),
 but all it requires is some linear algebra.
@@ -101,9 +101,14 @@ and then use the [Sherman-Morrison formula](https://en.wikipedia.org/wiki/Sherma
   the LOO-CV estimate of OLS risk is given by:
 
 $$
+\begin{aligned}
 \widehat{\mathcal{R}}_{\text{LOO}}
-= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
-= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+&= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
+\\
+&= \frac{1}{n} \sum_{i=1}^n \left( \frac{(1 - H_{ii}) Y_i}{1 - H_{ii}} - \frac{\hat{Y}_i - H_{ii} Y_i}{1 - H_{ii}} \right)^2
+\\
+&= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+\end{aligned}
 $$
 
 :::{.callout-note title="LOO-CV Formula for Ridge and Basis Regression"}
