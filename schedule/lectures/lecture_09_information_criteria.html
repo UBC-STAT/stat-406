@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-10-14">
+<meta name="dcterms.date" content="2025-10-20">
 
 <title>Lecture 9: Information Criteria – UBC Stat406 2025 W1</title>
 <style>
@@ -195,7 +195,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 14, 2025</p>
+      <p class="date">October 20, 2025</p>
     </div>
   </div>
   
@@ -272,35 +272,24 @@ window.Quarto = {
 <li><p>Moreover, the matrix inversion <span class="math inline">\((\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1}\)</span> is not too different from the matrix inversion <span class="math inline">\((\boldsymbol{X}^\top \boldsymbol{X})^{-1}\)</span> that we already computed to get <span class="math inline">\(\boldsymbol H\)</span>. Shouldn’t we be able to reuse that computation somehow?</p></li>
 <li><p>It turns out that we can! With some ugly linear algebra, we can show that the LOO-CV predictions for OLS can be computed as:</p>
 <p><span class="math display">\[
-\hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - Y_i}{1 - H_{ii}},
+\hat{Y}^{-i}(X_i) = \frac{\hat{Y}_i - H_{ii} Y_i}{1 - H_{ii}}^2,
 \]</span></p>
-<p>where <span class="math inline">\(\hat{Y}_i\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> entry of <span class="math inline">\(\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y}\)</span>, and <span class="math inline">\(H_{ii}\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> diagonal entry of the hat matrix <span class="math inline">\(\boldsymbol{H}\)</span>.</p></li>
+<p>where <span class="math inline">\(\hat{Y}_i\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> entry of <span class="math inline">\(\hat{\boldsymbol{Y}} = \boldsymbol{H} \boldsymbol{Y}\)</span>, and <span class="math inline">\(H_{ii}\)</span> is the <span class="math inline">\(i^\mathrm{th}\)</span> diagonal entry of the hat matrix <span class="math inline">\(\boldsymbol{H}\)</span>. ` :::{.callout-tip collapse=“true” title=“Deriving the Magic Formula”} The derivation of this formula is tedious (and not for the faint of heart), but all it requires is some linear algebra. The key idea is to express</p></li>
 </ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="Deriving the Magic Formula">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Deriving the Magic Formula
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>The derivation of this formula is tedious (and not for the faint of heart), but all it requires is some linear algebra. The key idea is to express</p>
 <p><span class="math display">\[(\boldsymbol{X}_{-i}^\top \boldsymbol{X}_{-i})^{-1} = (\boldsymbol{X}^\top \boldsymbol{X} - X_i X_i^\top)^{-1}\]</span></p>
-<p>and then use the <a href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula">Sherman-Morrison formula</a> for inverting rank-one updates to a matrix. (Come see me in office hours if want to suffer through the details!)</p>
-</div>
-</div>
-</div>
+<p>and then use the <a href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula">Sherman-Morrison formula</a> for inverting rank-one updates to a matrix. (Come see me in office hours if want to suffer through the details!) :::</p>
 <ul>
 <li>Applying this formula to estimate the risk associated with the square loss, the LOO-CV estimate of OLS risk is given by:</li>
 </ul>
 <p><span class="math display">\[
+\begin{aligned}
 \widehat{\mathcal{R}}_{\text{LOO}}
-= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
-= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+&amp;= \frac{1}{n} \sum_{i=1}^n (Y_i - \hat{Y}^{-i}(X_i))^2
+\\
+&amp;= \frac{1}{n} \sum_{i=1}^n \left( \frac{(1 - H_{ii}) Y_i}{1 - H_{ii}} - \frac{\hat{Y}_i - H_{ii} Y_i}{1 - H_{ii}} \right)^2
+\\
+&amp;= \frac{1}{n} \sum_{i=1}^n \left( \frac{Y_i - \hat{Y}_i}{1 - H_{ii}} \right)^2.
+\end{aligned}
 \]</span></p>
 <div class="callout callout-style-default callout-note callout-titled" title="LOO-CV Formula for Ridge and Basis Regression">
 <div class="callout-header d-flex align-content-center">
