@@ -214,7 +214,7 @@ window.Quarto = {
   <li><a href="#metrics-of-impurity" id="toc-metrics-of-impurity" class="nav-link" data-scroll-target="#metrics-of-impurity">Metrics of Impurity</a></li>
   <li><a href="#introducing-a-new-split" id="toc-introducing-a-new-split" class="nav-link" data-scroll-target="#introducing-a-new-split">Introducing a New Split</a></li>
   </ul></li>
-  <li><a href="#advantages-and-disadvantages-of-trees-again" id="toc-advantages-and-disadvantages-of-trees-again" class="nav-link" data-scroll-target="#advantages-and-disadvantages-of-trees-again">Advantages and disadvantages of trees (again)</a></li>
+  <li><a href="#advantages-and-disadvantages-of-decision-trees" id="toc-advantages-and-disadvantages-of-decision-trees" class="nav-link" data-scroll-target="#advantages-and-disadvantages-of-decision-trees">Advantages and Disadvantages of Decision Trees</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_12_trees.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_12_trees.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
@@ -370,11 +370,7 @@ window.Quarto = {
 <section id="a-simple-example" class="level3">
 <h3 class="anchored" data-anchor-id="a-simple-example">A Simple Example</h3>
 <ul>
-<li><p>Consider the decision tree above for a regression problem with two predictors, <span class="math inline">\(X_1 = \mathrm{Commute}\)</span> and <span class="math inline">\(X_2 = \mathrm{Income}\)</span> to predict <span class="math inline">\(Y = \mathrm{Mobility}\)</span>.</p>
-<ul>
-<li>The root node (top node) and the next internal nodes split on <span class="math inline">\(X_1\)</span> (commute), creating an initial partition of the predictor space into three vertical regions.</li>
-<li>The next set of nodes then split on <span class="math inline">\(X_2\)</span> (income), further partitioning the predictor space into six rectangular regions.</li>
-</ul></li>
+<li><p>Consider the decision tree above for a regression problem with two predictors, <span class="math inline">\(X_1 = \mathrm{Commute}\)</span> and <span class="math inline">\(X_2 = \mathrm{Income}\)</span> to predict <span class="math inline">\(Y = \mathrm{Mobility}\)</span>.</p></li>
 <li><p>The splits result in the following piecewise constant regions in the prediction space:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(mob<span class="sc">$</span>Commute, mob<span class="sc">$</span>Income,</span>
@@ -390,6 +386,7 @@ window.Quarto = {
 </div>
 </div>
 </div></li>
+<li><p>The prediction in each rectangle is the <strong>average response of all training points</strong> that fall within that rectangle.</p></li>
 <li><p>Let’s compare the piecewise constant regions defined by this decision tree to the Voronoi cells defined by kNN with <span class="math inline">\(k=100\)</span>:</p></li>
 </ul>
 <div class="cell">
@@ -475,28 +472,29 @@ Answer
 <section id="metrics-of-impurity" class="level3">
 <h3 class="anchored" data-anchor-id="metrics-of-impurity">Metrics of Impurity</h3>
 <ul>
-<li><strong>Regression problems</strong>: we want to minimize the <strong>variance of responses</strong> within each piecewise region.</li>
-<li><strong>Classification problems</strong>: rather than minimizing variance, it is common to minimize <strong>Gini impurity of responses</strong>, <span class="math inline">\(G = p (1 - p)\)</span>, where <span class="math inline">\(p\)</span> is the proportion of training points in the leaf with <span class="math inline">\(Y=1\)</span>.</li>
+<li><strong>Regression problems</strong>: we want to minimize the <strong>variance of responses</strong> within each piecewise region: <span class="math inline">\(\widehat{\mathrm{Var}} = \frac{1}{n-1} \sum_{i=1}^n (Y_i - \bar{Y})^2\)</span>, where <span class="math inline">\(\bar{Y}\)</span> is the average response of all training points in the leaf.</li>
+<li><strong>Classification problems</strong>: rather than minimizing variance, it is common to minimize <strong>Gini impurity of responses</strong>, <span class="math inline">\(\hat G = \hat p (1 - \hat p)\)</span>, where <span class="math inline">\(\hat p\)</span> is the proportion of training points in the leaf with <span class="math inline">\(Y=1\)</span>.</li>
 </ul>
 </section>
 <section id="introducing-a-new-split" class="level3">
 <h3 class="anchored" data-anchor-id="introducing-a-new-split">Introducing a New Split</h3>
 <ul>
-<li>Once we have determined the most impure leaf, we will introduce the best split to reduce its impurity as much as possible.</li>
+<li>We will choose to split the most impure leaf node at each step.</li>
+<li>We will split this most impure leaf node <span class="math inline">\(R\)</span> into two child nodes <span class="math inline">\(R^&gt;\)</span> and <span class="math inline">\(R^&lt;\)</span>.</li>
 <li>To do this, we will consider all possible splits along all <span class="math inline">\(p\)</span> predictor dimensions.</li>
 <li>Mathematically:
 <ul>
 <li>For a given <em>splitting variable</em> <span class="math inline">\(j\)</span> and <em>split value</em> <span class="math inline">\(s\)</span>, define <span class="math display">\[
 \begin{align}
-R_k^&gt; &amp;= \{x \in R_k : x^{(j)} &gt; s\} \\
-R_k^&lt; &amp;= \{x \in R_k : x^{(j)} &lt; s\}
+R^&gt; &amp;= \{x \in R : x^{(j)} &gt; s\} \\
+R^&lt; &amp;= \{x \in R : x^{(j)} &lt; s\}
 \end{align}
 \]</span></li>
 <li>We will choose <span class="math inline">\(j\)</span> and <span class="math inline">\(s\)</span> to minimize:</li>
 </ul>
 <span class="math display">\[ \mathrm{argmin}_{j,s} \begin{cases}
-  \vert R_k^&gt; \vert \cdot \widehat{Var}(R_k^&gt;) + \vert R_k^&lt; \vert \cdot  \widehat{Var}(R_k^&lt;) &amp; \text{for regression} \\
-  \vert R_k^&gt; \vert \cdot \widehat{Gini}(R_k^&gt;) + \vert R_k^&lt; \vert \cdot  \widehat{Gini}(R_k^&lt;) &amp; \text{for classification}
+  \vert R^&gt; \vert \widehat{\mathrm{Var}}(R^&gt;) + \vert R^&lt; \vert  \widehat{\mathrm{Var}}(R^&lt;) &amp; \text{for regression} \\
+  \vert R^&gt; \vert \widehat{G}(R^&gt;) + \vert R^&lt; \vert \widehat{G}(R^&lt;) &amp; \text{for classification}
 \end{cases} \]</span></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Why This Optimization Problem?">
@@ -517,8 +515,8 @@ R_k^&lt; &amp;= \{x \in R_k : x^{(j)} &lt; s\}
 </div>
 </section>
 </section>
-<section id="advantages-and-disadvantages-of-trees-again" class="level2">
-<h2 class="anchored" data-anchor-id="advantages-and-disadvantages-of-trees-again">Advantages and disadvantages of trees (again)</h2>
+<section id="advantages-and-disadvantages-of-decision-trees" class="level2">
+<h2 class="anchored" data-anchor-id="advantages-and-disadvantages-of-decision-trees">Advantages and Disadvantages of Decision Trees</h2>
 <p>🎉 Trees are very easy to explain (much easier than even linear regression).</p>
 <p>🎉 Some people believe that decision trees mirror human decision.</p>
 <p>🎉 Trees can easily be displayed graphically no matter the dimension of the data.</p>
