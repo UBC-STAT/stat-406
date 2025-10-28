@@ -1,0 +1,245 @@
+---
+title: "Lecture 12: Trees"
+author: "Geoff Pleiss"
+date: last-modified
+format: html
+---
+
+## Learning Objectives
+
+By the end of this lecture, you should be able to:
+
+1. Connect decision trees to kNN and non-parametric methods
+2. Pictorially represent a trained decision tree and its decision boundaries for classification and regression
+3. Implement (in rough pseudo-code) the greedy algorithm for training decision trees
+4. Articulate how the inductive bias of decision trees changes with depth (and data)
+5. Identify characteristics of decision trees that lead to high bias or high variance
+
+
+## Motivation
+
+- With basis ridge regression, we saw a duality between parametric and non-parametric methods.
+  - $d < \infty$ basis functions: parametric ridge regression model.
+  - $d \to \infty$ basis functions: non-parametric kernel ridge regression.
+- Does a similar duality exist for kNN?
+  - kNN is non-parametric.
+  - Can we find a parametric model that approximates kNN?
+
+### What Does a kNN Function Look Like?
+
+kNN regression produces a piecewise constant function.
+
+- Consider the subset of all points $S \subset \mathcal X$ that each have $X_{i1}, \ldots, X_{ij}$ as their $k$ nearest neighbors.
+- For all $x \in S$, the kNN regression function is constant:
+  $$
+  \hat{f}_{\mathrm{kNN}}(x) = \frac{1}{k} \sum_{X_i \in N_k(x)} Y_i = \text{constant for all } x \in S.
+  $$
+
+- More generally, given all subsets $S_1, \ldots, S_m$ of $\mathcal X$ where each point in $S_j$ has the same $k$ nearest neighbors, the kNN regression function is piecewise constant over these subsets.
+
+- The subsets $S_1, \ldots, S_m$ are referred to as **Voronoi cells**, and they are convex polytopes in $\mathbb{R}^p$.
+
+```{r voronoi-cells}
+#| code-fold: true
+knn_predict <- function(train, test, y, k) {
+  sapply(1:nrow(test), function(i) {
+    dists <- rowSums((t(t(train) - test[i, ]))^2)
+    neibs <- sort.int(dists, index.return = TRUE)$ix[1:k]
+    mean(y[neibs])
+  })
+}
+
+# Train/test data
+library(tidyverse)
+x_train <- c(0.2, 0.3, 0.5, 0.6, 0.7)
+y_train <- c(0.2, -0.2, 0.5, 0.7, 0.2)
+x_test <- seq(0.0, 1.0, length.out = 101)
+preds <- knn_predict(
+  matrix(x_train, nrow = length(x_train), ncol=1),
+  matrix(x_test, nrow = length(x_test), ncol=1),
+  y_train,
+  k = 2
+)
+train_data <- tibble(x = x_train, y = y_train)
+test_data <- data.frame(x = x_test, pred = preds)
+
+# Plot
+library(ggplot2)
+ggplot(test_data, aes(x = x, y = pred)) +
+  geom_line(color = "blue") +
+  geom_point(data = train_data, aes(x = x, y = y), size = 1.5) +
+  scale_fill_viridis_c() +
+  geom_vline(xintercept = c(0.35, 0.45, 0.6), linetype = "dotted", color = "blue", linewidth = 0.5) +
+  theme_minimal()
+```
+
+
+### A Parametric Approximation of Voronoi Cells
+
+Let's assume we want to build a piecewise constant predictive model.
+kNN gives us one way to do this, but is there a parametric model that achieves something similar?
+
+- Since kNN is non-parametric, we define the piecewise constant regions (i.e. the Voronoi cells $S_1, \ldots, S_m$) implicitly through the training data.
+- What if we instead defined the piecewise constant regions by explicitly defining the boundaries of the regions?
+- To simplify, let's assume that the piecewise constant regions are axis-aligned rectangles in $\mathbb{R}^p$.
+- While there are many mechanisms for representing such piecewise constant functions, one of the most common is through decision trees.
+
+
+## Decision Trees for Regression and Classification
+
+
+- A **decision tree** is a learned binary tree structure that recursively partitions the predictor space into axis-aligned rectangles.
+
+  ```{r dendrogram}
+  load("../data/mobility.rda")
+  library(tree)
+  library(maptree)
+  mob <- mobility[complete.cases(mobility), ] |>
+    dplyr::select(Income, Commute, Mobility) |>
+    dplyr::mutate(Income = Income / 100000)
+  smalltree <- tree(Mobility ~ ., data = mob, )
+  draw.tree(smalltree, digits = 2)
+  ```
+
+- Each of the **leaf nodes** of the tree corresponds to a single rectangle in the predictor space.
+- Each **internal node** of the tree corresponds to a decision rule that recursively splits the predictor space along one of the covariate dimensions.
+
+### A Simple Example
+
+- Consider the decision tree above for a regression problem with two predictors, $X_1 = \mathrm{Commute}$ and $X_2 = \mathrm{Income}$ to predict $Y = \mathrm{Mobility}$.
+
+  - The root node (top node) and the next internal nodes split on $X_1$ (commute), creating an initial partition of the predictor space into three vertical regions.
+  - The next set of nodes then split on $X_2$ (income), further partitioning the predictor space into six rectangular regions.
+
+- The splits result in the following piecewise constant regions in the prediction space:
+
+  ```{r partition-view}
+  plot(mob$Commute, mob$Income,
+    pch = 19, cex = .4, bty = "n", las = 1,
+    ylab = "Income", xlab = "Commute"
+  )
+  partition.tree(smalltree, add = TRUE, ordvars = c("Commute", "Income"))
+  ```
+
+- Let's compare the piecewise constant regions defined by this decision tree to the Voronoi cells defined by kNN with $k=100$:
+
+```{r knn-vs-tree}
+#| code-fold: true
+# Create meshgrid
+income_grid <- seq(0.2, 0.5, length.out = 100)
+commute_grid <- seq(0.2, 0.8, length.out = 100)
+grid <- expand.grid(Income = income_grid, Commute = commute_grid)
+
+# Get kNN predictions on the grid
+grid$knn_pred <- knn_predict(
+  mob |> select(-Mobility) |> as.matrix(),
+  grid |> as.matrix(),
+  mob$Mobility,
+  k = 50
+)
+
+# Plot
+ggplot(grid, aes(x = Commute, y = Income)) +
+  geom_tile(aes(fill = knn_pred)) +
+  geom_point(data = mob, aes(x = Commute, y = Income), size = 0.5, alpha = 0.5) +
+  scale_fill_viridis_c() +
+  labs(fill = "Predicted\nMobility") +
+  theme_minimal()
+```
+
+<!-- Decision boundaries vs Voronoi cells diagram -->
+
+- The axis-aligned rectangles are "simpler shapes" than the Voronoi cells, which can be more complex polytopes,
+  and so kNN can approximate more complex functions than a decision tree of similar complexity.
+- Additionally, the number of piecewise constant regions created by kNN is combinatorial in $n$ and $p$,
+  while the number of piecewise constant regions created by a decision tree is linear in the number of splits.
+- However, the nonparametric nature of kNN requires storing all training data, while a decision tree only requires storing the tree structure and the values at the leaf nodes.
+- Moreover, limiting the piecewise constant regions to axis-aligned rectangles also reduces the effects of the curse of dimensionality
+  (though decision trees by themselves are usually either high-bias or high-variance models, as we will see later).
+
+
+### Tree Depth, Bias, and Variance
+
+- The **depth** of a decision tree is the length of the longest path from the root node to any leaf node.
+- Typically, we control the complexity of a decision tree by limiting its depth.
+- If $\mathrm{depth} = \infty$, then the leaf nodes of the decision tree will correspond to single training examples.
+
+:::{.callout-tip title="Quiz: Effect of Depth"}
+A deeper decision tree will generally have (lower/higher) bias and (lower/higher) variance, while a shallower decision tree will generally have (lower/higher) bias and (lower/higher) variance.
+
+<details>
+<summary>Answer</summary>
+A deeper decision tree will generally have lower bias and higher variance, while a shallower decision tree will generally have higher bias and lower variance.
+
+- A very deep tree will have one piecewise constant region per training example. Such a predictor will be highly dependent on the particular training sample,
+resulting in high variance.
+- A very shallow tree will only have a few piecewise constant regions. On any training sample, the resulting model will be too simple to capture the underlying structure of the data, resulting in high bias.
+</details>
+:::
+
+
+## Learning a Decision Tree from Data
+
+- Given a fixed depth $d$, how do we learn a decision tree from data?
+  We formulate the learning problem as an **optimization problem** over training data!
+
+- What makes a good tree? If a piecewise constant function is going to approximate our data well, then we want all responses within a given piece to be as similar as possible. In other words, we want to minimize the **impurity** of each leaf node.
+
+- Minimizing the impurity of all depth-$d$ trees is a NP-hard problem, so instead we use a greedy strategy.
+
+- We will iteratively construct a depth-$d$ tree, taking the most "impure" leaf node at each step and splitting it to reduce its impurity as much as possible.
+
+### Metrics of Impurity
+
+- **Regression problems**: we want to minimize the **variance of responses** within each piecewise region.
+- **Classification problems**: rather than minimizing variance, it is common to minimize **Gini impurity of responses**, $G = p (1 - p)$, where $p$ is the proportion of training points in the leaf with $Y=1$.
+
+
+### Introducing a New Split
+
+- Once we have determined the most impure leaf, we will introduce the best split to reduce its impurity as much as possible.
+- To do this, we will consider all possible splits along all $p$ predictor dimensions.
+- Mathematically:
+  - For a given *splitting variable* $j$ and *split value* $s$, define
+  $$
+  \begin{align}
+  R_k^> &= \{x \in R_k : x^{(j)} > s\} \\
+  R_k^< &= \{x \in R_k : x^{(j)} < s\}
+  \end{align}
+  $$
+  - We will choose $j$ and $s$ to minimize:
+
+  $$ \mathrm{argmin}_{j,s} \begin{cases}
+    \vert R_k^> \vert \cdot \widehat{Var}(R_k^>) + \vert R_k^< \vert \cdot  \widehat{Var}(R_k^<) & \text{for regression} \\
+    \vert R_k^> \vert \cdot \widehat{Gini}(R_k^>) + \vert R_k^< \vert \cdot  \widehat{Gini}(R_k^<) & \text{for classification}
+  \end{cases} $$
+
+:::{.callout-tip collapse="true" title="Why This Optimization Problem?"}
+When choosing a split for a given leaf node, we want to choose the split that minimizes the weighted impurity of the resulting child nodes.
+:::
+
+## Advantages and disadvantages of trees (again)
+
+🎉 Trees are very easy to explain (much easier than even linear regression).
+
+🎉 Some people believe that decision trees mirror human decision.
+
+🎉 Trees can easily be displayed graphically no matter the dimension of the data.
+
+🎉 Trees can easily handle qualitative predictors without the need to create dummy variables.
+
+💩 Trees aren't very good at prediction.
+
+💩 Trees are highly variable. Small changes in training data $\Longrightarrow$ big changes in the tree.
+
+To fix these last two, we can try to grow many trees and average their performance. We will cover this strategy in the next module.
+
+
+## Summary
+
+- Decision trees are the parametric counterpart to kNN regression/classification.
+  - Like kNN, decision trees produce piecewise constant predictions.
+  - Unlike kNN, these piecewise constants are not defined through training data and are instead constrained to be axis-aligned rectangles.
+- The depth of decision trees controls the bias-variance tradeoff, where maximum depth corresponds to piecewise regions that contain only a single training point.
+- Trees are constructed in a greedy fashion by iteratively splitting the most impure leaf node to reduce its impurity as much as possible.
+- While decision trees are easy to interpret and explain, they tend to have high variance and/or high bias, leading to poor predictive performance.
