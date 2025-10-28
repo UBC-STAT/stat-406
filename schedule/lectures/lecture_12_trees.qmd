@@ -108,9 +108,6 @@ kNN gives us one way to do this, but is there a parametric model that achieves s
 
 - Consider the decision tree above for a regression problem with two predictors, $X_1 = \mathrm{Commute}$ and $X_2 = \mathrm{Income}$ to predict $Y = \mathrm{Mobility}$.
 
-  - The root node (top node) and the next internal nodes split on $X_1$ (commute), creating an initial partition of the predictor space into three vertical regions.
-  - The next set of nodes then split on $X_2$ (income), further partitioning the predictor space into six rectangular regions.
-
 - The splits result in the following piecewise constant regions in the prediction space:
 
   ```{r partition-view}
@@ -120,6 +117,8 @@ kNN gives us one way to do this, but is there a parametric model that achieves s
   )
   partition.tree(smalltree, add = TRUE, ordvars = c("Commute", "Income"))
   ```
+
+- The prediction in each rectangle is the **average response of all training points** that fall within that rectangle.
 
 - Let's compare the piecewise constant regions defined by this decision tree to the Voronoi cells defined by kNN with $k=100$:
 
@@ -191,34 +190,35 @@ resulting in high variance.
 
 ### Metrics of Impurity
 
-- **Regression problems**: we want to minimize the **variance of responses** within each piecewise region.
-- **Classification problems**: rather than minimizing variance, it is common to minimize **Gini impurity of responses**, $G = p (1 - p)$, where $p$ is the proportion of training points in the leaf with $Y=1$.
+- **Regression problems**: we want to minimize the **variance of responses** within each piecewise region: $\widehat{\mathrm{Var}} = \frac{1}{n-1} \sum_{i=1}^n (Y_i - \bar{Y})^2$, where $\bar{Y}$ is the average response of all training points in the leaf.
+- **Classification problems**: rather than minimizing variance, it is common to minimize **Gini impurity of responses**, $\hat G = \hat p (1 - \hat p)$, where $\hat p$ is the proportion of training points in the leaf with $Y=1$.
 
 
 ### Introducing a New Split
 
-- Once we have determined the most impure leaf, we will introduce the best split to reduce its impurity as much as possible.
+- We will choose to split the most impure leaf node at each step.
+- We will split this most impure leaf node $R$ into two child nodes $R^>$ and $R^<$.
 - To do this, we will consider all possible splits along all $p$ predictor dimensions.
 - Mathematically:
   - For a given *splitting variable* $j$ and *split value* $s$, define
   $$
   \begin{align}
-  R_k^> &= \{x \in R_k : x^{(j)} > s\} \\
-  R_k^< &= \{x \in R_k : x^{(j)} < s\}
+  R^> &= \{x \in R : x^{(j)} > s\} \\
+  R^< &= \{x \in R : x^{(j)} < s\}
   \end{align}
   $$
   - We will choose $j$ and $s$ to minimize:
 
   $$ \mathrm{argmin}_{j,s} \begin{cases}
-    \vert R_k^> \vert \cdot \widehat{Var}(R_k^>) + \vert R_k^< \vert \cdot  \widehat{Var}(R_k^<) & \text{for regression} \\
-    \vert R_k^> \vert \cdot \widehat{Gini}(R_k^>) + \vert R_k^< \vert \cdot  \widehat{Gini}(R_k^<) & \text{for classification}
+    \vert R^> \vert \widehat{\mathrm{Var}}(R^>) + \vert R^< \vert  \widehat{\mathrm{Var}}(R^<) & \text{for regression} \\
+    \vert R^> \vert \widehat{G}(R^>) + \vert R^< \vert \widehat{G}(R^<) & \text{for classification}
   \end{cases} $$
 
 :::{.callout-tip collapse="true" title="Why This Optimization Problem?"}
 When choosing a split for a given leaf node, we want to choose the split that minimizes the weighted impurity of the resulting child nodes.
 :::
 
-## Advantages and disadvantages of trees (again)
+## Advantages and Disadvantages of Decision Trees
 
 🎉 Trees are very easy to explain (much easier than even linear regression).
 
