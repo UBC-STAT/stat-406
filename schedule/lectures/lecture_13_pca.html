@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-10-29">
+
+<title>Lecture 13: Dimensionality Reduction, Introduction to Unsupervised Learning – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a>
+  <ul class="collapse">
+  <li><a href="#low-dimensional-structure-through-variable-reduction" id="toc-low-dimensional-structure-through-variable-reduction" class="nav-link" data-scroll-target="#low-dimensional-structure-through-variable-reduction">Low-Dimensional Structure Through Variable Reduction</a></li>
+  <li><a href="#low-dimensional-structure-through-rotations-variable-reduction" id="toc-low-dimensional-structure-through-rotations-variable-reduction" class="nav-link" data-scroll-target="#low-dimensional-structure-through-rotations-variable-reduction">Low-Dimensional Structure Through Rotations + Variable Reduction</a></li>
+  </ul></li>
+  <li><a href="#pca-the-optimal-rotationdimensionality-reduction" id="toc-pca-the-optimal-rotationdimensionality-reduction" class="nav-link" data-scroll-target="#pca-the-optimal-rotationdimensionality-reduction">PCA: The Optimal Rotation/Dimensionality Reduction</a>
+  <ul class="collapse">
+  <li><a href="#example-pop-music-data" id="toc-example-pop-music-data" class="nav-link" data-scroll-target="#example-pop-music-data">Example: Pop Music Data</a></li>
+  </ul></li>
+  <li><a href="#pca-with-basis-expansions" id="toc-pca-with-basis-expansions" class="nav-link" data-scroll-target="#pca-with-basis-expansions">PCA with Basis Expansions</a>
+  <ul class="collapse">
+  <li><a href="#example-spiral-data" id="toc-example-spiral-data" class="nav-link" data-scroll-target="#example-spiral-data">Example: Spiral Data</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_13_pca.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_13_pca.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 13: Dimensionality Reduction, Introduction to Unsupervised Learning</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 29, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Formulate methods for dimensionality reduction through singular value decompositions.</li>
+<li>Implement and derive PCA and kPCA, and explain their geometric intuition.</li>
+<li>Identify scenarios where PCA versus kPCA is more applicable.</li>
+<li>Describe the uses of PCA and kPCA for data analysis.</li>
+<li>Enumerate the differences between supervised and unsupervised learning.</li>
+</ol>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li>Despite the curse of dimensionality for distance-based predictive models, we saw that not all high dimensional data was doomed to fail with kNN or kernel ridge regression.</li>
+<li>I claimed that these methods are immune from the curse of dimensionality when the data are “intrinsically low-dimensional”.</li>
+<li>Today, we will define what “intrinsically low-dimensional” means, and how to find such low-dimensional structure in high-dimensional data.</li>
+<li>The methods that will discover this low dimensional structure are the first <strong>unsupervised learning</strong> methods we will study in this course.</li>
+</ul>
+<section id="low-dimensional-structure-through-variable-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="low-dimensional-structure-through-variable-reduction">Low-Dimensional Structure Through Variable Reduction</h3>
+<ul>
+<li><p>We’ve seen two examples of exploiting low-dimensional structure in high-dimensional data: variable selection/Lasso regression.</p>
+<ul>
+<li>Both methods work because certain covariates are not sufficiently relevant for predicting the response, and so they can be dropped.</li>
+<li>What results is a reduction to <span class="math inline">\(&lt;p\)</span> covariates, reducing the dimensionality of the input space.</li>
+</ul></li>
+<li><p>But what if all <span class="math inline">\(p\)</span> covariates are relevant? It is still possible to have low-dimensional structure by applying a rotation to our covariates!</p></li>
+</ul>
+</section>
+<section id="low-dimensional-structure-through-rotations-variable-reduction" class="level3">
+<h3 class="anchored" data-anchor-id="low-dimensional-structure-through-rotations-variable-reduction">Low-Dimensional Structure Through Rotations + Variable Reduction</h3>
+<ul>
+<li>Consider the seats in this lecture hall, which live in a three dimensional space.</li>
+<li>To describe the position of each seat, we need an <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, and <span class="math inline">\(z\)</span> coordinate.</li>
+<li>However, I would argue that the seats really only live in a two-dimensional space, since the column and height of the seats are highly correlated.</li>
+<li>If we were to rotate our coordinate system, we could find a two-dimensional plane that all of the seats lie close to.</li>
+<li>Using the language of STAT306, the <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> variables are <em>colinear</em>, and thus can be reduced into a single variable.</li>
+</ul>
+<section id="why-are-rotations-valid" class="level4">
+<h4 class="anchored" data-anchor-id="why-are-rotations-valid">Why are Rotations Valid?</h4>
+<ul>
+<li><p>Imagine that we have a linear model <span class="math inline">\(\hat f_{\mathcal D}(X) = X^\top \hat \beta\)</span>.</p></li>
+<li><p>A rotation of <span class="math inline">\(X \in \mathbb R^{p}\)</span> can be represented as <span class="math inline">\(X' = \boldsymbol Q^\top X\)</span> for some orthogonal matrix <span class="math inline">\(\boldsymbol Q \in \mathbb R^{p \times p}\)</span>.</p></li>
+<li><p>Then, we can rewrite our linear model as</p>
+<p><span class="math display">\[ \hat f_{\mathcal D}(X) = X^\top \boldsymbol Q \boldsymbol Q^\top \hat \beta = (X')^\top \underbrace{(\boldsymbol Q^\top \hat \beta)}_{\hat \beta'}. \]</span></p></li>
+<li><p>It is totally valid to perform variable selection/LASSO on the rotated variables <span class="math inline">\(X'\)</span> instead of the original variables <span class="math inline">\(X\)</span>.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="pca-the-optimal-rotationdimensionality-reduction" class="level2">
+<h2 class="anchored" data-anchor-id="pca-the-optimal-rotationdimensionality-reduction">PCA: The Optimal Rotation/Dimensionality Reduction</h2>
+<ul>
+<li><p>While we could perform LASSO or variable selection on all possible rotations of <span class="math inline">\(X\)</span>, this would be computationally infeasible.</p></li>
+<li><p>Instead, we will aim to learn a rotation that produces a set of <span class="math inline">\(k &lt; p\)</span> features that contain the maximum variance.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Intuition">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Intuition
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Features without much variance are approximately constants, and so they will not be useful for predicting the response. Conversely, features with high variance are more likely to contain some “signal” that will be useful to predict the response.</p>
+</div>
+</div>
+</div></li>
+<li><p>We can formulate this idea as an optimization problem:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\max_{\boldsymbol Q \in \mathbb R^{p \times k}} &amp; \,\, \sum_{i=1}^k \mathrm{Var}([\boldsymbol Q]_i^\top X) \\
+\text{subject to} &amp; \,\, \boldsymbol Q^\top \boldsymbol Q = \boldsymbol I_k
+\end{aligned}
+\]</span></p></li>
+<li><p>We will assume without loss of generality that</p>
+<ol type="1">
+<li><span class="math inline">\(n &gt; p\)</span> and</li>
+<li>The original covariates are <strong>centered</strong>; i.e.&nbsp;<span class="math inline">\(\sum_{i=1}^n X_{ij} = 0\)</span> for all <span class="math inline">\(j = 1, \ldots, p\)</span>.</li>
+</ol>
+<details>
+<summary>
+<p>Why can we make these assumptions?</p>
+</summary>
+<ol type="1">
+<li><p>Turns out, it won’t matter whether <span class="math inline">\(n &gt; p\)</span> or <span class="math inline">\(p &lt; n\)</span>; we will always choose <span class="math inline">\(k &lt; \mathrm{min}(n, p)\)</span>, so there will always be enough singular values and right singular vectors.</p></li>
+<li><p>If our features aren’t centered, then we can always center them first by subtracting the empirical mean of each feature.</p></li>
+</ol>
+</details></li>
+<li><p>Amazingly, with these assumptions in place, the optimization problem can be solved exactly via the SVD of the design matrix!</p>
+<p><span class="math display">\[ \underbrace{\boldsymbol X}_{n \times p} = \underbrace{ \boldsymbol U }_{n \times p} \underbrace{\boldsymbol D}_{p \times p} \underbrace{\boldsymbol V^\top}_{p \times p}. \]</span></p>
+<p>The matrix <span class="math inline">\(\boldsymbol Q \in \mathbb R^{p \times k}\)</span> that solves the above problem is given by the first <span class="math inline">\(k\)</span> right singular vectors of <span class="math inline">\(X\)</span> (i.e.&nbsp;the first <span class="math inline">\(k\)</span> columns of <span class="math inline">\(\boldsymbol V\)</span>).</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Intuition">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Intuition
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The right singular vectors are the eigenvectors of <span class="math inline">\(\boldsymbol X^\top \boldsymbol X\)</span>, which is proportional to the empirical covariance matrix of <span class="math inline">\(X\)</span>.</li>
+<li>Thus, the right singular vectors point in the directions of maximum variance of the data.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/svd.png" class="img-fluid figure-img"></p>
+<figcaption>Illustration of singular vectors as eigenvectors of empirical covariance matrix</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div></li>
+<li><p>We can now represent our data in this new rotated space via</p>
+<p><span class="math display">\[ \boldsymbol Z = [\boldsymbol V]_{:,1:k} = \boldsymbol X \boldsymbol Q, \]</span></p></li>
+<li><p>We refer to the new features in <span class="math inline">\(\boldsymbol Z\)</span> as the <strong>principal components</strong> (PCs) of the data.</p></li>
+<li><p>Crucially, these PCs are <strong>ordered</strong>, since the earliest PCs correspond to the largest singular values and thus capture the most variance in the data.</p></li>
+</ul>
+<section id="example-pop-music-data" class="level3">
+<h3 class="anchored" data-anchor-id="example-pop-music-data">Example: Pop Music Data</h3>
+<p>Here is a dataset that describes various music songs:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"../data/popmusic_train.rda"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>popmusic_train</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,269 × 15
+   artist      danceability energy   key loudness  mode speechiness acousticness
+   &lt;fct&gt;              &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;int&gt;       &lt;dbl&gt;        &lt;dbl&gt;
+ 1 Taylor Swi…        0.781  0.357     0   -16.4      1      0.912       0.717  
+ 2 Taylor Swi…        0.627  0.266     9   -15.4      1      0.929       0.796  
+ 3 Taylor Swi…        0.516  0.917    11    -3.19     0      0.0827      0.0139 
+ 4 Taylor Swi…        0.629  0.757     1    -8.37     0      0.0512      0.00384
+ 5 Taylor Swi…        0.686  0.705     9   -10.8      1      0.249       0.832  
+ 6 Taylor Swi…        0.522  0.691     2    -4.82     1      0.0307      0.00609
+ 7 Taylor Swi…        0.31   0.374     6    -8.46     1      0.0275      0.761  
+ 8 Taylor Swi…        0.705  0.621     2    -8.09     1      0.0334      0.101  
+ 9 Taylor Swi…        0.553  0.604     1    -5.30     0      0.0258      0.202  
+10 Taylor Swi…        0.419  0.908     9    -5.16     1      0.0651      0.00048
+# ℹ 1,259 more rows
+# ℹ 7 more variables: instrumentalness &lt;dbl&gt;, liveness &lt;dbl&gt;, valence &lt;dbl&gt;,
+#   tempo &lt;dbl&gt;, time_signature &lt;int&gt;, duration_ms &lt;int&gt;, explicit &lt;lgl&gt;</code></pre>
+</div>
+</div>
+<ul>
+<li><p>It has <span class="math inline">\(p=15\)</span> numerical and categorical covariates that describe various audio features of songs, such as “dancibility,” “energy,” and “key.”</p></li>
+<li><p>We only use the numerical features for PCA.</p></li>
+<li><p>We can get the PCA rotation matrix the <code>prcomp()</code> function in R:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> popmusic_train <span class="sc">|&gt;</span> <span class="fu">select</span>(danceability<span class="sc">:</span>energy, loudness, speechiness<span class="sc">:</span>valence)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X, <span class="at">scale =</span> <span class="cn">TRUE</span>) <span class="do">## DON'T USE princomp()</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>pca</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Standard deviations (1, .., p=8):
+[1] 1.6233469 1.3466829 1.0690017 0.9510417 0.7638669 0.6737958 0.5495869
+[8] 0.4054698
+
+Rotation (n x k) = (8 x 8):
+                         PC1          PC2        PC3         PC4          PC5
+danceability     -0.02811038  0.577020027  0.0304479 -0.25196472  0.739526795
+energy           -0.56077454 -0.001137424  0.1486735 -0.06430307 -0.226318113
+loudness         -0.53893087  0.085912854 -0.2282323  0.14003225 -0.030032041
+speechiness       0.30125038  0.431188730  0.3679826  0.07395515 -0.242371888
+acousticness      0.51172138  0.082108326 -0.1697964 -0.01726948 -0.273283653
+instrumentalness  0.01374425 -0.370058813  0.3453232 -0.81091990  0.003302477
+liveness         -0.02282669 -0.194947054  0.7616642  0.45763444  0.213396810
+valence          -0.20242211  0.540418541  0.2475007 -0.19995475 -0.471169943
+                         PC6        PC7         PC8
+danceability      0.11900195 -0.1563096 -0.12786852
+energy           -0.05219588 -0.2909147 -0.72160673
+loudness         -0.06730567 -0.5296193  0.58697944
+speechiness      -0.68760754 -0.2202211  0.04897228
+acousticness      0.47023448 -0.6246205 -0.12773085
+instrumentalness -0.05239401 -0.1935036  0.21407632
+liveness          0.30477087 -0.1495286  0.10550213
+valence           0.43477471  0.3346472  0.20667773</code></pre>
+</div>
+</div></li>
+<li><p>This matrix is the entire <span class="math inline">\(p \times p\)</span> <span class="math inline">\(\boldsymbol V\)</span> matrix. If we only use the first <span class="math inline">\(k &lt; p\)</span> columns, we will reduce the dimensionality to <span class="math inline">\(k\)</span> dimensions at the loss of some (hopefully low signal) information.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">var_explained =</span> pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> <span class="fu">sum</span>(pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span>), <span class="at">M =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(X)),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(M, var_explained)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>) <span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">xend =</span> M, <span class="at">yend =</span> <span class="dv">0</span>), <span class="at">color =</span> <span class="st">"blue"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/var-explained-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div></li>
+<li><p>If we reduce to <span class="math inline">\(k=2\)</span> dimensions, then we can plot a reduced version of our covariates in two dimensions!</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>proj_pca <span class="ot">&lt;-</span> <span class="fu">predict</span>(pca)[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">artist =</span> popmusic_train<span class="sc">$</span>artist)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(proj_pca, <span class="fu">aes</span>(PC1, PC2, <span class="at">color =</span> artist)) <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_d</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/pca-music-plot-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that these reduced features, which are linear combinations of the original features, don’t do a great job of separating the different artists. However, they still contain a good deal of the signal from the original features!</p>
+<p>We can visualize this signal by plotting the <strong>loadings</strong> of the first two principal components, which are the weights that each of the principal components place on the original features:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loadings plot</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>pca<span class="sc">$</span>rotation[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">feature =</span> <span class="fu">names</span>(X)) <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>feature) <span class="sc">|&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(value, feature, <span class="at">fill =</span> feature)) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>name) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>, <span class="at">axis.title =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ul>
+</section>
+</section>
+<section id="pca-with-basis-expansions" class="level2">
+<h2 class="anchored" data-anchor-id="pca-with-basis-expansions">PCA with Basis Expansions</h2>
+<ul>
+<li>The PCA-reduced dimensions are linear combinations of the original features.</li>
+<li>What if we want to find a <strong>non-linear</strong> set of reduced dimensions?</li>
+</ul>
+<p><strong>Key idea</strong>: first apply a basis expansion <span class="math inline">\(\phi: \mathbb R^p \to \mathbb R^q\)</span> to the original features, then perform PCA on the expanded features!</p>
+<section id="example-spiral-data" class="level3">
+<h3 class="anchored" data-anchor-id="example-spiral-data">Example: Spiral Data</h3>
+<ul>
+<li><p>Consider the following spiral dataset:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/spiral-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>The colouring is to show that our spiral has a natural one-dimensional structure that we wish to preserve.</li>
+<li>I.e. we want a one-dimensional representation <span class="math inline">\(z\)</span> of the data so that interior spiral points (blue) have low <span class="math inline">\(z\)</span> values and exterior spiral points (yellow) have high <span class="math inline">\(z\)</span> values.</li>
+</ul></li>
+<li><p>If we apply PCA directly to this data, we only get a linear combination of our features, which fails to capture the spiral structure:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/spiral-reduced-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div></li>
+<li><p>However, if we first apply a 4th order polynomial basis expansion to our features…</p>
+<p><span class="math display">\[
+  \underbrace{\boldsymbol X}_{n \times 2} \: \longrightarrow \: \underbrace{\boldsymbol \Phi}_{n \times 14} = \begin{bmatrix}
+  1 &amp; X_{11} &amp; X_{12} &amp; X_{11}^2 &amp; X_{11} X_{12} &amp; X_{12}^2 &amp; \ldots &amp; X_{12}^4 \\
+  1 &amp; X_{21} &amp; X_{22} &amp; X_{21}^2 &amp; X_{21} X_{22} &amp; X_{22}^2 &amp; \ldots &amp; X_{22}^4 \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+  1 &amp; X_{n1} &amp; X_{n2} &amp; X_{n1}^2 &amp; X_{n1} X_{n2} &amp; X_{n2}^2 &amp; \ldots &amp; X_{n2}^4
+  \end{bmatrix}
+\]</span></p>
+<p>… and then perform PCA on the expanded features (<span class="math inline">\(\widetilde{\boldsymbol \Phi}\)</span> is the centered version of <span class="math inline">\(\boldsymbol \Phi\)</span>)…</p>
+<p><span class="math display">\[ \widetilde{\boldsymbol \Phi} = \boldsymbol U \boldsymbol D \boldsymbol V^\top,
+\qquad
+\underbrace{\boldsymbol Z}_{n \times 1} = \widetilde{\boldsymbol \Phi} [\boldsymbol V]_1, \]</span></p>
+<p>… then our one-dimensional representation captures the spiral structure!</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/spiral-pca-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Why Does This Work?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why Does This Work?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Recall that basis regression models are non-linear with respect to the original features, but linear with respect to the basis-expanded features.</li>
+<li>This principle also applies to PCA: if we apply a basis expansion first, then PCA will find linear combinations of the basis-expanded features, which are non-linear combinations of the original features.</li>
+<li>The resulting reduced dimensions can thus capture non-linear structure in the data.</li>
+</ul>
+</div>
+</div>
+</div></li>
+</ul>
+<section id="pca-with-infinite-dimensional-basis-expansions" class="level4">
+<h4 class="anchored" data-anchor-id="pca-with-infinite-dimensional-basis-expansions">PCA with Infinite-Dimensional Basis Expansions</h4>
+<ul>
+<li><p>What happens if we want to use infinitely many basis functions, as we did with kernel ridge regression?</p></li>
+<li><p>We can’t explicitly compute the basis expansion <span class="math inline">\(\phi: \mathbb R^p \to \mathbb R^{\infty}\)</span>. However, we’ll be able to use a nonparametric representation of our data to perform PCA in this infinite-dimensional space!</p></li>
+<li><p>Specifically, we can recover the <span class="math inline">\({\boldsymbol Z}_{n \times k} = \widetilde{\boldsymbol \Phi} [\boldsymbol V]_{1:k}\)</span> matrix of reduced dimensions by collecting the first <span class="math inline">\(k\)</span> eigenvectors of the <span class="math inline">\(n \times n\)</span> matrix</p>
+<p><span class="math display">\[  \underbrace{\widetilde{\boldsymbol \Phi}}_{n \times d} \underbrace{\widetilde{\boldsymbol \Phi}^\top}_{d \times n} \]</span></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Why Does This Eigendecomposition Recover $Z$?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why Does This Eigendecomposition Recover <span class="math inline">\(Z\)</span>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\widetilde {\boldsymbol \Phi} = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>, then <span class="math display">\[
+\begin{aligned}
+\underbrace{\boldsymbol Z}_{n \times k}
+&amp;= \widetilde{\boldsymbol \Phi} [\boldsymbol V]_{1:k} \\
+&amp;= \boldsymbol U \boldsymbol D \underbrace{\boldsymbol V^\top [\boldsymbol V]_{1:k}}_{= \begin{bmatrix} \boldsymbol I_k \\ \boldsymbol 0 \end{bmatrix}} \\
+&amp;= \boldsymbol U \underbrace{\boldsymbol D \begin{bmatrix} \boldsymbol I_k \\ \boldsymbol 0 \end{bmatrix}}_{= [\boldsymbol D]_{1:k}} \\
+&amp;= [\boldsymbol U \boldsymbol D]_{1:k}
+\end{aligned}
+\]</span> Since <span class="math inline">\(\boldsymbol U\)</span> are the eigenvectors of <span class="math inline">\(\widetilde{\boldsymbol \Phi} \widetilde{\boldsymbol \Phi}^\top\)</span>, <span class="math inline">\(\boldsymbol Z\)</span> is given by a (scaled) version of the first <span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(\widetilde{\boldsymbol \Phi} \widetilde{\boldsymbol \Phi}^\top\)</span>.</p>
+</div>
+</div>
+</div></li>
+<li><p>As with kernel ridge regression, this <span class="math inline">\(n \times n\)</span> matrix can be thought of as applying a kernel function <span class="math inline">\(k(x_i, x_{i'})\)</span> to each pair of data points.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\underbrace{\widetilde{\boldsymbol \Phi}}_{n \times d} \underbrace{\widetilde{\boldsymbol \Phi}^\top}_{d \times n}
+&amp;= \begin{bmatrix}
+\widetilde\phi(X_1)^\top \widetilde\phi(X_1) &amp; \widetilde\phi(X_1)^\top \widetilde\phi(X_2) &amp; \ldots &amp; \widetilde\phi(X_1)^\top \widetilde\phi(X_n) \\
+\widetilde \phi(X_2)^\top \widetilde \phi(X_1) &amp; \widetilde \phi(X_2)^\top \widetilde \phi(X_2) &amp; \ldots &amp; \widetilde \phi(X_2)^\top \widetilde \phi(X_n) \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+\widetilde \phi(X_n)^\top \widetilde \phi(X_1) &amp; \widetilde \phi(X_n)^\top \widetilde \phi(X_2) &amp; \ldots &amp; \widetilde \phi(X_n)^\top \widetilde \phi(X_n)
+\end{bmatrix}
+:= \underbrace{\mathbf{K}}_{n \times n}
+\end{aligned}
+\]</span></p>
+<p>where, as with kernel ridge regression, we have defined <span class="math inline">\(\widetilde \phi(X_i)^\top \widetilde \phi(X_j) = k(X_i, X_j)\)</span> to be a kernel similarity function.</p></li>
+<li><p>As with kernel ridge regression, using</p>
+<p><span class="math display">\[ k(X_i, X_j) = \exp\left( -\frac{\|X_i - X_j\|^2_2}{2\gamma} \right) \]</span></p>
+<p>corresponds to a basis expansion with infinitely many Fourier features!</p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Kernel PCA">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Kernel PCA
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Form a kernel matrix <span class="math inline">\(\boldsymbol{K} \in \mathbb R^{n \times n}\)</span> using a kernel function <span class="math inline">\(k(x_i, x_j)\)</span> (such as the squared exponential kernel) that corresponds to a potentially-infinite basis expansion.</p></li>
+<li><p>Center <strong>both the rows and columns</strong> of <span class="math inline">\(\boldsymbol K\)</span>. Mathematically,</p>
+<p><span class="math display">\[ \widetilde{\boldsymbol K} = \boldsymbol P \boldsymbol K \boldsymbol P,\qquad \boldsymbol P = \boldsymbol I_n - \frac{1}{n} \boldsymbol 1 \boldsymbol 1^\top. \]</span></p></li>
+<li><p>Get the dimensionality-reduced representation <span class="math inline">\(\boldsymbol Z \in \mathbb R^{n \times k}\)</span> by collecting the first <span class="math inline">\(k\)</span> eigenvectors of <span class="math inline">\(\widetilde{\boldsymbol K}\)</span>.</p></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="example-kernel-pca-on-the-spiral-data" class="level4">
+<h4 class="anchored" data-anchor-id="example-kernel-pca-on-the-spiral-data">Example: Kernel PCA on the Spiral Data</h4>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_13_pca_files/figure-html/kpca-spiral-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Reducing infinitely-many basis functions captures the spiral structure perfectly!</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="Important Note on Centering!">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Important Note on Centering!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>For (standard linear) PCA, you must center the features before applying PCA.</li>
+<li>For kernel PCA, you must center the kernel matrix <strong>both row-wise and column-wise</strong>!</li>
+<li>Failing to do so will lead to incorrect results.</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>PCA finds a rotation of the original features such that the first <span class="math inline">\(k\)</span> rotated features capture the maximum variance in the data.</li>
+<li>PCA can be performed via the SVD of the <strong>centered</strong> design matrix.</li>
+<li>By applying a basis expansion before PCA, we can capture non-linear structure in the data.</li>
+<li>Kernel PCA allows us to implicitly perform PCA in an infinite-dimensional basis expansion by using a <strong>row- and column-wise centered</strong> kernel matrix.</li>
+<li>PCA and kernel PCA demonstrate that high-dimensional data can often be well-approximated by a low-dimensional representation, demonstrating why data that are actually high dimensional may not suffer from the curse of dimensionality.</li>
+<li>PCA and kernel PCA are our first <strong>unsupervised learning</strong> methods, since they do not use any response variable to learn the low-dimensional representation.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_13_pca.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_13_pca.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
