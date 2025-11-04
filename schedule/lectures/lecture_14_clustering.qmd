@@ -27,6 +27,7 @@ By the end of this lecture, you should be able to:
 - We refer to this unsupervised learning method as **clustering**.
 
 **To restate:**
+
 - Clustering maps a set of covariates $X \in \mathbb R^p$ to a discrete label $C \in \{1, 2, \ldots, k\}$.
 - PCA (and its variants) maps a set of covariates $X \in \mathbb R^p$ to a continuous vector $Z \in \mathbb R^k, k \ll p$.
 
@@ -123,7 +124,7 @@ As with (almost) all other learning procedures we've discussed, we will formaliz
 - We want to minimize the total within-cluster variation, but weight each cluster by its size so larger clusters contribute more.
 - Mathematically, this gives us:
 
-  $$ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert. $$
+  $$ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. $$
 
   The fraction $1/2$ is for mathematical convenience (it does not affect the maximization), as will become clear shortly.
 
@@ -209,7 +210,7 @@ Even after simplifying the optimization problem using centroids, it is still imp
   1. Randomly initialize $\mu_1, \ldots, \mu_k$ somewhere in $\mathbb R^p$.
   2. Assign each point to the cluster corresponding to the nearest $\mu_j$ value:
 
-    $$ f_{\mathcal D}^{(0)}(X_i) = \argmin_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. $$
+    $$ f_{\mathcal D}^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. $$
 
   3. Update $\mu_1, \ldots, \mu_k$ to be the **centroids** of the clusters induced by $f_{\mathcal D}^{(0)}(X)$:
 
@@ -218,6 +219,8 @@ Even after simplifying the optimization problem using centroids, it is still imp
 - To get $f_{\mathcal D}^{(1)}(X)$ from $f_{\mathcal D}^{(0)}(X)$, we repeat steps 2 and 3 above.
 
 - More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e. when the distance that the cluster centroids change is $< \epsilon$ for some pre-defined constant $\epsilon$. Most implementations will define this constant for you.)
+
+![Visualization of k-means iterations (from https://ai.plainenglish.io/)](../figures/kmeans.gif){width="500px"}
 
 - While this algorithm does not guarantee that we find the optimal clustering assignment, it does guarantee that the within-cluster variation $\sum_{j=1}^k |C_j| W_j$ decreases at each iteration, and thus will eventually converge to some (possibly local) minimum.
 
