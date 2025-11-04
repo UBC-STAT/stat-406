@@ -270,7 +270,11 @@ window.Quarto = {
 <li>This integer represents a category, that each observation belongs to, which we refer to as a <strong>cluster label</strong>.</li>
 <li>We refer to this unsupervised learning method as <strong>clustering</strong>.</li>
 </ul>
-<p><strong>To restate:</strong> - Clustering maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a discrete label <span class="math inline">\(C \in \{1, 2, \ldots, k\}\)</span>. - PCA (and its variants) maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a continuous vector <span class="math inline">\(Z \in \mathbb R^k, k \ll p\)</span>.</p>
+<p><strong>To restate:</strong></p>
+<ul>
+<li>Clustering maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a discrete label <span class="math inline">\(C \in \{1, 2, \ldots, k\}\)</span>.</li>
+<li>PCA (and its variants) maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a continuous vector <span class="math inline">\(Z \in \mathbb R^k, k \ll p\)</span>.</li>
+</ul>
 <div class="callout callout-style-default callout-note callout-titled" title="Isn't Clustering Just Classification?">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -393,7 +397,7 @@ window.Quarto = {
 <p>where <span class="math inline">\(|C_j|\)</span> is the number of points in cluster <span class="math inline">\(j\)</span>. It is the <strong>average pairwise-distance</strong> between points in cluster <span class="math inline">\(j\)</span>.</p></li>
 <li><p>We want to minimize the total within-cluster variation, but weight each cluster by its size so larger clusters contribute more.</p></li>
 <li><p>Mathematically, this gives us:</p>
-<p><span class="math display">\[ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert. \]</span></p>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. \]</span></p>
 <p>The fraction <span class="math inline">\(1/2\)</span> is for mathematical convenience (it does not affect the maximization), as will become clear shortly.</p></li>
 </ul>
 </section>
@@ -478,14 +482,22 @@ and now this derivation should look exactly like what we did in the bias-varianc
 <li>Randomly initialize <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> somewhere in <span class="math inline">\(\mathbb R^p\)</span>.</li>
 <li>Assign each point to the cluster corresponding to the nearest <span class="math inline">\(\mu_j\)</span> value:</li>
 </ol>
-<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X_i) = \argmin_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. \]</span></p>
+<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. \]</span></p>
 <ol start="3" type="1">
 <li>Update <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> to be the <strong>centroids</strong> of the clusters induced by <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>:</li>
 </ol>
 <p><span class="math display">\[ \mu_j = \frac{1}{|C_j|} \sum_{i \in C_j} X_i. \]</span></p></li>
 <li><p>To get <span class="math inline">\(f_{\mathcal D}^{(1)}(X)\)</span> from <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>, we repeat steps 2 and 3 above.</p></li>
 <li><p>More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e.&nbsp;when the distance that the cluster centroids change is <span class="math inline">\(&lt; \epsilon\)</span> for some pre-defined constant <span class="math inline">\(\epsilon\)</span>. Most implementations will define this constant for you.)</p></li>
-<li><p>While this algorithm does not guarantee that we find the optimal clustering assignment, it does guarantee that the within-cluster variation <span class="math inline">\(\sum_{j=1}^k |C_j| W_j\)</span> decreases at each iteration, and thus will eventually converge to some (possibly local) minimum.</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/kmeans.gif" class="img-fluid figure-img" width="500"></p>
+<figcaption>Visualization of k-means iterations (from https://ai.plainenglish.io/)</figcaption>
+</figure>
+</div>
+<ul>
+<li>While this algorithm does not guarantee that we find the optimal clustering assignment, it does guarantee that the within-cluster variation <span class="math inline">\(\sum_{j=1}^k |C_j| W_j\)</span> decreases at each iteration, and thus will eventually converge to some (possibly local) minimum.</li>
 </ul>
 <div class="callout callout-style-default callout-warning callout-titled" title="K-Means May be Sensitive to Initialization">
 <div class="callout-header d-flex align-content-center">
