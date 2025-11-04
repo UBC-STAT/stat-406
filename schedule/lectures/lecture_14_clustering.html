@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-11-04">
+
+<title>Lecture 14: Clustering – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a>
+  <ul class="collapse">
+  <li><a href="#example-of-clustering" id="toc-example-of-clustering" class="nav-link" data-scroll-target="#example-of-clustering">Example of Clustering</a></li>
+  </ul></li>
+  <li><a href="#the-simplest-clustering-algorithm-k-means" id="toc-the-simplest-clustering-algorithm-k-means" class="nav-link" data-scroll-target="#the-simplest-clustering-algorithm-k-means">The Simplest Clustering Algorithm: K-Means</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-formalization" id="toc-mathematical-formalization" class="nav-link" data-scroll-target="#mathematical-formalization">Mathematical Formalization</a></li>
+  <li><a href="#cluster-centroids-a-crucial-simplification" id="toc-cluster-centroids-a-crucial-simplification" class="nav-link" data-scroll-target="#cluster-centroids-a-crucial-simplification">Cluster Centroids: A Crucial Simplification</a></li>
+  <li><a href="#solving-the-optimization-problem" id="toc-solving-the-optimization-problem" class="nav-link" data-scroll-target="#solving-the-optimization-problem">Solving the Optimization Problem</a></li>
+  </ul></li>
+  <li><a href="#choosing-the-number-of-clusters-k" id="toc-choosing-the-number-of-clusters-k" class="nav-link" data-scroll-target="#choosing-the-number-of-clusters-k">Choosing the Number of Clusters <span class="math inline">\(k\)</span></a></li>
+  <li><a href="#k-means-vs-pca" id="toc-k-means-vs-pca" class="nav-link" data-scroll-target="#k-means-vs-pca">K-Means vs PCA</a></li>
+  <li><a href="#other-clustering-variants" id="toc-other-clustering-variants" class="nav-link" data-scroll-target="#other-clustering-variants">Other Clustering Variants</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_14_clustering.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_14_clustering.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 14: Clustering</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 4, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Formulate a clustering problem and explain its goals/applications.</li>
+<li>Implement and apply k-means clustering to a dataset.</li>
+<li>Measure clustering quality and choose an appropriate number of clusters for a given dataset.</li>
+<li>Determine when clustering (via k-means) is more appropriate than dimensionality reduction (via PCA).</li>
+<li>Identify when an alternative clustering algorithm or variant of k-means is more appropriate for a given dataset.</li>
+</ol>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li>In the last lecture, we explored dimensionality reduction (through PCA) as our first <strong>unsupervised learning method.</strong></li>
+<li>PCA, and its basis expansion/kernel variants, reduce the complexity of data by representing a <span class="math inline">\(\mathbb R^p\)</span> set of covariates by a <span class="math inline">\(\mathbb R^k\)</span> vector with <span class="math inline">\(k \ll p\)</span>.</li>
+<li>In this lecture, we’ll explore an alternative simplification: representing a <span class="math inline">\(\mathbb R^p\)</span> set of covariates by a <span class="math inline">\(\{1, 2, \ldots, k\}\)</span> integer.</li>
+<li>This integer represents a category, that each observation belongs to, which we refer to as a <strong>cluster label</strong>.</li>
+<li>We refer to this unsupervised learning method as <strong>clustering</strong>.</li>
+</ul>
+<p><strong>To restate:</strong> - Clustering maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a discrete label <span class="math inline">\(C \in \{1, 2, \ldots, k\}\)</span>. - PCA (and its variants) maps a set of covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to a continuous vector <span class="math inline">\(Z \in \mathbb R^k, k \ll p\)</span>.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Isn't Clustering Just Classification?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Isn’t Clustering Just Classification?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While clustering and classification both assign labels to observations, there is a key difference.</p>
+<ul>
+<li>In classification, we have <strong>labeled training data</strong> <span class="math inline">\(\mathcal D = \{ (X_1, Y_1), \ldots, (X_N, Y_N) \}\)</span>. We aim to learn a function to predict the responses <span class="math inline">\(Y_1, \ldots, Y_N\)</span> from the covariates <span class="math inline">\(X_1, \ldots, X_N\)</span>.</li>
+<li>In clustering, we do <strong>not</strong> have labeled training data; i.e.&nbsp;our training data are just the covariates <span class="math inline">\(\mathcal D = \{ X_1, \ldots, X_N \}\)</span>. The cluster labels do not correspond to any response; they are simply a way to describe the covariates by a much simpler representation (an integer label rather than a <span class="math inline">\(p\)</span>-dimensional vector).</li>
+</ul>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 42%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mapping</th>
+<th>Supervised Learning Problem</th>
+<th>Unsupervised Learning Problem</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^p \to \mathbb R^k\)</span></td>
+<td>Regression</td>
+<td>Dimensionality Reduction</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^p \to \{1, 2, \ldots, k\}\)</span></td>
+<td>Classification</td>
+<td>Clustering</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="example-of-clustering" class="level3">
+<h3 class="anchored" data-anchor-id="example-of-clustering">Example of Clustering</h3>
+<p>Consider the following synthetic dataset of <span class="math inline">\(n=140\)</span> set of <span class="math inline">\(p=2\)</span>-dimensional covariates: <span class="math inline">\(\mathcal D \in \{ X_1, \ldots X_{140} \}, X_i \in \mathbb R^2\)</span>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Stat406)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>X1 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">50</span>, <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">2</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>), <span class="dv">2</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>X2 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="at">sigma =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">1.5</span>, .<span class="dv">5</span>, .<span class="dv">5</span>, <span class="fl">1.5</span>), <span class="dv">2</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>X3 <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">40</span>, <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">rbind</span>(X1, X2, X3)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">x1 =</span> data[, <span class="dv">1</span>],</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">x2 =</span> data[, <span class="dv">2</span>],</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x1, <span class="at">y =</span> x2)) <span class="sc">+</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_14_clustering_files/figure-html/create-fake-data-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>You’ll notice that the data are not uniformly distributed throughout the 2D space.</li>
+<li>If you squint, it looks like the data belong to three groups, or <strong>clusters</strong>.</li>
+<li>If we apply a clustering algorithm to learn a mapping <span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^2 \to \{1, 2, 3\}\)</span>, we might get the following result:</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data: 140 x 2 matrix with our covariates</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>assignments <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(data, <span class="at">centers =</span> <span class="dv">3</span>)<span class="sc">$</span>cluster</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x1 =</span> data[, <span class="dv">1</span>],</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">x2 =</span> data[, <span class="dv">2</span>],</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">cluster =</span> <span class="fu">as.factor</span>(assignments)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> x1, <span class="at">y =</span> x2, <span class="at">colour =</span> cluster)) <span class="sc">+</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"orange"</span>, <span class="st">"green"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_14_clustering_files/figure-html/clustering-example-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>These cluster labels that we assign to the points may or may not be semantically meaningful. However, it provides us with a way to analyze and summarize the data more easily, and gives us a toehold for discovering patterns and further analysis.</li>
+</ul>
+</section>
+</section>
+<section id="the-simplest-clustering-algorithm-k-means" class="level2">
+<h2 class="anchored" data-anchor-id="the-simplest-clustering-algorithm-k-means">The Simplest Clustering Algorithm: K-Means</h2>
+<ul>
+<li>While there are many clustering algorithms, the simplest and most widely used is <strong>k-means clustering</strong>.</li>
+<li>K-means clustering aims to partition <span class="math inline">\(n\)</span> observations into <span class="math inline">\(k\)</span> clusters such that the <strong>within-cluster variation</strong> is minimized.</li>
+<li>Intuitively, we want to group the data so that the points in each cluster are as similar to each other as possible.</li>
+<li>As with k-nearest neighbours and kernel methods, similarity will be measured through Euclidean distance.</li>
+</ul>
+<section id="mathematical-formalization" class="level3">
+<h3 class="anchored" data-anchor-id="mathematical-formalization">Mathematical Formalization</h3>
+<p>As with (almost) all other learning procedures we’ve discussed, we will formalize this clustering procedure as an optimization problem.</p>
+<ul>
+<li><p>Assume we have fixed <span class="math inline">\(k\)</span>, i.e.&nbsp;the number of clusters we hope to partition our data into. (We’ll discuss how to choose <span class="math inline">\(k\)</span> momentarily.)</p></li>
+<li><p><strong>What we are trying to learn</strong>: <span class="math inline">\(\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, or some function that maps covariates onto clusters.</p></li>
+<li><p>For any given <span class="math inline">\(\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, let <span class="math inline">\(C_1, \ldots, C_k \subset \mathcal D\)</span> represent the <strong>clusters</strong> induced by this mapping; i.e.</p>
+<p><span class="math display">\[C_j = \{ X_i \in \mathcal D : \hat f_{\mathcal D}(X_i) = j \}\]</span></p>
+<p>In other words, <span class="math inline">\(C_j\)</span> is the set of all training covariates assigned to cluster <span class="math inline">\(j\)</span>.</p></li>
+<li><p>The <strong>within-distance variation</strong> of this clustering is defined as:</p>
+<p><span class="math display">\[ W_j := \frac{1}{|C_j|^2} \sum_{i, {i'} \in C_j} \| X_i - X_{i'} \|_2^2 \]</span></p>
+<p>where <span class="math inline">\(|C_j|\)</span> is the number of points in cluster <span class="math inline">\(j\)</span>. It is the <strong>average pairwise-distance</strong> between points in cluster <span class="math inline">\(j\)</span>.</p></li>
+<li><p>We want to minimize the total within-cluster variation, but weight each cluster by its size so larger clusters contribute more.</p></li>
+<li><p>Mathematically, this gives us:</p>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert. \]</span></p>
+<p>The fraction <span class="math inline">\(1/2\)</span> is for mathematical convenience (it does not affect the maximization), as will become clear shortly.</p></li>
+</ul>
+</section>
+<section id="cluster-centroids-a-crucial-simplification" class="level3">
+<h3 class="anchored" data-anchor-id="cluster-centroids-a-crucial-simplification">Cluster Centroids: A Crucial Simplification</h3>
+<ul>
+<li><p>This optimization problem is unwieldy, especially because we have to consider all pairwise distances between points in each cluster. (This is, worst case scenario, <span class="math inline">\(O(n^2)\)</span> pairwise distances to consider!)</p></li>
+<li><p>Fortunately, we can make use of the following identity to simplify from a pair-wise summation to a per-data-point summation:</p>
+<p><span class="math display">\[ \frac{1}{2} \sum_{i, i' \in C_j} \| X_i - X_{i'} \|_2^2 = |C_j| \sum_{i \in C_j} \| X_i - \mu_j \|_2^2 \]</span></p>
+<p>where <span class="math inline">\(\mu_j\)</span> is the <strong>centroid</strong> of cluster <span class="math inline">\(j\)</span>, or the empirical average of the covariates within that cluster:</p>
+<p><span class="math display">\[ \mu_j = \frac{1}{|C_j|} \sum_{i \in C_j} X_i. \]</span></p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Deriving this Identity">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Deriving this Identity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you’re confused about where this identity comes from, consider our favourite trick that we used when deriving the bias-variance tradeoff: adding and subtracting zero:</p>
+<p><span class="math display">\[ \sum_{i, i' \in C_j} \| X_i - X_{i'} \|_2^2 = \sum_{i, i' \in C_j} \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2. \]</span></p>
+<p>Just like we did with the bias-variance tradeoff, expand the square and you’ll find that the cross terms vanish!</p>
+<details>
+<summary>
+Details
+</summary>
+<p>While we could go through this derivation step-by-step, it’s perhaps simpler if we replace the summations with expectations over the empirical distribution of points in cluster <span class="math inline">\(C_j\)</span>.</p>
+<p><span class="math display">\[
+\sum_{i, i' \in C_j} \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2
+= \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[ \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2 \right]
+\]</span></p>
+<p>We also note that <span class="math inline">\(\mu_j\)</span> is the expectation of <span class="math inline">\(X\)</span> under the empirical distribution <span class="math inline">\(\hat P_{C_j}\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+&amp;\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \Vert_2^2 \right]
+\\
+=&amp;
+\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert  (X_i - \mathbb E[X]) + (\mathbb E[X] - X_{i'}) \Vert_2^2 \right]
+\end{aligned}
+\]</span></p>
+and now this derivation should look exactly like what we did in the bias-variance tradeoff! Follow those steps to see the cross terms disappear!
+</details>
+</div>
+</div></li>
+<li><p>Intuitively, these centroids represent the “average” point in each cluster. They are represented on the plots below by black crosses.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>centroids <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">kmeans</span>(data, <span class="at">centers =</span> <span class="dv">3</span>)<span class="sc">$</span>centers)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x1 =</span> data[, <span class="dv">1</span>],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x2 =</span> data[, <span class="dv">2</span>],</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cluster =</span> <span class="fu">as.factor</span>(assignments)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  ), <span class="fu">aes</span>(<span class="at">x =</span> x1, <span class="at">y =</span> x2, <span class="at">colour =</span> cluster), <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> centroids, <span class="fu">aes</span>(<span class="at">x =</span> V1, <span class="at">y =</span> V2), <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">shape =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"orange"</span>, <span class="st">"green"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_14_clustering_files/figure-html/kmeans-centroids-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="solving-the-optimization-problem" class="level3">
+<h3 class="anchored" data-anchor-id="solving-the-optimization-problem">Solving the Optimization Problem</h3>
+<p>Even after simplifying the optimization problem using centroids, it is still impossible to solve it exactly. Instead, we rely on an iterative algorithm to approximate a solution.</p>
+<section id="the-idea" class="level4">
+<h4 class="anchored" data-anchor-id="the-idea">The Idea</h4>
+<ul>
+<li><p>We produce a series of clustering assignments</p>
+<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X), f_{\mathcal D}^{(1)}(X), f_{\mathcal D}^{(2)}(X), \ldots f_{\mathcal D}^{(t)}(X), \ldots \]</span></p>
+<p>so that <span class="math inline">\(\sum_{j=1}^k |C_j| W_j\)</span> decreases as <span class="math inline">\(t\)</span> increases.</p></li>
+<li><p><span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span> will essentially be random:</p>
+<ol type="1">
+<li>Randomly initialize <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> somewhere in <span class="math inline">\(\mathbb R^p\)</span>.</li>
+<li>Assign each point to the cluster corresponding to the nearest <span class="math inline">\(\mu_j\)</span> value:</li>
+</ol>
+<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X_i) = \argmin_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. \]</span></p>
+<ol start="3" type="1">
+<li>Update <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> to be the <strong>centroids</strong> of the clusters induced by <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>:</li>
+</ol>
+<p><span class="math display">\[ \mu_j = \frac{1}{|C_j|} \sum_{i \in C_j} X_i. \]</span></p></li>
+<li><p>To get <span class="math inline">\(f_{\mathcal D}^{(1)}(X)\)</span> from <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>, we repeat steps 2 and 3 above.</p></li>
+<li><p>More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e.&nbsp;when the distance that the cluster centroids change is <span class="math inline">\(&lt; \epsilon\)</span> for some pre-defined constant <span class="math inline">\(\epsilon\)</span>. Most implementations will define this constant for you.)</p></li>
+<li><p>While this algorithm does not guarantee that we find the optimal clustering assignment, it does guarantee that the within-cluster variation <span class="math inline">\(\sum_{j=1}^k |C_j| W_j\)</span> decreases at each iteration, and thus will eventually converge to some (possibly local) minimum.</p></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="K-Means May be Sensitive to Initialization">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>K-Means May be Sensitive to Initialization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because k-means starts with a random initialization of the cluster centroids, it may converge to different clustering assignments on different runs. Most implementations of k-means (including R’s built-in <code>kmeans</code> function) will try many random initializations and return the clustering assignment with the lowest within-cluster variation.</p>
+<p>However, note that you may get different clustering assignments on different runs of k-means, especially if the clusters are not well-separated.</p>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="choosing-the-number-of-clusters-k" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-the-number-of-clusters-k">Choosing the Number of Clusters <span class="math inline">\(k\)</span></h2>
+<ul>
+<li>So far, we’ve assumed that the number of clusters <span class="math inline">\(k\)</span> is fixed. Now we’re going to discuss how to perform <strong>model selection</strong> to choose the best value of <span class="math inline">\(k\)</span>.</li>
+<li>Since this algorithm is an unsupervised method, there’s not really a notion of risk (or cross-validation for that matter), so we’re going to have to rely on some heuristic methods to choose <span class="math inline">\(k\)</span>.</li>
+</ul>
+<section id="what-do-we-want-from-our-clustering" class="level4">
+<h4 class="anchored" data-anchor-id="what-do-we-want-from-our-clustering">What Do We Want From Our Clustering?</h4>
+<p>In general, there are two key desiderata for our clusters. We’ve already talked about one of them:</p>
+<ol type="1">
+<li><strong>Points within clusters should be similar to each other.</strong> This quantity is exactly what k-means optimizes for:</li>
+</ol>
+<p><span class="math display">\[ W := \frac{1}{2} \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2}\sum_{j=1}^k \vert C_j \vert \sum_{i \in C_j} \left\| X_i - \mu_j \right\|_2^2 \]</span></p>
+<ol start="2" type="1">
+<li><strong>Points in different clusters should be dissimilar to each other.</strong> This quantity is not directly optimized by k-means, but is still important. It is measured by the <strong>between-cluster variation</strong> quantity, which measures the weighted average distance between pairs of cluster centroids:</li>
+</ol>
+<p><span class="math display">\[ B := \frac{1}{2} \sum_{j=1}^k \sum_{j'=1}^k \frac{|C_j| |C_{j'}|}{n} \| \mu_j - \mu_{j'} \|_2^2. \]</span></p>
+<p>As with the within-cluster variation, this summation over all pairs can be simplified to a summation over individual clusters:</p>
+<p><span class="math display">\[ B = \sum_{j=1}^k |C_j| \| \mu_j - \mu \|_2^2 \]</span></p>
+<p>where <span class="math inline">\(\mu = \frac{1}{n} \sum_{i=1}^n X_i\)</span> is the overall mean of the covariates.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="The `kmeans` function in R automatically computes all of these variables">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>The <code>kmeans</code> function in R automatically computes all of these variables
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kmeans</span>(data, <span class="at">centers =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>K-means clustering with 3 clusters of sizes 49, 39, 42
+
+Cluster means:
+        [,1]      [,2]
+1 -0.9528507  2.141750
+2  1.8193830 -1.531834
+3  4.0791847  3.836696
+
+Clustering vector:
+  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 2 2 2 2 2 2 2 2 2
+ [75] 2 2 2 2 2 2 2 2 2 2 2 3 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+[112] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+
+Within cluster sum of squares by cluster:
+[1]  98.81053 111.78974  81.12076
+ (between_SS / total_SS =  80.2 %)
+
+Available components:
+
+[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
+[6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
+</div>
+</div>
+<p>You can guess what each of these variable names mean ;)</p>
+</div>
+</div>
+</div>
+<p>We want to <em>minimize within-cluster variation</em> and <em>maximize between-cluster variation</em>. However, these quantities will often be at odds with one another.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Quiz">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Quiz
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As the total number of clusters <span class="math inline">\(k\)</span> increases…</p>
+<ul>
+<li>Will the within-cluster variation <span class="math inline">\(W\)</span> increase or decrease?</li>
+<li>Will the between-cluster variation <span class="math inline">\(B\)</span> increase or decrease?</li>
+</ul>
+<details>
+<summary>
+Answer
+</summary>
+<ul>
+<li>As we add more clusters, each cluster will have fewer points. Having fewer points means that points will be closer to one another, so within-cluster variation decreases.</li>
+<li>As we add more clusters, the clusters will be closer to one another, so between-cluster variation also decreases.</li>
+</ul>
+</details>
+</div>
+</div>
+<p>A simple heuristic for choosing <span class="math inline">\(k\)</span> is to maximize the (weighted) ratio between these two quantities:</p>
+<p><span class="math display">\[ \mathrm{CH} := \frac{B/(k-1)}{W/(n-k)}. \]</span></p>
+<ul>
+<li>Note that both <span class="math inline">\(B\)</span> and <span class="math inline">\(W\)</span> are functions of <span class="math inline">\(k\)</span>, so changing the number of clusters will change both quantities.</li>
+<li>This quantity is known as the <strong>Calinski-Harabasz (CH) index</strong></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="K-means Clustering With Model Selection">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>K-means Clustering With Model Selection
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For all <span class="math inline">\(k \in \{2, 3, \ldots, k_{\max}\}\)</span> (where <span class="math inline">\(k_{\max} &lt; n\)</span> is some maximum number of clusters we want to consider):</p>
+<ul>
+<li>Run k-means clustering with <span class="math inline">\(k\)</span> clusters to get cluster assignments <span class="math inline">\(C_1, \ldots, C_k\)</span>.</li>
+<li>Compute the CH index for this clustering assignment:</li>
+</ul>
+<p>Choose the number of clusters <span class="math inline">\(\hat k\)</span> that maximizes the CH index.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="k-means-vs-pca" class="level2">
+<h2 class="anchored" data-anchor-id="k-means-vs-pca">K-Means vs PCA</h2>
+<ul>
+<li>We now have learned about two unsupervised learning methods: PCA and k-means clustering.</li>
+<li>Both are useful when you want to simplify a complex dataset for further analysis but you don’t have labeled training data.</li>
+<li>However, when should you use one method over the other?</li>
+<li>The answer depends on your analysis, goals, and the data. If you want to compress the data into a distinct number of categories, clustering is likely more appropriate.</li>
+<li>However, if you want to represent data on a spectrum (or to visualize the data), PCA is more important.</li>
+</ul>
+<p><strong>Example clustering problem</strong>: You are studying birds, and you have collected measurements of their beak length, beak depth, wing length, and weight. You suspect there might be several distinct species of birds in your dataset. Since species are distinct categories, it makes sense to use clustering to group the birds into categories that may correspond to species or sub-species.</p>
+<p><strong>Example dimensionality reduction problem</strong>: You are studying mental health data. You have collected survey responses from individuals on various aspects of their mental health, including stress levels, anxiety, depression, and overall well-being. You want to reduce these multiple dimensions into a smaller set of underlying factors that capture the main variations in mental health. Since many mental health factors exist on a spectrum, dimensionality reduction is more appropriate here.</p>
+</section>
+<section id="other-clustering-variants" class="level2">
+<h2 class="anchored" data-anchor-id="other-clustering-variants">Other Clustering Variants</h2>
+<p>There are many alternative flavours of clustering that can be more appropriate for different applications/data types:</p>
+<ul>
+<li><p><strong>Hierarchical clustering</strong> organizes clusters in a tree-like structure, creating hierarchical relationships between the different clusters. This algorithm is especially popular for biological data.</p></li>
+<li><p><strong>Gaussian mixture models</strong> are a generalization of k-means where the cluster distances are generalized and cluster membership becomes “fuzzy” or probabilistic. You may learn about this method in a more advanced machine learning class.</p></li>
+<li><p><strong>Spectral clustering</strong> is similar to k-means clustering, except it is designed for <em>graphical data</em> (i.e.&nbsp;if your data is a social network, a “musical influence” chart, etc.)</p></li>
+</ul>
+<p>You don’t need to know any of these, but be aware that they’re out there. Also, if k-means doesn’t immediately work for your data, with some googling you’ll likely find a variant that does!</p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Clustering is an unsupervised learning method that maps covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to discrete cluster labels <span class="math inline">\(C \in \{1, 2, \ldots, k\}\)</span>.</li>
+<li>K-means clustering is a simple and widely used clustering algorithm that aims to minimize within-cluster variation, as measured by Euclidean distance.</li>
+<li>the centroids to be the mean of the points in each cluster.</li>
+<li>The number of clusters <span class="math inline">\(k\)</span> can be chosen using heuristic methods like the Calinski-Harabasz index.</li>
+<li>There are many other clustering algorithms and variants that may be more appropriate for different data types (e.g.&nbsp;graph data) and applications (e.g.&nbsp;biological data).</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_14_clustering.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_14_clustering.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
