@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-11-04">
+<meta name="dcterms.date" content="2025-11-06">
 
 <title>Lecture 14: Clustering – UBC Stat406 2025 W1</title>
 <style>
@@ -238,7 +238,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 4, 2025</p>
+      <p class="date">November 6, 2025</p>
     </div>
   </div>
   
@@ -524,11 +524,11 @@ and now this derivation should look exactly like what we did in the bias-varianc
 </ul>
 <section id="what-do-we-want-from-our-clustering" class="level4">
 <h4 class="anchored" data-anchor-id="what-do-we-want-from-our-clustering">What Do We Want From Our Clustering?</h4>
-<p>In general, there are two key desiderata for our clusters. We’ve already talked about one of them:</p>
+<p>In general, there are three key desiderata for our clusters. We’ve already talked about one of them:</p>
 <ol type="1">
 <li><strong>Points within clusters should be similar to each other.</strong> This quantity is exactly what k-means optimizes for:</li>
 </ol>
-<p><span class="math display">\[ W := \frac{1}{2} \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2}\sum_{j=1}^k \vert C_j \vert \sum_{i \in C_j} \left\| X_i - \mu_j \right\|_2^2 \]</span></p>
+<p><span class="math display">\[ W := \frac{1}{2} \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2}\sum_{j=1}^k \sum_{i \in C_j} \left\| X_i - \mu_j \right\|_2^2 \]</span></p>
 <ol start="2" type="1">
 <li><strong>Points in different clusters should be dissimilar to each other.</strong> This quantity is not directly optimized by k-means, but is still important. It is measured by the <strong>between-cluster variation</strong> quantity, which measures the weighted average distance between pairs of cluster centroids:</li>
 </ol>
@@ -536,6 +536,9 @@ and now this derivation should look exactly like what we did in the bias-varianc
 <p>As with the within-cluster variation, this summation over all pairs can be simplified to a summation over individual clusters:</p>
 <p><span class="math display">\[ B = \sum_{j=1}^k |C_j| \| \mu_j - \mu \|_2^2 \]</span></p>
 <p>where <span class="math inline">\(\mu = \frac{1}{n} \sum_{i=1}^n X_i\)</span> is the overall mean of the covariates.</p>
+<ol start="3" type="1">
+<li>We don’t want too many clusters. If we let <span class="math inline">\(k=n\)</span>, then each point is its own cluster, which is not a useful clustering!</li>
+</ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="The `kmeans` function in R automatically computes all of these variables">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -600,17 +603,19 @@ Available components:
 Answer
 </summary>
 <ul>
-<li>As we add more clusters, each cluster will have fewer points. Having fewer points means that points will be closer to one another, so within-cluster variation decreases.</li>
-<li>As we add more clusters, the clusters will be closer to one another, so between-cluster variation also decreases.</li>
+<li><p>As we add more clusters, each cluster will have fewer points. Thus, the points in each cluster will be closer together, and the within-cluster variation decreases.</p></li>
+<li><p>As we add more clusters, the between-cluster variation increases! (In my opinion, the intuition for this idea is best understood in reverse. <span class="math inline">\(B\)</span> essentially measures the empirical variance of our <span class="math inline">\(X_i\)</span> if we were to replace each <span class="math inline">\(X_i\)</span> with its cluster centroid <span class="math inline">\(\mu_{f_{\mathcal D}(X_i)}\)</span>. As we decrease the number of clusters, we are replacing many <span class="math inline">\(X_i\)</span> with the same centroid, which reduces the empirical variance of the data.)</p></li>
 </ul>
+If you want to understand see this relationship more rigorously, try to describe it via the <a href="https://en.wikipedia.org/wiki/Law_of_total_variance">law ot total variance</a>.
 </details>
 </div>
 </div>
-<p>A simple heuristic for choosing <span class="math inline">\(k\)</span> is to maximize the (weighted) ratio between these two quantities:</p>
+<p>A simple heuristic to balance these three criteria is the following ratio:</p>
 <p><span class="math display">\[ \mathrm{CH} := \frac{B/(k-1)}{W/(n-k)}. \]</span></p>
 <ul>
-<li>Note that both <span class="math inline">\(B\)</span> and <span class="math inline">\(W\)</span> are functions of <span class="math inline">\(k\)</span>, so changing the number of clusters will change both quantities.</li>
-<li>This quantity is known as the <strong>Calinski-Harabasz (CH) index</strong></li>
+<li>Note that both <span class="math inline">\(B\)</span> increases and <span class="math inline">\(W\)</span> decreases as <span class="math inline">\(k\)</span> increases.</li>
+<li>The normalization of both factors by <span class="math inline">\(k-1\)</span> and <span class="math inline">\(n-k\)</span> ensures that we don’t just keep increasing <span class="math inline">\(k\)</span> to maximize this quantity.</li>
+<li>This quantity is known as the <strong>Calinski-Harabasz (CH) index</strong>.</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="K-means Clustering With Model Selection">
 <div class="callout-header d-flex align-content-center">
