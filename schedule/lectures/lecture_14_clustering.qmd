@@ -240,13 +240,13 @@ However, note that you may get different clustering assignments on different run
 
 #### What Do We Want From Our Clustering?
 
-In general, there are two key desiderata for our clusters.
+In general, there are three key desiderata for our clusters.
 We've already talked about one of them:
 
 1. **Points within clusters should be similar to each other.**
   This quantity is exactly what k-means optimizes for:
 
-  $$ W := \frac{1}{2} \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2}\sum_{j=1}^k \vert C_j \vert \sum_{i \in C_j} \left\| X_i - \mu_j \right\|_2^2 $$
+  $$ W := \frac{1}{2} \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2}\sum_{j=1}^k \sum_{i \in C_j} \left\| X_i - \mu_j \right\|_2^2 $$
 
 2. **Points in different clusters should be dissimilar to each other.**
   This quantity is not directly optimized by k-means, but is still important.
@@ -261,6 +261,9 @@ We've already talked about one of them:
 
   where $\mu = \frac{1}{n} \sum_{i=1}^n X_i$ is the overall mean of the covariates.
 
+3. We don't want too many clusters.
+  If we let $k=n$, then each point is its own cluster,
+  which is not a useful clustering!
 
 :::{.callout-tip collapse=true title="The `kmeans` function in R automatically computes all of these variables"}
 
@@ -282,17 +285,26 @@ As the total number of clusters $k$ increases...
 
 <details>
   <summary>Answer</summary>
-- As we add more clusters, each cluster will have fewer points. Having fewer points means that points will be closer to one another, so within-cluster variation decreases.
-- As we add more clusters, the clusters will be closer to one another, so between-cluster variation also decreases.
+- As we add more clusters, each cluster will have fewer points.
+  Thus, the points in each cluster will be closer together, and the within-cluster variation decreases.
+
+- As we add more clusters, the between-cluster variation increases!
+  (In my opinion, the intuition for this idea is best understood in reverse.
+   $B$ essentially measures the empirical variance of our $X_i$ if we were to replace each $X_i$ with its cluster centroid $\mu_{f_{\mathcal D}(X_i)}$.
+   As we decrease the number of clusters, we are replacing many $X_i$ with the same centroid, which reduces the empirical variance of the data.)
+
+If you want to understand see this relationship more rigorously,
+try to describe it via the [law ot total variance](https://en.wikipedia.org/wiki/Law_of_total_variance).
 </details>
 :::
 
-A simple heuristic for choosing $k$ is to maximize the (weighted) ratio between these two quantities:
+A simple heuristic to balance these three criteria is the following ratio:
 
 $$ \mathrm{CH} := \frac{B/(k-1)}{W/(n-k)}. $$
 
-- Note that both $B$ and $W$ are functions of $k$, so changing the number of clusters will change both quantities.
-- This quantity is known as the **Calinski-Harabasz (CH) index**
+- Note that both $B$ increases and $W$ decreases as $k$ increases.
+- The normalization of both factors by $k-1$ and $n-k$ ensures that we don't just keep increasing $k$ to maximize this quantity.
+- This quantity is known as the **Calinski-Harabasz (CH) index**.
 
 :::{.callout-note title="K-means Clustering With Model Selection"}
 For all $k \in \{2, 3, \ldots, k_{\max}\}$ (where $k_{\max} < n$ is some maximum number of clusters we want to consider):
