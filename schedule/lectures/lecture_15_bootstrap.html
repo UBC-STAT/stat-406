@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-11-06">
+
+<title>Lecture 15: The Bootstrap – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#uncertainty-quantification" id="toc-uncertainty-quantification" class="nav-link" data-scroll-target="#uncertainty-quantification">Uncertainty Quantification</a>
+  <ul class="collapse">
+  <li><a href="#simulation-based-statistics" id="toc-simulation-based-statistics" class="nav-link" data-scroll-target="#simulation-based-statistics">Simulation-Based Statistics</a></li>
+  </ul></li>
+  <li><a href="#approximating-new-datasets-via-the-bootstrap" id="toc-approximating-new-datasets-via-the-bootstrap" class="nav-link" data-scroll-target="#approximating-new-datasets-via-the-bootstrap">Approximating New Datasets via the Bootstrap</a>
+  <ul class="collapse">
+  <li><a href="#the-bootstrap" id="toc-the-bootstrap" class="nav-link" data-scroll-target="#the-bootstrap">The Bootstrap</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#from-bootstrap-samples-to-confidence-intervals" id="toc-from-bootstrap-samples-to-confidence-intervals" class="nav-link" data-scroll-target="#from-bootstrap-samples-to-confidence-intervals">From Bootstrap Samples to Confidence Intervals</a>
+  <ul class="collapse">
+  <li><a href="#the-percentile-interval" id="toc-the-percentile-interval" class="nav-link" data-scroll-target="#the-percentile-interval">The Percentile Interval</a></li>
+  <li><a href="#the-pivotal-interval" id="toc-the-pivotal-interval" class="nav-link" data-scroll-target="#the-pivotal-interval">The Pivotal Interval</a></li>
+  </ul></li>
+  <li><a href="#sources-of-error-and-improving-the-bootstrap" id="toc-sources-of-error-and-improving-the-bootstrap" class="nav-link" data-scroll-target="#sources-of-error-and-improving-the-bootstrap">Sources of Error, and Improving the Bootstrap</a>
+  <ul class="collapse">
+  <li><a href="#correcting-for-statistical-error" id="toc-correcting-for-statistical-error" class="nav-link" data-scroll-target="#correcting-for-statistical-error">Correcting for Statistical Error</a></li>
+  <li><a href="#correcting-for-simulation-error" id="toc-correcting-for-simulation-error" class="nav-link" data-scroll-target="#correcting-for-simulation-error">Correcting for Simulation Error</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_15_bootstrap.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_15_bootstrap.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 15: The Bootstrap</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 6, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you will be able to:</p>
+<ol type="1">
+<li>Explain the bootstrap procedure and its purpose in estimating confidence intervals</li>
+<li>Identify when the bootstrap is more/less advantageous than analytic methods of uncertainty quantification</li>
+<li>Articulate the assumptions underpinning the bootstrap and its limits as an approximation</li>
+<li>Implement the bootstrap for any statistical algorithm in pseudocode</li>
+<li>Differentiate between different bootstrap intervals and identify the “correct” one</li>
+</ol>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<p>We spent much of the first half of the course on linear models, in part due to their ubiquity but also due to our ability to analyze them statistically.</p>
+<ul>
+<li>In STAT 306, you derived analytic <strong>confidence intervals</strong> for linear models as a way to quantify uncertainty in our parameter estimates/the true responses due to limited data.</li>
+<li>In this course, we probably demonstrated that methods like <strong>ridge regularization</strong> reduce variance.</li>
+<li>Moreover, we rigorously argued that methods like <strong>basis expansions</strong> reduce bias.</li>
+</ul>
+<p>However, these methods for uncertaity quantification, variance reduction, and bias reduction all relied on linear structure. Other predictive/statistical models do not have such convenient analytic properties.</p>
+<p>In this module, we will replace <strong>mathematical analysis</strong> with <strong>computational simulation</strong> to achieve similar goals.</p>
+<ol type="1">
+<li><p>In this lecture, we will introduce the <strong>bootstrap</strong>, a computational method for estimating predictive uncertainty in arbitrary predictive models (with almost no assumptions about the statistical or predictive model)!</p></li>
+<li><p>In the following lectures, we will introduce <strong>ensemble methods</strong> as generic tools to either provably reduce variance (<strong>bagging, random forests</strong>) or reduce bias (<strong>boosting</strong>).</p></li>
+</ol>
+</section>
+<section id="uncertainty-quantification" class="level2">
+<h2 class="anchored" data-anchor-id="uncertainty-quantification">Uncertainty Quantification</h2>
+<p>In STAT 306, you produced confidence intervals for the response <span class="math inline">\(Y\)</span> of a (fixed) test covariate <span class="math inline">\(x\)</span> under the assumptions of a linear statistical model:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Stat406)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(prostate, <span class="at">package =</span> <span class="st">"ElemStatLearn"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>prostate <span class="ot">&lt;-</span> prostate <span class="sc">|&gt;</span> <span class="fu">filter</span>(train <span class="sc">==</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(<span class="sc">-</span>train)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>lm_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(lpsa <span class="sc">~</span> . , <span class="at">data =</span> prostate)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>test_x <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">lcavol =</span> <span class="dv">0</span>, <span class="at">lweight =</span> <span class="dv">3</span>, <span class="at">age =</span> <span class="dv">65</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">lbph =</span> <span class="dv">0</span>, <span class="at">svi =</span> <span class="dv">0</span>, <span class="at">lcp =</span> <span class="dv">0</span>, <span class="at">gleason =</span> <span class="dv">7</span>, <span class="at">pgg45 =</span> <span class="dv">0</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(lm_fit, <span class="at">newdata =</span> test_x, <span class="at">interval =</span> <span class="st">"prediction"</span>, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        fit        lwr      upr
+1 0.8296435 -0.7034454 2.362732</code></pre>
+</div>
+</div>
+<ul>
+<li><p>These confidence intervals tell us that, under our linearity assumptions, the test response <span class="math inline">\(Y\)</span> will fall within the interval with 95% probability.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="What does &quot;95% Probability&quot; Mean?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What does “95% Probability” Mean?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>We assume that our training data are <strong>random samples</strong> with <span class="math inline">\(Y = X^\top \beta + \epsilon\)</span>, where <span class="math inline">\(\epsilon \sim \mathcal{N}(0, \sigma^2)\)</span>, for some fixed <span class="math inline">\(\beta, \sigma\)</span>.</li>
+<li>95% probability refers to the randomness in the training data.</li>
+<li>If we repeatedly sampled new training datasets, trained linear models on them, and computed 95% confidence intervals for predictions at <span class="math inline">\(x\)</span>, then 95% of those confidence intervals would contain the true response <span class="math inline">\(Y\)</span> at <span class="math inline">\(x\)</span>.</li>
+</ul>
+</div>
+</div>
+</div></li>
+<li><p>We derive these confidence intervals analytically using our statistical model, properties of our OLS estimator:</p>
+<p><span class="math display">\[
+\begin{align}
+  \mathbb E[ \hat \beta_\mathrm{OLS}] &amp;= \beta \\
+  \mathrm{Cov}[ \hat \beta_\mathrm{OLS} \mid \boldsymbol X] &amp;= \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1},
+\end{align}
+\]</span></p>
+<p>and by using the fact that <span class="math inline">\(\hat \beta_\mathrm{OLS} \mid \boldsymbol X\)</span> is Gaussian under our statistical model.</p></li>
+</ul>
+<p>However, consider what happens if we use a predictive model that’s based on a more complicated (or implicit) statistical model, like a decision tree or k-nearest neighbors.</p>
+<ul>
+<li>We haven’t necessarily defined the conditional distribution of <span class="math inline">\(Y \mid X\)</span>.</li>
+<li>Even if we did, the recursive decision tree algorithm is too complicated to compute expectations/variances of the estimator analytically.</li>
+</ul>
+<section id="simulation-based-statistics" class="level3">
+<h3 class="anchored" data-anchor-id="simulation-based-statistics">Simulation-Based Statistics</h3>
+<p>The key idea in this lecture (and module) is to use <strong>brute-force computation</strong> when closed-form math becomes too difficult.</p>
+<ul>
+<li><p>Imagine that we want to construct a confidence interval around the response <span class="math inline">\(Y\)</span> for some (fixed) test covariates <span class="math inline">\(x\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span></p>
+<ul>
+<li>As always, <span class="math inline">\(\hat f_{\mathcal D}\)</span> is a predictive model trained on dataset <span class="math inline">\(\mathcal D\)</span>.</li>
+</ul></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why do we Care About Confidence Intervals for Predictions?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why do we Care About Confidence Intervals for Predictions?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Intuitively, these confidence interval should reflect how much <span class="math inline">\(\hat Y\)</span> would change if we had a different training dataset <span class="math inline">\(\mathcal D'\)</span>.</li>
+<li>If the confidence interval is narrow, then <span class="math inline">\(95\%\)</span> of all training samples would lead to similar predictions at <span class="math inline">\(x\)</span>, giving us confidence that this prediction is likely accurate.</li>
+<li>Conversely, if the confidence interval is wide, then we know that the prediction is highly sensitive to the training data, and we should be less confident in its accuracy.</li>
+</ul>
+</div>
+</div>
+</div>
+<ul>
+<li><p>In order to compute a confidence interval for <span class="math inline">\(Y\)</span> based on the central limit theorem, we need to estimate <span class="math inline">\(\mathrm{Var}[ \hat Y \mid X=x ] = \mathrm{Var}[ \hat f_{\mathcal D}(x) ]\)</span></p></li>
+<li><p>If we had access to <span class="math inline">\(100\)</span> different training samples, we could train <span class="math inline">\(100\)</span> different models <span class="math inline">\(\hat f_{\mathcal D^{(1)}}, \ldots, \hat f_{\mathcal D^{(100)}}\)</span>, compute their predictions at <span class="math inline">\(x\)</span>, and estimate this variance empirically.</p></li>
+<li><p>However, we only have access to one training dataset <span class="math inline">\(\mathcal D\)</span>. We thus need a way to <strong>simulate</strong> different training datasets <span class="math inline">\(\mathcal D^{(1)}, \ldots, \mathcal D^{(100)}\)</span> using only the data in <span class="math inline">\(\mathcal D\)</span>.</p></li>
+<li><p>This idea of (1) simulating new datasets and (2) using those datasets to estimate uncertainty is the core idea behind <strong>simulation-based statistics</strong>. We use computation to approximate mathematical expectations/variances that we cannot compute analytically.</p></li>
+</ul>
+</section>
+</section>
+<section id="approximating-new-datasets-via-the-bootstrap" class="level2">
+<h2 class="anchored" data-anchor-id="approximating-new-datasets-via-the-bootstrap">Approximating New Datasets via the Bootstrap</h2>
+<ul>
+<li><p>Imagine that I have <span class="math inline">\(X_1, \ldots, X_n\)</span> drawn i.i.d. from some distribution <span class="math inline">\(P(X)\)</span>.</p></li>
+<li><p>The <strong>empirical distribution</strong> <span class="math inline">\(\hat P(X)\)</span> is the discrete distribution that places mass <span class="math inline">\(1/n\)</span> at each observed data point <span class="math inline">\(X_i\)</span>:</p>
+<p><span class="math display">\[
+\hat P(X=x) = \frac{1}{n} \sum_{i=1}^n \delta_{X_i}(x)
+\]</span></p>
+<p>where <span class="math inline">\(\delta_{X_i}(x)\)</span> is a point mass at <span class="math inline">\(X_i\)</span>.</p></li>
+<li><p>If <span class="math inline">\(n\)</span> is large enough, then <span class="math inline">\(\hat P(X) \approx P(X)\)</span>:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(x, <span class="at">probability =</span> <span class="cn">TRUE</span>, <span class="at">breaks =</span> <span class="dv">10</span>, <span class="at">main =</span> <span class="st">"Empirical Distribution vs True Distribution"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">dnorm</span>(x), <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"True Distribution"</span>, <span class="st">"Empirical Distribution"</span>), <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"black"</span>), <span class="at">lwd =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lecture_15_bootstrap_files/figure-html/empirical-dist-example-1.png" class="img-fluid figure-img" width="480"></p>
+<figcaption>Empirical distribution approximating true distribution</figcaption>
+</figure>
+</div>
+</div>
+</div></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="What is the Implication of $\hat P(X) \approx P(X)$?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What is the Implication of <span class="math inline">\(\hat P(X) \approx P(X)\)</span>?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Let’s imagine I sample a new point <span class="math inline">\(X^*\)</span> from <span class="math inline">\(P(X)\)</span>, and another point <span class="math inline">\(\hat X^{*}\)</span> from <span class="math inline">\(\hat P(X)\)</span>.</li>
+<li>If <span class="math inline">\(\hat P(X) \approx P(X)\)</span>, then the distribution of <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\hat X^{*}\)</span> should be similar.</li>
+<li>Thus, sampling from the empirical distribution <span class="math inline">\(\hat P(X)\)</span> is (approximately) equivalent to sampling from the true distribution <span class="math inline">\(P(X)\)</span>!</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>If we wish to sample a whole-new dataset <span class="math inline">\(\mathcal D' = \{ X_1', \ldots, X_n' \}\)</span> that has (approximately) the same distribution as our original dataset <span class="math inline">\(\mathcal D = \{ X_1, \ldots, X_n \}\)</span>, we can thus sample each <span class="math inline">\(X_i'\)</span> i.i.d. from the empirical distribution <span class="math inline">\(\hat P(X)\)</span>.</li>
+</ul>
+<section id="the-bootstrap" class="level3">
+<h3 class="anchored" data-anchor-id="the-bootstrap">The Bootstrap</h3>
+<p>This idea gives us a recipe to sample many datasets <span class="math inline">\(\mathcal D^{(1)}, \ldots, \mathcal D^{(B)}\)</span> that are (approximately) drawn from the same distribution as our original dataset <span class="math inline">\(\mathcal D\)</span>, which is often referred to as <strong>the bootstrap</strong>:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="The Bootstrap">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>The Bootstrap
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Construct the empirical distribution <span class="math inline">\(\hat P(X, Y)\)</span> based on the observed data points <span class="math inline">\((X_i, Y_i)\)</span> in <span class="math inline">\(\mathcal D\)</span>.</li>
+<li>For <span class="math inline">\(b = 1, \ldots, B\)</span>:
+<ul>
+<li>Sample <span class="math inline">\(n\)</span> data points <span class="math inline">\((X_i^{(b)}, Y_i^{(b)})\)</span> <em>with replacement</em> from <span class="math inline">\(\hat P(X, Y)\)</span> to form dataset <span class="math inline">\(\mathcal D^{(b)}\)</span>.</li>
+<li>Compute the statistic of interest (e.g.&nbsp;prediction <span class="math inline">\(\hat f_{\mathcal D^{(b)}}(x)\)</span>) on dataset <span class="math inline">\(\mathcal D^{(b)}\)</span>. (<strong>Important</strong>: this step will require training <span class="math inline">\(b\)</span> models on the <span class="math inline">\(b\)</span> simulated datasets if the statistic of interest is a model prediction.)</li>
+</ul></li>
+<li>Compute the empirical variance <span class="math inline">\(\mathrm{Var}[ \hat f_{\mathcal D^{(b)}}(x) ]\)</span>, or construct a confidence interval from the <span class="math inline">\(B\)</span> computed statistics (using methods to be explained shortly).</li>
+</ol>
+</div>
+</div>
+<ul>
+<li><p>Note that we sample <em>with replacement</em> from the empirical distribution because we want each data point in the new dataset to be an independent draw from <span class="math inline">\(\hat P(X, Y) \approx P(X, Y)\)</span>.</p></li>
+<li><p>Once we have sampled these new datasets, we can train models <span class="math inline">\(\hat f_{\mathcal D^{(1)}}, \ldots, \hat f_{\mathcal D^{(B)}}\)</span> on each dataset and use the predictions at <span class="math inline">\(x\)</span> to estimate the variance of <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span>.</p></li>
+<li><p>Amazingly, this simple procedure can be used to estimate the variance of the predictions from any model, or just about any statistic that we could ever care about! We don’t need to derive complicated analytic expressions, nor do we even need to make any (significant) assumptions about the statistical model underlying our data!</p></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="The Catch">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The Catch
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>The Fundamental Premise (TM) of the Bootstrap is that <strong>a sufficiently large sample looks like the population</strong>, so that <em>sampling from the sample looks like sampling from the population.</em></li>
+<li>If <span class="math inline">\(\mathcal D\)</span> is too small or not representative of the true data distribution, then the bootstrap will not yield datasets that approximate the true data distribution well, resulting in poor confidence intervals.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<div class="callout callout-style-default callout-tip callout-titled" title="A (Non-Predictive) Example">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>A (Non-Predictive) Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While we motivated the bootstrap as a way to obtain confidence intervals around responses in learning problems, it’s really a general way to form confidence intervals around any statistical quantity.</p>
+<p>Here we will walk through a non-predictive example, since you will look at a predictive example for homework!</p>
+</div>
+</div>
+<p>Imagine that we have <span class="math inline">\(X_1, \ldots, X_n\)</span> drawn i.i.d. from <span class="math inline">\(\mathrm{Exponential}(1/5)\)</span> with pdf <span class="math inline">\(f(x) = \frac{1}{5}e^{-x/5}\)</span>.</p>
+<ul>
+<li><p>Imagine I want to estimate a confidence interval for the sample mean <span class="math inline">\(\bar X\)</span>.</p></li>
+<li><p>The CLT (if <span class="math inline">\(n\)</span> is sufficiently large) gives <span class="math display">\[
+\frac{\sqrt{n}(\bar X - \mathbb E[X])}{{\mathrm{se}}} \approx \mathcal{N}(0, 1),
+\]</span> where <span class="math inline">\(\mathrm{se}\)</span> is the standard error of the sample mean, giving us a 95% confidence interval <span class="math display">\[
+\bar X \pm 2 \hat{\mathrm{se}}/\sqrt{n}.
+\]</span></p></li>
+<li><p>However, what if we wanted to estimate a confidence interval for the <strong>sample median</strong> instead?</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Visualizing the Population Distribution">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Visualizing the Population Distribution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The median is different from the mean for the exponential distribution:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">12</span>)), <span class="fu">aes</span>(x)) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> <span class="cf">function</span>(x) <span class="fu">dexp</span>(x, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">5</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span> <span class="co"># mean</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span> <span class="co"># median</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">2.5</span>, <span class="fl">5.5</span>, <span class="dv">10</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">15</span>, .<span class="dv">05</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"median"</span>, <span class="st">"mean"</span>, <span class="st">"pdf"</span>), <span class="at">parse =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"orange"</span>), <span class="at">size =</span> <span class="dv">6</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_15_bootstrap_files/figure-html/exponential-viz-1.png" class="img-fluid figure-img" width="384"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ul>
+<li><p>We can use the bootstrap along with the pivotal interval to construct a confidence interval for the sample median!</p>
+<ul>
+<li><p>Assume I have some dataset <span class="math inline">\(\mathcal D = \{ X_1, \ldots, X_n \}\)</span> of size <span class="math inline">\(n=500\)</span> drawn i.i.d. from <span class="math inline">\(\mathrm{Exponential}(1/5)\)</span>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">rexp</span>(n, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
+<li><p>First I will draw <span class="math inline">\(100\)</span> <em>bootstrap samples</em> <span class="math inline">\(\mathcal D^{(1)}, \ldots, \mathcal D^{(100)}\)</span> by sampling <span class="math inline">\(n\)</span> points with replacement from my original dataset <span class="math inline">\(\mathcal D\)</span>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406406406</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>bootstrap_samples <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="dv">1</span><span class="sc">:</span>B, <span class="sc">~</span> <span class="fu">sample</span>(x, <span class="at">replace =</span> <span class="cn">TRUE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
+<li><p>Next, I will compute the sample median on each bootstrap sample:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>median_bootstrap <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(bootstrap_samples, <span class="sc">~</span> <span class="fu">median</span>(.x))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
+<li><p>Then I will compute a 95% <strong>confidence interval</strong> for the sample median using the bootstrap sample medians (using a CI formula that we are about to discuss):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>med <span class="ot">&lt;-</span> <span class="fu">median</span>(x)  <span class="co"># Sample median</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the pivotal confidence interval formula for CI</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>CI <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> <span class="fu">quantile</span>(median_bootstrap, <span class="at">probs =</span> <span class="fu">c</span>(<span class="dv">1</span> <span class="sc">-</span> alpha <span class="sc">/</span> <span class="dv">2</span>, alpha <span class="sc">/</span> <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div></li>
+</ul></li>
+<li><p>The plot below shows the <strong>distribution</strong> of the bootstrap sample medians:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(median_bootstrap), <span class="fu">aes</span>(median_bootstrap)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">color =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> CI, <span class="at">color =</span> <span class="st">"orange"</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> med, <span class="at">col =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">qexp</span>(.<span class="dv">5</span>, <span class="dv">1</span> <span class="sc">/</span> <span class="dv">5</span>), <span class="at">col =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"label"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="fu">c</span>(<span class="fl">3.15</span>, <span class="fl">3.5</span>, <span class="fl">3.75</span>), <span class="at">y =</span> <span class="fu">c</span>(.<span class="dv">5</span>, .<span class="dv">5</span>, <span class="dv">1</span>),</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">c</span>(<span class="st">"orange"</span>, <span class="st">"red"</span>, <span class="st">"blue"</span>),</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"widehat(F)"</span>, <span class="st">"true~median"</span>, <span class="st">"widehat(median)"</span>),</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">parse =</span> <span class="cn">TRUE</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"x"</span>) <span class="sc">+</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rug</span>(<span class="fu">aes</span>(<span class="dv">2</span> <span class="sc">*</span> med <span class="sc">-</span> median_bootstrap))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_15_bootstrap_files/figure-html/bootstrap-dist-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>The <strong>blue</strong> line is the sample median.</li>
+<li>The <strong>orange</strong> dashed lines are the bounds of our 95% confidence interval.</li>
+<li>The <strong>rug plot</strong> at the bottom shows the distribution of the bootstrap medians reflected around the sample median.</li>
+</ul>
+<p>This confidence interval is quite good because it contains the true median (the <strong>red</strong> line) and is fairly tight around the sample median!</p></li>
+</ul>
+</section>
+</section>
+<section id="from-bootstrap-samples-to-confidence-intervals" class="level2">
+<h2 class="anchored" data-anchor-id="from-bootstrap-samples-to-confidence-intervals">From Bootstrap Samples to Confidence Intervals</h2>
+<ul>
+<li><p>Recall that we want to generate a confidence interval for our true response <span class="math inline">\(Y \mid X=x\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span> and bootstrapped predictions <span class="math inline">\(\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldots, \hat Y^{(B)} = \hat f_{\mathcal D^{(B)}}(x)\)</span>.</p></li>
+<li><p>There are two primary techniques used to construct confidence intervals from bootstrap samples.</p></li>
+</ul>
+<section id="the-percentile-interval" class="level3">
+<h3 class="anchored" data-anchor-id="the-percentile-interval">The Percentile Interval</h3>
+<ul>
+<li><p>The <strong>percentile interval</strong> is given by the empirical quantiles of the bootstrap sample statistics:</p>
+<p><span class="math display">\[
+[\hat Y^{(b)}_{\alpha/2},\ \hat Y^{(b)}_{1-\alpha/2}]
+\]</span></p>
+<p>where <span class="math inline">\(\hat Y^{(b)}_q\)</span> is the <span class="math inline">\(q\)</span> quantile of <span class="math inline">\(\hat Y^{(b)}\)</span>.</p></li>
+<li><p>We teach this one in DSCI100 because it’s easy and “looks right”, but it’s not theoretically justified in general. It <em>does</em> have the right coverage (asymptotically) in some specific cases.</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="What does the Percentile Interval Measure?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What does the Percentile Interval Measure?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Recall that the bootstrap gives us many samples of <span class="math inline">\(\hat Y\)</span> from (approximate/Bootstrap) training samples.</li>
+<li>The percentile interval constructs an (approximate) <span class="math inline">\(95\%\)</span> confidence interval of <span class="math inline">\(\hat Y\)</span>; i.e., <span class="math inline">\(95\%\)</span> of models trained on different training samples would (approximately) produce predictions within this interval.</li>
+<li>However, this is <em>not</em> the same as a <span class="math inline">\(95\%\)</span> confidence interval for the true response <span class="math inline">\(Y \mid X=x\)</span>!</li>
+<li>Thus, the percentile interval may not have the correct coverage for the true response!</li>
+</ul>
+</div>
+</div>
+<details>
+<summary>
+<p>When is the Percentile Interval Valid?</p>
+</summary>
+<p>If there exists a monotonic function <span class="math inline">\(m: \mathbb R \to \mathbb R\)</span> so that <span class="math inline">\(m(\hat Y)\)</span> is Gaussian distributed, i.e.&nbsp;<span class="math inline">\(m(\hat Y) \sim N(m(\hat Y), c^2)\)</span>, then the percentile interval has asymptotically correct coverage.</p>
+<p>For most complicated statistics (e.g.&nbsp;the predictions of a decision tree), it’s hard to know whether such a function <span class="math inline">\(m\)</span> exists.</p>
+</details></li>
+<li><p>If we want (asymptotically) correct confidence intervals around the <strong>true response</strong>, we should use the <strong>pivotal interval</strong>.</p></li>
+</ul>
+</section>
+<section id="the-pivotal-interval" class="level3">
+<h3 class="anchored" data-anchor-id="the-pivotal-interval">The Pivotal Interval</h3>
+<ul>
+<li><p>The <strong>pivotal interval</strong> is given by</p>
+<p><span class="math display">\[
+[2\hat Y - \hat Y^{(b)}_{1-\alpha/2},\ 2\hat Y - \hat Y^{(b)}_{\alpha/2}]
+\]</span></p>
+<p>where again <span class="math inline">\(\hat Y\)</span> is the statistic computed on the original dataset, and <span class="math inline">\(\hat Y^{(b)}_q\)</span> is the <span class="math inline">\(q\)</span> quantile of the bootstrap sample statistics.</p></li>
+<li><p>This interval is justified under fairly general conditions, and thus is the preferred method for constructing bootstrap confidence intervals of the true response <span class="math inline">\(Y \mid X=x\)</span></p></li>
+<li><p><em>For details on why this interval works, see <a href="https://www.stat.cmu.edu/~larry/all-of-statistics/">All of Statistics, Ch. 8.3</a>, or visit me in office hours!</em></p></li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="What about Other Bootstrap Intervals?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What about Other Bootstrap Intervals?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>There are many other bootstrap confidence intervals (e.g.&nbsp;the bias-corrected and accelerated (BCa) interval), but they are more complicated to compute and don’t have significant advantages over the pivotal interval in most cases.</li>
+<li>At the very least, you should <strong>definitely NOT use</strong> the “normal” confidence interval <span class="math inline">\([\hat{Y} - z_{1-\alpha/2}\hat{\mathrm{se}}, \:\: \hat{Y} + z_{1-\alpha/2}\hat{\mathrm{se}}]\)</span>, which is only likely to work if <span class="math inline">\(\hat Y\)</span> is approximately Gaussian.</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="sources-of-error-and-improving-the-bootstrap" class="level2">
+<h2 class="anchored" data-anchor-id="sources-of-error-and-improving-the-bootstrap">Sources of Error, and Improving the Bootstrap</h2>
+<p>The bootstrap is, at the end of the day, just an approximation. There are two sources of error that could make our variance estimates or confidence intervals incorrect:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Sources of Error in the Bootstrap">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Sources of Error in the Bootstrap
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><p><strong>Statistical error</strong> from using only <span class="math inline">\(n\)</span> data points to estimate the true data distribution. We don’t have the whole population so we make an error by using a sample. (Note: this part is what <strong>always</strong> happens with data, and what the science of statistics analyzes.)</p></li>
+<li><p><strong>Simulation error</strong> from using only <span class="math inline">\(B\)</span> samples to estimate <span class="math inline">\(\mathrm{Var}[\hat Y]\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<section id="correcting-for-statistical-error" class="level3">
+<h3 class="anchored" data-anchor-id="correcting-for-statistical-error">Correcting for Statistical Error</h3>
+<ul>
+<li>We can used more advanced methods to alleviate the statistical error from using only <span class="math inline">\(n\)</span> data points.</li>
+<li>For example, the <strong>parametric bootstrap</strong> assumes some assumptions about the data-generating distribution (e.g.&nbsp;<span class="math inline">\(\hat Y\)</span> is Gaussian) to improve the quality of the bootstrap samples.</li>
+<li>However, if you make incorrect assumptions about the data distribution, you may make things worse!</li>
+</ul>
+</section>
+<section id="correcting-for-simulation-error" class="level3">
+<h3 class="anchored" data-anchor-id="correcting-for-simulation-error">Correcting for Simulation Error</h3>
+<ul>
+<li>This one’s easier, at least in theory!</li>
+<li>You can always use more Bootstrap samples <span class="math inline">\(B\)</span> to reduce simulation error.</li>
+<li>In practice, start with <span class="math inline">\(B=100\)</span> or <span class="math inline">\(B=1000\)</span> samples and compute your variance/confidence intervals. Then try adding <span class="math inline">\(100\)</span> more samples. If your confidence intervals change significantly, keep adding more samples until they stabilize.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="More is Better">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>More is Better
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>“Just add more samples” will be a common refrain throughout this module.</li>
+<li>In simulation-based statistics, or when using any computational black-box methods, accuracy will almost always improve if you throw more compute at the problem (i.e.&nbsp;more samples, more models, etc.)</li>
+<li>In practice, you will have a limited amount of computing power, but we’ve essentially removed one design decision: use as much computing power as you have available to get the best results.</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Simulation-based statistics uses computation to approximate mathematical expectations/variances that we cannot compute analytically.</li>
+<li>The bootstrap is a general-purpose method for estimating variances/confidence intervals based on simulating new datasets from the empirical distribution of the observed data.</li>
+<li>The bootstrap can be used to estimate uncertainty for almost any statistic, including predictions from arbitrary predictive models.</li>
+<li>The bootstrap will only work if our empirical data distribution is large enough to approximate the true population.</li>
+<li>The pivotal interval is the preferred method for constructing bootstrap confidence intervals for true responses.</li>
+</ul>
+<p>In the homework, you’ll apply the bootstrap to compute uncertainty estimates of machine learning models. In the next lecture, we’ll show how this bootstrap principle can be applied to make predictions more accurate!</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_15_bootstrap.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_15_bootstrap.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
