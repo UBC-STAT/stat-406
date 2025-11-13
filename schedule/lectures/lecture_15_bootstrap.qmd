@@ -36,7 +36,7 @@ In this module, we will replace **mathematical analysis** with **computational s
 
 ## Uncertainty Quantification
 
-In STAT 306, you produced confidence intervals for the response $Y$ of a (fixed) test covariate $x$ under the assumptions of a linear statistical model:
+In STAT 306, you produced confidence intervals for the regression function $\mathbb E[Y \mid X=x]$ of a (fixed) test covariate $x$ under the assumptions of a linear statistical model:
 
 ```{r lm-pred-conf}
 library(Stat406)
@@ -48,16 +48,16 @@ test_x <- data.frame(
   lcavol = 0, lweight = 3, age = 65,
   lbph = 0, svi = 0, lcp = 0, gleason = 7, pgg45 = 0
 )
-predict(lm_fit, newdata = test_x, interval = "prediction", level = 0.95)
+predict(lm_fit, newdata = test_x, interval = "confidence", level = 0.95)
 ```
 
-- These confidence intervals tell us that, under our linearity assumptions, the test response $Y$ will fall within the interval with 95% probability.
+- These confidence intervals tell us that, under our linearity assumptions, the regression function evaluated at $x$ (i.e. $\mathbb E[Y\mid X=x]$ will fall within the interval with 95% probability.
 
   :::{.callout-note collapse="true" title="What does \"95% Probability\" Mean?"}
   - We assume that our training data are **random samples** with $Y = X^\top \beta + \epsilon$, where $\epsilon \sim \mathcal{N}(0, \sigma^2)$, for some fixed $\beta, \sigma$.
   - 95% probability refers to the randomness in the training data.
   - If we repeatedly sampled new training datasets, trained linear models on them, and computed 95% confidence intervals for predictions at $x$,
-  then 95% of those confidence intervals would contain the true response $Y$ at $x$.
+  then 95% of those confidence intervals would contain $\mathbb E[Y \mid X=x]$.
   :::
 
 - We derive these confidence intervals analytically using our statistical model, properties of our OLS estimator:
@@ -81,7 +81,7 @@ However, consider what happens if we use a predictive model that's based on a mo
 
 The key idea in this lecture (and module) is to use **brute-force computation** when closed-form math becomes too difficult.
 
-- Imagine that we want to construct a confidence interval around the response $Y$ for some (fixed) test covariates $x$ based on our prediction $\hat Y = \hat f_{\mathcal D}(x)$
+- Imagine that we want to construct a confidence interval around the regression function $\mathbb E[Y\mid X=x]$ for some (fixed) test covariates $x$ based on our prediction $\hat Y = \hat f_{\mathcal D}(x)$
 
   - As always, $\hat f_{\mathcal D}$ is a predictive model trained on dataset $\mathcal D$.
 
@@ -168,7 +168,7 @@ We don't need to derive complicated analytic expressions, nor do we even need to
 
 :::{.callout-tip title="A (Non-Predictive) Example"}
 While we motivated the bootstrap as a way to obtain confidence intervals
-around responses in learning problems,
+around the regression function $\mathbb E[Y\mid X=x]$ in learning problems,
 it's really a general way to form confidence intervals around any statistical quantity.
 
 Here we will walk through a non-predictive example, since you will look at a predictive example for homework!
@@ -268,7 +268,7 @@ ggplot(data.frame(x = c(0, 12)), aes(x)) +
 
 ## From Bootstrap Samples to Confidence Intervals
 
-- Recall that we want to generate a confidence interval for our true response $Y \mid X=x$ based on our prediction $\hat Y = \hat f_{\mathcal D}(x)$
+- Recall that we want to generate a confidence interval for our regression function $\mathbb E[Y \mid X=x]$ based on our prediction $\hat Y = \hat f_{\mathcal D}(x)$
 and bootstrapped predictions $\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldots, \hat Y^{(B)} = \hat f_{\mathcal D^{(B)}}(x)$.
 
 - There are two primary techniques used to construct confidence intervals from bootstrap samples.
@@ -301,7 +301,7 @@ and bootstrapped predictions $\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldot
     it's hard to know whether such a function $m$ exists.
   </details>
 
-- If we want (asymptotically) correct confidence intervals around the **true response**, we should use the **pivotal interval**.
+- If we want (asymptotically) correct confidence intervals around the **true regression function**, we should use the **pivotal interval**.
 
 
 ### The Pivotal Interval
@@ -314,7 +314,7 @@ and bootstrapped predictions $\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldot
 
   where again $\hat Y$ is the statistic computed on the original dataset, and $\hat Y^{(b)}_q$ is the $q$ quantile of the bootstrap sample statistics.
 
-- This interval is justified under fairly general conditions, and thus is the preferred method for constructing bootstrap confidence intervals of the true response $Y \mid X=x$
+- This interval is justified under fairly general conditions, and thus is the preferred method for constructing bootstrap confidence intervals of the true regression function $Y \mid X=x$
 
 - *For details on why this interval works, see [All of Statistics, Ch. 8.3](https://www.stat.cmu.edu/~larry/all-of-statistics/), or visit me in office hours!*
 
