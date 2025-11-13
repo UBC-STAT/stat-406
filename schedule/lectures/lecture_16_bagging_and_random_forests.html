@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-11-13">
+
+<title>Lecture 16: Bagging and Random Forests – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#ensemble-methods" id="toc-ensemble-methods" class="nav-link" data-scroll-target="#ensemble-methods">Ensemble Methods</a>
+  <ul class="collapse">
+  <li><a href="#intuition-why-would-ensembles-be-better-than-single-models" id="toc-intuition-why-would-ensembles-be-better-than-single-models" class="nav-link" data-scroll-target="#intuition-why-would-ensembles-be-better-than-single-models">Intuition: Why Would Ensembles Be Better Than Single Models?</a></li>
+  <li><a href="#how-ensembles-can-reduce-variance" id="toc-how-ensembles-can-reduce-variance" class="nav-link" data-scroll-target="#how-ensembles-can-reduce-variance">How Ensembles Can Reduce Variance</a></li>
+  </ul></li>
+  <li><a href="#bagging-bootstrap-aggregating" id="toc-bagging-bootstrap-aggregating" class="nav-link" data-scroll-target="#bagging-bootstrap-aggregating">Bagging: Bootstrap Aggregating</a>
+  <ul class="collapse">
+  <li><a href="#why-does-this-algorithm-work" id="toc-why-does-this-algorithm-work" class="nav-link" data-scroll-target="#why-does-this-algorithm-work">Why does this algorithm work?</a></li>
+  <li><a href="#the-bias-and-variance-of-bagged-trees" id="toc-the-bias-and-variance-of-bagged-trees" class="nav-link" data-scroll-target="#the-bias-and-variance-of-bagged-trees">The Bias and Variance of Bagged Trees</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#advantages-of-bagging" id="toc-advantages-of-bagging" class="nav-link" data-scroll-target="#advantages-of-bagging">Advantages of Bagging</a>
+  <ul class="collapse">
+  <li><a href="#bagged-decision-trees-are-hyperparameter-free" id="toc-bagged-decision-trees-are-hyperparameter-free" class="nav-link" data-scroll-target="#bagged-decision-trees-are-hyperparameter-free">Bagged Decision Trees are Hyperparameter-Free</a></li>
+  <li><a href="#bagged-decision-trees-are-non-parametric-and-universal-approximators" id="toc-bagged-decision-trees-are-non-parametric-and-universal-approximators" class="nav-link" data-scroll-target="#bagged-decision-trees-are-non-parametric-and-universal-approximators">Bagged Decision Trees are Non-Parametric (and Universal Approximators)</a></li>
+  <li><a href="#uncertainty-quantification-for-free" id="toc-uncertainty-quantification-for-free" class="nav-link" data-scroll-target="#uncertainty-quantification-for-free">Uncertainty Quantification “For Free”</a></li>
+  <li><a href="#bagged-decision-trees-give-us-a-risk-estimate-for-free" id="toc-bagged-decision-trees-give-us-a-risk-estimate-for-free" class="nav-link" data-scroll-target="#bagged-decision-trees-give-us-a-risk-estimate-for-free">Bagged Decision Trees Give Us a Risk Estimate “For Free”</a></li>
+  </ul></li>
+  <li><a href="#random-forests" id="toc-random-forests" class="nav-link" data-scroll-target="#random-forests">Random Forests</a>
+  <ul class="collapse">
+  <li><a href="#reducing-correlation-between-trees-to-reduce-variance" id="toc-reducing-correlation-between-trees-to-reduce-variance" class="nav-link" data-scroll-target="#reducing-correlation-between-trees-to-reduce-variance">Reducing Correlation Between Trees to Reduce Variance</a></li>
+  <li><a href="#reducing-correlation-by-subsampling-covariates" id="toc-reducing-correlation-by-subsampling-covariates" class="nav-link" data-scroll-target="#reducing-correlation-by-subsampling-covariates">Reducing Correlation by Subsampling Covariates</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_16_bagging_and_random_forests.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_16_bagging_and_random_forests.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 16: Bagging and Random Forests</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 13, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Define an ensemble method</li>
+<li>Derive the connection between the bootstrap and variance reduction</li>
+<li>Implement the bagging and random forest algorithms in pseudocode</li>
+<li>Articulate advantages and disadvantages of these methods beyond improving accuracy (e.g., uncertainty quantification, computational trade-offs, etc.)</li>
+</ol>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li><p>In the last lecture, we began our foray into computation/simulation-based approaches to learning.</p></li>
+<li><p>We introduced the bootstrap as a mechanism for quantifying uncertainty with minimal assumptions*** about the data-generating distribution.</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="***The Fundamental Assumption of The Bootstrap">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>***The Fundamental Assumption of The Bootstrap
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The only major assumption we made when introducing the bootstrap (beyond our standard i.i.d. data assumption) is that the empirical distribution of our training sample is a <strong>reasonable approximation</strong> of the true (unknown) data-generating distribution.</p>
+<details>
+<summary>
+What are conditions that might make this assumption invalid?
+</summary>
+<ul>
+<li>Small sample size</li>
+<li>High-dimensional covariate space</li>
+<li>Rare examples</li>
+<li>Heavy-tailed distributions</li>
+<li>Violations of the i.i.d. assumption (e.g.&nbsp;biased sampling, time series data, etc.)</li>
+</ul>
+</details>
+</div>
+</div>
+</div></li>
+<li><p>In this lecture, we will use the bootstrap (and other computation/simulation-based techniques) as a black-box mechanism for <strong>variance reduction</strong>.</p></li>
+<li><p>In particular, we will use the bootstrap (and other sampling techniques) to construct <strong>ensembles</strong> of predictive models that, when combined, have lower <strong>variance</strong> (and thus lower risk) than any individual model in the ensemble.</p></li>
+<li><p>These techniques are extremely useful for reducing the variance of non-closed-form predictive models, such as decision trees, where our standard variance reduction techniques (e.g.&nbsp;ridge regularization, lasso, etc.) do not apply.</p></li>
+</ul>
+</section>
+<section id="ensemble-methods" class="level2">
+<h2 class="anchored" data-anchor-id="ensemble-methods">Ensemble Methods</h2>
+<ul>
+<li><p>An <strong>ensemble</strong> is a collection of predictive models whose individual predictions are combined in some way (e.g., by averaging or majority vote) to produce a final prediction.</p></li>
+<li><p>For example, let’s assume that we have <span class="math inline">\(m\)</span> different predictive models, <span class="math inline">\(\hat{f}^{(1)}(X), \hat{f}^{(2)}(X), \ldots, \hat{f}^{(m)}(X)\)</span>, each of which yields a prediction <span class="math inline">\(\hat Y^{(i)}\)</span> of the response associated with <span class="math inline">\(X\)</span>.</p>
+<p><span class="math display">\[\begin{align*}
+\hat Y^{(1)} &amp;= \hat{f}^{(1)}(X) \\
+\hat Y^{(2)} &amp;= \hat{f}^{(2)}(X) \\
+&amp;\vdots \\
+\hat Y^{(m)} &amp;= \hat{f}^{(m)}(X)
+\end{align*}\]</span></p></li>
+<li><p>Importantly, each of the individual models in the ensemble need to be different from one another. (We’ll see why in a second.) There are many mechanisms to achieve this diversity:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="How Can we Create Diverse Models?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>How Can we Create Diverse Models?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>There are many possible answers. Here’s just a few that come to mind:</p>
+<ul>
+<li>Train the same predictive model (e.g.&nbsp;OLS) on different training samples. These training samples can be subsets of the original data, for example.</li>
+<li>Train the same predictive model (e.g.&nbsp;OLS) on different subsets of the covariates.</li>
+<li>Train different types of predictive models (e.g.&nbsp;decision trees, OLS, ridge regression, k-nearest neighbors, etc.) on the same training data.</li>
+<li>Vary the hyperparameters of the same predictive model (e.g.&nbsp;ridge regression with different values of <span class="math inline">\(\lambda\)</span>) on the same training data.</li>
+</ul>
+<p>Importantly, all of the supervised models/training procedures we’ve studied so far are <em>deterministic</em> given the same training data and hyperparameters. Therefore, we cannot simply re-train the same predictive model on the same data and expect to get different models.</p>
+</div>
+</div>
+</div></li>
+<li><p>The <strong>ensemble prediction</strong> <span class="math inline">\(\hat f_\mathrm{ens}(X)\)</span> is given by averaging the predictions of the individual models:</p>
+<p><span class="math display">\[
+\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat Y^{(j)} = \frac{1}{m} \sum_{j=1}^m \hat{f}^{(j)}(X)
+\]</span></p></li>
+<li><p>In general, we’ll see that ensembles have <em>lower risk</em> than individual models in the ensemble. Whether this reduction in risk comes from lower bias or lower variance depends on the <strong>component models</strong> in the ensemble and how they’re constructed.</p></li>
+<li><p>Today, we’ll learn about two procedures for constructing ensembles (bagging and random forests) that yield a reduction in <strong>variance</strong>.</p></li>
+</ul>
+<section id="intuition-why-would-ensembles-be-better-than-single-models" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-why-would-ensembles-be-better-than-single-models">Intuition: Why Would Ensembles Be Better Than Single Models?</h3>
+<ul>
+<li>Intuitively, a good ensemble should be composed of <strong>accurate</strong> models that make <strong>diverse errors</strong>.</li>
+<li>Imagine you are doing bar trivia with a team of friends. Each of you has some knowledge about the trivia topics, but none of you is an expert in all of them.</li>
+<li>You might make errors on the music questions, while friend A makes errors on the history questions, and friend B makes errors on the sports questions.</li>
+<li>However, if you pool your knowledge together, you can cover each other’s weaknesses and answer more questions correctly as a team than any of you could individually.</li>
+<li>In this analogy, each friend is like a model in the ensemble.</li>
+</ul>
+</section>
+<section id="how-ensembles-can-reduce-variance" class="level3">
+<h3 class="anchored" data-anchor-id="how-ensembles-can-reduce-variance">How Ensembles Can Reduce Variance</h3>
+<ul>
+<li>This intuition (models making diverse errors) can be made precise mathematically.</li>
+<li>However, these “errors” made by each of the models could either arise from component models with high bias or high variance.</li>
+<li>In this lecture, we’ll see why ensembles could reduce variance when the component models are <strong>high-variance</strong> estimators.</li>
+</ul>
+<section id="setup-models-trained-on-different-training-samples" class="level4">
+<h4 class="anchored" data-anchor-id="setup-models-trained-on-different-training-samples">Setup: Models trained on Different Training Samples</h4>
+<ul>
+<li><p>Let’s imagine that we have <span class="math inline">\(m\)</span> different training samples, <span class="math inline">\(\mathcal{D}_1, \mathcal{D}_2, \ldots, \mathcal{D}_m\)</span>, each of which is drawn independently from the same data-generating distribution.</p></li>
+<li><p>We train <em>full-depth decision trees</em> on each of these training samples to get <span class="math inline">\(m\)</span> different models, <span class="math inline">\(\hat{f}_{\mathcal{D}_1}(X), \hat{f}_{\mathcal{D}_2}(X), \ldots, \hat{f}_{\mathcal{D}_m}(X)\)</span>.</p></li>
+<li><p>Each of these models is a <strong>high-variance</strong> estimator, meaning that small changes in the training data can lead to large changes in the fitted model.</p></li>
+<li><p>Let’s compute the bias and the variance of the ensemble predictor:</p>
+<p><span class="math display">\[
+\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X)
+\]</span></p></li>
+<li><p>The bias of the ensemble predictor is the same as the bias of the individual model:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Bias Derivation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Bias Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The expected ensemble is exactly the same as the expected individual model:</p>
+<p><span class="math display">\[\begin{align*}
+  \mathbb{E}[\hat{f}_{\text{ens}}(X) \mid X]
+  &amp;= \mathbb{E}\left[\frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X) \mid X\right] \\
+  &amp;= \frac{1}{m} \sum_{j=1}^m \mathbb{E}[\hat{f}_{\mathcal{D}_j}(X) \mid X] \\
+  &amp;= \mathbb{E}[\hat{f}_{\mathcal{D}_j}(X) \mid X].
+\end{align*}\]</span></p>
+<p>where the final equality follows from the fact that all of the <span class="math inline">\(\hat{f}_{\mathcal{D}_j}(X)\)</span> are identically distributed and thus have the same expectation. Therefore, the bias of the ensemble is also the same as the bias of the individual model:</p>
+<p><span class="math display">\[\begin{align*}
+\text{Bias}[\hat{f}_{\text{ens}}(X)] &amp;= \mathbb{E} \left[ \mathbb{E}[\hat{f}_{\text{ens}}(X) \mid X] - \mathbb{E}[Y \mid X] \right] \\
+&amp;= \mathbb{E} \left[ \mathbb{E}[\hat{f}_{\mathcal{D}_j}(X) \mid X] - \mathbb{E}[Y \mid X] \right] \\
+&amp;= \text{Bias}[\hat{f}_{\mathcal{D}_j}(X)]
+\end{align*}\]</span></p>
+</div>
+</div>
+</div></li>
+<li><p>However, the variance of the ensemble predictor is reduced by a factor of <span class="math inline">\(m\)</span> if the training samples are independent:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Variance Derivation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Variance Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Consider the variance of the ensemble predictor for a fixed <span class="math inline">\(X=x\)</span>:</p>
+<p><span class="math display">\[
+\mathrm{Var}[\hat{f}_{\text{ens}}(X) \mid X=x]
+= \mathrm{Var}[\hat{f}_{\text{ens}}(x)]
+= \mathrm{Var}\left[\frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(x)\right]
+\]</span></p>
+<p>Note that when we fix <span class="math inline">\(X=x\)</span>, the only randomness remaining in <span class="math inline">\(\hat{f}_{\text{ens}}(x)\)</span> comes from the randomness in the (independent) training samples <span class="math inline">\(\mathcal{D}_1, \ldots, \mathcal{D}_m\)</span>. Using the following statistical identities:</p>
+<ol type="1">
+<li><span class="math inline">\(\mathrm{Var}[aZ] = a^2 \mathrm{Var}[Z]\)</span> for any random variable <span class="math inline">\(Z\)</span> and constant <span class="math inline">\(a\)</span>; and</li>
+<li>if <span class="math inline">\(Z_1, \ldots, Z_m\)</span> are independent random variables, then <span class="math inline">\(\mathrm{Var}\left[\sum_{j=1}^m Z_j\right] = \sum_{j=1}^m \mathrm{Var}[Z_j]\)</span>;</li>
+</ol>
+<p>we have that</p>
+<p><span class="math display">\[
+\mathrm{Var}[\hat{f}_{\text{ens}}(x)] = \frac{1}{m^2} \sum_{j=1}^m \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(x)] = \frac{1}{m} \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(x)],
+\]</span></p>
+<p>where the final equality follows from the fact that all of the <span class="math inline">\(\hat{f}_{\mathcal{D}_j}(x)\)</span> are identically distributed and thus have the same variance. (If you’re struggling to remember these identities, try to prove them on your own! They’re straightforward to derive from the definition of variance (<span class="math inline">\(\mathrm{Var}[Z] = \mathbb{E}[(Z - \mathbb E[Z])^2] = \mathbb{E}[Z^2] - (\mathbb{E}[Z])^2\)</span>) and linearity of expectation.)</p>
+<p>Thus, the variance component of the risk, which now averages this variance over the distribution of <span class="math inline">\(X\)</span>, is also reduced by a factor of <span class="math inline">\(m\)</span>:</p>
+<p><span class="math display">\[\begin{align*}
+\mathrm{Var}[\hat{f}_{\text{ens}}(X)]
+&amp;= \mathbb{E} \left[ \mathrm{Var} [\hat{f}_{\text{ens}}(X) \mid X] \right] \\
+&amp;= \mathbb{E} \left[ \frac{1}{m} \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(X) \mid X] \right] \\
+&amp;= \frac{1}{m} \mathbb{E} \left[ \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(X) \mid X] \right] \\
+&amp;= \frac{1}{m} \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(X)]
+\end{align*}\]</span></p>
+</div>
+</div>
+</div></li>
+<li><p>Thus, even though each individual model in the ensemble is a high-variance estimator, with a large enough ensemble (of models trained on independent training samples), we can reduce the variance of the ensemble predictor to be arbitrarily small!</p>
+<p><span class="math display">\[ \mathcal{R}(\hat{f}_{\text{ens}}) = \text{Bias}[\hat{f}_{\mathcal{D}_j}(X)]^2 \quad + \underbrace{\frac{1}{m} \mathrm{Var}[\hat{f}_{\mathcal{D}_j}(X)]}_\text{goes to 0 with large enough $m$!} + \quad \text{irreducible noise} \]</span></p>
+<div class="callout-idea" title="Intuition">
+<p>We’ve seen the math, but why does the ensemble not overfit the training data, even though each individual model overfits?</p>
+<details>
+<summary>
+Answer
+</summary>
+The key is that each individual model is overfitting in different ways, because they are overfit to different training samples. Model <span class="math inline">\(i\)</span> is both learning the true signal, as well as whatever noise happened to be in training sample <span class="math inline">\(\mathcal{D}_i\)</span>. When we average the predictions of all <span class="math inline">\(m\)</span> models, the true signal is reinforced (since all models are trying to learn it), while the noise is averaged out (since the noise in each training sample is independent).
+</details>
+</div></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="bagging-bootstrap-aggregating" class="level2">
+<h2 class="anchored" data-anchor-id="bagging-bootstrap-aggregating">Bagging: Bootstrap Aggregating</h2>
+<p>In practice, we only have access to a single training sample <span class="math inline">\(\mathcal{D}\)</span>. However, using our knowledge from the last lecture, we can use the bootstrap to simulate having multiple training samples <span class="math inline">\(\mathcal{D}_1, \ldots, \mathcal{D}_m\)</span> from our (true) training sample <span class="math inline">\(\mathcal{D}\)</span>!</p>
+<div class="callout callout-style-default callout-note callout-titled" title="The Bagging Trees Algorithm">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The Bagging Trees Algorithm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given:</p>
+<ul>
+<li>A predictive modelling algorithm (e.g.&nbsp;decision trees)</li>
+<li>The ensemble size <span class="math inline">\(m\)</span> (i.e.&nbsp;number of trees to train)</li>
+<li>A training sample <span class="math inline">\(\mathcal{D} = \{(X_i, Y_i)\}_{i=1}^n\)</span></li>
+</ul>
+<p>For <span class="math inline">\(i \in 1, \ldots, m\)</span>:</p>
+<ul>
+<li>Draw a bootstrap sample <span class="math inline">\(\mathcal{D}_i\)</span> (i.e.&nbsp;sample of size <span class="math inline">\(n\)</span>, with replacement) from <span class="math inline">\(\mathcal{D}\)</span></li>
+<li>Train <span class="math inline">\(\hat{f}_{\mathcal{D}_i}(X)\)</span> (e.g.&nbsp;the decision tree) on <span class="math inline">\(\mathcal{D}_i\)</span></li>
+</ul>
+<p>Make predictions using the ensemble predictor: <span class="math inline">\(\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X)\)</span></p>
+</div>
+</div>
+<p>This algorithm can be applied to any (high-variance) predictive modelling algorithm, but it is most commonly used with decision trees.</p>
+<section id="why-does-this-algorithm-work" class="level3">
+<h3 class="anchored" data-anchor-id="why-does-this-algorithm-work">Why does this algorithm work?</h3>
+<ul>
+<li>Under the fundamental assumption of the bootstrap, the empirical distribution of our training sample <span class="math inline">\(\mathcal{D}\)</span> is a reasonable approximation of the true data-generating distribution.</li>
+<li>Therefore, bootstrap samples drawn from <span class="math inline">\(\mathcal{D}\)</span> can be viewed as approximate (independent) training samples drawn from the true data-generating distribution.</li>
+</ul>
+</section>
+<section id="the-bias-and-variance-of-bagged-trees" class="level3">
+<h3 class="anchored" data-anchor-id="the-bias-and-variance-of-bagged-trees">The Bias and Variance of Bagged Trees</h3>
+<ul>
+<li>While <span class="math inline">\(\mathcal{D}_1, \ldots, \mathcal{D}_m\)</span> are approximately samples from the true data-generating distribution, they are not truly the same as independent samples from that distribution.</li>
+<li>How does this affect the bias and variance of the bagging ensemble?</li>
+<li>Let’s compare the bias/variance of bagged trees to a single decision tree trained on the original training sample <span class="math inline">\(\mathcal{D}\)</span>. (We will denote this single tree as <span class="math inline">\(\hat{f}_{\mathcal{D}}(X)\)</span>.)</li>
+</ul>
+<p><strong>Bias:</strong> <span class="math inline">\(\text{Bias}[\hat{f}_{\text{ens}}(X)] &gt; \text{Bias}[\hat{f}_{\mathcal{D}}(X)]\)</span>, but (hopefully) not by much.</p>
+<details>
+<summary>
+Why?
+</summary>
+Since the bootstrap samples are drawn from the empirical distribution of <span class="math inline">\(\mathcal{D}\)</span>, they may not capture the true data-generating distribution perfectly. Therefore, the models trained on these bootstrap samples may have slightly higher bias than a model trained on the true data-generating distribution.
+</details>
+<p><strong>Variance:</strong> <span class="math inline">\(\mathrm{Var}[\hat{f}_{\text{ens}}(X)] &gt; \frac{1}{m} \mathrm{Var}[\hat{f}_\mathcal{D}(X)]\)</span>, but (hopefully) also not by much.</p>
+<details>
+<summary>
+Why?
+</summary>
+Since the bootstrap samples are drawn from the same training sample <span class="math inline">\(\mathcal{D}\)</span>, they are not truly independent. Therefore, the variance reduction achieved by bagging is not as large as it would be if the models were trained on independent training samples.
+</details>
+<p>However, even with these caveats, often <span class="math inline">\(\mathrm{Var}[\hat{f}_{\text{ens}}(X)] \ll \mathrm{Var}[\hat{f}_\mathcal{D}(X)]\)</span>, so the slight increase in bias is often worth the large decrease in variance!</p>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<p>Let’s see what happens when we apply bagging to decision trees on the <code>mobility</code> dataset from earlier in the course, as we increase the number of bagged trees in the ensemble:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/bagging_error.svg" class="img-fluid figure-img"></p>
+<figcaption>Bagging Error as a Function of Number of Trees</figcaption>
+</figure>
+</div>
+<p>With a single bagged tree in our ensemble, the error is similar to that of a single decision tree (a little worse, due to the increase in bias from using bootstrap samples). However, as we increase the number of trees in the ensemble, the error decreases significantly, eventually leveling off at a value much lower than that of a single decision tree.</p>
+</section>
+</section>
+<section id="advantages-of-bagging" class="level2">
+<h2 class="anchored" data-anchor-id="advantages-of-bagging">Advantages of Bagging</h2>
+<p>Bagged ensembles (especially bagged decision trees) would almost* be my go-to off-the-shelf predictive model if I had to pick just one, for several reasons:</p>
+<section id="bagged-decision-trees-are-hyperparameter-free" class="level3">
+<h3 class="anchored" data-anchor-id="bagged-decision-trees-are-hyperparameter-free">Bagged Decision Trees are Hyperparameter-Free</h3>
+<ul>
+<li><p>Recall that the inputs to the bagging algorithm are:</p>
+<ol type="1">
+<li>A predictive modelling algorithm (e.g.&nbsp;decision trees)</li>
+<li>The ensemble size <span class="math inline">\(m\)</span> (i.e.&nbsp;number of trees to train)</li>
+<li>A training sample <span class="math inline">\(\mathcal{D} = \{(X_i, Y_i)\}_{i=1}^n\)</span></li>
+</ol></li>
+<li><p>The only hyperparameters to tune are (1) the predictive modelling algorithm’s hyperparameters (e.g.&nbsp;max depth of decision trees) and (2) the ensemble size <span class="math inline">\(m\)</span>.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why Don't We Have to Tune These Choices?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why Don’t We Have to Tune These Choices?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><p>Because bagging reduces variance so effectively, we don’t have to worry about tuning the predictive modelling algorithm’s hyperparameters to balance bias and variance. Therefore, we can just use full-depth decision trees (i.e.&nbsp;no hyperparameter tuning needed)!</p></li>
+<li><p>Furthermore, we will get more variance reduction by increasing the ensemble size <span class="math inline">\(m\)</span>, so we can just set <span class="math inline">\(m\)</span> to be however many trees we can afford computationally!</p></li>
+<li><p>In practice, we can just set <span class="math inline">\(m\)</span> to be a few hundred or a few thousand trees, and keep increasing it until the CV error stabilizes.</p></li>
+</ul>
+</div>
+</div>
+</div></li>
+</ul>
+</section>
+<section id="bagged-decision-trees-are-non-parametric-and-universal-approximators" class="level3">
+<h3 class="anchored" data-anchor-id="bagged-decision-trees-are-non-parametric-and-universal-approximators">Bagged Decision Trees are Non-Parametric (and Universal Approximators)</h3>
+<ul>
+<li>Max-depth decision trees will create a split for every unique data point in the (bootstrap) training sample.</li>
+<li>Thus, the complexity of bagged (max-depth) decision trees grows with the size of the training data.</li>
+<li>As we discussed in a previous lecture, an axis-aligned piecewise constant function (i.e.&nbsp;a decision tree) can approximate any continuous function arbitrarily well, given enough splits (i.e.&nbsp;enough data).</li>
+<li>Therefore, bagged decision trees are <strong>universal approximators</strong>, meaning that they can approximate any continuous function arbitrarily well, given enough data.</li>
+</ul>
+</section>
+<section id="uncertainty-quantification-for-free" class="level3">
+<h3 class="anchored" data-anchor-id="uncertainty-quantification-for-free">Uncertainty Quantification “For Free”</h3>
+<ul>
+<li>Recall that the bootstrap can be used to approximate the variance of any quantity (with respect to the data-generating distribution).</li>
+<li>Since each model in the ensemble is trained on a bootstrapped sample of our training data, we can thus estimate <span class="math inline">\(\mathrm{Var}[ \hat{f}_{\mathcal D}(x) ] = \frac{1}{m-1} \sum_{i=1}^m \left( \hat{f}_{\mathcal{D}_i}(x) - \hat{f}_{\text{ens}}(x) \right)^2\)</span> for any fixed set of test covariates <span class="math inline">\(x\)</span>.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="What is this Variance Measuring?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>What is this Variance Measuring?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>For a fixed <span class="math inline">\(x\)</span>, the only randomness in the quantity <span class="math inline">\(\hat{f}_{\mathcal D}(x)\)</span> comes from the randomness in the training sample <span class="math inline">\(\mathcal D\)</span>.</li>
+<li>Therefore, the variance <span class="math inline">\(\mathrm{Var}[ \hat{f}_{\mathcal D}(x) ]\)</span> measures how much the prediction at <span class="math inline">\(x\)</span> would change if we had a different training sample.</li>
+<li>This variance is a measure of our uncertainty about the prediction at <span class="math inline">\(x\)</span> due to limited training data.</li>
+<li>If a prediction at <span class="math inline">\(x\)</span> has high variance, it means that our prediction is very sensitive to the training data, and thus we should be less confident in that prediction.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="bagged-decision-trees-give-us-a-risk-estimate-for-free" class="level3">
+<h3 class="anchored" data-anchor-id="bagged-decision-trees-give-us-a-risk-estimate-for-free">Bagged Decision Trees Give Us a Risk Estimate “For Free”</h3>
+<ul>
+<li><p>Because bootstrapping samples <em>with replacement</em> from the training data, on average, about 63% of the training data points appear in each bootstrap sample.</p></li>
+<li><p>Therefore, for each individual <span class="math inline">\(\hat f_{\mathcal{D}_i}(X)\)</span> in the bagged ensemble, about 37% of the training data points are “left out” of the bootstrap sample used to train that model. We refer to these left-out data points as the <strong>out-of-bag</strong> (OOB) samples for model <span class="math inline">\(i\)</span>.</p></li>
+<li><p>Each data point <span class="math inline">\((X_j, Y_j) \in \mathcal D\)</span> in the training data will be an OOB sample for about 37% of the models in the ensemble.</p></li>
+<li><p>Therefore, we can use the OOB samples to estimate the prediction error of the bagged ensemble without needing to do cross-validation or hold out a separate validation set!</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Out-of-Bag Error Estimation">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Out-of-Bag Error Estimation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For each training data point <span class="math inline">\((X_j, Y_j) \in \mathcal D\)</span>:</p>
+<ul>
+<li><p>Identify the subset of bootstrap samples <span class="math inline">\(S_j \subseteq \{ \mathcal{D}_i \}_{i=1}^m\)</span> for which <span class="math inline">\((X_j, Y_j)\)</span> is an OOB sample.</p></li>
+<li><p>Compute the average prediction for <span class="math inline">\(X_j\)</span> using the OOB models (i.e.&nbsp;the models trained on the bootstrap samples in <span class="math inline">\(S_j\)</span>):</p>
+<p><span class="math display">\[
+\hat Y_j^{(\mathrm{OOB})} = \frac{1}{|S_j|} \sum_{\mathcal{D}_i \in S_j} \hat{f}_{\mathcal{D}_i}(X_j)
+\]</span></p></li>
+<li><p>Estimate the risk as the average loss over all OOB predictions on the training set:</p>
+<p><span class="math display">\[
+\widehat{\mathcal{R}}_{\mathrm{OOB}} = \frac{1}{n} \sum_{j=1}^n L(Y_j, \hat Y_j^{(\mathrm{OOB})})
+\]</span></p></li>
+</ul>
+</div>
+</div>
+<ul>
+<li>We can think of the OOB error as an approximation of the cross-validation estimate of risk. We are using the left-out samples from each bootstrap sample as a “validation set” for that model, just like we would in cross-validation.</li>
+<li>However, unlike cross-validation, we don’t need to retrain the models multiple times on different training/validation splits!</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="random-forests" class="level2">
+<h2 class="anchored" data-anchor-id="random-forests">Random Forests</h2>
+<p>*I say that bagged decision trees would “almost” be my go-to off-the-shelf predictive model. My actual go-to model is a slight modification of bagged decision trees called <strong>random forests</strong>, which are one of the most popular and effective predictive modelling algorithms used in practice. I’d say that random forests are almost the best or second-best model on <span class="math inline">\(80\%\)</span> of supervised learning problems.</p>
+<section id="reducing-correlation-between-trees-to-reduce-variance" class="level3">
+<h3 class="anchored" data-anchor-id="reducing-correlation-between-trees-to-reduce-variance">Reducing Correlation Between Trees to Reduce Variance</h3>
+<ul>
+<li><p>If we had truly independent training samples for each tree in the bagged ensemble, the variance reduction over a single tree would be exactly <span class="math inline">\(1/m\)</span>.</p></li>
+<li><p>However, because the bootstrap samples are correlated (they are all drawn from the same training sample <span class="math inline">\(\mathcal{D}\)</span>), we don’t get this full variance reduction.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Correlation Reduces Variance Reduction">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Correlation Reduces Variance Reduction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To understand why correlation between the trees limits variance reduction, imagine that all of the bootstrap samples were nearly identical. Would we expect any variance reduction from bagging in this case?</p>
+<details>
+<summary>
+Answer
+</summary>
+No! If all of the bootstrap samples were nearly identical, then all of the trees in the ensemble would be nearly identical as well. Therefore, the ensemble predictor would be nearly identical to any individual tree in the ensemble, and we would not see any variance reduction.
+</details>
+</div>
+</div></li>
+<li><p>Therefore, if we can reduce the correlation between the trees in the ensemble, we can achieve even greater variance reduction than bagged trees. If this correlation reduction doesn’t increase the bias too much, then we can achieve even lower risk than bagged trees!</p></li>
+</ul>
+</section>
+<section id="reducing-correlation-by-subsampling-covariates" class="level3">
+<h3 class="anchored" data-anchor-id="reducing-correlation-by-subsampling-covariates">Reducing Correlation by Subsampling Covariates</h3>
+<ul>
+<li>A simple way to reduce correlation between trees is to train each tree on a random subset of the covariates (without replacement).</li>
+<li>This way, even if two bootstrap samples are similar, the trees trained on those samples will be different because they will be splitting on different covariates.</li>
+<li>Since decision trees are greedy algorithms that split on the most informative covariates first, forcing each tree to consider only a random subset of covariates will lead to more diverse trees in the ensemble, without increasing the bias too much.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="The Random Forests Algorithm">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The Random Forests Algorithm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given:</p>
+<ul>
+<li>A training sample <span class="math inline">\(\mathcal{D} = \{(X_i, Y_i)\}_{i=1}^n\)</span> with <span class="math inline">\(p\)</span> covariates</li>
+<li>The ensemble size <span class="math inline">\(m\)</span> (i.e.&nbsp;number of trees to train)</li>
+</ul>
+<p>For <span class="math inline">\(i \in 1, \ldots, m\)</span>:</p>
+<ul>
+<li>Draw a bootstrap sample <span class="math inline">\(\mathcal{D}_i\)</span> (i.e.&nbsp;sample of size <span class="math inline">\(n\)</span>, with replacement) from <span class="math inline">\(\mathcal{D}\)</span></li>
+<li>Select a random subset of <span class="math inline">\(k = \sqrt{p}\)</span> covariates from the <span class="math inline">\(p\)</span> total covariates</li>
+<li>Train <span class="math inline">\(\hat{f}_{\mathcal{D}_i}(X)\)</span> (e.g.&nbsp;the decision tree) on <span class="math inline">\(\mathcal{D}_i\)</span>, using only the selected <span class="math inline">\(k\)</span> covariates for splitting.</li>
+</ul>
+<p>Make predictions using the ensemble predictor: <span class="math inline">\(\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X)\)</span></p>
+</div>
+</div>
+<ul>
+<li>The only difference between random forests and bagged trees is the random subset of covariates used for splitting in each tree.</li>
+</ul>
+<p><strong>Why <span class="math inline">\(k = \sqrt{p}\)</span>?</strong>: This value of <span class="math inline">\(k\)</span> has been theoretically shown to yield the best trade-off between bias and variance in practice. With this hyperparameter set, random forests (like bagged decision trees) have no hyperparameters to tune!</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Ensemble methods combine multiple predictive models to produce a final prediction.</li>
+<li>Bagging (bootstrap aggregating) uses bootstrap samples to create an ensemble of high-variance models, leading to significant variance reduction and lower risk.</li>
+<li>Random forests further reduce correlation between trees in the ensemble by training each tree on a random subset of covariates, leading to even greater variance reduction and lower risk.</li>
+<li>Both bagged decision trees and random forests are hyperparameter-free, non-parametric, and provide out-of-bag error estimates “for free”, making them powerful and convenient off-the-shelf predictive models.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_16_bagging_and_random_forests.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_16_bagging_and_random_forests.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
