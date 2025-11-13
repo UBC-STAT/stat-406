@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-11-06">
+<meta name="dcterms.date" content="2025-11-13">
 
 <title>Lecture 15: The Bootstrap – UBC Stat406 2025 W1</title>
 <style>
@@ -73,7 +73,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -146,8 +146,6 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
     </a>
@@ -245,7 +243,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 6, 2025</p>
+      <p class="date">November 13, 2025</p>
     </div>
   </div>
   
@@ -285,7 +283,7 @@ window.Quarto = {
 </section>
 <section id="uncertainty-quantification" class="level2">
 <h2 class="anchored" data-anchor-id="uncertainty-quantification">Uncertainty Quantification</h2>
-<p>In STAT 306, you produced confidence intervals for the response <span class="math inline">\(Y\)</span> of a (fixed) test covariate <span class="math inline">\(x\)</span> under the assumptions of a linear statistical model:</p>
+<p>In STAT 306, you produced confidence intervals for the regression function <span class="math inline">\(\mathbb E[Y \mid X=x]\)</span> of a (fixed) test covariate <span class="math inline">\(x\)</span> under the assumptions of a linear statistical model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Stat406)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -296,14 +294,14 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">lcavol =</span> <span class="dv">0</span>, <span class="at">lweight =</span> <span class="dv">3</span>, <span class="at">age =</span> <span class="dv">65</span>,</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">lbph =</span> <span class="dv">0</span>, <span class="at">svi =</span> <span class="dv">0</span>, <span class="at">lcp =</span> <span class="dv">0</span>, <span class="at">gleason =</span> <span class="dv">7</span>, <span class="at">pgg45 =</span> <span class="dv">0</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(lm_fit, <span class="at">newdata =</span> test_x, <span class="at">interval =</span> <span class="st">"prediction"</span>, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(lm_fit, <span class="at">newdata =</span> test_x, <span class="at">interval =</span> <span class="st">"confidence"</span>, <span class="at">level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>        fit        lwr      upr
-1 0.8296435 -0.7034454 2.362732</code></pre>
+<pre><code>        fit       lwr      upr
+1 0.8296435 0.2661997 1.393087</code></pre>
 </div>
 </div>
 <ul>
-<li><p>These confidence intervals tell us that, under our linearity assumptions, the test response <span class="math inline">\(Y\)</span> will fall within the interval with 95% probability.</p>
+<li><p>These confidence intervals tell us that, under our linearity assumptions, the regression function evaluated at <span class="math inline">\(x\)</span> (i.e.&nbsp;<span class="math inline">\(\mathbb E[Y\mid X=x]\)</span> will fall within the interval with 95% probability.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="What does &quot;95% Probability&quot; Mean?">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -319,7 +317,7 @@ window.Quarto = {
 <ul>
 <li>We assume that our training data are <strong>random samples</strong> with <span class="math inline">\(Y = X^\top \beta + \epsilon\)</span>, where <span class="math inline">\(\epsilon \sim \mathcal{N}(0, \sigma^2)\)</span>, for some fixed <span class="math inline">\(\beta, \sigma\)</span>.</li>
 <li>95% probability refers to the randomness in the training data.</li>
-<li>If we repeatedly sampled new training datasets, trained linear models on them, and computed 95% confidence intervals for predictions at <span class="math inline">\(x\)</span>, then 95% of those confidence intervals would contain the true response <span class="math inline">\(Y\)</span> at <span class="math inline">\(x\)</span>.</li>
+<li>If we repeatedly sampled new training datasets, trained linear models on them, and computed 95% confidence intervals for predictions at <span class="math inline">\(x\)</span>, then 95% of those confidence intervals would contain <span class="math inline">\(\mathbb E[Y \mid X=x]\)</span>.</li>
 </ul>
 </div>
 </div>
@@ -342,7 +340,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="simulation-based-statistics">Simulation-Based Statistics</h3>
 <p>The key idea in this lecture (and module) is to use <strong>brute-force computation</strong> when closed-form math becomes too difficult.</p>
 <ul>
-<li><p>Imagine that we want to construct a confidence interval around the response <span class="math inline">\(Y\)</span> for some (fixed) test covariates <span class="math inline">\(x\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span></p>
+<li><p>Imagine that we want to construct a confidence interval around the regression function <span class="math inline">\(\mathbb E[Y\mid X=x]\)</span> for some (fixed) test covariates <span class="math inline">\(x\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span></p>
 <ul>
 <li>As always, <span class="math inline">\(\hat f_{\mathcal D}\)</span> is a predictive model trained on dataset <span class="math inline">\(\mathcal D\)</span>.</li>
 </ul></li>
@@ -483,7 +481,7 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>While we motivated the bootstrap as a way to obtain confidence intervals around responses in learning problems, it’s really a general way to form confidence intervals around any statistical quantity.</p>
+<p>While we motivated the bootstrap as a way to obtain confidence intervals around the regression function <span class="math inline">\(\mathbb E[Y\mid X=x]\)</span> in learning problems, it’s really a general way to form confidence intervals around any statistical quantity.</p>
 <p>Here we will walk through a non-predictive example, since you will look at a predictive example for homework!</p>
 </div>
 </div>
@@ -597,7 +595,7 @@ window.Quarto = {
 <section id="from-bootstrap-samples-to-confidence-intervals" class="level2">
 <h2 class="anchored" data-anchor-id="from-bootstrap-samples-to-confidence-intervals">From Bootstrap Samples to Confidence Intervals</h2>
 <ul>
-<li><p>Recall that we want to generate a confidence interval for our true response <span class="math inline">\(Y \mid X=x\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span> and bootstrapped predictions <span class="math inline">\(\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldots, \hat Y^{(B)} = \hat f_{\mathcal D^{(B)}}(x)\)</span>.</p></li>
+<li><p>Recall that we want to generate a confidence interval for our regression function <span class="math inline">\(\mathbb E[Y \mid X=x]\)</span> based on our prediction <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span> and bootstrapped predictions <span class="math inline">\(\hat Y^{(1)} = \hat f_{\mathcal D^{(1)}}(x), \ldots, \hat Y^{(B)} = \hat f_{\mathcal D^{(B)}}(x)\)</span>.</p></li>
 <li><p>There are two primary techniques used to construct confidence intervals from bootstrap samples.</p></li>
 </ul>
 <section id="the-percentile-interval" class="level3">
@@ -634,7 +632,7 @@ window.Quarto = {
 <p>If there exists a monotonic function <span class="math inline">\(m: \mathbb R \to \mathbb R\)</span> so that <span class="math inline">\(m(\hat Y)\)</span> is Gaussian distributed, i.e.&nbsp;<span class="math inline">\(m(\hat Y) \sim N(m(\hat Y), c^2)\)</span>, then the percentile interval has asymptotically correct coverage.</p>
 <p>For most complicated statistics (e.g.&nbsp;the predictions of a decision tree), it’s hard to know whether such a function <span class="math inline">\(m\)</span> exists.</p>
 </details></li>
-<li><p>If we want (asymptotically) correct confidence intervals around the <strong>true response</strong>, we should use the <strong>pivotal interval</strong>.</p></li>
+<li><p>If we want (asymptotically) correct confidence intervals around the <strong>true regression function</strong>, we should use the <strong>pivotal interval</strong>.</p></li>
 </ul>
 </section>
 <section id="the-pivotal-interval" class="level3">
@@ -645,7 +643,7 @@ window.Quarto = {
 [2\hat Y - \hat Y^{(b)}_{1-\alpha/2},\ 2\hat Y - \hat Y^{(b)}_{\alpha/2}]
 \]</span></p>
 <p>where again <span class="math inline">\(\hat Y\)</span> is the statistic computed on the original dataset, and <span class="math inline">\(\hat Y^{(b)}_q\)</span> is the <span class="math inline">\(q\)</span> quantile of the bootstrap sample statistics.</p></li>
-<li><p>This interval is justified under fairly general conditions, and thus is the preferred method for constructing bootstrap confidence intervals of the true response <span class="math inline">\(Y \mid X=x\)</span></p></li>
+<li><p>This interval is justified under fairly general conditions, and thus is the preferred method for constructing bootstrap confidence intervals of the true regression function <span class="math inline">\(Y \mid X=x\)</span></p></li>
 <li><p><em>For details on why this interval works, see <a href="https://www.stat.cmu.edu/~larry/all-of-statistics/">All of Statistics, Ch. 8.3</a>, or visit me in office hours!</em></p></li>
 </ul>
 <div class="callout callout-style-default callout-warning callout-titled" title="What about Other Bootstrap Intervals?">
