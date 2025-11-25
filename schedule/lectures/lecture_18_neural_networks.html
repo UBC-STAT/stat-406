@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-11-25">
+
+<title>Lecture 18: Introduction to Neural Networks and Deep Learning – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#neural-networks" id="toc-neural-networks" class="nav-link" data-scroll-target="#neural-networks">Neural Networks</a>
+  <ul class="collapse">
+  <li><a href="#why-are-they-called-neural-networks" id="toc-why-are-they-called-neural-networks" class="nav-link" data-scroll-target="#why-are-they-called-neural-networks">Why are they Called “Neural” Networks?</a></li>
+  <li><a href="#neural-networks-versus-deep-learning-versus-generative-ai" id="toc-neural-networks-versus-deep-learning-versus-generative-ai" class="nav-link" data-scroll-target="#neural-networks-versus-deep-learning-versus-generative-ai">Neural Networks versus Deep Learning versus Generative AI</a></li>
+  </ul></li>
+  <li><a href="#mathematical-motivation" id="toc-mathematical-motivation" class="nav-link" data-scroll-target="#mathematical-motivation">Mathematical Motivation</a>
+  <ul class="collapse">
+  <li><a href="#from-boosted-ensembles-to-neural-networks" id="toc-from-boosted-ensembles-to-neural-networks" class="nav-link" data-scroll-target="#from-boosted-ensembles-to-neural-networks">From Boosted Ensembles to Neural Networks</a></li>
+  </ul></li>
+  <li><a href="#the-anatomy-of-a-neural-network" id="toc-the-anatomy-of-a-neural-network" class="nav-link" data-scroll-target="#the-anatomy-of-a-neural-network">The anatomy of a Neural Network</a>
+  <ul class="collapse">
+  <li><a href="#the-purpose-of-the-activation-function" id="toc-the-purpose-of-the-activation-function" class="nav-link" data-scroll-target="#the-purpose-of-the-activation-function">The Purpose of the Activation Function</a></li>
+  <li><a href="#picture-representation" id="toc-picture-representation" class="nav-link" data-scroll-target="#picture-representation">Picture Representation</a></li>
+  </ul></li>
+  <li><a href="#width-and-depth" id="toc-width-and-depth" class="nav-link" data-scroll-target="#width-and-depth">Width and Depth</a>
+  <ul class="collapse">
+  <li><a href="#recursively-constructing-basis-functions" id="toc-recursively-constructing-basis-functions" class="nav-link" data-scroll-target="#recursively-constructing-basis-functions">Recursively Constructing Basis Functions</a></li>
+  <li><a href="#width-vs-depth-parameter-counts-and-expressivity" id="toc-width-vs-depth-parameter-counts-and-expressivity" class="nav-link" data-scroll-target="#width-vs-depth-parameter-counts-and-expressivity">Width vs Depth: Parameter Counts and Expressivity</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_18_neural_networks.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_18_neural_networks.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 18: Introduction to Neural Networks and Deep Learning</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 25, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ol type="1">
+<li>Describe the structure of a neural network mathematically, using appropriate notation and terminology</li>
+<li>Compare and contrast neural networks to fixed basis expansions and boosted ensembles</li>
+<li>Explain the role of activation functions in neural networks</li>
+<li>Compare and contrast how width and depth affect the expressivity of neural networks</li>
+<li>Compare and contrast how width and depth affect the number of learnable parameters in neural networks</li>
+</ol>
+</section>
+<section id="neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="neural-networks">Neural Networks</h2>
+<p>This final module will focus on the most popular class of models in machine learning today: neural networks, deep learning, and generative AI. Briefly, we will cover:</p>
+<ol type="1">
+<li>The basic anatomy of neural networks, and how they relate to other models we’ve seen (today’s lecture)</li>
+<li>How to train neural networks (next lecture)</li>
+<li>Why neural networks work so well in practice, and modern variants of the basic architecture (last lecture)</li>
+</ol>
+<section id="why-are-they-called-neural-networks" class="level3">
+<h3 class="anchored" data-anchor-id="why-are-they-called-neural-networks">Why are they Called “Neural” Networks?</h3>
+<p>Neural networks were originally inspired by biological neural networks in the brain.</p>
+<ul>
+<li>At a very rough level, the basic unit in a brain is a “neuron,” which receives some input signal, processes it, and produces an output signal.</li>
+<li>These neurons are highly connected to one another, forming a complex network of interconnected processing units.</li>
+<li>The “lowest level” neurons, like sensory neurons, receive a raw input signal (e.g., light, sound)</li>
+<li>This signal gets propagated through layers of interconnected neurons, each processing the signal in some way to extract higher-level information</li>
+<li>By the time the signal reaches a target location in our brain, the original signal (e.g.&nbsp;light waves) has been transformed into a high-level concept (e.g.&nbsp;“that’s a cat!”)</li>
+</ul>
+<p><em>Artificial neural networks</em> are machine learning models that are loosely inspired by this biological idea.</p>
+<ul>
+<li>We create a set of “neurons,” which are simple functions that modulate some input</li>
+<li>The first set of <strong>input neurons</strong> receive the raw input covariates (e.g.&nbsp;pixels in an image)</li>
+<li>Intermediate sets of neurons in <strong>hidden layers</strong> apply transformations to convert these covariates into higher-level features with semantic meaning</li>
+<li>The final set of neurons have sufficiently processed the input to the point where their output is a response of interest (e.g.&nbsp;image label, text completion, etc.)</li>
+</ul>
+<p>And that’s where the neuroscience connection ends. From now on, we’re back to math and statistics!</p>
+</section>
+<section id="neural-networks-versus-deep-learning-versus-generative-ai" class="level3">
+<h3 class="anchored" data-anchor-id="neural-networks-versus-deep-learning-versus-generative-ai">Neural Networks versus Deep Learning versus Generative AI</h3>
+<ul>
+<li>The terms <strong>neural networks</strong> and <strong>deep learning</strong> are used interchangeably to refer to the same class of models. (Long story short: “deep learning” was a rebranding of “neural networks” in <span class="math inline">\(\approx 2005\)</span> because “neural networks” had a bad reputation after the AI winter of the 1990s. Now that they’re popular again, both terms are used.)</li>
+<li><strong>Generative AI</strong> refers to a specific class of neural network models, generally trained on extremely large datasets in an unsupervised manner to generate new content (e.g.&nbsp;text, images, audio, code, etc.)</li>
+</ul>
+</section>
+</section>
+<section id="mathematical-motivation" class="level2">
+<h2 class="anchored" data-anchor-id="mathematical-motivation">Mathematical Motivation</h2>
+<ul>
+<li><p>In the last lecture, we discussed <em>boosted ensembles</em>, which composed simple “weak learners” <span class="math inline">\(h_1, \ldots, h_j\)</span> (e.g.&nbsp;bump functions or small decision trees) into ensembles of the form:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h_j(X), \]</span></p></li>
+<li><p>Each weak learner <span class="math inline">\(h_j\)</span> has a set of learnable parameters <span class="math inline">\(\theta_j\)</span> (e.g.&nbsp;split points in trees, location of the “bump”), so we can also write the ensemble like:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
+<p>where <span class="math inline">\(\hat h(X; \theta_j)\)</span> is the <span class="math inline">\(j^\mathrm{th}\)</span> weak learner with parameters <span class="math inline">\(\theta_j\)</span>. Crucially, <span class="math inline">\(\hat h(X; \theta_j)\)</span> applies some simple non-linear transformation to the input <span class="math inline">\(X\)</span> to weakly predict the residual response, and the ensemble sums up these non-linear transformations to produce a final prediction.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Where have we seen this before?">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Where have we seen this before?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Earlier in the course, we discussed a similar class of predictive models.</p>
+<details>
+<summary>
+What was it?
+</summary>
+<p>Fixed basis expansions!</p>
+<p>Let <span class="math inline">\(\hat h(X; \theta_j)\)</span> represent a polynomial basis function, where <span class="math inline">\(\theta_j\)</span> represents the degree of the polynomial, i.e.</p>
+<p><span class="math display">\[ \hat h(X; \theta_j) = X^{\theta_j}. \]</span></p>
+<p>We can also think of <span class="math inline">\(\hat h(X; \theta_j)\)</span> as a “weak learner” of sorts, and we combine <span class="math inline">\(m\)</span> such weak learners with different degrees to form a polynomial regression model:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j X^{\theta_j} = \sum_{j=1}^M \beta_j \hat h(X; \theta_j). \]</span></p>
+</details>
+<details>
+<summary>
+How do these models differ?
+</summary>
+<p>Both models learn the <span class="math inline">\(\beta_j\)</span> weights from data. However, there are two key differences between boosted ensembles and fixed basis expansions:</p>
+<ol type="1">
+<li><p>In boosted ensembles, the parameters of the weak learners <span class="math inline">\(\theta_j\)</span> are <em>learned from data</em> during training. In fixed basis expansions, the parameters <span class="math inline">\(\theta_j\)</span> are <em>fixed ahead of time</em> (e.g.&nbsp;polynomial degrees); only the <span class="math inline">\(\beta_j\)</span> weights are learned from data.</p></li>
+<li><p>In fixed basis expansions, the <span class="math inline">\(\beta_j\)</span> weights are learned simultaneously via a single optimization problem (e.g.&nbsp;least squares). In boosted ensembles, the <span class="math inline">\(\beta_j\)</span> weights and weak learner parameters <span class="math inline">\(\theta_j\)</span> are learned <em>sequentially</em> via an iterative procedure.</p></li>
+</ol>
+</details>
+</div>
+</div>
+<section id="from-boosted-ensembles-to-neural-networks" class="level3">
+<h3 class="anchored" data-anchor-id="from-boosted-ensembles-to-neural-networks">From Boosted Ensembles to Neural Networks</h3>
+<ul>
+<li>Boosted ensembles learn the terms in the summation sequentially. I.e., we optimize <span class="math inline">\(\beta_j\)</span> and <span class="math inline">\(\theta_j\)</span> simultaneously after fixing all previous <span class="math inline">\(\beta_1, \ldots, \beta_{j-1}\)</span> and <span class="math inline">\(\theta_1, \ldots, \theta_{j-1}\)</span>.</li>
+<li>The simplest neural networks (one-hidden-layer networks) are essentially the same model however, <em>all</em> parameters <span class="math inline">\(\beta_j\)</span> and <span class="math inline">\(\theta_j\)</span> are learned <em>simultaneously</em> via a single optimization problem.</li>
+</ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="What could go wrong?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What could go wrong?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>What challenges might arise when learning all parameters simultaneously?</p>
+<ul>
+<li>The optimization problem is non-convex, so we may get stuck in local minima.</li>
+<li>The number of parameters can be very large, potentially leading to overfitting.</li>
+</ul>
+<p>Both of these potential concerns prevented statisticians from taking neural networks seriously for many years. However, in practice, neither of these issues are as problematic as one might expect. Us statisticians are only starting to understand why this is the case!</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="the-anatomy-of-a-neural-network" class="level2">
+<h2 class="anchored" data-anchor-id="the-anatomy-of-a-neural-network">The anatomy of a Neural Network</h2>
+<p>Neural networks have the same functional form as boosted ensembles/basis regressions:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
+<p>where the weak learner/learned basis function <span class="math inline">\(\hat h(X; \theta_j)\)</span> takes a specific parametric form:</p>
+<p><span class="math display">\[ \hat h(X; \theta_j) = g\left( \theta_{j0} + X_1 \theta_{j1} + \ldots + X_{p} \theta_{jp} \right) = g\left( X^\top \theta \right)\]</span></p>
+<p>:::{.callout-note collapse=“true” title=“Implicit bias term”} As we have throughout this course, we often drop the intercept term <span class="math inline">\(\theta_{j0}\)</span> for notational convenience, and we assume that <span class="math inline">\(X\)</span> has been augmented with a column of ones to account for the intercept. :::</p>
+<ul>
+<li><p><span class="math inline">\(\hat h(X; \theta_j)\)</span> is called a <strong>neuron</strong> or <strong>hidden unit</strong></p></li>
+<li><p><span class="math inline">\(\theta_j \in \mathbb{R}^p\)</span> are the learned parameters, or <strong>weights</strong> of the neuron, and</p></li>
+<li><p><span class="math inline">\(g: \mathbb{R} \to \mathbb{R}\)</span> is a fixed non-linear <strong>activation function</strong>, typically chosen to be the <strong>Rectified Linear Unit (ReLU)</strong> function:</p>
+<p><span class="math display">\[ g(z) = \max(0, z). \]</span></p></li>
+<li><p><span class="math inline">\(\phi(X) = \begin{bmatrix}
+  g(X^\top \theta_1) \\
+  g(X^\top \theta_2) \\
+  \vdots \\
+  g(X^\top \theta_M)
+\end{bmatrix}\)</span> is called the <strong>hidden feature representation</strong>, or the <strong>activations</strong> of <span class="math inline">\(X\)</span>.</p></li>
+<li><p>The final prediction is a linear combination of these activations:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \phi(X)^\top \beta, \quad \beta = \begin{bmatrix} \beta_1 \\ \vdots \\ \beta_M \end{bmatrix}. \]</span></p>
+<p>This functional form: a linear combination of non-linear transformations of the input, looks just like basis regression. Again, the key difference is that the basis features <span class="math inline">\(\phi(X)\)</span> are learned from data, rather than using a fixed basis expansion.</p></li>
+</ul>
+<section id="the-purpose-of-the-activation-function" class="level3">
+<h3 class="anchored" data-anchor-id="the-purpose-of-the-activation-function">The Purpose of the Activation Function</h3>
+<ul>
+<li><p>The activation function <span class="math inline">\(g(z) = \max(0, z)\)</span> introduces non-linearity into the model. It produces a non-linear basis feature of <span class="math inline">\(X\)</span>.</p></li>
+<li><p>Consider the case with one-dimensional data:</p>
+<p><span class="math display">\[ g(\theta_{j0} + X \theta_{j1}) = \max(0, \theta_{j0} + X \theta_{j1}). \]</span></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>relu <span class="ot">&lt;-</span> <span class="cf">function</span>(x, beta0, beta1) <span class="fu">pmax</span>(<span class="dv">0</span>, beta0 <span class="sc">+</span> beta1 <span class="sc">*</span> x)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>x_vals <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y_vals <span class="ot">&lt;-</span> <span class="fu">relu</span>(x_vals, <span class="at">beta0 =</span> <span class="dv">1</span>, <span class="at">beta1 =</span> <span class="dv">2</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_vals, <span class="at">y =</span> y_vals), <span class="fu">aes</span>(x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ReLU Activation Function (β0 = 1, β1 = 2)"</span>, <span class="at">x =</span> <span class="st">"Input"</span>, <span class="at">y =</span> <span class="st">"Output"</span>) <span class="sc">+</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_18_neural_networks_files/figure-html/relu-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Where have we seen this before?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Where have we seen this before?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This is similar to a linear spline basis function with a knot at <span class="math inline">\(x = -\theta_{j0} / \theta_{j1}\)</span>.</p>
+</div>
+</div>
+</div></li>
+<li><p>By forming a linear combination of many such ReLU basis functions, each with different offset and slope parameters <span class="math inline">\(\theta_j\)</span>, we end up with a piecewise linear function:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>relu <span class="ot">&lt;-</span> <span class="cf">function</span>(x, beta0, beta1) <span class="fu">pmax</span>(<span class="dv">0</span>, beta0 <span class="sc">+</span> beta1 <span class="sc">*</span> x)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>x_vals <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">3</span>, <span class="dv">3</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>unit1 <span class="ot">&lt;-</span> <span class="fu">relu</span>(x_vals, <span class="at">beta0 =</span> <span class="dv">1</span>, <span class="at">beta1 =</span> <span class="dv">1</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>unit2 <span class="ot">&lt;-</span> <span class="fu">relu</span>(x_vals, <span class="at">beta0 =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">beta1 =</span> <span class="dv">1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>unit3 <span class="ot">&lt;-</span> <span class="fu">relu</span>(x_vals, <span class="at">beta0 =</span> <span class="fl">0.5</span>, <span class="at">beta1 =</span> <span class="dv">1</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>combined <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">*</span> unit1 <span class="sc">+</span> (<span class="sc">-</span><span class="dv">1</span>) <span class="sc">*</span> unit2 <span class="sc">+</span> <span class="fl">1.5</span> <span class="sc">*</span> unit3</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df_units <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x =</span> x_vals, <span class="at">unit1 =</span> unit1, <span class="at">unit2 =</span> unit2, <span class="at">unit3 =</span> unit3) <span class="sc">|&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>x, <span class="at">names_to =</span> <span class="st">"unit"</span>, <span class="at">values_to =</span> <span class="st">"y"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(df_units, <span class="fu">aes</span>(x, y, <span class="at">color =</span> unit)) <span class="sc">+</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Individual ReLU Units"</span>, <span class="at">x =</span> <span class="st">"Input"</span>, <span class="at">y =</span> <span class="st">"Output"</span>) <span class="sc">+</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">x =</span> x_vals, <span class="at">y =</span> combined), <span class="fu">aes</span>(x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Combined NN Output"</span>, <span class="at">x =</span> <span class="st">"Input"</span>, <span class="at">y =</span> <span class="st">"Output"</span>) <span class="sc">+</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(p1, p2, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_18_neural_networks_files/figure-html/nn-1d-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="What would happen if $g(z) = z$?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What would happen if <span class="math inline">\(g(z) = z\)</span>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>What if we used the identity activation function <span class="math inline">\(g(z) = z\)</span> instead of ReLU?</p>
+<ul>
+<li><p>The model would reduce to a standard linear regression model:</p>
+<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j (X^\top \theta_j) = X^\top \left( \sum_{j=1}^M \beta_j \theta_j \right). \]</span></p></li>
+<li><p>The model would lose its ability to capture non-linear relationships in the data.</p></li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="picture-representation" class="level3">
+<h3 class="anchored" data-anchor-id="picture-representation">Picture Representation</h3>
+<p>While we have been using mathematical notation to describe neural networks, you will often see them represented by a toy diagram:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_1layer.png" class="img-fluid figure-img" width="300"></p>
+<figcaption>Diagram of a simple neural network with one hidden layer</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>Each circle represents a neuron</p></li>
+<li><p>Each solid arrow represents a learned parameter</p></li>
+<li><p>Each dotted arrow represents an application of the activation function <span class="math inline">\(g(\cdot)\)</span></p></li>
+<li><p><span class="math inline">\(\Theta \in \mathbb R^{m \times p}\)</span> is the concatenation of all the <span class="math inline">\(\theta_j \in \mathbb R^p\)</span> weights</p></li>
+<li><p><span class="math inline">\(A_1, \ldots, A_m\)</span> are the activations of each neuron, so that <span class="math inline">\(\phi(X) = \begin{bmatrix} A_1 \\ \vdots \\ A_m \end{bmatrix}\)</span>.</p></li>
+<li><p><span class="math inline">\(P_1, \ldots, P_m\)</span> are often referred to as the <strong>pre-activations</strong>, i.e.&nbsp;the linear combination before applying the activation function:</p>
+<p><span class="math display">\[ P_j = X^\top \theta_j, \quad A_j = g(P_j). \]</span></p></li>
+</ul>
+<p>This diagram shows how the input covariates are “processed.” It will become especially useful when we discuss deeper neural networks with multiple hidden layers as well as the training procedure for neural networks.</p>
+</section>
+</section>
+<section id="width-and-depth" class="level2">
+<h2 class="anchored" data-anchor-id="width-and-depth">Width and Depth</h2>
+<ul>
+<li>The term <strong>width</strong> typically refers to the number of neurons <span class="math inline">\(M\)</span> in the hidden layer.</li>
+<li>Increasing the width increases the number of learnable parameters, as well as the expressivity of the model.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Wide Neural Networks are Universal Approximators">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Wide Neural Networks are Universal Approximators
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>The number of pieces in the piecewise linear function <span class="math inline">\(\hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j g(X^\top \theta_j)\)</span> grows with the number of neurons <span class="math inline">\(M\)</span>.</li>
+<li>With enough neurons, a piecewise linear function can approximate <em>any</em> continuous function arbitrarily well.</li>
+<li>Thus, neural networks with one hidden layer and sufficiently many neurons are called <strong>universal approximators</strong>.</li>
+</ul>
+</div>
+</div>
+<section id="recursively-constructing-basis-functions" class="level3">
+<h3 class="anchored" data-anchor-id="recursively-constructing-basis-functions">Recursively Constructing Basis Functions</h3>
+<ul>
+<li>So far, we’ve only explored neural networks that look very similar to boosted ensembles or spline basis expansions.</li>
+<li>What makes neural networks <strong>really</strong> powerful is that we can <strong>stack</strong> multiple hidden layers on top of one another to recursively construct basis functions.</li>
+<li>This concept of <strong>deep neural networks</strong> can create extremely powerful basis functions with exponentially fewer learned parameters than a single-layer network.</li>
+</ul>
+<section id="deep-neural-networks" class="level4">
+<h4 class="anchored" data-anchor-id="deep-neural-networks">Deep Neural Networks</h4>
+<ul>
+<li><p>The key idea is to recursively construct basis functions of the form:</p>
+<p><span class="math display">\[
+\phi^{(1)}(X) = \begin{bmatrix}
+  g\left( X^\top \theta_1^{(1)} \right) \\
+  g\left( X^\top \theta_2^{(1)} \right) \\
+  \vdots \\
+  g\left( X^\top \theta_{M_1}^{(1)} \right)
+\end{bmatrix}, \quad
+\phi^{(L+1)}(X) = \begin{bmatrix}
+  g\left( \phi^{(L)}(X)^\top \theta_1^{(L+1)} \right) \\
+  g\left( \phi^{(L)}(X)^\top \theta_2^{(L+1)} \right) \\
+  \vdots \\
+  g\left( \phi^{(L)}(X)^\top \theta_{M_{L+1}}^{(L+1)} \right)
+\end{bmatrix}
+\]</span></p>
+<p>This idea is perhaps best understood through the diagram representation:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_2layers.png" class="img-fluid figure-img" width="500"></p>
+<figcaption>Diagram of a deep neural network with multiple hidden layers</figcaption>
+</figure>
+</div></li>
+<li><p>Here, we have multiple hidden layers <span class="math inline">\(\ell \in 1, \ldots, L\)</span>, each with its own set of:</p>
+<ul>
+<li>learned weights <span class="math inline">\(\theta_j^{(l)}\)</span> and</li>
+<li>activations <span class="math inline">\(\phi^{(l)}(X)\)</span>.</li>
+</ul></li>
+<li><p>The final prediction is still a linear combination of the last layer’s activations, i.e.&nbsp;it is a basis regression model with the basis features <span class="math inline">\(\phi^{(L)}(X)\)</span>:</p>
+<p><span class="math display">\[ \hat f_{\mathcal D}(X) = \phi^{(L)}(X)^\top \beta. \]</span></p></li>
+<li><p>However, the basis features <span class="math inline">\(\phi^{(L)}(X)\)</span> are recursively constructed through a non-linear combination of previous basis function <span class="math inline">\(\phi^{(L-1)}(X)\)</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Exponential Expressivity of Depth">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Exponential Expressivity of Depth
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The key insight:</strong> depth allows us to compose non-linear transformations, leading to exponentially more expressive functions.</p>
+<p>Consider a simple example with one-dimensional input:</p>
+<ul>
+<li>A single ReLU neuron creates <em>one</em> “bend” or linear piece</li>
+<li>A hidden layer with <span class="math inline">\(M\)</span> neurons can create up to <span class="math inline">\(M+1\)</span> pieces</li>
+</ul>
+<p>Now consider what happens when we add a second hidden layer:</p>
+<ul>
+<li>Each neuron in the second layer applies ReLU to a <em>combination</em> of the first layer’s outputs</li>
+<li>This creates bends <em>on top of the already-bent function</em> from the first layer</li>
+<li>The result: we can now create pieces <em>within</em> pieces</li>
+</ul>
+<p>More precisely:</p>
+<ul>
+<li>With 1 hidden layer of width <span class="math inline">\(M\)</span>: we get <span class="math inline">\(\mathcal{O}(M)\)</span> linear pieces</li>
+<li>With 2 hidden layers of width <span class="math inline">\(M\)</span> each: we get <span class="math inline">\(\mathcal{O}(M^2)\)</span> linear pieces</li>
+<li>With <span class="math inline">\(L\)</span> hidden layers of width <span class="math inline">\(M\)</span> each: we get <span class="math inline">\(\mathcal{O}(M^L)\)</span> linear pieces</li>
+</ul>
+<p><strong>Exponential growth!</strong> With the <em>same total number of parameters</em>, a deep network can represent exponentially more complex functions than a shallow one.</p>
+</div>
+</div>
+</section>
+<section id="why-does-exponential-expressivity-matter-in-practice" class="level4">
+<h4 class="anchored" data-anchor-id="why-does-exponential-expressivity-matter-in-practice">Why Does Exponential Expressivity Matter in Practice?</h4>
+<ul>
+<li>Real-world data often has hierarchical structure (e.g., images have edges → shapes → objects)</li>
+<li>Early layers learn simple features (e.g., edges in images, phonemes in audio)</li>
+<li>Middle layers compose these into intermediate features (e.g., shapes, syllables)</li>
+<li>Deep layers combine intermediate features into high-level concepts (e.g., faces, words)</li>
+</ul>
+<p>This hierarchical processing mirrors how our brains work, and it’s why depth is so powerful for complex tasks like vision and language understanding.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_depth_features.png" class="img-fluid figure-img"></p>
+<figcaption>A representation of increasingly complex features extracted from a neural network.</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="width-vs-depth-parameter-counts-and-expressivity" class="level3">
+<h3 class="anchored" data-anchor-id="width-vs-depth-parameter-counts-and-expressivity">Width vs Depth: Parameter Counts and Expressivity</h3>
+<div class="callout callout-style-default callout-note callout-titled" title="Parameter Count">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Parameter Count
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Consider a neural network with:</p>
+<ul>
+<li>Input dimension <span class="math inline">\(p\)</span></li>
+<li><span class="math inline">\(L\)</span> hidden layers of width <span class="math inline">\(M\)</span> each</li>
+</ul>
+<details>
+<summary>
+How many learnable parameters does this network have (in big-O notation)?
+</summary>
+<ul>
+<li>The first hidden layer has <span class="math inline">\(M\)</span> neurons, each with <span class="math inline">\(p\)</span> weights: <span class="math inline">\(M \times p\)</span> parameters</li>
+<li>Each subsequent hidden layer has <span class="math inline">\(M\)</span> neurons, each connected to <span class="math inline">\(M\)</span> outputs from the previous layer: <span class="math inline">\(M \times M = M^2\)</span> parameters per layer</li>
+<li>The output layer has <span class="math inline">\(1\)</span> neuron connected to <span class="math inline">\(M\)</span> outputs from the last hidden layer: <span class="math inline">\(M\)</span> parameters</li>
+<li>Thus, the network has <span class="math inline">\(Mp + (L-1)M^2 + M = \mathcal{O}(LM^2)\)</span> parameters in total.</li>
+</ul>
+</details>
+</div>
+</div>
+<p>With these parameter counts in mind, we can see that depth is much more efficient than width for increasing expressivity.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Summary: Depth vs Width">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Summary: Depth vs Width
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Increasing the width <span class="math inline">\(M\)</span> increases the parameter count quadratically (<span class="math inline">\(\mathcal{O}(M^2)\)</span>), and slowly increases the number of linear pieces.</li>
+<li>Increasing the depth <span class="math inline">\(L\)</span> increases the parameter count linearly (<span class="math inline">\(\mathcal{O}(L)\)</span>), but exponentially increases the number of linear pieces (<span class="math inline">\(\mathcal{O}(M^L)\)</span>)!</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Neural networks are non-linear predictive models that drive most of the ML/AI revolution today.</li>
+<li>They are similar to boosted ensembles, but all parameters are learned simultaneously rather than sequentially.</li>
+<li>They are similar to basis regression, but the basis functions are learned from data rather than fixed ahead of time.</li>
+<li>The basic building block is a neuron: a linear combination of inputs passed through a non-linear activation function (e.g.&nbsp;ReLU).</li>
+<li>Depth allows neural networks to recursively construct basis functions, which intuitively capture increasingly hierarchical/semantically meaningful features.</li>
+<li>Increasing the width (number of neurons) increases expressivity slowly and increases parameter count quadratically.</li>
+<li>Increasing the depth (number of layers) increases expressivity exponentially and increases parameter count linearly.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_18_neural_networks.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_18_neural_networks.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
