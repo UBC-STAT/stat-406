@@ -72,19 +72,19 @@ Let's consider a simple 1D example to illustrate how boosting can combine weak l
   Assuming the functions are ordered by their step locations $t_1 < t_2 < \ldots < t_m$, we get:
 
   $$
-  \sum_{j=1}^m \alpha_j \hat h_j(x) = \begin{cases}
+  \sum_{j=1}^m \beta_j \hat h_j(x) = \begin{cases}
   0 & x < t_1 \\
-  \alpha_1 & t_1 \leq x < t_2 \\
-  \alpha_1 + \alpha_2 & t_2 \leq x < t_3 \\
+  \beta_1 & t_1 \leq x < t_2 \\
+  \beta_1 + \beta_2 & t_2 \leq x < t_3 \\
   \vdots \\
-  \sum_{j=1}^m \alpha_j & x \geq t_m
+  \sum_{j=1}^m \beta_j & x \geq t_m
   \end{cases}
   $$
 
-  where $\alpha_j$ are the linear combination weights.
+  where $\beta_j$ are the linear combination weights.
   As $m \to \infty$, we have enough step locations to approximate any continuous function arbitrarily well!
 
-- Boosting will learn the step locations $t_j$ / weights $\alpha_j$ in a sequential manner,
+- Boosting will learn the step locations $t_j$ / weights $\beta_j$ in a sequential manner,
   where each new step function is trained to correct the errors made by the current ensemble.
 
 
@@ -92,11 +92,11 @@ Let's consider a simple 1D example to illustrate how boosting can combine weak l
 
 - Imagine you are a golfer who is not very skilled (a weak learner).
 - Your goal is to hit the golf ball into the target $(Y_1, Y_2)$ from your current location: $(0, 0)$
-- You begin by taking your first swing in the direction $t_1$ and you hit the ball with strength $\alpha_1$,
+- You begin by taking your first swing in the direction $t_1$ and you hit the ball with strength $\beta_1$,
   landing at location $( \hat Y^{(1)}_1, \hat Y^{(1)}_2 )$.
 - If we recenter our coordinate system to this new location,
   our new task is to hit the ball from $(0, 0)$ to the new target $(Y_1 - \hat Y^{(1)}_1, Y_2 - \hat Y^{(1)}_2)$.
-- We take our second swing in direction $t_2$ with strength $\alpha_2$,
+- We take our second swing in direction $t_2$ with strength $\beta_2$,
   landing at location $( \hat Y^{(2)}_1, \hat Y^{(2)}_2 )$ in our new coordinate system.
 - Again, if we recenter our coordinate system to this new location,
   our new task is to hit the ball from $(0, 0)$ to the new target
@@ -109,44 +109,44 @@ Let's consider a simple 1D example to illustrate how boosting can combine weak l
 
 Let's take this golf analogy and translate it into a mathematical algorithm.
 We are going to sequentially learn a series of weak learners $\hat h^{(1)}, \hat h^{(2)}, \ldots, \hat h^{(m)}$
-and corresponding weights $\alpha^{(1)}, \alpha^{(2)}, \ldots, \alpha^{(m)}$
+and corresponding weights $\beta^{(1)}, \beta^{(2)}, \ldots, \beta^{(m)}$
 to form an ensemble predictor:
 
-$$\hat f^{(m)}(X) = \sum_{t=1}^m \alpha^{(t)} \hat h^{(t)}(X) $$
+$$\hat f^{(m)}(X) = \sum_{t=1}^m \beta^{(t)} \hat h^{(t)}(X) $$
 
 - Boosting works by training weak learners **sequentially**, where each new weak learner is trained to correct the errors made by the previous ensemble.
 
 
 ### The Core Algorithm
 
-We will use a recursive procedure to sequentially learn the ensemble models $\hat h^{(t)}$ and weights $\alpha^{(t)}$.
+We will use a recursive procedure to sequentially learn the ensemble models $\hat h^{(t)}$ and weights $\beta^{(t)}$.
 
 #### Regression Problems
 
 - Let $\hat h^{(t)}$ be a weak learner (e.g. our step function from before)
-  and $\alpha^{(t)}$ be a corresponding weight term.
+  and $\beta^{(t)}$ be a corresponding weight term.
 
-- To have $\alpha^{(t)} \hat h^{(t)}$ correct the errors of the previous ensemble $\hat f^{(t-1)}$,
-  we can train $\alpha^{(t)} \hat h^{(t)}$ to predict the **residuals** (errors) of the current ensemble on the training data:
-
-  $$
-  R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \alpha^{(j)} \hat h^{(j)}(X_i)
-  $$
-
-- We then simultaneously select $\alpha^{(t)}$ and $\hat h^{(t)}$ to minimize the squared error on these residuals
+- To have $\beta^{(t)} \hat h^{(t)}$ correct the errors of the previous ensemble $\hat f^{(t-1)}$,
+  we can train $\beta^{(t)} \hat h^{(t)}$ to predict the **residuals** (errors) of the current ensemble on the training data:
 
   $$
-  \hat h^{(t)}, \alpha^{(t)} = \arg\min_{h, \alpha} \sum_{i=1}^n (R_i^{(t)} - \alpha h(X_i))^2
+  R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat h^{(j)}(X_i)
+  $$
+
+- We then simultaneously select $\beta^{(t)}$ and $\hat h^{(t)}$ to minimize the squared error on these residuals
+
+  $$
+  \hat h^{(t)}, \beta^{(t)} = \arg\min_{h, \beta} \sum_{i=1}^n (R_i^{(t)} - \beta h(X_i))^2
   $$
 
 - This is similar to empirical risk minimization (ERM), except we are minimizing the loss on the residuals rather than the original response variables $Y_i$.
 
-:::{.callout-note collapse="true" title="What is the Purpose of the Weight $\alpha^{(t)}$?"}
-- We could incorporate the weight $\alpha^{(t)}$ into the weak learner $\hat h^{(t)}$ itself, e.g. by defining our weak learner to be scaled step functions with two learned parameters: $t$ (step location) and $\alpha$ (step height).
+:::{.callout-note collapse="true" title="What is the Purpose of the Weight $\beta^{(t)}$?"}
+- We could incorporate the weight $\beta^{(t)}$ into the weak learner $\hat h^{(t)}$ itself, e.g. by defining our weak learner to be scaled step functions with two learned parameters: $t$ (step location) and $\beta$ (step height).
 
   $$\hat h(x) = \begin{cases}
   0 & x < t \\
-  \alpha & x \geq t
+  \beta & x \geq t
   \end{cases}.$$
 
 - In practice, it is not always natural to incorporate the weight into the weak learner itself.
@@ -156,7 +156,7 @@ We will use a recursive procedure to sequentially learn the ensemble models $\ha
   If we simply add each weak learner's prediction to the ensemble without any weighting,
   the ensemble might oscillate or diverge rather than converging to a good solution.
 
-- In the golf example, we want our swings to get lighter (i.e. $\alpha^{(t)}$ to get smaller) as we get closer to the target.
+- In the golf example, we want our swings to get lighter (i.e. $\beta^{(t)}$ to get smaller) as we get closer to the target.
   Otherwise, we might overshoot the target and end up further away than before.
 :::
 
@@ -169,16 +169,16 @@ We will use a recursive procedure to sequentially learn the ensemble models $\ha
 
   $$
   \begin{aligned}
-  \left( \underbrace{R_i^{(t)}}_{Y_i - \hat f^{(t-1)}(X_i)} - \alpha^{(t)} \hat h^{(t)}(X_i) \right)^2
-  &= \left(Y_i - \left( \hat f^{(t-1)}(X_i) - \alpha^{(t)} \hat h^{(t)}(X_i) \right) \right)^2 \\
-  &= \ell( Y_i, \hat f^{(t-1)}(X_i) + \alpha^{(t)} \hat h^{(t)}(X_i) )
+  \left( \underbrace{R_i^{(t)}}_{Y_i - \hat f^{(t-1)}(X_i)} - \beta^{(t)} \hat h^{(t)}(X_i) \right)^2
+  &= \left(Y_i - \left( \hat f^{(t-1)}(X_i) - \beta^{(t)} \hat h^{(t)}(X_i) \right) \right)^2 \\
+  &= \ell( Y_i, \hat f^{(t-1)}(X_i) + \beta^{(t)} \hat h^{(t)}(X_i) )
   \end{aligned}
   $$
 
 - Therefore, we can train the weak learners to minimize the loss on the updated ensemble predictions directly:
 
   $$
-  (\hat h^{(t)}, \alpha^{(t)}) = \arg\min_{h, \alpha} \sum_{i=1}^n \ell( Y_i, \hat f^{(t-1)}(X_i) + \alpha h(X_i) )
+  (\hat h^{(t)}, \beta^{(t)}) = \arg\min_{h, \beta} \sum_{i=1}^n \ell( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) )
   $$
 
 - This procedure yields the following generic boosting algorithm:
@@ -199,19 +199,19 @@ For $t = 1, 2, \ldots, m$:
 - Choose a weak learner $\hat h^{(t)}$ that fits the current residuals:
 
    $$
-   \hat h^{(t)}, \alpha^{(t)} = \arg\min_{h, \alpha} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \alpha h(X_i) \right)
+   \hat h^{(t)}, \beta^{(t)} = \arg\min_{h, \beta} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
    $$
 
 - Update the ensemble predictor:
 
    $$
-   \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \alpha^{(t)} \hat h^{(t)}(X)
+   \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \beta^{(t)} \hat h^{(t)}(X)
    $$
 :::
 
 ![Forward Stagewise Additive Modelling on 1D Data](../figures/boosting_demo.svg)
 
-- In general, the simultaneous optimization over $\hat h^{(t)}$ and $\alpha^{(t)}$ can be computationally expensive,
+- In general, the simultaneous optimization over $\hat h^{(t)}$ and $\beta^{(t)}$ can be computationally expensive,
   depending on the weak learner and loss function used.
 
 - Fortunately, there are specific settings where this optimization can be done efficiently.
@@ -241,11 +241,11 @@ For $t = 1, 2, \ldots, m$:
 
   $$
   \begin{align*}
-  (\hat h^{(t)}, \alpha^{(t)}) &= \arg\min_{h, \alpha} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \alpha h(X_i) \right)
+  (\hat h^{(t)}, \beta^{(t)}) &= \arg\min_{h, \beta} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
   \\
-  &= \arg\min_{h, \alpha} \sum_{i=1}^n \exp\left( -Y_i \left( \hat f^{(t-1)}(X_i) + \alpha h(X_i) \right) \right)
+  &= \arg\min_{h, \beta} \sum_{i=1}^n \exp\left( -Y_i \left( \hat f^{(t-1)}(X_i) + \beta h(X_i) \right) \right)
   \\
-  &= \arg\min_{h, \alpha} \sum_{i=1}^n \underbrace{\exp\left( -Y_i \hat f^{(t-1)}(X_i) \right)}_{W_i} \exp\left( -\alpha Y_i h(X_i) \right)
+  &= \arg\min_{h, \beta} \sum_{i=1}^n \underbrace{\exp\left( -Y_i \hat f^{(t-1)}(X_i) \right)}_{W_i} \exp\left( -\beta Y_i h(X_i) \right)
   \end{align*}
   $$
 
@@ -256,7 +256,7 @@ For $t = 1, 2, \ldots, m$:
   :::{.callout-tip collapse="true" title="Interpreting the Weights"}
   The optimization problem
 
-  $$\min_{h, \alpha} \sum_{i=1}^n W_i \exp\left( -\alpha Y_i h(X_i) \right) $$
+  $$\min_{h, \beta} \sum_{i=1}^n W_i \exp\left( -\beta Y_i h(X_i) \right) $$
 
   can be interpreted as training the weak learner $h$ to minimize a **weighted version** of the exponential loss.
 
@@ -267,12 +267,12 @@ For $t = 1, 2, \ldots, m$:
     we are effectively training the weak learner to focus on the "hard" points that the current ensemble misclassifies.
   :::
 
-- Note that, for any fixed $\alpha$ and $h$, the rightmost term can take on only two possible values:
+- Note that, for any fixed $\beta$ and $h$, the rightmost term can take on only two possible values:
 
   $$
-  \exp\left( -\alpha Y_i h(X_i) \right) = \begin{cases}
-  \exp(-\alpha) & \text{if } Y_i = h(X_i) \text{ (correct classification)} \\
-  \exp(\alpha) & \text{if } Y_i \neq h(X_i) \text{ (incorrect classification)}
+  \exp\left( -\beta Y_i h(X_i) \right) = \begin{cases}
+  \exp(-\beta) & \text{if } Y_i = h(X_i) \text{ (correct classification)} \\
+  \exp(\beta) & \text{if } Y_i \neq h(X_i) \text{ (incorrect classification)}
   \end{cases}
   $$
 
@@ -280,23 +280,23 @@ For $t = 1, 2, \ldots, m$:
 
   $$
   \begin{align*}
-  (\hat h^{(t)}, \alpha^{(t)}) &= \arg\min_{h, \alpha} \left[ \sum_{i: Y_i = h(X_i)} W_i \exp \left( -\alpha \underbrace{Y_i h(X_i)}_{=+1} \right) + \sum_{i: Y_i \neq h(X_i)} W_i \exp \left( -\alpha \underbrace{Y_i h(X_i)}_{=-1} \right) \right] \\
-  &= \arg\min_{h, \alpha} \left[ \exp(-\alpha) \sum_{i: Y_i = h(X_i)} W_i + \exp(\alpha) \sum_{i: Y_i \neq h(X_i)} W_i \right]
+  (\hat h^{(t)}, \beta^{(t)}) &= \arg\min_{h, \beta} \left[ \sum_{i: Y_i = h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=+1} \right) + \sum_{i: Y_i \neq h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=-1} \right) \right] \\
+  &= \arg\min_{h, \beta} \left[ \exp(-\beta) \sum_{i: Y_i = h(X_i)} W_i + \exp(\beta) \sum_{i: Y_i \neq h(X_i)} W_i \right]
   \end{align*}
   $$
 
-- By inspection (and assuming that $\alpha > 0$), we can see that the optimal weak learner $\hat h^{(t)}$ is the one that minimizes the **weighted classification error**:
+- By inspection (and assuming that $\beta > 0$), we can see that the optimal weak learner $\hat h^{(t)}$ is the one that minimizes the **weighted classification error**:
 
   $$
   \hat h^{(t)} = \arg\min_h \sum_{i=1}^n W_i \mathbb{I}(Y_i \neq h(X_i))
   $$
 
-  regardless of the value of $\alpha$.
+  regardless of the value of $\beta$.
 
-- Moreover, for any fixed $h$, we can find the optimal $\alpha$ by differentiating the above expression, which yields:
+- Moreover, for any fixed $h$, we can find the optimal $\beta$ by differentiating the above expression, which yields:
 
   $$
-  \alpha^{(t)} = \frac{1}{2} \log \left( \frac{\sum_{i: Y_i = \hat h^{(t)}(X_i)} W_i}{\sum_{i: Y_i \neq \hat h^{(t)}(X_i)} W_i} \right)
+  \beta^{(t)} = \frac{1}{2} \log \left( \frac{\sum_{i: Y_i = \hat h^{(t)}(X_i)} W_i}{\sum_{i: Y_i \neq \hat h^{(t)}(X_i)} W_i} \right)
   $$
 
 :::{.callout-note title="The AdaBoost Algorithm"}
@@ -318,19 +318,19 @@ For $t = 1, 2, \ldots, m$:
 - Compute the weight for the weak learner:
 
    $$
-   \alpha^{(t)} = \frac{1}{2} \log \left( \frac{\sum_{i: Y_i = \hat h^{(t)}(X_i)} W_i}{\sum_{i: Y_i \neq \hat h^{(t)}(X_i)} W_i} \right)
+   \beta^{(t)} = \frac{1}{2} \log \left( \frac{\sum_{i: Y_i = \hat h^{(t)}(X_i)} W_i}{\sum_{i: Y_i \neq \hat h^{(t)}(X_i)} W_i} \right)
    $$
 
 - Update the ensemble:
 
   $$
-  \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \alpha^{(t)} \hat h^{(t)}(X)
+  \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \beta^{(t)} \hat h^{(t)}(X)
   $$
 
 - Update the training example weights:
 
    $$
-   W_i \gets W_i \exp\left( -\alpha^{(t)} Y_i \hat h^{(t)}(X_i) \right) = \exp\left( -Y_i \hat f^{(t)}(X_i) \right)
+   W_i \gets W_i \exp\left( -\beta^{(t)} Y_i \hat h^{(t)}(X_i) \right) = \exp\left( -Y_i \hat f^{(t)}(X_i) \right)
    $$
 :::
 
@@ -402,11 +402,11 @@ For $t = 1, 2, \ldots, m$:
    $$
 3. Find the optimal weight for the weak learner:
    $$
-   \alpha^{(t)} = \arg\min_\alpha \sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i) + \alpha \hat h^{(t)}(X_i))
+   \beta^{(t)} = \arg\min_\beta \sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i) + \beta \hat h^{(t)}(X_i))
    $$
 4. Update the ensemble:
    $$
-   \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \alpha^{(t)} \hat h^{(t)}(X)
+   \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \beta^{(t)} \hat h^{(t)}(X)
    $$
 
 Return the final predictor: $\hat f^{(m)}(X)$
@@ -432,7 +432,7 @@ Return the final predictor: $\hat f^{(m)}(X)$
 
   as the cosine similarity is minimized (at $-1$) when the two vectors point in opposite directions.
 
-- Since we will scale the predictions of the weak learner by $\alpha^{(t)}$ in Step 4,
+- Since we will scale the predictions of the weak learner by $\beta^{(t)}$ in Step 4,
   we can assume without loss of generality that $\|\boldsymbol{\hat h}^{(t)}\|_2 = 1$.
 
 - Minimizing the cosine similarity is thus equivalent to:
