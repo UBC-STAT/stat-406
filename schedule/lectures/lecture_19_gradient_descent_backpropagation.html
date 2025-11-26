@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Geoff Pleiss">
+<meta name="dcterms.date" content="2025-11-26">
+
+<title>Lecture 19: Gradient Descent and Backpropagation – UBC Stat406 2025 W1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title"><i class="fa-solid fa-chart-column" aria-label="chart-column"></i> UBC Stat406 (2025 W1)</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../schedule/index.html"> 
+<span class="menu-text">Schedule</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../computing/index.html"> 
+<span class="menu-text">Computing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://ubc-stat.github.io/stat-406-rpackage/"> 
+<span class="menu-text">{Rpkg} Docs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../faq.html"> 
+<span class="menu-text">FAQ</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/stat-406-2025"> 
+<span class="menu-text"><i class="fa-brands fa-github" aria-label="github"></i> Github</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a>
+  <ul class="collapse">
+  <li><a href="#neural-network-training-as-an-optimization-problem" id="toc-neural-network-training-as-an-optimization-problem" class="nav-link" data-scroll-target="#neural-network-training-as-an-optimization-problem">Neural Network Training as an Optimization Problem</a></li>
+  </ul></li>
+  <li><a href="#the-gradient-descent-algorithm" id="toc-the-gradient-descent-algorithm" class="nav-link" data-scroll-target="#the-gradient-descent-algorithm">The Gradient Descent Algorithm</a>
+  <ul class="collapse">
+  <li><a href="#d-example" id="toc-d-example" class="nav-link" data-scroll-target="#d-example">1D Example</a></li>
+  <li><a href="#intuition" id="toc-intuition" class="nav-link" data-scroll-target="#intuition">Intuition</a></li>
+  <li><a href="#the-step-size-gamma" id="toc-the-step-size-gamma" class="nav-link" data-scroll-target="#the-step-size-gamma">The step size <span class="math inline">\(\gamma\)</span></a></li>
+  <li><a href="#mathematical-justification-taylor-expansions" id="toc-mathematical-justification-taylor-expansions" class="nav-link" data-scroll-target="#mathematical-justification-taylor-expansions">Mathematical Justification: Taylor Expansions</a></li>
+  <li><a href="#stopping-criteria" id="toc-stopping-criteria" class="nav-link" data-scroll-target="#stopping-criteria">Stopping Criteria</a></li>
+  </ul></li>
+  <li><a href="#gradient-descent-for-neural-networks" id="toc-gradient-descent-for-neural-networks" class="nav-link" data-scroll-target="#gradient-descent-for-neural-networks">Gradient Descent for Neural Networks</a>
+  <ul class="collapse">
+  <li><a href="#computing-the-gradients-via-the-chain-rule" id="toc-computing-the-gradients-via-the-chain-rule" class="nav-link" data-scroll-target="#computing-the-gradients-via-the-chain-rule">Computing the Gradients via the Chain Rule</a></li>
+  </ul></li>
+  <li><a href="#backpropagation-and-computation-graphs" id="toc-backpropagation-and-computation-graphs" class="nav-link" data-scroll-target="#backpropagation-and-computation-graphs">Backpropagation and Computation Graphs</a></li>
+  <li><a href="#challenges-with-neural-network-optimization" id="toc-challenges-with-neural-network-optimization" class="nav-link" data-scroll-target="#challenges-with-neural-network-optimization">Challenges with Neural Network Optimization</a>
+  <ul class="collapse">
+  <li><a href="#solution-stochastic-gradient-descent-sgd" id="toc-solution-stochastic-gradient-descent-sgd" class="nav-link" data-scroll-target="#solution-stochastic-gradient-descent-sgd">Solution: Stochastic Gradient Descent (SGD)</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_19_gradient_descent_backpropagation.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_19_gradient_descent_backpropagation.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 19: Gradient Descent and Backpropagation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Geoff Pleiss </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 26, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this lecture, you should be able to:</p>
+<ul>
+<li>Implement the gradient descent algorithm</li>
+<li>Explain the trade-offs involved in choosing the gradient descent step size</li>
+<li>Derive the gradient descent updates for a simple neural network using the chain rule</li>
+<li>Describe the backpropagation algorithm for automatic differentiation</li>
+<li>Explain the challenges of optimizing neural networks and how stochastic gradient descent helps address them</li>
+</ul>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<ul>
+<li>In the last lecture, we introduced neural networks as flexible, non-linear models.</li>
+<li>Neural networks are basis regressors with learned recursively-constructed basis functions, where the basis functions are combined using parameters <span class="math inline">\(\beta = [\beta_1, \ldots, \beta_M]\)</span>.</li>
+<li>These basis functions come from <span class="math inline">\(L\)</span> layers of linear combinations and non-linear activations, each of which has many learnable parameters <span class="math inline">\(\Theta^{(1)}, \ldots, \Theta^{(L)}\)</span>.</li>
+<li>In this lecture, we will discuss how to <em>fit</em> these parameters to data.</li>
+</ul>
+<section id="neural-network-training-as-an-optimization-problem" class="level3">
+<h3 class="anchored" data-anchor-id="neural-network-training-as-an-optimization-problem">Neural Network Training as an Optimization Problem</h3>
+<p>(For simplicity, we will assume that we have a one-hidden-layer neural network with two sets of learnable parameters: <span class="math inline">\(\Theta\)</span> (the hidden layer weights) and <span class="math inline">\(\beta\)</span> (the final linear combination weights). However, these ideas generalize to deeper networks.)</p>
+<ul>
+<li><p>As with many other predictive models we’ve studied, we fit the neural network parameters using empirical risk minimization.</p></li>
+<li><p>Given some training data <span class="math inline">\(\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n\)</span> and some loss function <span class="math inline">\(\ell(Y, \hat Y)\)</span>, the neural network training problem can be written as:</p>
+<p><span class="math display">\[
+\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+\]</span></p>
+<p>where <span class="math inline">\(f_\mathcal{D}(x; \Theta, \beta)\)</span> is the neural network’s prediction for input <span class="math inline">\(x\)</span> given parameters <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span>. (We will often omit the dependence on <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span> for brevity.)</p></li>
+<li><p>Unlike other models we’ve studied (e.g., linear regression, ridge regression), there is no closed-form solution for this optimization problem, and so we must resort to iterative optimization algorithms.</p></li>
+</ul>
+<p><strong>Fitting neural networks with iterative optimization algorithms:</strong></p>
+<ul>
+<li>Before we discuss how to fit neural networks specifically, we will first introduce a general-purpose optimization algorithm called <em>gradient descent</em> which can be used to numerically optimize any differentiable function.</li>
+<li>We will then discuss how to apply gradient descent to fit neural networks, using an automated implementation of the chain rule called <em>backpropagation</em> to compute the necessary gradients.</li>
+</ul>
+</section>
+</section>
+<section id="the-gradient-descent-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="the-gradient-descent-algorithm">The Gradient Descent Algorithm</h2>
+<ul>
+<li><p>Gradient descent is an <em>iterative optimization algorithm</em> for finding the minimum of a differentiable function <span class="math inline">\(f(w): \mathbb{R}^d \to \mathbb{R}\)</span>.</p>
+<p><span class="math display">\[ w^* = \mathrm{argmin}_w f(w) \]</span></p></li>
+<li><p>It does not yield a closed-form solution, but instead produces a sequence of approximations that converge to the true function minimum.</p></li>
+<li><p>The basic idea of the algorithm is simple: we start with an initial guess of the minimizer <span class="math inline">\(w_0 \approx \mathrm{argmin}_w f(w)\)</span>, and then repeatedly update our guess using information from the gradient of <span class="math inline">\(f\)</span> at the current guess:</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="The Gradient Descent Algorithm">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The Gradient Descent Algorithm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given:</p>
+<ul>
+<li>A differentiable function <span class="math inline">\(f: \mathbb{R}^d \to \mathbb{R}\)</span> to minimize</li>
+<li>An initial guess <span class="math inline">\(w_0 \in \mathbb{R}^d\)</span></li>
+<li>A step size (learning rate) <span class="math inline">\(\gamma &gt; 0\)</span></li>
+</ul>
+<p>Repeat for <span class="math inline">\(n = 0, 1, 2, \ldots\)</span> until convergence:</p>
+<p><span class="math display">\[ w_{n+1} = w_n - \gamma \nabla f(w_n) \]</span></p>
+<p>As <span class="math inline">\(n \to \infty\)</span>, <span class="math inline">\(w_n \to w^* = \mathrm{argmin}_w f(w)\)</span> (under suitable conditions on <span class="math inline">\(f\)</span> and <span class="math inline">\(\gamma\)</span>).</p>
+</div>
+</div>
+<section id="d-example" class="level3">
+<h3 class="anchored" data-anchor-id="d-example">1D Example</h3>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_19_gradient_descent_backpropagation_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>Here we are minimizing the function <span class="math inline">\(f(w) = (w - 6)^2\)</span> using gradient descent. (This function has a minimum at <span class="math inline">\(w = 6\)</span>. We could solve it analytically, but this is just for illustration.)</li>
+<li>Our initial guess is <span class="math inline">\(w_0 = 23\)</span> and we use a step size of <span class="math inline">\(\gamma = 0.1\)</span>.</li>
+<li>The next step is in the direction of the negative gradient at <span class="math inline">\(w_0\)</span>, and it is relatively far away from <span class="math inline">\(w_0\)</span> because <span class="math inline">\(\nabla f(w_0)\)</span> is large in magnitude.</li>
+<li>After many iterations, the gradients become small, the updates change <span class="math inline">\(w\)</span> less, and we converge to the minimum at <span class="math inline">\(w = 6\)</span>.</li>
+</ul>
+</section>
+<section id="intuition" class="level3">
+<h3 class="anchored" data-anchor-id="intuition">Intuition</h3>
+<p>The gradient is a good heuristic to guide our search for the minimum of <span class="math inline">\(f(w)\)</span>. It contains information in both its direction and its magnitude.</p>
+<p><strong>What the direction tells us:</strong></p>
+<ul>
+<li>The direction of our gradient <span class="math inline">\(\nabla f(w)\)</span> tells us the direction of steepest ascent.</li>
+<li>If we update <span class="math inline">\(w\)</span> in the negative gradient direction <span class="math inline">\(-\nabla f(w)\)</span>, we are moving <span class="math inline">\(w\)</span> in the most efficient direction to reduce <span class="math inline">\(f(w)\)</span>.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_19_gradient_descent_backpropagation_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="480"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>What the magnitude tells us:</strong></p>
+<ul>
+<li>If <span class="math inline">\(\Vert \nabla f(w) \Vert\)</span> is large, then <span class="math inline">\(f(w)\)</span> changes rapidly near <span class="math inline">\(w\)</span>. It is unlikely that our current guess <span class="math inline">\(w\)</span> is close to the minimum, and so we should move a larger distance to reach a better guess.</li>
+<li>If <span class="math inline">\(\Vert \nabla f(w) \Vert \approx 0\)</span>, then we are near a stationary point of <span class="math inline">\(f\)</span> (likely a minimum). We should take smaller steps to avoid overshooting the minimum.</li>
+</ul>
+</section>
+<section id="the-step-size-gamma" class="level3">
+<h3 class="anchored" data-anchor-id="the-step-size-gamma">The step size <span class="math inline">\(\gamma\)</span></h3>
+<ul>
+<li><p>The step size <span class="math inline">\(\gamma\)</span> is a hyperparameter that controls how far we move in the negative gradient direction at each iteration.</p></li>
+<li><p>A smaller <span class="math inline">\(\gamma\)</span> means smaller steps, which can lead to more stable convergence but may take longer to reach the minimum.</p></li>
+<li><p>A larger <span class="math inline">\(\gamma\)</span> means larger steps, which can speed up convergence but risks overshooting the minimum.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why would larger steps risk overshooting the minimum?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why would larger steps risk overshooting the minimum?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Imagine that we are very close to the minimum of <span class="math inline">\(f(w)\)</span>, and <span class="math inline">\(\Vert \nabla f(w) \Vert = 0.1\)</span>.</li>
+<li>If we use <span class="math inline">\(\gamma = 1000\)</span>, then our update would move <span class="math inline">\(w\)</span> by <span class="math inline">\(1000 \times 0.1 = 100\)</span> units, which is likely to take us far away from the minimum.</li>
+</ul>
+</div>
+</div>
+</div></li>
+<li><p>In general, it is useful to <strong>decay</strong> the step size throughout the course of gradient descent, as we get closer to the minimum.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why should we decay the step size?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why should we decay the step size?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Early in the optimization, we want to take larger steps to make rapid progress toward the minimum.</li>
+<li>As we get closer to the minimum, we want to take smaller steps to fine-tune our solution and avoid overshooting.</li>
+</ul>
+</div>
+</div>
+</div></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_19_gradient_descent_backpropagation_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="1440"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>There are many strategies for choosing the appropriate step size/decay rate.
+<ul>
+<li>For neural networks, it is common to treat these as hyperparameters and tune them using validation data.</li>
+<li>There are also many adaptive step size algorithms (e.g., Adam, RMSProp) that adjust the step size automatically during training.</li>
+</ul></li>
+</ul>
+</section>
+<section id="mathematical-justification-taylor-expansions" class="level3">
+<h3 class="anchored" data-anchor-id="mathematical-justification-taylor-expansions">Mathematical Justification: Taylor Expansions</h3>
+<ul>
+<li><p>A more rigorous justification of gradient descent comes from the Taylor expansion of <span class="math inline">\(f(w)\)</span> around <span class="math inline">\(w_0\)</span>.</p></li>
+<li><p>Our goal is to approximate <span class="math inline">\(f(w)\)</span> with a function that we can minimize in closed form.</p></li>
+<li><p>Consider the first-order Taylor expansion of <span class="math inline">\(f(w)\)</span> around <span class="math inline">\(w_0\)</span>:</p>
+<p><span class="math display">\[
+f(w) \approx f(w_0) + \nabla f(w_0)^\top (w - w_0)
+\]</span></p></li>
+<li><p>This linear approximation is only good for <span class="math inline">\(w\)</span> close to <span class="math inline">\(w_0\)</span>, i.e.&nbsp;when</p>
+<p><span class="math display">\[ \|w - w_0\| &lt; \alpha \quad \text{for some } \alpha. \]</span></p></li>
+<li><p>We can thus update our guess <span class="math inline">\(w\)</span> by minimizing this linear approximation within the region where it is “good”:</p>
+<p><span class="math display">\[
+\begin{aligned}
+w_1 &amp;= \mathrm{argmin}_{w} \left[ f(w_0) + \nabla f(w_0)^\top (w - w_0) \right] \\
+    &amp;= \text{(subject to } \|w - w_0\| &lt; \alpha \text{)}
+\end{aligned}
+\]</span></p></li>
+<li><p>As with ridge regression, this constrained optimization can be written in a Lagrangian form:</p>
+<p><span class="math display">\[
+\mathrm{argmin}_{w} f(w_0) + \nabla f(w_0)^\top (w - w_0) + \lambda \|w - w_0\|^2
+\]</span></p>
+<p>where <span class="math inline">\(\lambda &gt; 0\)</span> is some constant that depends on the constraint <span class="math inline">\(\alpha\)</span>.</p></li>
+<li><p>This optimization problem has a closed-form solution:</p>
+<p><span class="math display">\[
+w_1 = w_0 - \frac{1}{2\lambda} \nabla f(w_0)
+\]</span></p>
+<p>which is our gradient descent update with step size <span class="math inline">\(\gamma = \frac{1}{2\lambda}\)</span>!</p></li>
+</ul>
+</section>
+<section id="stopping-criteria" class="level3">
+<h3 class="anchored" data-anchor-id="stopping-criteria">Stopping Criteria</h3>
+<p>For some small tolerance <span class="math inline">\(\epsilon &gt; 0\)</span> (e.g., <span class="math inline">\(\epsilon = 10^{-6}\)</span>), we can check any/all of the following conditions:</p>
+<ol type="1">
+<li><strong>Gradient magnitude</strong>: <span class="math inline">\(\|\nabla f(w^{(k)})\| &lt; \epsilon\)</span>
+<ul>
+<li>Stop when the gradient is nearly zero (i.e., we are close to a stationary point).</li>
+</ul></li>
+<li><strong>Step size</strong>: <span class="math inline">\(\|w^{(k)} - w^{(k-1)}\| &lt; \epsilon\)</span>
+<ul>
+<li>Stop when successive iterates are very close to each other.</li>
+</ul></li>
+<li><strong>Function value change</strong>: <span class="math inline">\(|f(w^{(k)}) - f(w^{(k-1)})| &lt; \epsilon\)</span>
+<ul>
+<li>Stop when the function value stops changing significantly.</li>
+</ul></li>
+</ol>
+<p>These criteria may or may not indicate that we have reached the global minimum (especially if we are optimizing a non-convex function), but it is a sign that we have nearly reached a local minimum or stationary point.</p>
+</section>
+</section>
+<section id="gradient-descent-for-neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-descent-for-neural-networks">Gradient Descent for Neural Networks</h2>
+<p>Now we can apply gradient descent to fit neural networks!</p>
+<ul>
+<li><p>Recall that we want to minimize the empirical risk:</p>
+<p><span class="math display">\[
+\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+\]</span></p></li>
+<li><p>Assuming we’re using the squared error loss <span class="math inline">\(\ell(y, \hat y) = (y - \hat y)^2\)</span> and a one-hidden-layer neural network, this optimization problem becomes:</p>
+<p><span class="math display">\[
+\mathrm{argmin}_{\theta_1, \ldots, \theta_m, \beta_1, \ldots, \beta_m} \mathcal L,
+\qquad \mathcal L = \sum_{i=1}^n \left( Y_i - \sum_{j=1}^m \beta_j g(\theta_j^\top X_i) \right)^2
+\]</span></p></li>
+<li><p>The gradient descent updates for the parameters are:</p>
+<p><span class="math display">\[
+\theta_j^{(k+1)} = \theta_j^{(k)} - \gamma \frac{\partial \mathcal L}{\partial \theta_j} \bigg|_{\theta_j = \theta_j^{(k)}},
+\quad
+\beta_j^{(k+1)} = \beta_j^{(k)} - \gamma \frac{\partial \mathcal L}{\partial \beta_j} \bigg|_{\beta_j = \beta_j^{(k)}}
+\]</span></p>
+<p>So we need to compute the gradients <span class="math inline">\(\frac{\partial \mathcal L}{\partial \theta_j}\)</span> and <span class="math inline">\(\frac{\partial \mathcal L}{\partial \beta_j}\)</span>.</p></li>
+<li><p>Returning to calculus, we can compute these gradients using the chain rule. Let’s walk through the process in gory detail so that we can see the algorithmic pattern emerge.</p></li>
+</ul>
+<section id="computing-the-gradients-via-the-chain-rule" class="level3">
+<h3 class="anchored" data-anchor-id="computing-the-gradients-via-the-chain-rule">Computing the Gradients via the Chain Rule</h3>
+<ul>
+<li>Let’s recall our 1D diagram of a one-hidden-layer neural network with <span class="math inline">\(m\)</span> hidden units:</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_1layer.png" class="img-fluid figure-img" width="400"></p>
+<figcaption>One-hidden-layer neural network diagram</figcaption>
+</figure>
+</div>
+<ul>
+<li>Let’s write <span class="math inline">\(\mathcal L\)</span> in terms of numerous intermediate variables to make the chain rule application clearer:</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Neural Network Forward Pass">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Neural Network Forward Pass
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>For <span class="math inline">\(i = 1, \ldots, n\)</span>
+<ul>
+<li><span class="math inline">\(P_i = \overbrace{\Theta}^{m \times p} \overbrace{X_i}^{p \times 1} \in \mathbb R^m\)</span></li>
+<li><span class="math inline">\(A_i = \vec{g}(P_i) = \begin{bmatrix} g(P_{i1}) \\ \vdots \\ g(P_{im}) \end{bmatrix} \in \mathbb R^m\)</span></li>
+<li><span class="math inline">\(\hat Y_i = \beta^\top A_i \in \mathbb R\)</span></li>
+<li><span class="math inline">\(\mathcal L_i = (Y_i - \hat Y_i)^2\)</span></li>
+</ul></li>
+<li>Overall loss: <span class="math inline">\(\mathcal L = \sum_{i=1}^n \mathcal L_i\)</span></li>
+</ul>
+</div>
+</div>
+<ul>
+<li><p>We will focus on computing <span class="math inline">\(\frac{\partial \mathcal L}{\partial \Theta}\)</span> first. Begin by noting that</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal L}{\partial \Theta} = \sum_{i=1}^n \frac{\partial \mathcal L_i}{\partial \Theta}
+\]</span></p></li>
+<li><p>Now let’s consider computing <span class="math inline">\(\frac{\partial \mathcal L_i}{\partial \Theta} = \frac{\partial \mathcal L_i}{\partial P_i} \frac{\partial P_i}{\partial \Theta}\)</span>.</p>
+<ul>
+<li><p>The second term is easy:</p>
+<p><span class="math display">\[
+\frac{\partial P_i}{\partial \Theta} = X_i^\top
+\]</span></p></li>
+<li><p>The first term is more complex, but we can always apply the chain rule again:</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal L_i}{\partial P_i} = \frac{\partial \mathcal L_i}{\partial A_i} \frac{\partial A_i}{\partial P_i}
+\]</span></p></li>
+<li><p>Again, <span class="math inline">\(\frac{\partial A_i}{\partial P_i}\)</span> is easy:</p>
+<p><span class="math display">\[
+\frac{\partial A_i}{\partial P_i} = \mathrm{diag}\left( g'(P_{i1}), \ldots, g'(P_{im}) \right)
+\]</span></p></li>
+<li><p>For the remaining term, we again recursively apply the chain rule:</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal L_i}{\partial A_i} = \frac{\partial \mathcal L_i}{\partial \hat Y_i} \frac{\partial \hat Y_i}{\partial A_i}
+\]</span></p></li>
+<li><p>We repeat this recursion until we reach the “end” of the computational graph, when all terms are easy to compute.</p></li>
+</ul></li>
+<li><p>If we implement this recursion in practice, we’ll start by computing the gradients at the end of the computational graph (i.e., <span class="math inline">\(\frac{\partial \mathcal L_i}{\partial \hat Y_i}\)</span>), and then <strong>propagate</strong> these gradients backwards to compute earlier gradients via the chain rule.</p></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Neural Network Backward Pass">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Neural Network Backward Pass
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>For <span class="math inline">\(i = 1, \ldots, n\)</span>
+<ul>
+<li><span class="math inline">\(\frac{\partial \mathcal L_i}{\partial A_i} = \frac{\partial \mathcal L_i}{\partial \hat Y_i} \underbrace{\frac{\partial \hat Y_i}{\partial A_i}}_{\beta^\top}\)</span></li>
+<li><span class="math inline">\(\frac{\partial \mathcal L_i}{\partial P_i} = \frac{\partial \mathcal L_i}{\partial A_i} \underbrace{\frac{\partial A_i}{\partial P_i}}_{\mathrm{diag}\left( g'(P_{i1}), \ldots, g'(P_{im}) \right)}\)</span></li>
+<li><span class="math inline">\(\frac{\partial \mathcal L_i}{\partial \Theta} = \frac{\partial \mathcal L_i}{\partial P_i} \underbrace{\frac{\partial P_i}{\partial \Theta}}_{X_i^\top}\)</span></li>
+</ul></li>
+<li>Overall gradient: <span class="math inline">\(\frac{\partial \mathcal L}{\partial \Theta} = \sum_{i=1}^n \frac{\partial \mathcal L_i}{\partial \Theta}\)</span></li>
+</ul>
+<p>(Repeat an analogous process to compute <span class="math inline">\(\frac{\partial \mathcal L}{\partial \beta}\)</span>.)</p>
+</div>
+</div>
+</section>
+</section>
+<section id="backpropagation-and-computation-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="backpropagation-and-computation-graphs">Backpropagation and Computation Graphs</h2>
+<ul>
+<li>This process we just described is called <strong>backpropagation</strong>.</li>
+<li>Note how we broke up the computation of the neural network into many small pieces, each of which is a relatively simple mathematical operation (e.g., matrix multiplication, elementwise activation) with a simple derivative.</li>
+<li>We can represent both the <strong>forward pass</strong> (computation of <span class="math inline">\(\mathcal L_i\)</span> from <span class="math inline">\(X_i\)</span>, <span class="math inline">\(\Theta\)</span>, and <span class="math inline">\(\beta\)</span>) and the <strong>backward pass</strong> (computation of <span class="math inline">\(\partial \mathcal L_i / \partial \Theta\)</span>, <span class="math inline">\(\partial \mathcal L_i / \partial \beta\)</span> via the chain rule) using a <strong>computation graph</strong>.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_forward.png" class="img-fluid figure-img" width="600"></p>
+<figcaption>Forward computation graph</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/nn_backward.png" class="img-fluid figure-img" width="600"></p>
+<figcaption>Backward computation graph</figcaption>
+</figure>
+</div>
+<ul>
+<li>Each node in the forward graph represents an intermediate variable, that is computed from some function of its parent nodes. It represents the flow of computation from the “neural network forward pass” algorithm.</li>
+<li>Each node in the backward graph represents an intermediate gradient, that is computed from some function of its parent nodes, and it is just a simple application of the chain rule. It represents the flow of computation from the “neural network backward pass” algorithm.</li>
+<li>Note that the forward and backward graphs are closely related: each edge in the forward graph corresponds to an application of the chain rule in the backward graph.</li>
+</ul>
+<p><strong>Automatic differentiation</strong> libraries (e.g., JaX, PyTorch) implement this process automatically.</p>
+<ul>
+<li>Each elementary mathematical operation (e.g., addition, multiplication, activation functions) has a known derivative.</li>
+<li>These libraries allow users to construct complex functions (e.g., neural networks) by composing these elementary operations, constructing and storing the forward computation graph along the way.</li>
+<li>When the user requests gradients of the output with respect to the inputs, the library automatically generates and executes the backward computation graph using backpropagation, yielding the desired gradients efficiently.</li>
+</ul>
+</section>
+<section id="challenges-with-neural-network-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="challenges-with-neural-network-optimization">Challenges with Neural Network Optimization</h2>
+<p>We now have an algorithm (gradient descent with backpropagation) to fit neural networks. But is it guaranteed to work well?</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="Potential Challenges with Neural Network Optimization">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Potential Challenges with Neural Network Optimization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><strong>Non-convexity</strong>: The loss function for neural networks is generally non-convex with respect to the parameters <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span>.</li>
+</ol>
+<details>
+<summary>
+Why is non-convexity a problem?
+</summary>
+<ul>
+<li>Whereas convex optimization problems have a single global minimum, non-convex problems can have many local minima and saddle points.</li>
+<li>Gradient descent converges to a stationary point, where the gradient is zero, but this point may not be the global minimum! It could instead be a poor local minimum or saddle point.</li>
+<li>The stationary point we converge to depends heavily on the initial parameter values supplied to gradient descent.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_19_gradient_descent_backpropagation_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</details>
+<ol start="2" type="1">
+<li><strong>Computation time</strong>: Each iteration of gradient descent requires computing the empirical risk <span class="math inline">\(\mathcal L = \sum_{i=1}^n \mathcal L_i\)</span>, which in turn requires a forward and backward pass through the entire neural network for all <span class="math inline">\(n\)</span> training examples.</li>
+</ol>
+<ul>
+<li>For large datasets and complex networks, this can be computationally expensive. If we need thousands of iterations to converge, the total computation time can be prohibitive.</li>
+</ul>
+</div>
+</div>
+<section id="solution-stochastic-gradient-descent-sgd" class="level3">
+<h3 class="anchored" data-anchor-id="solution-stochastic-gradient-descent-sgd">Solution: Stochastic Gradient Descent (SGD)</h3>
+<ul>
+<li><p>A solution to both of these challenges is to use <em>stochastic gradient descent</em> (SGD).</p></li>
+<li><p>Instead of computing the gradient of the empirical risk over the entire dataset at each iteration, we compute the gradient using only a small random subset (mini-batch) of the data.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="The Stochastic Gradient Descent (SGD) Algorithm">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The Stochastic Gradient Descent (SGD) Algorithm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For each iteration of gradient descent <span class="math inline">\(k = 1, 2, \ldots\)</span>:</p>
+<ol type="1">
+<li><p>Randomly sample a mini-batch of data <span class="math inline">\(\mathcal{B}_k \subset \mathcal{D}\)</span> (e.g., <span class="math inline">\(|\mathcal{B}_k| = 32\)</span> or <span class="math inline">\(64\)</span>).</p></li>
+<li><p>Approximate the gradient of the empirical risk using only the mini-batch:</p>
+<p><span class="math display">\[
+\nabla \mathcal L(\Theta^{(k)}, \beta^{(k)}) = \sum_{i=1}^n \nabla \mathcal L_i(X_i, Y_i) \approx \frac{|\mathcal{D}|}{|\mathcal{B}_k|} \sum_{(X_i, Y_i) \in \mathcal{B}_k} \nabla \mathcal L_i(X_i, Y_i)
+\]</span></p></li>
+<li><p>Update the parameters using this approximate gradient.</p></li>
+</ol>
+</div>
+</div></li>
+<li><p>For a fixed dataset <span class="math inline">\(\mathcal D\)</span>, this gradient estimate is now a random variable, since it depends on the random mini-batch <span class="math inline">\(\mathcal B_k\)</span>. However, it is an unbiased estimate of the true gradient!</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Why is the mini-batch gradient an unbiased estimate of the true gradient?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Why is the mini-batch gradient an unbiased estimate of the true gradient?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Linearity of expectation!</p>
+<p>Assuming each data point is equally likely to be included in the mini-batch <span class="math inline">\(\mathcal B_k\)</span>,</p>
+<p><span class="math display">\[
+\mathbb{E}_{\mathcal B_k} \left[ \frac{|\mathcal{D}|}{|\mathcal{B}_k|} \sum_{(X_i, Y_i) \in \mathcal{B}_k} \nabla \mathcal L_i(X_i, Y_i) \right] = \sum_{i=1}^n \nabla \mathcal L_i(X_i, Y_i)
+\]</span></p>
+</div>
+</div>
+</div></li>
+</ul>
+<section id="why-does-sgd-solve-these-challenges" class="level4">
+<h4 class="anchored" data-anchor-id="why-does-sgd-solve-these-challenges">Why does SGD Solve These Challenges?</h4>
+<ul>
+<li><p>It’s easy to see why SGD reduces computation time: each iteration only requires a forward and backward pass through the network for a small mini-batch, rather than the entire dataset.</p></li>
+<li><p>Magically, SGD also seems to help with the non-convexity challenge as well!</p>
+<ul>
+<li>The randomness in the gradient estimates helps SGD escape poor local minima and saddle points.</li>
+<li>The noise in the updates allows SGD to explore the parameter space more effectively, increasing the chances of finding a better local minimum or even the global minimum.</li>
+<li>In practice, SGD often outperforms full-batch gradient descent on non-convex problems like neural network training.</li>
+</ul></li>
+<li><p>Why SGD helps prevent getting stuck in local minima is still an active area of research, but the basic intuition is that the noise in the gradient estimates allows SGD to “jump out” of local minima.</p></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/sgd_escape.png" class="img-fluid figure-img" width="600"></p>
+<figcaption>Toy illustration of SGD escaping local minima</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled" title="SGD step size">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>SGD step size
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While it’s always useful to decay the step size <span class="math inline">\(\gamma\)</span> over time when using gradient descent, the decay is <strong>critical</strong> for SGD.</p>
+<details>
+<summary>
+Why?
+</summary>
+<ul>
+<li>The estimates of the gradient are noisy, so SGD will never truly converge to a stationary point if we use a fixed step size.</li>
+<li>Even if we are at a local minimum, where the true gradient is zero, the noisy gradient estimate will not be exactly zero, and so we will keep “jumping around” the minimum.</li>
+<li>By decaying the step size over time, we reduce how far we jump with respect to this noise, allowing us to eventually settle down near a stationary point.</li>
+</ul>
+</details>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li>Gradient descent is a general algorithm for minimizing differentiable functions using local gradient information.</li>
+<li>The gradient provides both direction and magnitude information to guide our search for the minimum.</li>
+<li>Mathematically, gradient descent replaces our non-closed form optimization problem with an iteration of approximate closed-form optimizations based on local first-order Taylor expansions.</li>
+<li>To compute the gradients of the neural network loss with respect to the parameters, we simply use the chain rule.</li>
+<li>This chain rule can be applied algorithmically using the <strong>backpropagation</strong> algorithm, if the neural network computation is broken down into a sequence of elementary operations.</li>
+<li>In practice, stochastic gradient descent (SGD) is used to fit neural networks, as it reduces computation time and helps escape poor local minima in non-convex optimization problems.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/UBC-STAT\.github\.io\/stat-406\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>This work by <a href="https://geoffpleiss.com">Geoff Pleiss</a>, <a href="https://trevorcampbell.me">Trevor Campbell</a>, and <a href="https://dajmcdon.github.io">Daniel J. McDonald</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0">CC BY-NC 4.0</a><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_19_gradient_descent_backpropagation.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_19_gradient_descent_backpropagation.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
