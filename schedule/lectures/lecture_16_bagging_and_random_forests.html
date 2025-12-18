@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-17">
+<meta name="dcterms.date" content="2025-12-18">
 
 <title>Lecture 16: Bagging and Random Forests – UBC Stat406 2025 W1</title>
 <style>
@@ -184,7 +184,6 @@ window.Quarto = {
   <li><a href="#random-forests" id="toc-random-forests" class="nav-link" data-scroll-target="#random-forests">Random Forests</a>
   <ul class="collapse">
   <li><a href="#reducing-correlation-between-trees-to-reduce-variance" id="toc-reducing-correlation-between-trees-to-reduce-variance" class="nav-link" data-scroll-target="#reducing-correlation-between-trees-to-reduce-variance">Reducing Correlation Between Trees to Reduce Variance</a></li>
-  <li><a href="#reducing-correlation-by-subsampling-covariates" id="toc-reducing-correlation-by-subsampling-covariates" class="nav-link" data-scroll-target="#reducing-correlation-by-subsampling-covariates">Reducing Correlation by Subsampling Covariates</a></li>
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
@@ -212,7 +211,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 17, 2025</p>
+      <p class="date">December 18, 2025</p>
     </div>
   </div>
   
@@ -634,13 +633,11 @@ No! If all of the bootstrap samples were nearly identical, then all of the trees
 </div></li>
 <li><p>Therefore, if we can reduce the correlation between the trees in the ensemble, we can achieve even greater variance reduction than bagged trees. If this correlation reduction doesn’t increase the bias too much, then we can achieve even lower risk than bagged trees!</p></li>
 </ul>
-</section>
-<section id="reducing-correlation-by-subsampling-covariates" class="level3">
-<h3 class="anchored" data-anchor-id="reducing-correlation-by-subsampling-covariates">Reducing Correlation by Subsampling Covariates</h3>
+<p>we ### Reducing Correlation by Subsampling Covariates</p>
 <ul>
-<li>A simple way to reduce correlation between trees is to train each tree on a random subset of the covariates (without replacement).</li>
+<li>A simple way to reduce correlation between trees is to only consider a random subset of the covariates when making any given split in each tree.</li>
 <li>This way, even if two bootstrap samples are similar, the trees trained on those samples will be different because they will be splitting on different covariates.</li>
-<li>Since decision trees are greedy algorithms that split on the most informative covariates first, forcing each tree to consider only a random subset of covariates will lead to more diverse trees in the ensemble, without increasing the bias too much.</li>
+<li>Since decision trees are greedy algorithms that split on the most informative covariates first, forcing each split to consider only a random subset of covariates will lead to more diverse trees in the ensemble, without increasing the bias too much.</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="The Random Forests Algorithm">
 <div class="callout-header d-flex align-content-center">
@@ -660,8 +657,11 @@ No! If all of the bootstrap samples were nearly identical, then all of the trees
 <p>For <span class="math inline">\(i \in 1, \ldots, m\)</span>:</p>
 <ul>
 <li>Draw a bootstrap sample <span class="math inline">\(\mathcal{D}_i\)</span> (i.e.&nbsp;sample of size <span class="math inline">\(n\)</span>, with replacement) from <span class="math inline">\(\mathcal{D}\)</span></li>
-<li>Select a random subset of <span class="math inline">\(k = \sqrt{p}\)</span> covariates from the <span class="math inline">\(p\)</span> total covariates</li>
-<li>Train <span class="math inline">\(\hat{f}_{\mathcal{D}_i}(X)\)</span> (e.g.&nbsp;the decision tree) on <span class="math inline">\(\mathcal{D}_i\)</span>, using only the selected <span class="math inline">\(k\)</span> covariates for splitting.</li>
+<li>Train <span class="math inline">\(\hat{f}_{\mathcal{D}_i}(X)\)</span> (e.g.&nbsp;the decision tree) on <span class="math inline">\(\mathcal{D}_i\)</span>, using the following modification:
+<ul>
+<li>At each split in the tree, randomly select <span class="math inline">\(k = \sqrt{p}\)</span> covariates from the full set of <span class="math inline">\(p\)</span> covariates</li>
+<li>Choose the best split among only these <span class="math inline">\(k\)</span> covariates</li>
+</ul></li>
 </ul>
 <p>Make predictions using the ensemble predictor: <span class="math inline">\(\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X)\)</span></p>
 </div>
@@ -677,7 +677,7 @@ No! If all of the bootstrap samples were nearly identical, then all of the trees
 <ul>
 <li>Ensemble methods combine multiple predictive models to produce a final prediction.</li>
 <li>Bagging (bootstrap aggregating) uses bootstrap samples to create an ensemble of high-variance models, leading to significant variance reduction and lower risk.</li>
-<li>Random forests further reduce correlation between trees in the ensemble by training each tree on a random subset of covariates, leading to even greater variance reduction and lower risk.</li>
+<li>Random forests further reduce correlation between trees in the ensemble by only considering a random subset of covariates at each split, leading to even greater variance reduction and lower risk.</li>
 <li>Both bagged decision trees and random forests are hyperparameter-free, non-parametric, and provide out-of-bag error estimates “for free”, making them powerful and convenient off-the-shelf predictive models.</li>
 </ul>
 
