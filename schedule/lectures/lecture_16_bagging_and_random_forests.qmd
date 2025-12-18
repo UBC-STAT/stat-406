@@ -383,14 +383,14 @@ I'd say that random forests are almost the best or second-best model on $80\%$ o
   If this correlation reduction doesn't increase the bias too much,
   then we can achieve even lower risk than bagged trees!
 
-
+we
 ### Reducing Correlation by Subsampling Covariates
 
-- A simple way to reduce correlation between trees is to train each tree on a random subset of the covariates (without replacement).
+- A simple way to reduce correlation between trees is to only consider a random subset of the covariates when making any given split in each tree.
 - This way, even if two bootstrap samples are similar,
   the trees trained on those samples will be different because they will be splitting on different covariates.
 - Since decision trees are greedy algorithms that split on the most informative covariates first,
-  forcing each tree to consider only a random subset of covariates will lead to more diverse trees in the ensemble,
+  forcing each split to consider only a random subset of covariates will lead to more diverse trees in the ensemble,
   without increasing the bias too much.
 
 :::{.callout-note title="The Random Forests Algorithm"}
@@ -402,8 +402,9 @@ Given:
 For $i \in 1, \ldots, m$:
 
 - Draw a bootstrap sample $\mathcal{D}_i$ (i.e. sample of size $n$, with replacement) from $\mathcal{D}$
-- Select a random subset of $k = \sqrt{p}$ covariates from the $p$ total covariates
-- Train $\hat{f}_{\mathcal{D}_i}(X)$ (e.g. the decision tree) on $\mathcal{D}_i$, using only the selected $k$ covariates for splitting.
+- Train $\hat{f}_{\mathcal{D}_i}(X)$ (e.g. the decision tree) on $\mathcal{D}_i$, using the following modification:
+  - At each split in the tree, randomly select $k = \sqrt{p}$ covariates from the full set of $p$ covariates
+  - Choose the best split among only these $k$ covariates
 
 Make predictions using the ensemble predictor: $\hat{f}_{\text{ens}}(X) = \frac{1}{m} \sum_{j=1}^m \hat{f}_{\mathcal{D}_j}(X)$
 :::
@@ -419,7 +420,7 @@ With this hyperparameter set, random forests (like bagged decision trees) have n
 - Ensemble methods combine multiple predictive models to produce a final prediction.
 - Bagging (bootstrap aggregating) uses bootstrap samples to create an ensemble of high-variance models,
   leading to significant variance reduction and lower risk.
-- Random forests further reduce correlation between trees in the ensemble by training each tree on a random subset of covariates,
+- Random forests further reduce correlation between trees in the ensemble by only considering a random subset of covariates at each split,
   leading to even greater variance reduction and lower risk.
 - Both bagged decision trees and random forests are hyperparameter-free, non-parametric, and provide out-of-bag error estimates "for free",
   making them powerful and convenient off-the-shelf predictive models.
