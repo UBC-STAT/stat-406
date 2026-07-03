@@ -27,10 +27,10 @@ By the end of this lecture, you should be able to:
 (For simplicity, we will assume that we have a one-hidden-layer neural network with two sets of learnable parameters: $\Theta$ (the hidden layer weights) and $\beta$ (the final linear combination weights). However, these ideas generalize to deeper networks.)
 
 - As with many other predictive models we've studied, we fit the neural network parameters using empirical risk minimization.
-- Given some training data $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n$ and some loss function $\ell(Y, \hat Y)$, the neural network training problem can be written as:
+- Given some training data $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n$ and some loss function $L(Y, \hat f(X))$, the neural network training problem can be written as:
 
   $$
-  \hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+  \hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n L\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
   $$
 
   where $f_\mathcal{D}(x; \Theta, \beta)$ is the neural network's prediction for input $x$ given parameters $\Theta$ and $\beta$.
@@ -327,15 +327,15 @@ plot_grid(title, combined_plot, ncol = 1, rel_heights = c(0.08, 1))
 
 ### Stopping Criteria
 
-For some small tolerance $\epsilon > 0$ (e.g., $\epsilon = 10^{-6}$), we can check any/all of the following conditions:
+For some small tolerance $\varepsilon > 0$ (e.g., $\varepsilon = 10^{-6}$), we can check any/all of the following conditions:
 
-1. **Gradient magnitude**: $\|\nabla f(w^{(k)})\| < \epsilon$
+1. **Gradient magnitude**: $\|\nabla f(w^{(k)})\| < \varepsilon$
    - Stop when the gradient is nearly zero (i.e., we are close to a stationary point).
 
-2. **Step size**: $\|w^{(k)} - w^{(k-1)}\| < \epsilon$
+2. **Step size**: $\|w^{(k)} - w^{(k-1)}\| < \varepsilon$
    - Stop when successive iterates are very close to each other.
 
-3. **Function value change**: $|f(w^{(k)}) - f(w^{(k-1)})| < \epsilon$
+3. **Function value change**: $|f(w^{(k)}) - f(w^{(k-1)})| < \varepsilon$
    - Stop when the function value stops changing significantly.
 
 These criteria may or may not indicate that we have reached the global minimum (especially if we are optimizing a non-convex function), but it is a sign that we have nearly reached a local minimum or stationary point.
@@ -348,10 +348,10 @@ Now we can apply gradient descent to fit neural networks!
 - Recall that we want to minimize the empirical risk:
 
   $$
-  \hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+  \hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n L\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
   $$
 
-- Assuming we're using the squared error loss $\ell(y, \hat y) = (y - \hat y)^2$ and a one-hidden-layer neural network, this optimization problem becomes:
+- Assuming we're using the squared error loss $L(y, \hat f(x)) = (y - \hat f(x))^2$ and a one-hidden-layer neural network, this optimization problem becomes:
 
   $$
   \mathrm{argmin}_{\theta_1, \ldots, \theta_m, \beta_1, \ldots, \beta_m} \mathcal L,

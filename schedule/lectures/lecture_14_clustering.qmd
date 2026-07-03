@@ -126,7 +126,7 @@ As with (almost) all other learning procedures we've discussed, we will formaliz
 
   $$ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. $$
 
-  The fraction $1/2$ is for mathematical convenience (it does not affect the maximization), as will become clear shortly.
+  The fraction $1/2$ is for mathematical convenience (it does not affect the minimization), as will become clear shortly.
 
 
 ### Cluster Centroids: A Crucial Simplification
@@ -156,17 +156,17 @@ As with (almost) all other learning procedures we've discussed, we will formaliz
 
   $$
   \sum_{i, i' \in C_j} \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2
-  = \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[ \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2 \right]
+  = \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[ \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2 \right]
   $$
 
-  We also note that $\mu_j$ is the expectation of $X$ under the empirical distribution $\hat P_{C_j}$:
+  We also note that $\mu_j$ is the expectation of $X$ under the empirical distribution $\hat{\mathbb P}_{C_j}$:
 
   $$
   \begin{aligned}
-  &\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \Vert_2^2 \right]
+  &\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[\Vert (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \Vert_2^2 \right]
   \\
   =&
-  \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert  (X_i - \mathbb E[X]) + (\mathbb E[X] - X_{i'}) \Vert_2^2 \right]
+  \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[\Vert  (X_i - \mathbb E[X]) + (\mathbb E[X] - X_{i'}) \Vert_2^2 \right]
   \end{aligned}
   $$
 
@@ -218,7 +218,7 @@ Even after simplifying the optimization problem using centroids, it is still imp
 
 - To get $f_{\mathcal D}^{(1)}(X)$ from $f_{\mathcal D}^{(0)}(X)$, we repeat steps 2 and 3 above.
 
-- More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e. when the distance that the cluster centroids change is $< \epsilon$ for some pre-defined constant $\epsilon$. Most implementations will define this constant for you.)
+- More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e. when the distance that the cluster centroids change is $< \varepsilon$ for some pre-defined constant $\varepsilon$. Most implementations will define this constant for you.)
 
 ![Visualization of k-means iterations (from https://ai.plainenglish.io/)](../figures/kmeans.gif){width="500px"}
 
@@ -271,7 +271,7 @@ We've already talked about one of them:
 kmeans(data, centers = 3)
 ```
 
-You can guess what each of these variable names mean ;)
+You can guess what each of these variable names means ;)
 :::
 
 We want to *minimize within-cluster variation* and *maximize between-cluster variation*.
@@ -293,8 +293,8 @@ As the total number of clusters $k$ increases...
    $B$ essentially measures the empirical variance of our $X_i$ if we were to replace each $X_i$ with its cluster centroid $\mu_{f_{\mathcal D}(X_i)}$.
    As we decrease the number of clusters, we are replacing many $X_i$ with the same centroid, which reduces the empirical variance of the data.)
 
-If you want to understand see this relationship more rigorously,
-try to describe it via the [law ot total variance](https://en.wikipedia.org/wiki/Law_of_total_variance).
+If you want to understand this relationship more rigorously,
+try to describe it via the [law of total variance](https://en.wikipedia.org/wiki/Law_of_total_variance).
 </details>
 :::
 
@@ -355,6 +355,6 @@ Also, if k-means doesn't immediately work for your data, with some googling you'
 
 - Clustering is an unsupervised learning method that maps covariates $X \in \mathbb R^p$ to discrete cluster labels $C \in \{1, 2, \ldots, k\}$.
 - K-means clustering is a simple and widely used clustering algorithm that aims to minimize within-cluster variation, as measured by Euclidean distance.
-- the centroids to be the mean of the points in each cluster.
+- K-means alternates between assigning each point to its nearest centroid and updating the centroids to be the mean of the points in each cluster.
 - The number of clusters $k$ can be chosen using heuristic methods like the Calinski-Harabasz index.
 - There are many other clustering algorithms and variants that may be more appropriate for different data types (e.g. graph data) and applications (e.g. biological data).
