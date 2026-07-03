@@ -45,42 +45,49 @@ By the end of this lecture, you will be able to:
 
 ## Distributions and The Two Rules of Probability
 
-- Given two random variables \(A\) and \(B\), we can describe this relationship through a **joint probability distribution**
+- Given two random variables \(A\) and \(B\), we can describe this relationship through a **joint probability distribution**,
+  which can be specified by a PMF (for discrete random variables) or a density (for continuous random variables):
 
   $$
   \begin{cases}
-      \mathbb P(A=a, B=b) & \text{for discrete random variables} \\
-      f_{A,B}(a, b) & \text{for continuous random variables}
+      p_{A,B}(a, b) = \mathbb P(A=a, B=b) & \text{PMF for discrete random variables} \\
+      p_{A,B}(a, b) & \text{density for continuous random variables}
   \end{cases}
   $$
 
-- Without loss of generality, we will use the continuous random variable notation throughout the rest of this lecture (and throughout most of the course).
+:::{.callout-warning title="Warning! Notation Overload for PMFs/Densities"}
+Here, and throughout the rest of the course, we will use the notation $p_{A,B}$ for both PMFs of discrete random variables
+as well as densities for continuous random variables.
+:::
+
 - We can also describe \(A\) and \(B\) through:
-  - **Conditional distributions**, i.e., $f_{A|B}(a|b)$ or $f_{B|A}(b|a)$
-  - **Marginal distributions**, i.e., $f_A(a)$ or $f_B(b)$
+  - **Conditional distributions**, i.e., $p_{A|B}(a|b)$ or $p_{B|A}(b|a)$
+  - **Marginal distributions**, i.e., $p_A(a)$ or $p_B(b)$
 - While there are many fundamental rules of probability to manipulate these distributions, most of them can be derived from two basic rules: the **product rule** and the **sum rule**.
+
+(All the rules that follow will be defined/derived for continuous random variables, but they can be applied to discrete random variables by substituting "PMF" for "density" and replacing the integrals with sums.)
 
 ## The Product Rule
 
-The product rule allows us to decompose a joint distribution into the product of a conditional and marginal probability:
+The product rule allows us to decompose a joint density over two continuous random variables into the product of a conditional and marginal density:
 
 \begin{align*}
-f_{A,B}(a, b) &= f_{A|B}(a|b) f_B(b) \\
-&= f_{B|A}(b|a) f_A(a)
+p_{A,B}(a, b) &= p_{A|B}(a|b) \, p_B(b) \\
+&= p_{B|A}(b|a) \, p_A(a)
 \end{align*}
 
-- This rule can be applied recursively in the case of more than two random variables.
+- This rule can be applied recursively in the case of more than two continuous random variables.
 - This rule gives rise to lots of useful facts from probability theory.
 
 ### Independence
 
-- We say that $A$ and $B$ are **independent** if $f_{A,B}(a,b) = f_A(a) f_B(b)$; that is, their joint density is the product of their marginal densities.
+- We say that $A$ and $B$ are **independent** if $p_{A,B}(a,b) = p_A(a) \, p_B(b)$; that is, their joint density is the product of their marginal densities.
 
 - By the product rule, for independent random variables we have that
 
-  $$ f_A(a) f_B(b) = f_{A,B}(a,b) = f_{A|B}(a|b) f_B(b), $$
+  $$ p_A(a) \, p_B(b) = p_{A,B}(a,b) = p_{A|B}(a|b) \, p_B(b), $$
 
-  and, through some algebra, that $f_A(a) = f_{A|B}(a|b)$. (Similarly, $f_B(b) = f_{B|A}(b|a)$.)
+  and, through some algebra, that $p_A(a) = p_{A|B}(a|b)$. (Similarly, $p_B(b) = p_{B|A}(b|a)$.)
 
 - In other words, when $A$ and $B$ are independent, the occurrence of $B$ does not affect the probability of $A$, and vice versa.
 
@@ -88,15 +95,15 @@ f_{A,B}(a, b) &= f_{A|B}(a|b) f_B(b) \\
 
 We can derive Bayes' formula
 
-$$ f_{B|A}(b|a) = \frac{f_{A|B}(a|b) f_B(b)}{f_A(a)} $$
+$$ p_{B|A}(b|a) = \frac{p_{A|B}(a|b) \, p_B(b)}{p_A(a)} $$
 
-using the product rule by starting from the identity $f_{B,A}(b,a) = f_{A,B}(a,b)$ and simplifying.
+using the product rule by starting from the identity $p_{B,A}(b,a) = p_{A,B}(a,b)$ and simplifying.
 
 ## The Sum Rule
 
 The sum rule allows us to obtain a marginal density for $A$ (or $B$) from a joint density over $A$ and $B$:
 
-$$ f_A(a) = \int_{b} f_{A,B}(a, b) \: \mathrm{d}b. $$
+$$ p_A(a) = \int_{b} p_{A,B}(a, b) \: \mathrm{d}b. $$
 
 - Again, this rule can be extended to three or more variables recursively.
 - This rule is instrumental in establishing properties about expectations:
@@ -105,11 +112,11 @@ $$ f_A(a) = \int_{b} f_{A,B}(a, b) \: \mathrm{d}b. $$
 
 - We define the **expected value** of $A$ as:
 
-  $$ \mathbb{E}[A] := \int_{a} a \: f_A(a) \: \mathrm{d}a. $$
+  $$ \mathbb{E}[A] := \int_{a} a \: p_A(a) \: \mathrm{d}a. $$
 
 - Similarly, the expected value of some function of $A$ and $B$ is defined as:
 
-  $$ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a. $$
+  $$ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a. $$
 
 - We can use the sum rule in conjunction with [Fubini's theorem](https://en.wikipedia.org/wiki/Fubini%27s_theorem) to derive one of the most important formulas in all of probability:
 
@@ -119,15 +126,15 @@ $$ f_A(a) = \int_{b} f_{A,B}(a, b) \: \mathrm{d}b. $$
 
   \begin{align*}
   \mathbb{E}[A + B]
-  &= \int_a \int_b (a + b) f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  &= \int_a \int_b (a + b) \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &= \int_a \int_b a f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &\quad + \int_a \int_b b f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  &= \int_a \int_b a \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &\quad + \int_a \int_b b \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &= \int_a a \int_b f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &\quad + \int_b b \int_a f_{A,B}(a, b) \: \mathrm{d}a \: \mathrm{d}b
+  &= \int_a a \int_b p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &\quad + \int_b b \int_a p_{A,B}(a, b) \: \mathrm{d}a \: \mathrm{d}b
   \\
-  &= \int_a a f_A(a) \: \mathrm{d}a + \int_b b f_B(b) \: \mathrm{d}b
+  &= \int_a a \: p_A(a) \: \mathrm{d}a + \int_b b \: p_B(b) \: \mathrm{d}b
   \\
   &= \mathbb{E}[A] + \mathbb{E}[B]
   \end{align*}
@@ -141,13 +148,13 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
 
 - The **conditional expectation** of $A$ given $B=b$ is defined as:
 
-  $$ \mathbb{E}[A \mid B = b] := \int_{a} a \: f_{A|B}(a|b) \: \mathrm{d}a. $$
+  $$ \mathbb{E}[A \mid B = b] := \int_{a} a \: p_{A|B}(a|b) \: \mathrm{d}a. $$
 
   It is the average value that $A$ takes when we have the additional information that the random variable $B$ takes on the value $b$.
 
 - Note that this conditional expectation is a function of $b$; i.e. we can write
 
-  $$ \mathbb{E}[A \mid B = b] = g(b) \qquad \text{for some function} g.$$
+  $$ \mathbb{E}[A \mid B = b] =: g(b).$$
 
 - The expression $\mathbb{E} [A \mid B]$ should then be read as:
 
@@ -163,22 +170,22 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
 :::{.callout-note collapse="true" title="Derivation"}
 
   \begin{align*}
-  \mathbb{E}[A] &= \int_a a \int_b f_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \mathbb{E}[A] &= \int_a a \int_b p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &= \int_a a \int_b f_{A|B}(a|b) f_B(b) \: \mathrm{d}b \: \mathrm{d}a
+  &= \int_a a \int_b p_{A|B}(a|b) \, p_B(b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &= \int_b \left( \int_a a f_{A|B}(a|b) \: \mathrm{d}a \right) f_B(b) \: \mathrm{d}b
+  &= \int_b \left( \int_a a \: p_{A|B}(a|b) \: \mathrm{d}a \right) p_B(b) \: \mathrm{d}b
   \\
-  &= \int_b \mathbb{E}[A \mid B=b] f_B(b) \: \mathrm{d}b
+  &= \int_b \mathbb{E}[A \mid B=b] \, p_B(b) \: \mathrm{d}b
   \\
   &= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
   \end{align*}
 
 :::
 
-- This rule is known as the **Tower Rule**. It allows us to express marginal expectations as recursive applications of conditional expectations.
+- This rule is known as the **Tower Rule**. It allows us to relate marginal expectations and conditional expectations. It will also be very important in this course.
 
-- *This notation is often confusing and scary the first few times you encounter it. Try translating it back into probabilities via the sum and product rules, and you'll fluently understand it in no time!*
+- *This notation is often confusing and scary. Try translating it back into probabilities via the sum and product rules, and you'll fluently understand it in no time!*
 
 :::{.callout-important title="Important: What is Random?"}
 
@@ -187,8 +194,8 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
   <details>
     <summary>Why?</summary>
 
-    If we go back to the definition: $ \mathbb E[A] = \int a f_A(a) \, da $,
-    note that the two terms in the integral $a$, $f_A(a)$ are functions of $a$,
+    If we go back to the definition: $\mathbb E[A] = \int a \, p_A(a) \, da$,
+    note that the two terms in the integral, $a$ and $p_A(a)$, are functions of $a$,
     which is a realized quantity and therefore **not random**.
     So we're integrating non-random quantities together, giving us a non-random output.
 
@@ -199,7 +206,7 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
   <details>
     <summary>Why?</summary>
 
-    Again going back to the definition: $ \mathbb E[A \mid B=b] = \int a f_{A|B}(a|b) \, da$,
+    Again going back to the definition: $\mathbb E[A \mid B=b] = \int a \, p_{A|B}(a|b) \, da$,
     the terms inside the integral are functions of $a$ and $b$ (realized quantities, not random variables).
   </details>
 
@@ -208,7 +215,7 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
   <details>
     <summary>Why?</summary>
 
-    Recall that we can view $\mathbb E[A \mid B=b]$ as some function of $b$; i.e.
+    Recall that we can view $\mathbb E[A \mid B=b]$ as some deterministic function of $b$; i.e.
     $\mathbb E[A \mid B=b] = g(b)$. When we plug a realization (i.e. not a random variable) into $g$, the output is a fixed (not random) quantity.
 
     However, when we plug in a *random variable* into $g$, the output is a random quantity!
