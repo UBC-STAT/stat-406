@@ -25,9 +25,13 @@ By the end of this lecture, you should be able to:
 
 - Consider the OLS estimator for linear regression:
 
-  $$ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y. $$
+  $$ \hat f_\mathrm{OLS}(X) = X^\top \hat{\beta}_\mathrm{OLS}, \qquad \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y. $$
 
     where $\boldsymbol X \in \mathbb R^{n \times p}$ is the design matrix (with rows $x_i^\top$) and $\boldsymbol Y \in \mathbb R^n$ is the vector of training responses.
+
+- Recall from Lecture 2 that this OLS estimator *is* the empirical risk minimizer for the linear hypothesis class under squared loss: the learned predictor $\hat f_\mathrm{OLS}$ is exactly $\hat f_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \hat R_{\hat f}$, so $\hat\beta_\mathrm{OLS} = \hat\beta_\mathrm{ERM}$.
+
+- Keep this in mind: by the end of this lecture we will have constructed our first estimator that is *not* the ERM solution.
 
 - Now let's assume that our data are i.i.d. generated according to the linear model
   $$ Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta, \qquad \varepsilon \sim \mathcal N(0, \sigma^2), $$
@@ -38,7 +42,7 @@ By the end of this lecture, you should be able to:
 
 $$ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \varepsilon, \qquad \boldsymbol \varepsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). $$
 
-- Let's now analyze the bias and variance of the OLS estimator $\hat{\beta}_\mathrm{OLS}$ under this model!
+- Let's now analyze the bias and variance of the OLS estimator $\hat f_\mathrm{OLS}$ (through its coefficients $\hat{\beta}_\mathrm{OLS}$) under this model!
 
 ### Bias of OLS
 
@@ -161,10 +165,16 @@ By constraining the coefficients, we can gain a significant reduction in varianc
 
 - For every $\lambda$ there is a unique $s$ (and vice versa) that makes $\hat{\beta}_s = \hat{\beta}_\lambda$. We will work with the $\lambda$ formulation.
 
+- This yields the ridge predictor $\hat f_\mathrm{ridge}(X) = X^\top \hat\beta_\lambda$, a **different estimator** than $\hat f_\mathrm{OLS}$/$\hat f_\mathrm{ERM}$ arising from a **different estimation procedure**.
+
+:::{.callout-important title="Ridge is not empirical risk minimization"}
+Unlike OLS, ridge regression does *not* minimize the empirical risk. For any $\lambda > 0$, the ridge objective $\frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 + \lambda\|\beta\|_2^2$ is the empirical risk *plus a penalty term*, so its minimizer $\hat\beta_\lambda$ is generally **not** the empirical risk minimizer $\hat\beta_\mathrm{ERM} = \hat\beta_\mathrm{OLS}$. Indeed, since $\hat f_\mathrm{OLS}$ already achieves the smallest possible empirical risk, we have $\hat R_{\hat f_\mathrm{ridge}} \geq \hat R_{\hat f_\mathrm{OLS}}$ — ridge deliberately accepts higher *training* error in exchange for lower variance. Ridge is therefore our first example of an estimation procedure that departs from ERM.
+:::
+
 ### Closed Form
 
 - Ridge regression has a closed-form solution (set the derivative with respect to $\beta$ to zero):
-  $$\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$$
+  $$\hat f_\mathrm{ridge}(X) = X^\top \hat \beta_\lambda, \qquad \hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$$
 
 - Compare to OLS: $\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y$
 
@@ -266,3 +276,5 @@ indicating that we may not have been in the high-variance regime with our OLS es
 - **The Solution**: Ridge regression constrains coefficients via $\|\beta\|_2^2 \leq s$ (or equivalently adds penalty $\lambda \|\beta\|_2^2$), which shrinks coefficients toward zero and stabilizes the solution with closed form $\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$.
 
 - **The Tradeoff**: Ridge introduces bias but significantly reduces variance, and we can use cross-validation to find the optimal $\lambda$ that minimizes prediction risk in the bias-variance tradeoff.
+
+- **A New Kind of Procedure**: Whereas $\hat f_\mathrm{OLS}$ is the empirical risk minimizer $\hat f_\mathrm{ERM}$, the ridge predictor $\hat f_\mathrm{ridge}$ is *not* — it minimizes empirical risk *plus a penalty*. Ridge is thus our first estimation procedure that departs from ERM, a theme we will return to throughout the course.
