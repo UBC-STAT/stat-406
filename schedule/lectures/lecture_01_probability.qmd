@@ -14,9 +14,11 @@ By the end of this lecture, you will be able to:
 3. Apply linearity of expectation and the law of total expectation to simplify calculations
 4. Apply the SVD decomposition and describe the properties of each component matrix
 
-## Random Variables
+## Probability Review
 
-### Motivation
+### Random Variables
+
+#### Motivation
 
 - **Example**: Let's say you want to grab a coffee at Loafe and you want to know how long you'll have to wait in line.
 - Denote this time by the variable $A$
@@ -27,12 +29,12 @@ By the end of this lecture, you will be able to:
 - While we could try to model all of these factors, it would be infeasible to do so.
 - Instead, we can treat $A$ as a **random variable**: a variable whose value is *randomly* sampled from some distribution.
 
-### Notation
+#### Notation
 
 - We (almost) always denote random variables with uppercase letters (e.g., $A$)
 - We (almost) always denote their realizations (i.e., specific values they can take) with lowercase letters (e.g., $a$).
 
-### Joint Random Variables
+#### Joint Random Variables
 
 - Throughout this class, most of the probability we will encounter will be concerned with relationships between two or more random variables.
 - **Example**: maybe we want to understand how the temperature outside, denoted by $B$, affects the Loafe line length.
@@ -43,7 +45,7 @@ By the end of this lecture, you will be able to:
 - We can treat $B$ as a random variable as well.
 - $A$ and $B$ are related to one another, potentially in a *causal* manner. If we treat them as **joint random variables**, we can derive many useful probabilistic representations about their relationship.
 
-## Distributions and The Two Rules of Probability
+### Distributions and The Two Rules of Probability
 
 - Given two random variables \(A\) and \(B\), we can describe this relationship through a **joint probability distribution**,
   which can be specified by a PMF (for discrete random variables) or a density (for continuous random variables):
@@ -67,7 +69,7 @@ as well as densities for continuous random variables.
 
 (All the rules that follow will be defined/derived for continuous random variables, but they can be applied to discrete random variables by substituting "PMF" for "density" and replacing the integrals with sums.)
 
-## The Product Rule
+### The Product Rule
 
 The product rule allows us to decompose a joint density over two continuous random variables into the product of a conditional and marginal density:
 
@@ -79,7 +81,7 @@ p_{A,B}(a, b) &= p_{A|B}(a|b) \, p_B(b) \\
 - This rule can be applied recursively in the case of more than two continuous random variables.
 - This rule gives rise to lots of useful facts from probability theory.
 
-### Independence
+#### Independence
 
 - We say that $A$ and $B$ are **independent** if $p_{A,B}(a,b) = p_A(a) \, p_B(b)$; that is, their joint density is the product of their marginal densities.
 
@@ -91,7 +93,7 @@ p_{A,B}(a, b) &= p_{A|B}(a|b) \, p_B(b) \\
 
 - In other words, when $A$ and $B$ are independent, the occurrence of $B$ does not affect the probability of $A$, and vice versa.
 
-### Bayes' Rule
+#### Bayes' Rule
 
 We can derive Bayes' formula
 
@@ -99,7 +101,7 @@ $$ p_{B|A}(b|a) = \frac{p_{A|B}(a|b) \, p_B(b)}{p_A(a)} $$
 
 using the product rule by starting from the identity $p_{B,A}(b,a) = p_{A,B}(a,b)$ and simplifying.
 
-## The Sum Rule
+### The Sum Rule
 
 The sum rule allows us to obtain a marginal density for $A$ (or $B$) from a joint density over $A$ and $B$:
 
@@ -108,7 +110,7 @@ $$ p_A(a) = \int_{b} p_{A,B}(a, b) \: \mathrm{d}b. $$
 - Again, this rule can be extended to three or more variables recursively.
 - This rule is instrumental in establishing properties about expectations:
 
-### Linearity of Expectation
+#### Linearity of Expectation
 
 - We define the **expected value** of $A$ as:
 
@@ -144,7 +146,7 @@ $$ p_A(a) = \int_{b} p_{A,B}(a, b) \: \mathrm{d}b. $$
 This formula, known as **linearity of expectation**, holds *even when $A$ and $B$ are not independent!* We will use this fact constantly throughout the course.
 
 
-### Conditional Expectations and The Tower Rule
+#### Conditional Expectations and The Tower Rule
 
 - The **conditional expectation** of $A$ given $B=b$ is defined as:
 
@@ -248,23 +250,37 @@ Matrices will (almost) always be represented by bold uppercase letters (e.g. $\b
 
 ### The Singular Value Decomposition
 
-Any matrix $\boldsymbol M \in \mathbb R^{n \times d}$ can be decomposed as $\boldsymbol M = \boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top$, where:
+Any matrix $\boldsymbol M \in \mathbb R^{n \times p}$ can be decomposed as $\boldsymbol M = \boldsymbol U \boldsymbol D \boldsymbol V^\top$.
+Writing $r = \min(n, p)$ for the smaller of the two dimensions:
 
-- $\boldsymbol U \in \mathbb{R}^{n \times n}$ is **orthonormal**: its columns (and rows) are mutually orthogonal unit vectors, meaning $\boldsymbol U^\top \boldsymbol U = \boldsymbol I$ and $\boldsymbol U \boldsymbol U^\top = \boldsymbol I$.
-- $\boldsymbol \Sigma \in \mathbb{R}^{n \times d}$ is **diagonal**: all off-diagonal entries are zero, and the diagonal entries (the *singular values*, denoted by $\sigma_1, \sigma_2, \ldots$) are **non-negative**.
-  - If $n > d$ (more rows than columns): $\boldsymbol \Sigma$ has $d$ non-zero diagonal entries in its top $d \times d$ block, with the remaining $n - d$ rows being all zeros.
-  - If $n < d$ (more columns than rows): $\boldsymbol \Sigma$ has $n$ non-zero diagonal entries in its leftmost $n \times n$ block, with the remaining $d - n$ columns being all zeros.
-- $\boldsymbol V^\top \in \mathbb{R}^{d \times d}$ is **orthonormal**.
+- $\boldsymbol U \in \mathbb{R}^{n \times r}$ has **orthonormal columns**: they are mutually orthogonal unit vectors, so $\boldsymbol U^\top \boldsymbol U = \boldsymbol I$.
+- $\boldsymbol D \in \mathbb{R}^{r \times r}$ is **square and diagonal**: all off-diagonal entries are zero, and the diagonal entries (the *singular values*, denoted by $d_1, d_2, \ldots, d_r$) are **non-negative**.
+- $\boldsymbol V \in \mathbb{R}^{p \times r}$ has **orthonormal columns** ($\boldsymbol V^\top \boldsymbol V = \boldsymbol I$), so $\boldsymbol V^\top \in \mathbb{R}^{r \times p}$.
+
+This is the **thin** (or **reduced**) SVD.
+We use it throughout the course because the square, diagonal $\boldsymbol D$ is convenient to work with (e.g. it is easy to invert when analyzing ridge regression).
+When $\boldsymbol M$ is square ($n = p$, as in the 2D example below), $\boldsymbol U$ and $\boldsymbol V$ are themselves square orthonormal matrices — i.e. *rotation matrices*.
 
 This decomposition has so many uses in statistics and beyond,
 and we'll see it many times throughout this class.
 
+:::{.callout-note collapse="true" title="The \"Thin\" SVD vs the \"Full\" SVD"}
+You may have previously seen the **full** SVD, which pads the thin version with extra orthonormal columns so that $\boldsymbol U$ and $\boldsymbol V$ become *square*:
+$$\boldsymbol M = \boldsymbol U \boldsymbol D \boldsymbol V^\top, \qquad \boldsymbol U \in \mathbb{R}^{n \times n}, \quad \boldsymbol D \in \mathbb{R}^{n \times p}, \quad \boldsymbol V \in \mathbb{R}^{p \times p}.$$
+Now $\boldsymbol U$ and $\boldsymbol V$ are square **orthogonal** matrices (both their rows *and* columns are orthonormal: $\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I$, and likewise for $\boldsymbol V$), while $\boldsymbol D$ becomes a rectangular "diagonal" matrix:
+
+- If $n > p$ (more rows than columns): $\boldsymbol D$ holds the $p$ singular values in its top $p \times p$ block, with the remaining $n - p$ rows all zero.
+- If $n < p$ (more columns than rows): $\boldsymbol D$ holds the $n$ singular values in its leftmost $n \times n$ block, with the remaining $p - n$ columns all zero.
+
+Those zero rows (or columns) multiply the "extra" columns of $\boldsymbol U$ (or $\boldsymbol V$), so they contribute nothing to $\boldsymbol M$. Dropping them recovers the thin SVD above.
+:::
+
 #### Intuition
 
 To understand its use, it's important to first understand the information that's captured in each of the terms in this decomposition.
-And, because everything is easier to visualize in 2D, let's assume that $n = d = 2$.
+And, because everything is easier to visualize in 2D, let's assume that $n = p = 2$.
 
-![SVD Intuition (Source: Wikipedia)](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Singular-Value-Decomposition.svg/1280px-Singular-Value-Decomposition.svg.png){width=500}
+![SVD Intuition (adapted from [Wikipedia](https://commons.wikimedia.org/wiki/File:Singular-Value-Decomposition.svg))](../figures/svd_geometry.svg){width=500}
 
 Any matrix $\boldsymbol M$ can be thought of as a (linear) operation to transform a vector (e.g. by rotation, scale, etc.).
 
@@ -276,33 +292,33 @@ The SVD breaks this transformation down into three composable steps:
 
 - First, we rotate the vectors with the matrix $\boldsymbol V^\top$ (producing $\boldsymbol V^\top \boldsymbol o$ and $\boldsymbol V^\top \boldsymbol r$).
   Recall that orthonormal matrices are *rotation matrices*, where multiplying them against a vector is the same as rotating that vector about the origin.
-- Next, we stretch the vectors along the principal axis (x- and y-axis) with the matrix $\boldsymbol \Sigma$ (producing $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol o$ and $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol r$).
+- Next, we stretch the vectors along the principal axis (x- and y-axis) with the matrix $\boldsymbol D$ (producing $\boldsymbol D \boldsymbol V^\top \boldsymbol o$ and $\boldsymbol D \boldsymbol V^\top \boldsymbol r$).
   Recall that diagonal matrices shrink or stretch vectors along the principal axes.
-- Finally, we apply one more rotation to the vectors with the matrix $\boldsymbol U$ (producing $\boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol o = \boldsymbol M \boldsymbol o$ and $\boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol r = \boldsymbol M \boldsymbol r$).
+- Finally, we apply one more rotation to the vectors with the matrix $\boldsymbol U$ (producing $\boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol o = \boldsymbol M \boldsymbol o$ and $\boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol r = \boldsymbol M \boldsymbol r$).
 
 Amazingly, any linear transformation can be decomposed into this rotate-stretch-rotate pattern!
 
 #### How We'll Use the SVD
 
-The most important information in the SVD lives in the $\boldsymbol \Sigma$ matrix.
+The most important information in the SVD lives in the $\boldsymbol D$ matrix.
 It can tell us the **effective dimensionality of the matrix**.
 
-- In the example above, note how multiplying against $\boldsymbol \Sigma$ stretched the x-axis but shrunk the y-axis.
-- This implies that $\sigma_1$ (corresponding to the x axis) is a very large number, while $\sigma_2$ (corresponding to the y axis) is a very small number.
-- Now imagine if $\sigma_1 \gg \sigma_2$, with $\sigma_2 \approx 0$:
-  - Any vector $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol z$ would then approximately live on the x axis.
-  - Even after rotating with $\boldsymbol U$, most vectors $\boldsymbol M \boldsymbol z = \boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol z$ would approximately live on a line.
+- In the example above, note how multiplying against $\boldsymbol D$ stretched the x-axis but shrunk the y-axis.
+- This implies that $d_1$ (corresponding to the x axis) is a very large number, while $d_2$ (corresponding to the y axis) is a very small number.
+- Now imagine if $d_1 \gg d_2$, with $d_2 \approx 0$:
+  - Any vector $\boldsymbol D \boldsymbol V^\top \boldsymbol z$ would then approximately live on the x axis.
+  - Even after rotating with $\boldsymbol U$, most vectors $\boldsymbol M \boldsymbol z = \boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol z$ would approximately live on a line.
   - This implies that $\boldsymbol M$ effectively collapses all points to nearly live on a single line. So it collapses 2D points to a nearly 1D subspace.
-- Conversely, if $\sigma_1 \approx \sigma_2$, then no dimension gets collapsed more than the other.
-  $\boldsymbol \Sigma$ isn't doing too much (assuming without loss of generality that $\sigma_1 \approx \sigma_2 \approx 1$),
+- Conversely, if $d_1 \approx d_2$, then no dimension gets collapsed more than the other.
+  $\boldsymbol D$ isn't doing too much (assuming without loss of generality that $d_1 \approx d_2 \approx 1$),
   so $\boldsymbol M$ is mostly characterized by the two rotation matrices $\boldsymbol U$ and $\boldsymbol V$.
 
 :::{.callout-note title="Takeaway"}
   The singular values tell us how many dominant dimensions a matrix has.
   In 2D:
 
-  - If $\sigma_1 \approx \sigma_2 \approx 1$, then the matrix isn't doing much more than rotating vectors.
-  - If $\sigma_1 \gg \sigma_2$, then the matrix will collapse vectors to a nearly 1D subspace.
+  - If $d_1 \approx d_2 \approx 1$, then the matrix isn't doing much more than rotating vectors.
+  - If $d_1 \gg d_2$, then the matrix will collapse vectors to a nearly 1D subspace.
 :::
 
 ## Conclusion
