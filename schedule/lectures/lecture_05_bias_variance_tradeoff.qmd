@@ -18,7 +18,7 @@ By the end of this lecture, you should be able to:
 
 In the previous lecture, we:
 
-1. decided that **risk** ($\mathbb E[ L(Y, f_\mathcal{D}(X)) ]$) is the metric to quantify ``goodness'' of a learned model $f_\mathcal{D}$, and
+1. decided that **risk** ($\mathbb E[ L(Y, \hat f_\mathcal{D}(X)) ]$) is the metric to quantify ``goodness'' of a learned model $\hat f_\mathcal{D}$, and
 2. used estimated quantities of risk (e.g. via cross-validation) to select between different models.
 
 As it stands right now, this model selection procedure is a bit like guess-and-check.
@@ -38,14 +38,14 @@ In subsequent lectures, we will introduce modeling and estimation procedures for
 
 ## Setup
 
-Given a learned model $f_\mathcal{D}: \mathcal{X} \to \mathcal{Y}$,
+Given a learned model $\hat f_\mathcal{D}: \mathcal{X} \to \mathcal{Y}$ (the hat denotes that the model is estimated from data, and the subscript $\mathcal D$ emphasizes that it was estimated using the particular training set $\mathcal D$),
 recall our definition of **risk** from the previous lecture:
 
-$$ \mathcal R = \mathbb E[ L(Y, f_\mathcal{D}(X)) ] = \mathbb E\left[ \mathbb E\left[ L(Y, f_\mathcal{D}(X)) \mid \mathcal D \right] \right]. $$
+$$ \mathcal R = \mathbb E[ L(Y, \hat f_\mathcal{D}(X)) ] = \mathbb E\left[ \mathbb E\left[ L(Y, \hat f_\mathcal{D}(X)) \mid \mathcal D \right] \right]. $$
 
 This lecture will focus specifically on the square loss (though the ideas will apply to other losses):
 
-$$ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] $$
+$$ \mathcal R = \mathbb E\left[ (Y - \hat f_\mathcal{D}(X))^2 \right] $$
 
 Crucially, risk is an expectation over *all sources of randomness*, including:
 
@@ -72,10 +72,10 @@ $$ \bar{Y}(X) = \mathbb E[ Y \mid X ]. $$
 
 ### Expected Model
 
-Our learned model $f_\mathcal{D}$ is a random variable because it depends on the (random) training data $\mathcal D$.
+Our learned model $\hat f_\mathcal{D}$ is a random variable because it depends on the (random) training data $\mathcal D$.
 We can consider the **expected model**:
 
-$$ \bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]. $$
+$$ \bar{f}(X) = \mathbb E[ \hat f_\mathcal{D}(X) \mid X ]. $$
 
 - Here, we are averaging over training datasets $\mathcal D$, but nothing else.
 - **Intuition**: imagine we were to train many models on different training datasets $\mathcal D_1, \ldots, \mathcal D_M$.
@@ -90,11 +90,11 @@ adding zero.
 - More specifically, we are going to add and subtract a very specific quantity, the expected label $\bar{Y}(X)$,
   within the square loss portion of risk:
 
-    $$ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] = \mathbb E\left[ \left( Y \overbrace{- \bar{Y}(X) + \bar{Y}(X)}^{= 0} - f_\mathcal{D}(X) \right)^2 \right] $$
+    $$ \mathcal R = \mathbb E\left[ (Y - \hat f_\mathcal{D}(X))^2 \right] = \mathbb E\left[ \left( Y \overbrace{- \bar{Y}(X) + \bar{Y}(X)}^{= 0} - \hat f_\mathcal{D}(X) \right)^2 \right] $$
 
 - So far, this is dumb. But watch what happens when we group terms...
 
-    $$ \mathcal R = \mathbb E\left[ \left( \underbrace{(Y - \bar{Y}(X))}_{A} + \underbrace{(\bar{Y}(X) - f_\mathcal{D}(X))}_{B} \right)^2 \right] $$
+    $$ \mathcal R = \mathbb E\left[ \left( \underbrace{(Y - \bar{Y}(X))}_{A} + \underbrace{(\bar{Y}(X) - \hat f_\mathcal{D}(X))}_{B} \right)^2 \right] $$
 
 - ... and then expand the square into $A^2 + 2AB + B^2$. After simplifying...
 
@@ -106,19 +106,19 @@ adding zero.
       &= \mathbb E\left[ A^2 \right] + \mathbb E\left[ B^2 \right] + 2\mathbb E\left[ AB \right]
       \end{align*}
 
-      Consider $\mathbb E\left[ AB \right] = \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \right]$.
+      Consider $\mathbb E\left[ AB \right] = \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \right]$.
       Applying the tower property, we have that:
 
-      $$ \mathbb E\left[ AB \right] = \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right]. $$
+      $$ \mathbb E\left[ AB \right] = \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right]. $$
 
       Within the inner expectation, $Y$ is the only random term after conditioning on $\mathcal D$ and $X$.
       Since $Y$ is independent of our training data, we have that $\mathbb E[ Y \mid X, \mathcal D ] = \mathbb E[ Y \mid X ] = \bar{Y}(X)$. Therefore,
 
       \begin{align*}
         \mathbb E\left[ AB \right]
-        &= \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right] \\
-        &= \mathbb E\left[ \left( \mathbb E[ Y \mid X, \mathcal D] - \bar{Y}(X) \right) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] \\
-        &= \mathbb E\left[ (\bar{Y}(X) - \bar{Y}(X)) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] = 0.
+        &= \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right] \\
+        &= \mathbb E\left[ \left( \mathbb E[ Y \mid X, \mathcal D] - \bar{Y}(X) \right) \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right) \right] \\
+        &= \mathbb E\left[ (\bar{Y}(X) - \bar{Y}(X)) \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right) \right] = 0.
       \end{align*}
 
       Thus, the cross term vanishes, and we are left with
@@ -131,7 +131,7 @@ adding zero.
 
     ... we get that
 
-    $$ \mathcal R = \underbrace{\mathbb E\left[ \left( Y - \bar{Y}(X) \right)^2 \right]}_\text{irreducible error} + \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error} $$
+    $$ \mathcal R = \underbrace{\mathbb E\left[ \left( Y - \bar{Y}(X) \right)^2 \right]}_\text{irreducible error} + \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error} $$
 
 ### Estimation versus Irreducible Error
 
@@ -141,7 +141,7 @@ I claim these two terms have intuitive interpretations:
   Even if we were to perfectly know the conditional distribution $\mathbb{P}_{Y \mid X}$, we would not be able to perfectly predict $Y$ from $X$
   due to some inherent randomness in $Y \mid X$.
 
-2. The second term, the **estimation error**, quantifies how far off our learned model $f_\mathcal{D}$ is from the optimal prediction rule $\bar{Y}(X)$.
+2. The second term, the **estimation error**, quantifies how far off our learned model $\hat f_\mathcal{D}$ is from the optimal prediction rule $\bar{Y}(X)$.
   It quantifies how well our learned model approximates the **regression function**; i.e. the optimal prediction rule.
 
 The irreducible error is **independent** of our model/learning procedure.
@@ -163,10 +163,10 @@ I also claim that this decomposition proves my earlier statement that the regres
 <details>
   <summary>Why?</summary>
 
-- The first term, the prediction error, does not depend on our model $f_\mathcal{D}$ at all.
+- The first term, the prediction error, does not depend on our model $\hat f_\mathcal{D}$ at all.
   It is a property of the data distribution $\mathbb{P}_{X,Y}$, and it is non-negative.
 - The second term, the estimation error, is non-negative because it is an expectation of a squared term.
-  It will be minimized when it equals zero, which happens when $f_\mathcal{D}(X) = \bar{Y}(X)$ for all $X$.
+  It will be minimized when it equals zero, which happens when $\hat f_\mathcal{D}(X) = \bar{Y}(X)$ for all $X$.
 
 </details>
 :::
@@ -179,8 +179,8 @@ that we can reason about?
 
 Let's play the adding-zero trick again, this time adding and subtracting the expected model $\bar{f}(X)$:
 
-$$ \mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]
-= \mathbb E\left[ \left( \underbrace{\left( \bar{Y}(X) - \bar{f}(X) \right)}_{C} - \underbrace{\left( f_\mathcal{D}(X) - \bar{f}(X) \right)}_{D} \right)^2 \right]. $$
+$$ \mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]
+= \mathbb E\left[ \left( \underbrace{\left( \bar{Y}(X) - \bar{f}(X) \right)}_{C} - \underbrace{\left( \hat f_\mathcal{D}(X) - \bar{f}(X) \right)}_{D} \right)^2 \right]. $$
 
 A similar game will play out after we (1) expand the square and (2) apply linearity of expectation:
 the cross term will vanish...
@@ -190,35 +190,35 @@ the cross term will vanish...
 
   If we take the cross term...
 
-  $$ \mathbb E\left[ CD \right] = \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \right] $$
+  $$ \mathbb E\left[ CD \right] = \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \right] $$
 
   ... and again apply the tower property (this time only conditioning on $X$)...
 
-  $$ \mathbb E\left[ CD \right] = \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] $$
+  $$ \mathbb E\left[ CD \right] = \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \mid X \right] \right] $$
 
-  ... then the only term in the inner expectation that is random (after conditioning on $X$) is $f_\mathcal{D}(X)$.
-  Since $\bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]$, we have that
+  ... then the only term in the inner expectation that is random (after conditioning on $X$) is $\hat f_\mathcal{D}(X)$.
+  Since $\bar{f}(X) = \mathbb E[ \hat f_\mathcal{D}(X) \mid X ]$, we have that
 
   \begin{align*}
     \mathbb E\left[ CD \right]
-    &= \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] \\
-    &= \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \mathbb E\left[ f_\mathcal{D}(X) \mid X \right] \right)\right] \\
+    &= \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \mid X \right] \right] \\
+    &= \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \mathbb E\left[ \hat f_\mathcal{D}(X) \mid X \right] \right)\right] \\
     &= \mathbb E\left[ (\bar{Y}(X) - \bar{f}(X)) (\bar{f}(X) - \bar{f}(X)) \right] = 0.
   \end{align*}
 </details>
 
 ... and we will be left with
 
-$$ \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error}
+$$ \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error}
 = \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right)^2 \right]}_\text{squared bias}
-+ \underbrace{\mathbb E\left[ \left( \bar{f}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{variance}. $$
++ \underbrace{\mathbb E\left[ \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{variance}. $$
 
 
 ### Bias Versus Variance
 
 Again, these two components have intuitive (and very important) interpretations:
 
-**Variance** captures how dependent our learned model $f_\mathcal{D}$ is on any particular training dataset $\mathcal D$.
+**Variance** captures how dependent our learned model $\hat f_\mathcal{D}$ is on any particular training dataset $\mathcal D$.
 High variance is bad, because it means that our predictions depend more on a particular training sample rather than generalizable patterns in the data.
 
 **Bias**: captures how much "generalizable truth" can actually be learned by our statistical model/estimation procedure.

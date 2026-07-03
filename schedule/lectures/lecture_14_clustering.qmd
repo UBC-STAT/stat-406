@@ -42,8 +42,8 @@ The cluster labels do not correspond to any response; they are simply a way to d
 
 | Mapping | Supervised Learning Problem | Unsupervised Learning Problem |
 |---------|------------------------------|-------------------------------|
-| $\hat f_{\mathcal D}(X): \mathbb R^p \to \mathbb R^k$ | Regression | Dimensionality Reduction |
-| $\hat f_{\mathcal D}(X): \mathbb R^p \to \{1, 2, \ldots, k\}$ | Classification | Clustering |
+| $\hat f(X): \mathbb R^p \to \mathbb R^k$ | Regression | Dimensionality Reduction |
+| $\hat f(X): \mathbb R^p \to \{1, 2, \ldots, k\}$ | Classification | Clustering |
 :::
 
 ### Example of Clustering
@@ -72,7 +72,7 @@ tibble(
 
 - You'll notice that the data are not uniformly distributed throughout the 2D space.
 - If you squint, it looks like the data belong to three groups, or **clusters**.
-- If we apply a clustering algorithm to learn a mapping $\hat f_{\mathcal D}(X): \mathbb R^2 \to \{1, 2, 3\}$, we might get the following result:
+- If we apply a clustering algorithm to learn a mapping $\hat f(X): \mathbb R^2 \to \{1, 2, 3\}$, we might get the following result:
 
 ```{r clustering-example}
 #| fig.width: 5
@@ -106,11 +106,11 @@ As with (almost) all other learning procedures we've discussed, we will formaliz
 
 - Assume we have fixed $k$, i.e. the number of clusters we hope to partition our data into. (We'll discuss how to choose $k$ momentarily.)
 
-- **What we are trying to learn**: $\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}$, or some function that maps covariates onto clusters.
+- **What we are trying to learn**: $\hat f(X) : \mathbb R^p \to \{ 1, \ldots, k \}$, or some function that maps covariates onto clusters.
 
-- For any given $\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}$, let $C_1, \ldots, C_k \subset \mathcal D$ represent the **clusters** induced by this mapping; i.e.
+- For any given $\hat f(X) : \mathbb R^p \to \{ 1, \ldots, k \}$, let $C_1, \ldots, C_k \subset \mathcal D$ represent the **clusters** induced by this mapping; i.e.
 
-  $$C_j = \{ X_i \in \mathcal D : \hat f_{\mathcal D}(X_i) = j \}$$
+  $$C_j = \{ X_i \in \mathcal D : \hat f(X_i) = j \}$$
 
   In other words, $C_j$ is the set of all training covariates assigned to cluster $j$.
 
@@ -124,7 +124,7 @@ As with (almost) all other learning procedures we've discussed, we will formaliz
 - We want to minimize the total within-cluster variation, but weight each cluster by its size so larger clusters contribute more.
 - Mathematically, this gives us:
 
-  $$ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. $$
+  $$ \mathrm{argmin}_{\hat f(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. $$
 
   The fraction $1/2$ is for mathematical convenience (it does not affect the minimization), as will become clear shortly.
 
@@ -201,22 +201,22 @@ Even after simplifying the optimization problem using centroids, it is still imp
 
 - We produce a series of clustering assignments
 
-  $$ f_{\mathcal D}^{(0)}(X), f_{\mathcal D}^{(1)}(X), f_{\mathcal D}^{(2)}(X), \ldots f_{\mathcal D}^{(t)}(X), \ldots $$
+  $$ \hat f^{(0)}(X), \hat f^{(1)}(X), \hat f^{(2)}(X), \ldots \hat f^{(t)}(X), \ldots $$
 
   so that $\sum_{j=1}^k |C_j| W_j$ decreases as $t$ increases.
 
-- $f_{\mathcal D}^{(0)}(X)$ will essentially be random:
+- $\hat f^{(0)}(X)$ will essentially be random:
 
   1. Randomly initialize $\mu_1, \ldots, \mu_k$ somewhere in $\mathbb R^p$.
   2. Assign each point to the cluster corresponding to the nearest $\mu_j$ value:
 
-    $$ f_{\mathcal D}^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. $$
+    $$ \hat f^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. $$
 
-  3. Update $\mu_1, \ldots, \mu_k$ to be the **centroids** of the clusters induced by $f_{\mathcal D}^{(0)}(X)$:
+  3. Update $\mu_1, \ldots, \mu_k$ to be the **centroids** of the clusters induced by $\hat f^{(0)}(X)$:
 
     $$ \mu_j = \frac{1}{|C_j|} \sum_{i \in C_j} X_i. $$
 
-- To get $f_{\mathcal D}^{(1)}(X)$ from $f_{\mathcal D}^{(0)}(X)$, we repeat steps 2 and 3 above.
+- To get $\hat f^{(1)}(X)$ from $\hat f^{(0)}(X)$, we repeat steps 2 and 3 above.
 
 - More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e. when the distance that the cluster centroids change is $< \varepsilon$ for some pre-defined constant $\varepsilon$. Most implementations will define this constant for you.)
 
@@ -290,7 +290,7 @@ As the total number of clusters $k$ increases...
 
 - As we add more clusters, the between-cluster variation increases!
   (In my opinion, the intuition for this idea is best understood in reverse.
-   $B$ essentially measures the empirical variance of our $X_i$ if we were to replace each $X_i$ with its cluster centroid $\mu_{f_{\mathcal D}(X_i)}$.
+   $B$ essentially measures the empirical variance of our $X_i$ if we were to replace each $X_i$ with its cluster centroid $\mu_{\hat f(X_i)}$.
    As we decrease the number of clusters, we are replacing many $X_i$ with the same centroid, which reduces the empirical variance of the data.)
 
 If you want to understand this relationship more rigorously,
