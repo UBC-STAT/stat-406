@@ -34,7 +34,7 @@ We have spent the last few lectures discussing methods to reduce variance in lin
   $$Y = f(X) + \varepsilon$$
 
   for some unknown function $f: \mathbb R^p \to \mathbb R$.
-- Using a predictive model of the form $\hat f_\mathcal{D}(X) = X^\top \hat \beta$, like what we get from OLS, will not work well if $f$ is highly nonlinear; it will be a high-bias predictor.
+- Using a predictive model of the form $\hat f(X) = X^\top \hat \beta$, like what we get from OLS, will not work well if $f$ is highly nonlinear; it will be a high-bias predictor.
 
 :::{.callout-important title="But Isn't OLS Unbiased?"}
   - Recall that OLS is unbiased **only under the assumptions made by the linear statistical model**.
@@ -43,21 +43,21 @@ We have spent the last few lectures discussing methods to reduce variance in lin
 
   $$f(X) = f(0) + \nabla f(0)^\top X + \frac{1}{2} X^\top H_f(0) X + \ldots$$
 
-  Even if OLS were to perfectly estimate $\hat \beta = \nabla f(0)$, the higher-order terms would still be missing, and so $\mathbb E[\hat f_\mathcal{D}(X) \mid X] \neq f(X)$.
+  Even if OLS were to perfectly estimate $\hat \beta = \nabla f(0)$, the higher-order terms would still be missing, and so the linear predictor $\hat f(X) = X^\top \hat\beta$ systematically differs from $f(X)$ (i.e. OLS is biased).
 :::
 
 :::{.callout-tip collapse="true" title="Quiz: Will Ridge or Lasso Be Beneficial in this Situation?"}
   Probably not.
 
   - Ridge and Lasso reduce variance and introduce bias, and we will likely be in a high-bias situation already.
-  - More specifically, Ridge and Lasso still produce predictors of the form $\hat f_\mathcal{D}(X) = X^\top \hat \beta$, which are still missing the higher-order terms that create the bias problem in the first place.
+  - More specifically, Ridge and Lasso still produce predictors of the form $\hat f(X) = X^\top \hat \beta$, which are still missing the higher-order terms that create the bias problem in the first place.
 :::
 
 ## Warmup: Polynomial Basis Expansions for $p=1$
 - Why don't we just use a predictive model that includes the higher-order terms?
 - For example, if $p=1$, we could learn a model of the form:
 
-  $$\hat f_\mathcal{D}(x) = \hat \beta_0 + \hat \beta_1 x + \hat \beta_2 x^2 + \ldots + \hat \beta_d x^d.$$
+  $$\hat f(x) = \hat \beta_0 + \hat \beta_1 x + \hat \beta_2 x^2 + \ldots + \hat \beta_d x^d.$$
 
 - As $d \to \infty$, there exists some set of coefficients $\hat \beta_0, \ldots, \hat \beta_d$ such that $f(x) = \sum_{j=0}^d \beta_j x^j$.
 
@@ -74,8 +74,8 @@ We have spent the last few lectures discussing methods to reduce variance in lin
 Using higher-order polynomial terms can significantly reduce bias.
 
 - Let's assume that, under our statistical model, $Y = f(X) + \varepsilon$ for some $d^\mathrm{th}$ degree polynomial $f$.
-- Let's also assume that we use a $d^\mathrm{th}$ degree polynomial basis expansion to learn a predictor $\hat f_\mathcal{D}(x) = \sum_{j=0}^d \hat \beta_j x^j$ using OLS.
-- Then $\hat f_\mathcal{D}(x)$ is an unbiased estimator of $f(x)$!
+- Let's also assume that we use a $d^\mathrm{th}$ degree polynomial basis expansion to learn a predictor $\hat f(x) = \sum_{j=0}^d \hat \beta_j x^j$ using OLS.
+- Then $\hat f(x)$ is an unbiased estimator of $f(x)$!
 
   <details>
     <summary>Why</summary>
@@ -123,7 +123,7 @@ arcuate |>
 
 - Thus, the second-order polynomial basis expansion will be of the form:
 
-  $$\hat f_\mathcal{D}(x) = \hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_j + \sum_{j=1}^p \sum_{k=j}^p \hat \beta_{jk} x_j x_k.$$
+  $$\hat f(x) = \hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_j + \sum_{j=1}^p \sum_{k=j}^p \hat \beta_{jk} x_j x_k.$$
 
 - The $\beta_{jk}$ parameters for $j \neq k$ are called **interaction terms**, which you studied in STAT 306.
 
@@ -152,7 +152,7 @@ arcuate |>
 
 - We can thus consider a predictive model of the form:
 
-  $$\hat f_\mathcal{D}(x) = \hat a_0 + \sum_{j=1}^d \hat a_j \cos(j 2 \pi x) + \hat b_j \sin(j 2 \pi x)$$
+  $$\hat f(x) = \hat a_0 + \sum_{j=1}^d \hat a_j \cos(j 2 \pi x) + \hat b_j \sin(j 2 \pi x)$$
 
   for some $d \in \mathbb N$.
 
