@@ -1,5 +1,5 @@
 ---
-title: "Lecture 1: Probability Review"
+title: "Lecture 1: Probability and Linear Algebra Review"
 author: "Geoff Pleiss"
 date: last-modified
 format: html
@@ -12,6 +12,7 @@ By the end of this lecture, you will be able to:
 1. Define a random variable and understand when to use them to model quantities
 2. Derive probability rules through the product and sum rules
 3. Apply linearity of expectation and the law of total expectation to simplify calculations
+4. Apply the SVD decomposition and describe the properties of each component matrix
 
 ## Random Variables
 
@@ -48,15 +49,15 @@ By the end of this lecture, you will be able to:
 
   $$
   \begin{cases}
-      P(A=a, B=b) & \text{for discrete random variables} \\
+      \mathbb P(A=a, B=b) & \text{for discrete random variables} \\
       f_{A,B}(a, b) & \text{for continuous random variables}
   \end{cases}
   $$
 
 - Without loss of generality, we will use the continuous random variable notation throughout the rest of this lecture (and throughout most of the course).
 - We can also describe \(A\) and \(B\) through:
-  - **Conditional distributions**, i.e., \(f_{A|B}(a|b)\) or \(f_{B|A}(b|a)\)
-  - **Marginal distributions**, i.e., \(f_A(a)\) or \(f_B(b)\)
+  - **Conditional distributions**, i.e., $f_{A|B}(a|b)$ or $f_{B|A}(b|a)$
+  - **Marginal distributions**, i.e., $f_A(a)$ or $f_B(b)$
 - While there are many fundamental rules of probability to manipulate these distributions, most of them can be derived from two basic rules: the **product rule** and the **sum rule**.
 
 ## The Product Rule
@@ -216,8 +217,90 @@ This formula, known as **linearity of expectation**, holds *even when $A$ and $B
 
 :::
 
+## Linear Algebra Review
+
+We're not going to go into too much review about linear algebra.
+Based on the course prerequisites, I'm assuming that you're very familiar with the following concepts:
+
+- Matrix multiplication
+- Matrix inverses
+- Matrix rank
+- The trace and determinant of a matrix
+- Orthogonal, symmetric, and positive definite matrices
+- Vector inner product
+- Vector norms
+
+If you are unfamiliar or uncomfortable with any of these ideas, brush up on them quickly!
+We'll make use of them very extensively starting with the next lecture.
+
+One concept that you hopefully have seen before (but maybe haven't used too much) is the *Singular Value Decomposition* (or SVD).
+It is an important tool for understanding the intuitions behind many of the methods we will discuss in this course.
+
+### Notation
+Matrices will (almost) always be represented by bold uppercase letters (e.g. $\boldsymbol A$), regardless of whether they're random or deterministic.
+
+### The Singular Value Decomposition
+
+Any matrix $\boldsymbol M \in \mathbb R^{n \times d}$ can be decomposed as $\boldsymbol M = \boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top$, where:
+
+- $\boldsymbol U \in \mathbb{R}^{n \times n}$ is **orthonormal**: its columns (and rows) are mutually orthogonal unit vectors, meaning $\boldsymbol U^\top \boldsymbol U = \boldsymbol I$ and $\boldsymbol U \boldsymbol U^\top = \boldsymbol I$.
+- $\boldsymbol \Sigma \in \mathbb{R}^{n \times d}$ is **diagonal**: all off-diagonal entries are zero, and the diagonal entries (the *singular values*, denoted by $\sigma_1, \sigma_2, \ldots$) are **non-negative**.
+  - If $n > d$ (more rows than columns): $\boldsymbol \Sigma$ has $d$ non-zero diagonal entries in its top $d \times d$ block, with the remaining $n - d$ rows being all zeros.
+  - If $n < d$ (more columns than rows): $\boldsymbol \Sigma$ has $n$ non-zero diagonal entries in its leftmost $n \times n$ block, with the remaining $d - n$ columns being all zeros.
+- $\boldsymbol V^\top \in \mathbb{R}^{d \times d}$ is **orthonormal**.
+
+This decomposition has so many uses in statistics and beyond,
+and we'll see it many times throughout this class.
+
+#### Intuition
+
+To understand its use, it's important to first understand the information that's captured in each of the terms in this decomposition.
+And, because everything is easier to visualize in 2D, let's assume that $n = d = 2$.
+
+![SVD Intuition (Source: Wikipedia)](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Singular-Value-Decomposition.svg/1280px-Singular-Value-Decomposition.svg.png){width=500}
+
+Any matrix $\boldsymbol M$ can be thought of as a (linear) operation to transform a vector (e.g. by rotation, scale, etc.).
+
+- Consider the vectors $\boldsymbol o$ and $\boldsymbol r$, visualized by the orange and red arrows (respectively) in the upper left.
+- Applying the matrix to these vectors produces $\boldsymbol M \boldsymbol o$ and $\boldsymbol M \boldsymbol r$, depicted by the arrows in the upper right.
+- Note how these arrows have been rotated and stretched.
+
+The SVD breaks this transformation down into three composable steps:
+
+- First, we rotate the vectors with the matrix $\boldsymbol V^\top$ (producing $\boldsymbol V^\top \boldsymbol o$ and $\boldsymbol V^\top \boldsymbol r$).
+  Recall that orthonormal matrices are *rotation matrices*, where multiplying them against a vector is the same as rotating that vector about the origin.
+- Next, we stretch the vectors along the principal axis (x- and y-axis) with the matrix $\boldsymbol \Sigma$ (producing $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol o$ and $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol r$).
+  Recall that diagonal matrices shrink or stretch vectors along the principal axes.
+- Finally, we apply one more rotation to the vectors with the matrix $\boldsymbol U$ (producing $\boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol o = \boldsymbol M \boldsymbol o$ and $\boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol r = \boldsymbol M \boldsymbol r$).
+
+Amazingly, any linear transformation can be decomposed into this rotate-stretch-rotate pattern!
+
+#### How We'll Use the SVD
+
+The most important information in the SVD lives in the $\boldsymbol \Sigma$ matrix.
+It can tell us the **effective dimensionality of the matrix**.
+
+- In the example above, note how multiplying against $\boldsymbol \Sigma$ stretched the x-axis but shrunk the y-axis.
+- This implies that $\sigma_1$ (corresponding to the x axis) is a very large number, while $\sigma_2$ (corresponding to the y axis) is a very small number.
+- Now imagine if $\sigma_1 \gg \sigma_2$, with $\sigma_2 \approx 0$:
+  - Any vector $\boldsymbol \Sigma \boldsymbol V^\top \boldsymbol z$ would then approximately live on the x axis.
+  - Even after rotating with $\boldsymbol U$, most vectors $\boldsymbol M \boldsymbol z = \boldsymbol U \boldsymbol \Sigma \boldsymbol V^\top \boldsymbol z$ would approximately live on a line.
+  - This implies that $\boldsymbol M$ effectively collapses all points to nearly live on a single line. So it collapses 2D points to a nearly 1D subspace.
+- Conversely, if $\sigma_1 \approx \sigma_2$, then no dimension gets collapsed more than the other.
+  $\boldsymbol \Sigma$ isn't doing too much (assuming without loss of generality that $\sigma_1 \approx \sigma_2 \approx 1$),
+  so $\boldsymbol M$ is mostly characterized by the two rotation matrices $\boldsymbol U$ and $\boldsymbol V$.
+
+:::{.callout-note title="Takeaway"}
+  The singular values tell us how many dominant dimensions a matrix has.
+  In 2D:
+
+  - If $\sigma_1 \approx \sigma_2 \approx 1$, then the matrix isn't doing much more than rotating vectors.
+  - If $\sigma_1 \gg \sigma_2$, then the matrix will collapse vectors to a nearly 1D subspace.
+:::
+
 ## Conclusion
 
 - We will use (jointly-distributed) random variables to model data, models that depend on data, and predictions that depend on models that depend on data.
 - You will need to manipulate marginal, joint, and conditional probabilities and expectations of these random variables throughout the course.
 - This review has covered most of the probability rules that we'll use, but just remember that *you* can always derive any of them through the product and sum rules!
+- The SVD tells us the effective dimensionality of a matrix. We'll use it lots when analyzing methods throughout this course!
