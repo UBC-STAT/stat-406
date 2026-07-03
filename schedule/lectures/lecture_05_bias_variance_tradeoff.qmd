@@ -49,8 +49,8 @@ $$ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] $$
 
 Crucially, risk is an expectation over *all sources of randomness*, including:
 
-- the training data $\mathcal D = \{(X_i, Y_i)\}_{i=1}^n \overset{\text{i.i.d.}}{\sim} P(Y, X)$
-- the test data $(X, Y) \sim P(Y, X)$
+- the training data $\mathcal D = \{(X_i, Y_i)\}_{i=1}^n \overset{\text{i.i.d.}}{\sim} \mathbb{P}_{X,Y}$
+- the test data $(X, Y) \sim \mathbb{P}_{X,Y}$
 - (any randomness in the estimation procedure).
 
 Our goal is to decompose this expectation into semantically meaningful components that we can reason about.
@@ -58,7 +58,7 @@ Before we do so, we need to introduce some terms/ideas:
 
 ### Expected Label
 
-For any given set of covariates $X$, there is a distribution $P(Y \mid X)$ over possible labels.
+For any given set of covariates $X$, there is a distribution $\mathbb{P}_{Y \mid X}$ over possible labels.
 We can consider the expected label:
 
 $$ \bar{Y}(X) = \mathbb E[ Y \mid X ]. $$
@@ -138,7 +138,7 @@ adding zero.
 I claim these two terms have intuitive interpretations:
 
 1. The first term, the **irreducible error**, quantifies the inherent uncertainty in the response variable.
-  Even if we were to perfectly know the conditional distribution $P(Y \mid X)$, we would not be able to perfectly predict $Y$ from $X$
+  Even if we were to perfectly know the conditional distribution $\mathbb{P}_{Y \mid X}$, we would not be able to perfectly predict $Y$ from $X$
   due to some inherent randomness in $Y \mid X$.
 
 2. The second term, the **estimation error**, quantifies how far off our learned model $f_\mathcal{D}$ is from the optimal prediction rule $\bar{Y}(X)$.
@@ -164,7 +164,7 @@ I also claim that this decomposition proves my earlier statement that the regres
   <summary>Why?</summary>
 
 - The first term, the prediction error, does not depend on our model $f_\mathcal{D}$ at all.
-  It is a property of the data distribution $P(X, Y)$, and it is non-negative.
+  It is a property of the data distribution $\mathbb{P}_{X,Y}$, and it is non-negative.
 - The second term, the estimation error, is non-negative because it is an expectation of a squared term.
   It will be minimized when it equals zero, which happens when $f_\mathcal{D}(X) = \bar{Y}(X)$ for all $X$.
 

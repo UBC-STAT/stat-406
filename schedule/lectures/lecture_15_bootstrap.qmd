@@ -109,17 +109,17 @@ We use computation to approximate mathematical expectations/variances that we ca
 
 ## Approximating New Datasets via the Bootstrap
 
-- Imagine that I have $X_1, \ldots, X_n$ drawn i.i.d. from some distribution $P(X)$.
+- Imagine that I have $X_1, \ldots, X_n$ drawn i.i.d. from some distribution $\mathbb{P}_X$.
 
-- The **empirical distribution** $\hat P(X)$ is the discrete distribution that places mass $1/n$ at each observed data point $X_i$:
+- The **empirical distribution** $\hat{\mathbb{P}}_X$ is the discrete distribution that places mass $1/n$ at each observed data point $X_i$:
 
   $$
-  \hat P(X=x) = \frac{1}{n} \sum_{i=1}^n \delta_{X_i}(x)
+  \hat{\mathbb{P}}(X=x) = \frac{1}{n} \sum_{i=1}^n \delta_{X_i}(x)
   $$
 
   where $\delta_{X_i}(x)$ is a point mass at $X_i$.
 
-- If $n$ is large enough, then $\hat P(X) \approx P(X)$:
+- If $n$ is large enough, then $\hat{\mathbb{P}}_X \approx \mathbb{P}_X$:
 
   ```{r empirical-dist-example, fig.cap="Empirical distribution approximating true distribution", fig.width=5, fig.height=4}
   #| code-fold: true
@@ -131,28 +131,28 @@ We use computation to approximate mathematical expectations/variances that we ca
   legend("topright", legend = c("True Distribution", "Empirical Distribution"), col = c("red", "black"), lwd = 2)
   ```
 
-:::{.callout-note title="What is the Implication of $\hat P(X) \approx P(X)$?"}
-- Let's imagine I sample a new point $X^*$ from $P(X)$, and another point $\hat X^{*}$ from $\hat P(X)$.
-- If $\hat P(X) \approx P(X)$, then the distribution of $X^*$ and $\hat X^{*}$ should be similar.
-- Thus, sampling from the empirical distribution $\hat P(X)$ is (approximately) equivalent to sampling from the true distribution $P(X)$!
+:::{.callout-note title="What is the Implication of $\hat{\mathbb{P}}_X \approx \mathbb{P}_X$?"}
+- Let's imagine I sample a new point $X^*$ from $\mathbb{P}_X$, and another point $\hat X^{*}$ from $\hat{\mathbb{P}}_X$.
+- If $\hat{\mathbb{P}}_X \approx \mathbb{P}_X$, then the distribution of $X^*$ and $\hat X^{*}$ should be similar.
+- Thus, sampling from the empirical distribution $\hat{\mathbb{P}}_X$ is (approximately) equivalent to sampling from the true distribution $\mathbb{P}_X$!
 :::
 
 - If we wish to sample a whole-new dataset $\mathcal D' = \{ X_1', \ldots, X_n' \}$ that has (approximately) the same distribution as our original dataset $\mathcal D = \{ X_1, \ldots, X_n \}$,
-we can thus sample each $X_i'$ i.i.d. from the empirical distribution $\hat P(X)$.
+we can thus sample each $X_i'$ i.i.d. from the empirical distribution $\hat{\mathbb{P}}_X$.
 
 ### The Bootstrap
 
 This idea gives us a recipe to sample many datasets $\mathcal D^{(1)}, \ldots, \mathcal D^{(B)}$ that are (approximately) drawn from the same distribution as our original dataset $\mathcal D$, which is often referred to as **the bootstrap**:
 
 :::{.callout-tip title="The Bootstrap"}
-  1. Construct the empirical distribution $\hat P(X, Y)$ based on the observed data points $(X_i, Y_i)$ in $\mathcal D$.
+  1. Construct the empirical distribution $\hat{\mathbb{P}}_{X,Y}$ based on the observed data points $(X_i, Y_i)$ in $\mathcal D$.
   2. For $b = 1, \ldots, B$:
-     - Sample $n$ data points $(X_i^{(b)}, Y_i^{(b)})$ *with replacement* from $\hat P(X, Y)$ to form dataset $\mathcal D^{(b)}$.
+     - Sample $n$ data points $(X_i^{(b)}, Y_i^{(b)})$ *with replacement* from $\hat{\mathbb{P}}_{X,Y}$ to form dataset $\mathcal D^{(b)}$.
      - Compute the statistic of interest (e.g. prediction $\hat f_{\mathcal D^{(b)}}(x)$) on dataset $\mathcal D^{(b)}$. (**Important**: this step will require training $b$ models on the $b$ simulated datasets if the statistic of interest is a model prediction.)
   3. Compute the empirical variance $\mathrm{Var}[ \hat f_{\mathcal D^{(b)}}(x) ]$, or construct a confidence interval from the $B$ computed statistics (using methods to be explained shortly).
 :::
 
-- Note that we sample *with replacement* from the empirical distribution because we want each data point in the new dataset to be an independent draw from $\hat P(X, Y) \approx P(X, Y)$.
+- Note that we sample *with replacement* from the empirical distribution because we want each data point in the new dataset to be an independent draw from $\hat{\mathbb{P}}_{X,Y} \approx \mathbb{P}_{X,Y}$.
 
 - Once we have sampled these new datasets, we can train models $\hat f_{\mathcal D^{(1)}}, \ldots, \hat f_{\mathcal D^{(B)}}$ on each dataset and use the predictions at $x$ to estimate the variance of $\hat Y = \hat f_{\mathcal D}(x)$.
 

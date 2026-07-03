@@ -43,17 +43,17 @@ Let's now derive a statistical model estimation procedure, and prediction rule f
 ## Statistical Model: Linear Log-Odds
 
 - Recall that a statistical model is a set of probability distributions.
-- In classification, we are interested in families of $P(Y=1 \mid X = x)$ distributions
-   - These distributions implicitly define the distribution of $P(Y=0 \mid X = x)$ by the law of total probability, i.e. $P(Y=0 \mid X = x) = 1 - P(Y=1 \mid X = x)$.
+- In classification, we are interested in families of conditional distributions $\mathbb{P}_{Y \mid X}$. For binary classification, each such distribution is a Bernoulli that is fully specified by the probability $\mathbb{P}(Y=1 \mid X = x)$.
+   - This probability implicitly defines $\mathbb{P}(Y=0 \mid X = x)$ by the law of total probability, i.e. $\mathbb{P}(Y=0 \mid X = x) = 1 - \mathbb{P}(Y=1 \mid X = x)$.
 - **Notation**: For simplicity, let's define:
-   - $\pi_1(x) := P(Y = 1 \mid X = x)$ (probability of positive class)
-   - $\pi_0(x) := P(Y = 0 \mid X = x)$ (probability of negative class)
+   - $\pi_1(x) := \mathbb{P}(Y = 1 \mid X = x)$ (probability of positive class)
+   - $\pi_0(x) := \mathbb{P}(Y = 0 \mid X = x)$ (probability of negative class)
    - Note that $\pi_0(x) = 1 - \pi_1(x)$.
 
 **Sneak peek: the logistic regression model**
 
 - You may remember from STAT 406 or CPSC 340 a set of distributions that look like:
-   $$P(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}$$
+   $$\mathbb{P}(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}$$
    - $\beta \in \mathbb{R}^p$ is a vector of parameters.
 - This statistical model is known as **logistic regression**, and it is a good starting point for binary classification.
 - We will now derive this model from first principles.
@@ -63,12 +63,12 @@ Let's now derive a statistical model estimation procedure, and prediction rule f
 
 - It's hard to directly model $\pi_1(x)$ or $\pi_0(x)$ distributions.
 - Consider $\pi_1(x) = x^\top \beta$. What's the problem with this?
-  - If $x^\top \beta > 1$, then $\pi_1(x) = P(Y=1|X=x) > 1$, which is not a valid probability.
-  - If $x^\top \beta < 0$, then $\pi_1(x) = P(Y=1|X=x) < 0$, which is also not a valid probability.
+  - If $x^\top \beta > 1$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) > 1$, which is not a valid probability.
+  - If $x^\top \beta < 0$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) < 0$, which is also not a valid probability.
 
 **Modelling the log-odds**
 
-- Instead of defining distributions through $P(Y = 1 \mid X = x)$ directly, we will instead define distributions through the **log-odds ratio**
+- Instead of defining distributions through $\mathbb{P}(Y = 1 \mid X = x)$ directly, we will instead define distributions through the **log-odds ratio**
 
 - The **log-odds ratio** is then:
    $$r(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)$$
@@ -90,7 +90,7 @@ We're now ready to define a statistical model for binary classification.
 
 - Thus our statistical model is the following set of distributions:
 
-$$\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}$$
+$$\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb{P}(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}$$
 
 :::{.callout-note collapse="true" title="Derivation"}
 - Start with $\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta$
@@ -99,7 +99,7 @@ $$\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \
 
    $$\pi_1(x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}$$
 
-- Our statistical model is then the set of distributions $P(Y=1 \mid X=x)$ that can take the form of $\pi_1$.
+- Our statistical model is then the set of conditional distributions $\mathbb{P}_{Y \mid X}$ whose class-1 probability $\mathbb{P}(Y=1 \mid X=x)$ takes the form of $\pi_1$.
 :::
 
 **The logistic function:**
@@ -145,10 +145,10 @@ $$L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 & \text{if 
 
 \begin{align*}
 \hat{Y}_{\text{new}} &= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
-&= \mathrm{argmin}_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
+&= \mathrm{argmin}_{\hat{y}} \mathbb{P}(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
 &= \mathrm{argmin}_{\hat{y}} \left[
-   \underbrace{P(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
-   \underbrace{P(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
+   \underbrace{\mathbb{P}(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
+   \underbrace{\mathbb{P}(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
 &= \begin{cases}
 1 & \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) > 0.5 \\
 0 & \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5
@@ -175,7 +175,7 @@ $$L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 & \text{if 
 
 There are other losses that we could use to generate different prediction rules:
 
-1. **Probabilistic loss**: $L_\mathrm{prob}(Y, \hat{Y}) = -\log P(Y = \hat Y)$
+1. **Probabilistic loss**: $L_\mathrm{prob}(Y, \hat{Y}) = -\log \mathbb{P}(Y = \hat Y)$
    - This loss produces "soft" predictions (e.g. $\hat{Y}_{\text{new}} = 0.273$) that give a probability estimate of the positive class.
 2. **Asymmetric losses**: $L_\alpha(Y, \hat{Y}) = \alpha \mathbb{I}(Y = 1, \hat{Y} = 0) + (1-\alpha) \mathbb{I}(Y = 0, \hat{Y} = 1)$ for some $\alpha \in (0, 1)$
    - This loss allows us to penalize false positives and false negatives differently, which can be useful in imbalanced datasets.
@@ -201,14 +201,14 @@ where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the l
 - Given training data $\mathcal{D} = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$, recall that the likelihood/log-likelihood function is:
 
    \begin{gather}
-   \mathcal{L}(\beta) = \prod_{i=1}^n P(Y_i \mid X_i; \beta) \\
-   \ell(\beta) = \sum_{i=1}^n \log P(Y_i \mid X_i; \beta)
+   \mathcal{L}(\beta) = \prod_{i=1}^n \mathbb{P}(Y_i \mid X_i; \beta) \\
+   \ell(\beta) = \sum_{i=1}^n \log \mathbb{P}(Y_i \mid X_i; \beta)
    \end{gather}
 
 - Plugging in our model, we have that:
 
    $$
-   P(Y_i \mid X_i; \beta) = \begin{cases}
+   \mathbb{P}(Y_i \mid X_i; \beta) = \begin{cases}
      \sigma(X_i^\top \beta) & \text{if } Y_i = 1 \\
      1 - \sigma(X_i^\top \beta) & \text{if } Y_i = 0
    \end{cases}
@@ -216,7 +216,7 @@ where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the l
 
 - We can write this equation more compactly as:
 
-   $$P(Y_i \mid X_i, \beta) = \sigma(X_i^\top \beta)^{Y_i} (1 - \sigma(X_i^\top \beta))^{1-Y_i}.$$
+   $$\mathbb{P}(Y_i \mid X_i, \beta) = \sigma(X_i^\top \beta)^{Y_i} (1 - \sigma(X_i^\top \beta))^{1-Y_i}.$$
 
 - Thus the log likelihood function is:
 
@@ -259,7 +259,7 @@ the prediction rule for logistic regression becomes:
 \end{align*}
 
 where the second line follows from linearity of expectation, and the third line follows from our logistic model
-(and recognizing that $\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = P(Y=1 \mid X_{\text{new}}, \hat \beta)$).
+(and recognizing that $\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = \mathbb{P}(Y=1 \mid X_{\text{new}}, \hat \beta)$).
 
 Solving for when the derivative is zero, we get:
 
