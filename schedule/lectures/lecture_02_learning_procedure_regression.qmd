@@ -12,10 +12,11 @@ By the end of this lecture, you will be able to:
 1. Distinguish between "learning," "supervised learning," "prediction," and "inference."
 2. Translate between algorithmic and statistical perspectives on learning
   - Define a statistical model
+  - Define a hypothesis class
   - Define an estimator
   - Define a prediction rule
 3. Define the standard linear regression model
-4. Derive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework
+4. Derive ordinary least squares from the empirical risk minimization (ERM) framework (and, optionally, connect it to maximum likelihood estimation)
 
 ## What is (Supervised) Learning?
 
@@ -27,7 +28,7 @@ There are many formulations of "learning" in statistics and machine learning. Th
 **Learning from data**:
 
 We are given a **training dataset**:
-$$ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in \mathbb R^p \times \mathcal Y$$
+$$ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in (\mathbb R^p \times \mathcal Y)^n $$
 
 where:
 
@@ -48,7 +49,7 @@ From this training set, we want to *learn* a function $\hat f : \mathbb R^p \to 
 - Using the notation from [last lecture](./lecture_01_probability.qmd), you'll note that the training data $(X_i, Y_i)$ and the test data $(X_\mathrm{new}, Y_\mathrm{new})$ are random variables.
 - This is a modelling choice. As statisticians, our primary tool for reasoning about the learning process is assuming something is random.
 - In particular, we're going to make the following assumptions about our data:
-    1. There is some joint distribution $P(X, Y)$ that governs the covariate/response pairs we see in the world
+    1. There is some joint distribution $\mathbb{P}_{X,Y}$ that governs the covariate/response pairs we see in the world
     2. Our training data are i.i.d. (independently and identically distributed) *random samples* from that distribution
     3. Our test data are also i.i.d. *random samples* from that distribution.
 
@@ -61,7 +62,7 @@ From this training set, we want to *learn* a function $\hat f : \mathbb R^p \to 
 - **What we want to codify in our model:** the data we make predictions on (our test data) are "sufficiently similar" to our training data
 - How do we codify "sufficiently similar" in a probabilistic way?
   - One way is to assume that they come from the same population distribution.
-  - To "come from the same population distribution" means that, mathematically, we treat them as random samples from $P(Y, X)$.
+  - To "come from the same population distribution" means that, mathematically, we treat them as random samples from $\mathbb{P}_{X,Y}$.
 
 ### Prediction versus Inference
 
@@ -86,18 +87,21 @@ Learning is often presented as an algorithm for producing a prediction rule $\ha
 1. **Train/val/test split**: Divide data into training and testing sets
     - Given our dataset $\mathcal{D}$, we split it into a training set $\mathcal{D}_\mathrm{train}$, a validation set $\mathcal{D}_\mathrm{val}$, and a test set $\mathcal{D}_\mathrm{test}$.
 
-2. **Hypothesis class**: Select a set of candidate $\hat f$ which might make a good prediction rule.
-    - For linear regression, the hypothesis class is linear functions of the form $\hat f(x) = x^\top \hat\beta$ for some $\hat \beta$.
+2. **Define a Predictive Model**: Select a set of candidate $\hat f$ which could possibly predict $Y$ from $X$.
+    - For linear regression, the predictive model will be a linear function of the form $\hat f(X) = X^\top \hat\beta$ for some $\hat \beta$.
 
 3. **Training**: Define a training algorithm (a procedure to choose a $\hat \beta$ from the training data) and apply it to $\mathcal{D}_\mathrm{train}$.
     - Most training algorithms involve minimizing a **loss function** over training data.
     - For linear models, we often choose $\hat f$ to minimize the **squared error loss** over training data.
-      $$L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). $$
+      $$L(Y, \hat f(X)) = (Y - \hat f(X))^2, \qquad \hat f = \mathrm{argmin}_{\hat f} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, \hat f(X_i)). $$
+
 4. **Validation**: Test performance on withheld validation data.
    - We compute the average loss on the validation set to evaluate how well our model generalizes to unseen data.
+
 5. **Iteration**: Refine model based on evaluation results
    - We may choose to change our hypothesis class, the set of features, the loss function, or the training algorithm to try to reduce validation error.
-6. **Testing** *(confusingly referred to by some as "Inference")*: Once satisfied with the model, evaluate on the test set to estimate performance on new data.
+
+6. **Testing** *(confusingly referred to by some in the ML/AI world as "Inference")*: Once satisfied with the model, evaluate on the test set to estimate performance and/or use this model to make predictions on new data.
 
 ### Statistical Perspective
 
@@ -105,30 +109,58 @@ Over the next few lectures, we will derive the CS/algorithmic perspective from f
 
 | Step | CS Perspective | Statistical Perspective |
 |------|----------------|------------------------|
-| 2 | Hypothesis Class | Statistical Model |
+| 2 | Predictive Model | Hypothesis Class |
 | 3 | Training |  Estimation |
-| 6 | Testing (Inference) | Prediction |
+| 6 | Testing | Prediction |
+
+Before defining these components, however, we'll introduce one concept that has no direct counterpart in the CS steps but underpins the statistical perspective: the **statistical model**, which we'll define after taking a moment to think about our data.
 
 ## Statistical Models
 
-A **statistical model** defines the possible relationships between the covariates $X$ and the response variable $Y$.
+When thinking about learning from a statistical lens, before we even begin thinking about a *predictive model*,
+it is often best to define our **statistical model**,
+which is our best guess over the possible relationships between the covariates $X$ and the response variable $Y$
 
-- Formally, it is a *set of probability distributions* that could possibly generate the data we observe.
-- For the learning problem, where we care about predicting $Y$ given $X$, we will consider statistical models that are **sets of conditional distributions** $P(Y \mid X)$.
+- **Formally**, it is a *set of conditional distributions over $Y \mid X$* that could possibly generate the data we observe.
+  (We'll go through this idea in detail in a sec.)
+- **Informally**, it tells us how the response $Y$ is composed of *deterministic signal* from $X$ and *unexplainable random noise*.
+
+:::{.callout-note collapse="true" title="Why Conditional Distributions over $Y \mid X$, and Not Joint Distributions over $X, Y$?"}
+Because our goal is to predict $Y$ from $X$, we often don't care about where $X$ comes from.
+We can often assume that $X$ is just "given" to us (i.e. we condition on it).
+:::
+
+It's best to illustrate this concept through an example:
 
 ### The Linear Regression Model
 
-- From STAT 306, you may recall that we typically assume that the relationship between $X$ and $Y$ can be described as:
-  $$Y = X^\top \beta + \varepsilon$$
+From STAT 306, you may recall that we typically assume that the relationship between $X$ and $Y$ can be described as:
+  $$Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta $$
 
-  - $\beta$ is the vector of parameters that we are trying to estimate.
+  - $\beta$ is some (unknown) vector.
   - $\varepsilon$ is the random error term, which is typically i.i.d. $\varepsilon \sim N(0, \sigma^2)$ for some $\sigma^2 > 0$.
-  - (You may notice that we don't have an intercept term $\beta_0$ in this model. We assume that $X$ has an "all-ones" covariate, i.e. $X = [1, X_1, X_2, \ldots, X_p]$, so that the intercept term $\beta_0$ is included with the other $\beta$ terms, i.e. $X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p$.)
+  - (You may notice that we don't have an intercept term $\beta_0$ in this model. In this course, it's often convenient to assume that $X$ has an "all-ones" covariate, i.e. $X = [1, X_1, X_2, \ldots, X_p]$, so that the intercept term $\beta_0$ is included with the other $\beta$ terms, i.e. $X^\top \beta = \beta_0 + X_1 \beta_1 + \ldots + X_p \beta_p$.)
+
+This relationship ($Y = f(X) + \varepsilon$, $f(X) = X^\top \beta$) is a statistical model,
+and it is the one we will encounter most in the first part of this course.
+Let's see how it matches our informal and formal definitions.
+
+#### Informal Analysis
+
+The linear statistical model assumes that $Y$ can be explained through a combination of *deterministic signal* from $X$ and *unexplainable random noise*.
+
+- **Signal** -- $f(X)$: A portion of $Y$ comes from $f(X) = X^\top \beta$, which is a deterministic transform of $X$.
+- **Noise** -- $\varepsilon$: The other portion of $Y$ comes from $\varepsilon$, which is random and independent of $X$.
+  Thus, knowing $X$ (and $f(X)$) is insufficient to perfectly predict $Y$.
+
+#### Formal Analysis
+
+Let's show how this linear statistical model is equivalent to a set of conditional distributions:
 
 - For any given $\beta$, if we are given $X = x$, then we have that $Y \sim \mathcal{N}(x^\top\beta, \sigma^2)$.
 Thus, the corresponding statistical model/set of possible conditional distributions is:
 
-$$\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.$$
+    $$\left\{ \mathbb{P}_{Y \mid X} \: : \: p_{Y \mid X}(y \mid x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.$$
 
 - We refer to $\beta$ as the **parameters** of the model, as a given value of $\beta$ specifies a particular distribution within the set.
 
@@ -142,7 +174,7 @@ Going back to the linear model $Y = X^\top \beta + \varepsilon,$ which of these 
 
   - $\varepsilon$ is random; note that above we are assuming that $\varepsilon \sim N(0, \sigma^2)$
   - $X$ is random; again we make the assumption that our data are random samples from a distribution (also it's noted as a capital letter!)
-  - $\beta$ is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates $X$ and $Y$
+  - $\beta$ is fixed! It defines the particular distribution in our statistical model that actually relates $X$ and $Y$
   - $Y$ is also random; again by assumption, but also because $Y$ equals some function involving random variables
 
   Note that if we instead consider $Y \mid X = x$, then
@@ -156,145 +188,128 @@ Going back to the linear model $Y = X^\top \beta + \varepsilon,$ which of these 
 
 This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distributions can be used instead. For example:
 
-1. **The more general linear regression model**: we could consider the slightly more general case of conditional distributions defined by an expected value condition:
-  $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}$$
+1. **The more general linear regression model**: rather than assuming the noise component $\varepsilon$ is Gaussian (with some specified variance), we could instead assume any arbitrary (zero-mean) distribution over the noise
 
-    - Note that $\mathbb E[\mathcal{N}(x^\top\beta, \sigma^2)] = x^\top \beta$, and so the linear regression model is a *subset* of this more general model.
-    - However, this model allows for the possibility of non-normal residuals.
+    $$ Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta, \qquad \mathbb E[\varepsilon] = 0.$$
 
-2. **The polynomial regression model**: we could instead consider the slightly more general case where the expectation is a polynomial function of $X$, rather than just a linear function:
-  $$\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}$$
+    - This statistical model is equivalent to the set of conditional distributions $$\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right\}$$
+    - This model allows for the possibility of non-normal residuals.
 
+2. **The more general regression model**: we could instead consider the slightly more general case where the expectation is an arbitrary function of $X$ (not just a linear one):
+
+    $$ Y = f(X) + \varepsilon, \qquad f(X) \text{ is an arbitrary function}, \qquad \mathbb E[\varepsilon] = 0. $$
+
+    - This statistical model is equivalent to the set of conditional distributions $$\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb E[Y \mid X = x] \: = \: f(x), \:\: f \text{ is an arbitrary function} \right\}$$
     - Note again that our general linear model is a special case; however this model allows for more complex relationships between $X$ and $Y$.
-    - This model also has parameters (the coefficients of the polynomial), though they are not explicit in this formulation.
+    - In general, this statistical model is too general to analyze properly. We'll typically add some simplifying restrictions to $f$, such as:
+      - $f$ is a polynomial of degree $d$, or
+      - $f$ is continuous and differentiable everywhere.
 
-3. **All possible distributions**: what if we used the most general set of distributions?
-  $$\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}$$
-
-    - While this is a valid set, it turns out that it is too general for the purposes of learning.
-    - Specifically, the **no free lunch theorem** states that we will not be able to identify a "good" model from this set even if we were given infinite training data!
-    - (We need to have some "structure" or simplifying assumptions in our model to be able to learn from data.)
+Now that we have a statistical model, which tells us the general relationship between covariates and response,
+let's dive through the learning procedure.
 
 
-## Prediction
+## Hypothesis Class
 
-Going a bit out of order, let's discuss how we make predictions on new data
-once we've selected a **specific distribution** from our **statistical model**
-to describe our data.
+Recall that our statistical model says that there's some portion of our response that's "learnable" from our covariates ($X^\top \beta$ in our linear statistical model example) and some "unlearnable" portion of our response ($\varepsilon$). Our goal is to learn an approximation $\hat f(X)$ to the learnable portion of our data; i.e.
 
-- Working with the linear statistical model, each distribution is parameterized by some coefficients $\beta \in \mathbb R^p$.
-- Once we have chosen some $\hat{\beta}$ (i.e. the parameters of the distribution that "best" describes our data) we can make predictions on new data points $X_\mathrm{new}$.
-- For linear models, we often use the prediction rule:
-  $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}$$
+  $$ \hat f(X) \approx f(X). $$
 
-  But where does that come from?
+Before we can go about choosing a specific $\hat f$,
+we need to specify the *set of functions* $\mathcal H$ that we are considering.
 
-**Decision theory for predictions**:
-We want a principled reason for using this prediction rule.
+- $\mathcal H$ is often referred to as the **hypothesis class** of our predictive model.
+- Often, it's good to match the functional form of our statistical model.
+  - In our running example, since we assume that $f(X) = X^\top \beta$, it would make sense for
+    $\hat f(X) = X^\top \hat \beta$ for some $\hat \beta$.
+- However, later in this course we'll discuss when it's advantageous for $\hat f$ to look nothing like our statistical model.
 
-- First, we need a way of judging the quality of *any single prediction.*
+Putting it all together for our running example,
+it makes sense to define the hypothesis class $\mathcal H$ as the set of all linear functions of $X$:
 
-- We define a **loss** function $L(Y, \hat Y)$ that measures how bad our prediction $\hat Y$
-  matches the true response $Y$
+$$ \mathcal H = \left\{ \hat f(\cdot) \: : \: \hat f(X) = X^\top \hat \beta, \qquad \hat \beta \in \mathbb R^p \right\}. $$
 
-  - A common loss function for regression is the **squared error** $L(Y, \hat Y) = (Y - \hat Y)^2$.
-
-  - Note that $L(Y, \hat Y)$ only equals 0 when $Y = \hat Y$, and is $> 0$ when $Y \ne \hat Y$.
-
-- **Decision theory**: choose a prediction $\hat{Y}_\mathrm{new}$ that minimizes the expected loss:
-
-  $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].$$
-
-- Solving this optimization problem for the squared error loss gives us
-
-  $$\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$$
-
-:::{.callout-note collapse="true" title="Derivation"}
-
-- According to the distribution parameterized by $\hat \beta$, we have
-
-   $$P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).$$
-
-- Plugging in the squared error loss function into this formula, we get:
-
-  \begin{align*}
-    \hat{Y}_\mathrm{new} &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new}- \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
-    &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2\mid X_\mathrm{new}, \hat \beta]}_{
-      \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
-      \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
-    } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat\beta]}_{X_\mathrm{new}^\top \hat{\beta}}
-    + \hat{y}_\mathrm{new}^2 \right) \\
-    &= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
-      \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
-        (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
-      }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
-    \right)
-  \end{align*}
-
-- We can drop the $\sigma^2$ constant, since it doesn't affect the minimum, and we are left with:
-
-  $$\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,$$
-
-  which, after taking the derivative and setting to zero, gives us: $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$.
-
-:::
-
-**Important!** If we had chosen a different loss function, we could end up with a different prediction rule.
 
 
 ## Estimation
 
-We've talked about making predictions from a distribution selected by our statistical model.
-But how did we choose that distribution? (Or alternatively, how did we choose $\hat\beta$?)
+Now that we've defined the set of $\hat f$ that we're considering,
+how do we go about choosing which $\hat f \in \mathcal H$ is best at approximating $f(X)$?
+We use the data!
 
-- The **estimation** step involves us choosing a specific distribution from the model (or alternatively, the parameters $\hat \beta$ defining the distribution) that best fits our training data.
-- There are many statistically valid estimation procedures. We'll derive two that you've likely seen before: **Maximum Likelihood Estimation (MLE)** and **Empirical Risk Minimization (ERM)**. (We'll talk about others throughout this course.)
+- The **estimation** step involves us choosing a specific function $\hat f$ from the hypothesis class that best fits our training data.
+- Alternatively, since all $\hat f \in \mathcal H$ can be written as $\hat f(X) = X^\top \hat \beta$, and $f(X) = X^\top \beta$ under our linear statistical model, we could view the estimation step as choosing the best $\hat \beta$ parameters to estimate the true parameters $\beta$:
 
-We will work through these two procedures using the linear regression model as our statistical model.
+$$ \hat f(X) \approx f(X) \quad \Leftrightarrow \quad
+X^\top \hat\beta \approx X^\top \beta \quad \Leftrightarrow \quad
+\hat\beta \approx \beta. $$
 
-### 1. Empirical Risk Minimization (ERM)
+**Defining "Goodness" Through Loss Functions:**
 
-**Goal**: Find the parameters that minimize the loss on our training data.
+- In order to choose the "best" $\hat f \in \mathcal H$, we need to define what "best" means.
+- We do so by defining a **loss function** $L(Y, \hat f(X))$, which quantifies how poorly $\hat f$ is doing *at a per-prediction level*.
+- The most common loss for regression (and the one we'll see most throughout this course) is the squared error loss:
 
-- From STAT 306, you may remember a procedure known as **Ordinary Least Squares (OLS)** to estimate the parameters of a linear regression model.
-- This procedure is a special case of a more general procedure **Empirical Risk Minimization (ERM)** for reasons that we will see in a few lectures.
+    $$ L(Y, \hat f(X)) = \left( Y - \hat f(X) \right)^2. $$
+
+    We'll discuss classification losses in the next lecture.
+
+**Our Goal -- Minimizing Expected Loss:**
+
+- Once we have defined a loss function, the best possible $\hat f$ is the one that minimizes the expected loss over **all possible $(X, Y)$ pairs** drawn from $\mathbb P_{X,Y}$:
+
+    $$ f_\mathrm{best} = \mathrm{argmin}_{\hat f \in \mathcal H} \mathbb E[ L \left(Y, \hat f(X) \right)]. $$
+
+- Unfortunately, computing $f_\mathrm{best}(X)$ would require exactly knowing $\mathbb P_{X,Y}$ (or equivalently, having an infinite amount of data from this distribution). We only have access to $n$ training pairs.
+
+- We therefore have to use procedures that approximate $f_\mathrm{best}(X)$ from finite data.
+
+- There are many statistically rational estimation procedures. The most basic procedure is referred to as **Empirical Risk Minimization (ERM)**. (We'll talk about others throughout this course.)
+
 
 **The OLS/ERM Procedure:**
 
-The goal of ERM is to choose the distribution (i.e. set of parameters) that minimizes the loss over predictions on our training data.
+- If we have "enough" training data[^1] from $\mathbb P_{X,Y}$, then -- by the law of large numbers[^2] -- we can assume that:
 
-  - Given a set of parameters $\hat \beta$,
-    let $\hat Y_i$ be the predictions that we make on the training data
-    using the prediction rule derived from the loss $L(Y, \hat Y)$.
-
-  - The **empirical risk** is defined as the total loss over our training data:
-
-    $$\hat{R}(\hat \beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i)$$
-
-    where we (typically) use the same loss that governs our prediction rule.
-    Using the squared loss, $\hat{R}(\hat\beta) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top \hat\beta)^2$
-
-  - The **ERM estimator** is the set of parameters $\hat{\beta}$ (i.e. the distribution from our model) that minimizes this empirical risk:
-
-    $$\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2$$
-
-  - Taking the derivative and setting to zero:
-
-    $$\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0$$
-
-  - By arranging all of our training data into a matrix $\boldsymbol X \in \mathbb{R}^{n \times p}$ and a vector $\boldsymbol Y \in \mathbb{R}^n$, with
-
-    $$\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},$$
-
-    we get:
-
-    $$\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.$$
+    $$ \mathbb E[ L \left(Y, \hat f(X) \right)] \approx \underbrace{\frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i))}_{=: \hat R_{\hat f}} \qquad \forall \hat f \in \mathcal H. $$
 
 
+[^1]: Though it's hard to exactly quantify how much data is "enough," we will add more rigour to this condition later in this course.
 
-### 2. Maximum Likelihood Estimation (MLE)
+[^2]: Technically, we need a stronger version of law of large numbers than what you learned in STAT 302. Take CPSC 532D if you're interested!
 
-**Goal**: Find the parameters that maximize the likelihood of observing our data.
+- We refer to $\hat R_{\hat f}$ as the **empirical risk** associated with $\hat f$.
+  It is the average loss on the training data.
+
+- **Empirical risk minimization** thus aims to approximate $\hat f_\mathrm{best}(X)$ by choosing the $\hat f$ with the lowest empirical risk (average training data loss).
+
+    $$\hat{f}_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \hat R_{\hat f} = \mathrm{argmin}_{\hat f \in \mathcal H} \frac{1}{n}\sum_{i=1}^n L \left(Y_i, \hat f(X_i)\right).$$
+
+**Applying ERM to our Linear Hypothesis Class/Squared Loss**
+
+- Going back to our running example (linear hypothesis class, squared loss), and recalling that $\hat f$ is specified through $\hat \beta$, we have that
+
+    $$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\hat \beta} \frac{1}{n}\sum_{i=1}^n \left(Y_i - X_i^\top \hat \beta\right)^2. $$
+
+- Taking the derivative and setting to zero:
+
+  $$\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\hat\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\hat\beta) = 0$$
+
+- By arranging all of our training data into a matrix $\boldsymbol X \in \mathbb{R}^{n \times p}$ and a vector $\boldsymbol Y \in \mathbb{R}^n$, with
+
+  $$\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},$$
+
+  we get:
+
+  $$\hat{\beta}_\mathrm{ERM} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.$$
+
+- You should recognize $\hat{\beta}_\mathrm{ERM}$ as the ordinary least squares (OLS) estimator for linear models from STAT 306!
+
+:::{.callout-note collapse="true" title="(Optional) Relation to Maximum Likelihood"}
+From STAT 306, you may have learned that we want to choose $\hat \beta$ through the principle of maximum likelihood estimation.
+It turns out that, in the case of our linear statistical model, it yields the same $\hat \beta$ as ERM!
+
+**Goal of maximum likelihood estimation:** Find the parameters that maximize the likelihood of observing our data.
 
 - The **likelihood function** maps a distribution from our model (parameterized by $\beta$) to the probability density of our observed training data.
 
@@ -320,17 +335,27 @@ $$\mathrm{argmax}_{\beta} -\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = \mathrm{argmin
   <details>
     <summary>Details:</summary>
 
-    The $-\frac{n}{2}\log(2\pi\sigma^2)$ constant and the $\frac{1}{2\sigma^2}$ scaling term  also don't affect the maximum, so we can ignore them.
+    The $-\frac{n}{2}\log(2\pi\sigma^2)$ constant and the $\frac{1}{2\sigma^2}$ scaling term also don't affect the maximum, so we can ignore them.
   </details>
 
 - This is exactly the same optimization problem we derived for ERM! Thus,
-$$ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} $$
+$$ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{ERM} = \hat{\beta}_\mathrm{OLS} $$
 
-**Key Insight**: For linear regression with normal errors, MLE and OLS/ERM give identical results!
+**Key Insight**: For linear regression with normal errors, MLE and OLS/ERM give identical results! However, if we had used a different loss function (e.g. $L(Y_i, \hat f(X_i)) = |Y_i - \hat f(X_i)|$), the ERM estimator would not be the same as the OLS/MLE estimator.
+:::
 
-- If we had used a different loss function (e.g. $L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|$), the ERM estimator would not be the same as the OLS/MLE estimator.
-- There are many possible loss functions with different properties, and we will explore them in future lectures.
+## Prediction
 
+Now that we have fit an estimator $\hat f(X) = X^\top \hat\beta_\mathrm{ERM} \approx X^\top \beta$,
+we can use this function to make predictions about the responses for new data.
+
+- Given a new set of covariates $X_\mathrm{new}$ we can make the following prediction about its associated response:
+
+$$ \hat Y_\mathrm{new} = \hat f(X_\mathrm{new}) = X^\top_\mathrm{new} \hat\beta_\mathrm{ERM} \approx Y_\mathrm{new}. $$
+
+- Depending on the learning problem (i.e. our choice of statistical model, hypothesis class, and loss function)
+  we may end up with different prediction rules.
+  We'll discuss how to derive prediction rules in the next lecture.
 
 
 ## Summary
@@ -338,9 +363,10 @@ $$ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbo
 This lecture introduced the statistical framework for learning:
 
 1. **Statistical models** define the probabilistic structure of our data
-2. **Estimation** finds the best parameters using MLE or ERM
-3. **Prediction** uses fitted models to make predictions on new data
+2. **Hypothesis classes** define the functions of covariates $X$ that we consider to approximate the "signal"/"learnable" portion of our response $Y$
+3. **Estimation** finds the best parameters using ERM
+4. **Prediction** uses fitted models to make predictions on new data
 
 - This framework will extend to more complex models and methods throughout the course.
-- Linear regression serves as our foundational example, where MLE and ERM produce identical estimators under normal error assumptions.
+- Linear regression serves as our foundational example, where the ERM produces the OLS estimator from STAT 306.
 - In the next lecture, we will apply this statistical framework to *classification problems*.
