@@ -10,7 +10,7 @@ format: html
 By the end of this lecture, you will be able to:
 
 1. Define the log-odds statistical model for binary classification, and justify its advantages
-2. Derive logistic regression through MLE and ERM
+2. Derive logistic regression through empirical risk minimization (ERM)
 3. Construct predictions for classifiers based on different notions of risk
 
 ## Supervised Learning for Classification: Statistical Perspective
@@ -19,9 +19,9 @@ In the previous lecture, we developed a statistical perspective of the supervise
 
 | Step | CS Perspective | Statistical Perspective | Example: Linear Regression |
 | ---- | -------------- | ----------------------- | -------------------------- |
-| 2    | Hypothesis Class | Statistical Model     | $\mathbb{E}[Y \mid X = x] = x^\top \beta$ |
-| 3    | Training       | Estimation              | $\hat{\beta}_\mathrm{MLE/OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}$ |
-| 6    | Testing (Inference) | Prediction         | $\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}$ |
+| 2    | Predictive Model | Hypothesis Class      | $\hat f(X) = X^\top \hat\beta$ |
+| 3    | Training       | Estimation              | $\hat f_\mathrm{ERM}(X) = X^\top \hat\beta_\mathrm{OLS}$ |
+| 6    | Testing | Prediction         | $\hat{Y}_\mathrm{new} = \hat f_\mathrm{ERM}(X)$ |
 
 In this lecture, we will work through the same steps, but this time for **classification** problems.
 
@@ -36,247 +36,312 @@ In this lecture, we will work through the same steps, but this time for **classi
 
 Let's now derive a statistical model estimation procedure, and prediction rule for binary classification!
 
-**Sneak peek: logistic regression**
 
-- We will ultimately derive **logistic regression**,
+## Statistical Models for Classification
 
-## Statistical Model: Linear Log-Odds
+- Recall that, formally, a statistical model is a set of conditional distributions over $Y \mid X$.
+- In regression, as we saw last lecture, we tend to use statistical models that characterize $Y$ as the sum of a deterministic/learnable component $f(X)$ and a Gaussian/unlearnable component $\varepsilon$.
+   - This implicitly places a Gaussian distribution on $Y \mid X$:
 
-- Recall that a statistical model is a set of probability distributions.
-- In classification, we are interested in families of conditional distributions $\mathbb{P}_{Y \mid X}$. For binary classification, each such distribution is a Bernoulli that is fully specified by the probability $\mathbb{P}(Y=1 \mid X = x)$.
-   - This probability implicitly defines $\mathbb{P}(Y=0 \mid X = x)$ by the law of total probability, i.e. $\mathbb{P}(Y=0 \mid X = x) = 1 - \mathbb{P}(Y=1 \mid X = x)$.
-- **Notation**: For simplicity, let's define:
-   - $\pi_1(x) := \mathbb{P}(Y = 1 \mid X = x)$ (probability of positive class)
-   - $\pi_0(x) := \mathbb{P}(Y = 0 \mid X = x)$ (probability of negative class)
-   - Note that $\pi_0(x) = 1 - \pi_1(x)$.
+      $$ Y = f(X) + \varepsilon, \:\: \varepsilon \sim \mathcal N(0, \sigma^2)
+      \quad \Leftrightarrow \quad Y \mid X \sim \mathcal N( f(X), \sigma^2 ). $$
 
-**Sneak peek: the logistic regression model**
+   - Crucially, we will have a valid Gaussian distribution for any $f(X) \in (-\infty, \infty).$
+      This property makes $f$ easy to approximate with linear models.
 
-- You may remember from STAT 406 or CPSC 340 a set of distributions that look like:
-   $$\mathbb{P}(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}$$
-   - $\beta \in \mathbb{R}^p$ is a vector of parameters.
-- This statistical model is known as **logistic regression**, and it is a good starting point for binary classification.
-- We will now derive this model from first principles.
+- For classification, it's easier to start from the set of conditional distributions and derive the learnable/unlearnable components.
+
+   - The most general set of distributions is:
+
+      $$ Y \mid X \sim \mathrm{Bern}( \pi_1(X) ), \qquad \pi_1(x) = \mathbb P(Y=1 \mid X=x), \qquad \pi_1 \text{ is some f'n with range } [0, 1]. $$
+
+   - Intuitively, we think of the class assignment as a weighted coin flip (the unlearnable component), where the covariates determine the weighting of the coin (the learnable bit).
+
+- However, $\pi_1(x) = \mathbb P(Y=1 \mid X=x)$ is not the most natural parameterization of the learnable component.
+
+   - In order to be a valid Bernoulli distribution, $\pi_1(x)$ must be between $[0, 1]$.
+   - When it comes to approximating $\pi_1(x)$, we'd be restricted to hypothesis classes where the functions have this range constraint.
+   - This constraint would exclude linear models.
+
+      <details>
+         <summary>Why?</summary>
+         Consider $\pi_1(x) = x^\top \beta$. What's the problem with this?
+
+         - If $x^\top \beta > 1$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) > 1$, which is not a valid probability.
+         - If $x^\top \beta < 0$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) < 0$, which is also not a valid probability.
+      </details>
 
 
-**What type of distribution should we model?**
+**The Log-Odds Parameterization**
 
-- It's hard to directly model $\pi_1(x)$ or $\pi_0(x)$ distributions.
-- Consider $\pi_1(x) = x^\top \beta$. What's the problem with this?
-  - If $x^\top \beta > 1$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) > 1$, which is not a valid probability.
-  - If $x^\top \beta < 0$, then $\pi_1(x) = \mathbb{P}(Y=1|X=x) < 0$, which is also not a valid probability.
+- Instead of defining distributions through $\pi_1(X)$ directly, we will instead define distributions through the **log-odds ratio**
 
-**Modelling the log-odds**
+- Defining $\pi_0(x) = \mathbb P(Y=0|X=x) = 1 - \mathbb P(Y=1|X=x)$, the **log-odds ratio** is:
+   $$f(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)$$
 
-- Instead of defining distributions through $\mathbb{P}(Y = 1 \mid X = x)$ directly, we will instead define distributions through the **log-odds ratio**
+- I claim that this ratio can take any real value, i.e. $f(x) \in \mathbb{R}$.
 
-- The **log-odds ratio** is then:
-   $$r(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)$$
-
-- I claim that this ratio can take any real value, i.e. $r(x) \in \mathbb{R}$.
-
-   | $\pi_1(x)$ | Odds Ratio | $r(x)$ (Log Odds Ratio) |
+   | $\pi_1(x)$ | Odds Ratio | $f(x)$ (Log Odds Ratio) |
    |------------|------------|--------------------------|
-   | $\approx 1$ | $\pi_1(x) / \pi_0(x) \to \infty$ | $r(x) \to \infty$ |
-   | $\approx 0$ | $\pi_1(x) / \pi_0(x) \to 0$ | $r(x) \to -\infty$ |
+   | $\approx 1$ | $\pi_1(x) / \pi_0(x) \to \infty$ | $f(x) \to \infty$ |
+   | $\approx 0$ | $\pi_1(x) / \pi_0(x) \to 0$ | $f(x) \to -\infty$ |
 
-**The linear log-odds model**
+- We can convert the log-odds ratio $f(x)$ to $\pi_1(x)$...
 
-We're now ready to define a statistical model for binary classification.
+   $$ \pi_1(x) = \sigma(f(x)), \qquad \sigma(f(x)) := \frac{\exp(f(x))}{\exp(f(x)) + 1} = \frac{1}{1 + \exp(-f(x))}$$
 
-- We will consider
+   <details>
+      <summary>Derivation (it's just algebra)</summary>
+      Starting from the definition of $f(x)$ and solving for $\pi_1(x)$:
+      \begin{align*}
+         f(x) &= \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right) \\
+         \exp(f(x)) &= \frac{\pi_1(x)}{1 - \pi_1(x)} \\
+         \exp(f(x)) \, (1 - \pi_1(x)) &= \pi_1(x) \\
+         \exp(f(x)) &= \pi_1(x) + \exp(f(x)) \, \pi_1(x) \\
+         \exp(f(x)) &= \pi_1(x) \, (1 + \exp(f(x))) \\
+         \pi_1(x) &= \frac{\exp(f(x))}{\exp(f(x)) + 1}.
+      \end{align*}
+      The second, equivalent form follows by multiplying the numerator and denominator by $\exp(-f(x))$:
+      \begin{align*}
+         \pi_1(x) = \frac{\exp(f(x))}{\exp(f(x)) + 1} = \frac{\exp(f(x)) \, \exp(-f(x))}{\left(\exp(f(x)) + 1\right)\exp(-f(x))} = \frac{1}{1 + \exp(-f(x))}.
+      \end{align*}
+   </details>
 
-   $$\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta$$
+- ... and so we can use $f$ to define the "learnable" component of our statistical model:
 
-- Thus our statistical model is the following set of distributions:
+   $$ Y \mid X \sim \mathrm{Bern}(\sigma(f(X))), \qquad f \text{ is some f'n (with no range constraints)}.$$
 
-$$\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb{P}(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}$$
+   (As with regression, we'll want to limit $f$ to some smaller class of functions if we hope to do any sort of useful analysis.)
 
-:::{.callout-note collapse="true" title="Derivation"}
-- Start with $\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta$
 
-- By substituting $\pi_0(x) = 1 - \pi_1(x)$ and then solving for $\pi_1(x)$, we get:
-
-   $$\pi_1(x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}$$
-
-- Our statistical model is then the set of conditional distributions $\mathbb{P}_{Y \mid X}$ whose class-1 probability $\mathbb{P}(Y=1 \mid X=x)$ takes the form of $\pi_1$.
-:::
-
-**The logistic function:**
-
-- The function in the above equation is known as the **logistic function** or **sigmoid function**:
-
-   $$\frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)} = \frac{1}{1 + \exp(-x^\top\beta)} := \sigma(x^\top \beta)$$
-
-- It has many useful properties
+:::{.callout-note title="The Logistic Function"}
+The function $\sigma(\cdot)$ in the above equation is known as the **logistic function** or **sigmoid function**.
+It has many useful properties
 
    1. **Range**: $\sigma(z) \in (0, 1)$ for all $z \in \mathbb{R}$
    2. **Symmetric**: $\sigma(-z) = 1 - \sigma(z)$
    3. **Convenient derivative**: $\sigma'(z) = \sigma(z)(1 - \sigma(z))$
 
-- It can be seen as a "smooth approximation" to the 0-1 step function:
+It can be seen as a "smooth approximation" to the 0-1 step function:
 
 ![Logistic Function](../figures/logistic_function.svg)
+:::
 
 
-## Prediction and Different Notions of Risk
+## Hypothesis Class
 
-Let's discuss how we can make predictions using the logistic regression model.
+- Since the "learnable" portion of our statistical model -- the log-odds ratio $f(X)$ -- is any real-valued function,
+we can consider pretty much any hypothesis class.
+- As with regression, it's not a bad idea to consider linear functions:
 
-**Making predictions:**
+   $$ \mathcal H = \left\{ \hat f \: : \: \hat f(X) = X^\top \hat \beta, \: \hat \beta \in \mathbb R^p \right\} $$
 
-Given
+- If we assume that our statistical model has the same functional form (i.e. $f(X) = X^\top \beta$ for some $\beta$),
+   then we have that:
 
-- a $\hat \beta$ estimate
-- a new observation $X_{\text{new}}$
-- a **loss function** $L(Y, \hat{Y})$ that quantifies how "bad" a prediction is
+   $$
+      Y \mid X \sim \mathrm{Bern}(\sigma(X^\top \beta)) = \mathrm{Bern} \left( \frac{1}{1 + \exp(-X^\top \beta)} \right),
+   $$
+   or alternatively,
+   $$
+      \mathbb P(Y=1 \mid X=x) = \frac{1}{1 + \exp(-x^\top \beta)}.
+   $$
 
-recall that we make predictions by minimizing the expected loss:
-
-$$\hat{Y}_{\text{new}} = \mathrm{argmin}_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]$$
-
-**0/1 Loss:**
-
-- The most natural loss function for classification is the **0/1 loss**:
-
-$$L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 & \text{if } Y = \hat{Y} \\ 1 & \text{if } Y \neq \hat{Y} \end{cases}$$
-
-- Under our logistic model, we have:
-
-\begin{align*}
-\hat{Y}_{\text{new}} &= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
-&= \mathrm{argmin}_{\hat{y}} \mathbb{P}(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
-&= \mathrm{argmin}_{\hat{y}} \left[
-   \underbrace{\mathbb{P}(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
-   \underbrace{\mathbb{P}(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
-&= \begin{cases}
-1 & \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) > 0.5 \\
-0 & \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5
-\end{cases}
-\end{align*}.
-
-**Decision boundary:**
-
-- Note that
-   - $\sigma(X_\mathrm{new}^\top \hat \beta) > 0.5$ when $X_\mathrm{new}^\top \hat \beta > 0$
-   - $\sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5$ when $X_\mathrm{new}^\top \hat \beta \leq 0$.
-
-- The **decision boundary**, defined by:
-
-  $$x^\top\beta = 0$$
-
-  is the hyperplane that separates the positively-classified $x$ from the negatively classified $x$.
-
-- This decision boundary for logistic regression is linear in $x$.
-
-![Decision Boundary](../figures/decision_boundary.svg)
-
-**Other losses:**
-
-There are other losses that we could use to generate different prediction rules:
-
-1. **Probabilistic loss**: $L_\mathrm{prob}(Y, \hat{Y}) = -\log \mathbb{P}(Y = \hat Y)$
-   - This loss produces "soft" predictions (e.g. $\hat{Y}_{\text{new}} = 0.273$) that give a probability estimate of the positive class.
-2. **Asymmetric losses**: $L_\alpha(Y, \hat{Y}) = \alpha \mathbb{I}(Y = 1, \hat{Y} = 0) + (1-\alpha) \mathbb{I}(Y = 0, \hat{Y} = 1)$ for some $\alpha \in (0, 1)$
-   - This loss allows us to penalize false positives and false negatives differently, which can be useful in imbalanced datasets.
-
-We will explore these losses, as well as metrics derived from these losses, in a homework assignment.
-
+   You should recognize this equation from STAT 306 as **logistic regression.**
 
 
 ## Estimation
 
-As with regression, we will derive estimators for the logistic regression parameters $\beta$ through the principle of *maximum likelihood estimation (MLE)*.
+As with regression, we estimate the parameters $\beta$ through **empirical risk minimization (ERM)**: we choose the $\hat \beta$ that minimizes the average loss over the training data,
 
-### Maximum Likelihood Estimation (MLE)
+$$\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i)).$$
 
-Recall the MLE estimator is given by
+For classification, it doesn't make sense to use the squared error loss.
+However, deriving a good loss function is a bit tricky:
 
-$$\hat{\beta}_\mathrm{MLE} = \mathrm{argmax}_{\beta} \mathcal L(\beta) = \mathrm{argmax}_{\beta} \ell(\beta)$$
+**ERM with the logistic loss**:
 
-where $\mathcal{L}(\beta)$ is the likelihood function and $\ell(\beta)$ is the log-likelihood function.
+Before suggesting a loss function, let's think intuitively through how we'd like to penalize predictions:
 
-**Log likelihood of the linear log-odds model:**
+- If $\hat f(X)$ is very positive, then $\hat \pi_1(X) \gg \hat \pi_0(X)$ (where $\hat \pi_1$ and $\hat \pi_0$ are our predicted conditional probabilities for $Y=1$ and $Y=0$ respectively). This prediction would be bad if $Y=0$, but great if $Y=1$.
+- If $\hat f(X)$ is very negative, the opposite is true: $\hat \pi_1(X) \ll \hat \pi_0(X)$, bad prediction for $Y=1$, great for $Y=0$.
+- If $\hat f(X) \approx 0$, then $\hat \pi_1(X) \approx \hat \pi_0(X)$. This prediction signifies uncertainty over $Y=0$ versus $Y=1$. While not as bad as confidently predicting the incorrect class, there should still be some loss since we'd prefer a correct prediction.
 
-- Given training data $\mathcal{D} = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$, recall that the likelihood/log-likelihood function is:
-
-   \begin{gather}
-   \mathcal{L}(\beta) = \prod_{i=1}^n \mathbb{P}(Y_i \mid X_i; \beta) \\
-   \ell(\beta) = \sum_{i=1}^n \log \mathbb{P}(Y_i \mid X_i; \beta)
-   \end{gather}
-
-- Plugging in our model, we have that:
-
-   $$
-   \mathbb{P}(Y_i \mid X_i; \beta) = \begin{cases}
-     \sigma(X_i^\top \beta) & \text{if } Y_i = 1 \\
-     1 - \sigma(X_i^\top \beta) & \text{if } Y_i = 0
-   \end{cases}
-   $$
-
-- We can write this equation more compactly as:
-
-   $$\mathbb{P}(Y_i \mid X_i, \beta) = \sigma(X_i^\top \beta)^{Y_i} (1 - \sigma(X_i^\top \beta))^{1-Y_i}.$$
-
-- Thus the log likelihood function is:
-
-   $$
-   \ell(\beta) = \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
-   $$
-
-
-**Computing the MLE estimator:**
+To that end, consider the following function (which we'll derive from first principles in a second), known as the **logistic loss** (also referred to as the **cross-entropy loss**):
 
 $$
-\hat \beta_\mathrm{MLE} = \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
+\begin{gather}
+L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \pi_0(X) \\
+\qquad \hat \pi_1(X) = \sigma(\hat f(X)), \quad \hat \pi_0(X) = 1 - \sigma(\hat f(X)).
+\end{gather}
 $$
 
-- Unlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.
+Let's check that this loss matches the desiderata above. Since $Y \in \{0, 1\}$, exactly one of the two terms is ever "active":
 
-- We can numerically solve for the optimization using a technique called **gradient descent**, which we will cover in a future lecture.
+- If $Y = 1$, the loss is $-\log \hat \pi_1(X)$. This is small (near $0$) when $\hat \pi_1(X) \approx 1$ (i.e. $\hat f(X)$ very positive), and blows up to $+\infty$ as $\hat \pi_1(X) \to 0$ (i.e. $\hat f(X)$ very negative).
+- If $Y = 0$, the loss is $-\log \hat \pi_0(X)$, which is the mirror image: small when $\hat f(X)$ is very negative, and $\to +\infty$ when $\hat f(X)$ is very positive.
+- If $\hat f(X) \approx 0$, then $\hat \pi_1(X) \approx \hat \pi_0(X) \approx \tfrac{1}{2}$, so the loss is $-\log \tfrac{1}{2} = \log 2 \approx 0.69$ regardless of $Y$ -- a moderate penalty for "hedging," exactly as we wanted.
 
+:::{.callout-note collapse="true" title="(Optional) Where Does this Loss Come From?"}
+Minimizing the average logistic loss across our data is *equivalent* to maximum likelihood estimation of $\beta$.
 
-### Empirical Risk Minimization (ERM)
-
-- What about ERM?
-- With the 0/1 loss, the optimization problem becomes
-
-$$\hat \beta_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \mathbb{I}(Y_i \neq \hat{Y}_i)
-= \begin{cases} 1 & Y_i = 1, X_i^\top \beta < 0 \\ 1 & Y_i = 0, X_i^\top \beta > 0 \\ 0 & \mathrm{o.w.} \end{cases}$$
-
-- Unfortunately, this optimization is **NP-hard** (i.e. computationally intractable), and so we can't even solve it numerically for large values of $n$!
-
-- Alternative loss functions can yield numerically-solvable ERM solutions. For example, the "probabilistic loss" $L(Y, \hat{Y}) = - (1 - Y_i) \log \hat Y - Y_i \log (1 - \hat Y_i)$, lead to the same optimization problem as MLE.
-
-:::{.callout-note collapse="true" title="Derivation of ERM with Probabilistic Loss"}
-Under the probabilistic loss $L(Y, \hat{Y}) = - Y_i \log \hat Y - (1 - Y_i) \log (1 - \hat Y_i)$,
-the prediction rule for logistic regression becomes:
-
+Under the model $Y_i \mid X_i \sim \mathrm{Bern}(\hat \pi_1(X_i))$, the likelihood of the training labels is
 \begin{align*}
-\hat{Y}_{\text{new}} &= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ - Y \log \hat y - (1 - Y) \log (1 - \hat y) \mid X_{\text{new}}, \hat \beta] \\
-&= \mathrm{argmin}_{\hat{y}} - \mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] \log \hat y - \mathbb{E}[1 - Y \mid X_{\text{new}}, \hat \beta] \log (1 - \hat y) \\
-&= \mathrm{argmin}_{\hat{y}} - \sigma(X_\mathrm{new}^\top \hat \beta) \log \hat y - (1 - \sigma(X_\mathrm{new}^\top \hat \beta)) \log (1 - \hat y) \\
+   \prod_{i=1}^n \hat \pi_1(X_i)^{Y_i} \, \hat \pi_0(X_i)^{1 - Y_i},
 \end{align*}
-
-where the second line follows from linearity of expectation, and the third line follows from our logistic model
-(and recognizing that $\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = \mathbb{P}(Y=1 \mid X_{\text{new}}, \hat \beta)$).
-
-Solving for when the derivative is zero, we get:
-
-$$ \frac{\sigma(X_\mathrm{new}^\top \hat \beta)}{\hat Y_\mathrm{new}} - \frac{1 - \sigma(X_\mathrm{new}^\top \hat \beta)}{1 - \hat Y_\mathrm{new}} = 0, $$
-
-and thus $\hat Y_\mathrm{new} = \sigma(X_\mathrm{new}^\top \hat \beta)$.
-
-With this prediction rule, the ERM optimization becomes:
-
+where the exponents "select" the correct probability: the $i$-th factor is $\hat \pi_1(X_i)$ when $Y_i = 1$ and $\hat \pi_0(X_i)$ when $Y_i = 0$.
+Taking the negative logarithm turns the product into a sum:
 \begin{align*}
-\hat \beta_\mathrm{ERM} &= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat Y_i) \\
-&= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n - Y_i \log(\sigma(X_i^\top \beta)) - (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \\
-&= \mathrm{argmax}_{\beta} \frac{1}{n} \sum_{i=1}^n Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)),
+   -\log \prod_{i=1}^n \hat \pi_1(X_i)^{Y_i} \, \hat \pi_0(X_i)^{1 - Y_i}
+   &= \sum_{i=1}^n \Big[ -Y_i \log \hat \pi_1(X_i) - (1 - Y_i) \log \hat \pi_0(X_i) \Big] \\
+   &= \sum_{i=1}^n L_\mathrm{logistic}(Y_i, \hat f(X_i)).
 \end{align*}
-
-which is the same optimization problem as MLE!
+So minimizing $\tfrac{1}{n} \sum_i L_\mathrm{logistic}(Y_i, \hat f(X_i))$ is the same as maximizing the likelihood.
 :::
+
+Putting it together, for logistic regression we have:
+
+$$
+\hat \beta_\mathrm{ERM}
+= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \left[ -Y_i \log \sigma(X_i^\top \beta) - (1 - Y_i) \log\left(1 - \sigma(X_i^\top \beta)\right) \right].
+$$
+
+:::{.callout-warning title="(Important) No Closed-Form Equation"}
+Unlike with linear regression, there is no closed-form equation to express $\hat \beta_\mathrm{ERM}$ for classification.
+The optimization equation above is the most we can simplify it.
+We will need to rely on *numerical optimization* techniques to obtain $\hat \beta_\mathrm{ERM}$, which we will discuss later in the course.
+:::
+
+## Prediction
+
+Let's discuss how we can make predictions using the logistic regression model given some new covariates $X_\mathrm{new}$.
+
+- With regression, we simply used the prediction $\hat Y_\mathrm{new} = \hat f(X_\mathrm{new})$.
+- With classification, we can't use the same strategy, since $\hat Y_\mathrm{new}$ must be 0 or 1,
+   and $\hat f(X_\mathrm{new})$ is real-valued.
+
+We need to put a bit more care into making a prediction $\hat Y$ given our estimated log-odds ratio,
+for which we turn to the field of **decision theory**.
+
+### Making Predictions Using Decision Theory
+
+- We begin by assuming there is some cost $c$ associated with an incorrect prediction.
+
+- A common cost-function for classification is:
+
+   $$
+      c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+         1 & Y_\mathrm{new} \ne \hat Y_\mathrm{new} \\
+         0 & Y_\mathrm{new} = \hat Y_\mathrm{new}
+      \end{cases},
+   $$
+
+   often referred to as the **0/1 cost**.
+
+:::{.callout-note title="(Important) $c$ is Theoretical"}
+- When using this model to make predictions in practice, we won't ever know the "true" $Y_\mathrm{new}$. We only see $X_\mathrm{new}$
+- Therefore, this cost is generally not something we compute; it's a theoretical quantity that we can reason about.
+- Intuitively, the cost measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.
+:::
+
+- Since we don't know the true responses, we instead have to reason about them probabilistically using our estimated $\hat f$:
+
+   $$ Y_\mathrm{new} \mid X_\mathrm{new} \sim \mathrm{Bern}( \sigma(\hat f(X_\mathrm{new}))), $$
+
+   and thus we can think about the *expected cost* of a prediction:
+
+   $$ \mathbb E[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
+
+- According to **decision theory**, the best choice for $\hat Y_\mathrm{new}$ is the one that minimizes expected cost:
+
+   $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
+
+- Perhaps unsurprisingly, under the 0/1 cost, this decision simplifies down to:
+
+   $$ \hat Y_\mathrm{new} = \begin{cases}
+      1 & \hat f(X_\mathrm{new}) \geq 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) \geq 0.5, \: \hat \pi_0(X_\mathrm{new}) < 0.5 \text{)} \\
+      0 & \hat f(X_\mathrm{new}) < 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) < 0.5, \: \hat \pi_0(X_\mathrm{new}) \geq 0.5 \text{)}
+   \end{cases}. $$
+
+   <details>
+      <summary>Derivation</summary>
+      The expected 0/1 cost of predicting $\hat y_\mathrm{new}$ is a sum over the two possible outcomes, each weighted by its probability under our model:
+      \begin{align*}
+      \hat{Y}_\mathrm{new}
+      &= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{E}[ \mathbb{I}(Y_\mathrm{new} \neq \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f] \\
+      &= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{P}(Y_\mathrm{new} \neq \hat y_\mathrm{new} \mid X_\mathrm{new}, \hat f) \\
+      &= \mathrm{argmin}_{\hat y_\mathrm{new}} \left[
+         \underbrace{\hat \pi_1(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 1)} \, \mathbb{I}(\hat y_\mathrm{new} = 0) +
+         \underbrace{\hat \pi_0(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 0)} \, \mathbb{I}(\hat y_\mathrm{new} = 1) \right].
+      \end{align*}
+      We should therefore predict $\hat y_\mathrm{new} = 1$ whenever doing so incurs the smaller expected cost, i.e. whenever $\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})$. Since $\hat \pi_0 = 1 - \hat \pi_1$, this is exactly the condition $\hat \pi_1(X_\mathrm{new}) \geq 0.5$. Finally, recall that $\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5$ if and only if $\hat f(X_\mathrm{new}) \geq 0$.
+   </details>
+
+:::{.callout-tip title="The Decision Boundary"}
+- The **decision boundary**, defined by:
+
+  $$\hat f(x) = 0$$
+
+  is the hyperplane that separates the $x$s for which we would predict $\hat Y = 1$ versus $\hat Y = 0$.
+
+- For logistic regression, where $\hat f(x) = x^\top \hat \beta$, this decision boundary is a (linear) hyperplane.
+   This is one reason why we consider logistic regression to be a "linear method."
+
+![Decision Boundary](../figures/decision_boundary.svg)
+:::
+
+
+### How Costs Affect Decisions
+
+- While the derivation above was perhaps a complicated way to obtain a simple prediction rule,
+   decision theory shows its power when we start considering alternative costs.
+
+- For example, imagine a world where **false-positive predictions** (predicting $\hat Y = 1$ when $Y=0$) were twice as bad as **false-negative predictions** (predicting $\hat Y = 0$ when $Y=1$).
+
+   - We could codify this idea into a cost function:
+
+      $$ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+      0 & \hat Y_\mathrm{new} = Y_\mathrm{new} \quad \text{(correct prediction)} \\
+      2 & \hat Y_\mathrm{new} = 1, \: Y_\mathrm{new} = 0 \quad \text{(false positive)} \\
+      1 & \hat Y_\mathrm{new} = 0, \: Y_\mathrm{new} = 1 \quad \text{(false negative)}
+      \end{cases}. $$
+
+   - Now considering our decision theoretic rule:
+      $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], $$
+
+      the $\hat f$ estimate is the same as above but now the cost function $c$ is different. Thus we should end up with a different rule for $\hat Y_\mathrm{new}$.
+
+   - Turning the crank, we have:
+
+      $$ \hat Y_\mathrm{new} = \begin{cases}
+      1 & \hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3} \quad \text{(alternatively, } \hat f(X_\mathrm{new}) \geq \log 2 \text{)} \\
+      0 & \hat \pi_1(X_\mathrm{new}) < \tfrac{2}{3} \quad \text{(alternatively, } \hat f(X_\mathrm{new}) < \log 2 \text{)}
+      \end{cases}. $$
+
+      Making false positives more costly makes us more "conservative" about predicting $\hat Y_\mathrm{new} = 1$: we now require $\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}$ rather than just $\geq \tfrac{1}{2}$.
+
+      <details>
+         <summary>Derivation</summary>
+         The expected costs of the two possible predictions are
+         \begin{align*}
+            \mathbb E[ c(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &= 2 \, \hat \pi_0(X_\mathrm{new}) & \text{(cost 2 incurred only if } Y_\mathrm{new} = 0), \\
+            \mathbb E[ c(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &= 1 \, \hat \pi_1(X_\mathrm{new}) & \text{(cost 1 incurred only if } Y_\mathrm{new} = 1).
+         \end{align*}
+         We predict $\hat Y_\mathrm{new} = 1$ whenever its expected cost is no larger, i.e. whenever
+         \begin{align*}
+            2 \, \hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new}).
+         \end{align*}
+         Substituting $\hat \pi_0 = 1 - \hat \pi_1$ and solving:
+         \begin{align*}
+            2 \left(1 - \hat \pi_1(X_\mathrm{new})\right) \leq \hat \pi_1(X_\mathrm{new})
+            \quad \Longleftrightarrow \quad 2 \leq 3 \, \hat \pi_1(X_\mathrm{new})
+            \quad \Longleftrightarrow \quad \hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}.
+         \end{align*}
+         Finally, since $\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new}))$, the condition $\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}$ is equivalent to $\hat f(X_\mathrm{new}) \geq \log\left(\tfrac{2/3}{1/3}\right) = \log 2$.
+      </details>
+
+- In general, we can encode any weighting of false positives versus false negatives into the cost, and the resulting rule is just a threshold on $\hat \pi_1(X_\mathrm{new})$ (equivalently, on $\hat f(X_\mathrm{new})$) that shifts with the relative costs.
+
 
 
 ## Summary
@@ -285,11 +350,14 @@ This lecture extended the statistical framework from regression to classificatio
 
 1. **Statistical Model**: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in $[0, 1]$.
 
-2. **Prediction**: The optimal prediction rule depends on the loss function.
+2. **Hypothesis Class**: We can estimate the log-odds ratio with a linear function of the covariates.
+   (There are more complicated hypothesis classes which we'll explore in future lectures.)
 
-3. **Linear Decision Boundary**: Under the $0/1$ loss, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \beta = 0$.
+3. **Estimation**: The logistic regression ERM solution cannot be computed analytically; it requires numerical methods such as gradient descent.
 
-2. **Estimation**: The MLE solution cannot be computed analytically; it requires a numerical methods.
+4. **Prediction**: The optimal prediction rule depends on the cost function.
+
+5. **Linear Decision Boundary**: Under the $0/1$ cost, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \hat \beta = 0$.
 
 
 In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.
