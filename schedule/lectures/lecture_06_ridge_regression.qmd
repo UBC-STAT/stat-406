@@ -29,11 +29,11 @@ By the end of this lecture, you should be able to:
 
     where $\boldsymbol X \in \mathbb R^{n \times p}$ is the design matrix (with rows $x_i^\top$) and $\boldsymbol Y \in \mathbb R^n$ is the vector of training responses.
 
-- Recall from Lecture 2 that this OLS estimator *is* the empirical risk minimizer for the linear hypothesis class under squared loss: the learned predictor $\hat f_\mathrm{OLS}$ is exactly $\hat f_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \hat R_{\hat f}$, so $\hat\beta_\mathrm{OLS} = \hat\beta_\mathrm{ERM}$.
+- Recall from Lecture 2 that this OLS estimator *is* the empirical risk minimizer for the linear hypothesis class under squared loss: the learned predictor $\hat f_\mathrm{OLS}$ is exactly $\hat f_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \; \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i))$, so $\hat\beta_\mathrm{OLS} = \hat\beta_\mathrm{ERM}$.
 
 - Keep this in mind: by the end of this lecture we will have constructed our first estimator that is *not* the ERM solution.
 
-- Now let's assume that our data are i.i.d. generated according to the linear model
+- Now let's assume that our data are i.i.d. generated according to the linear statistical model
   $$ Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta, \qquad \varepsilon \sim \mathcal N(0, \sigma^2), $$
 
   for some true parameter vector $\beta \in \mathbb R^p$.
@@ -64,9 +64,9 @@ Since we have an unbiased estimator, our **average model** ($\mathbb E[\hat f_\m
 so the bias component of the risk will be zero!
 
 :::{.callout-caution title="Check Your Assumptions!"}
-We have shown that the bias associated with OLS is zero *under the assumption that the linear model is correct*.
+We have shown that the bias associated with OLS is zero *under the assumption that the linear statistical model is correct*.
 
-In practice, it's very unlikely that the linear model is exactly correct (i.e. the true value of $Y$ may depend on covariates we don't have access to, interaction terms, etc.). In that case (i.e. when the linear model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.
+In practice, it's very unlikely that the linear statistical model is exactly correct (i.e. the true value of $Y$ may depend on covariates we don't have access to, interaction terms, etc.). In that case (i.e. when the linear statistical model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.
 :::
 
 ### (Co-)Variance of OLS
@@ -103,6 +103,9 @@ $$\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbo
 - **Key insight**: When $\boldsymbol X$ has small singular values (i.e., when $d_j \approx 0$ for some $j$), then $d_j^{-2}$ becomes very large, leading to high variance in $\hat{\beta}_\mathrm{OLS}$.
 
 - This situation arises when $\boldsymbol X$ is **ill-conditioned** or **nearly rank-deficient**, which happens when we have **multicollinearity**: a linear combination of predictor variables is nearly equal to another predictor variable.
+
+  - Recall the intuition from Lecture 1: the singular values measure the **effective dimensionality** of $\boldsymbol X$. A near-zero singular value $d_j \approx 0$ means that $\boldsymbol X$ collapses the $p$-dimensional predictor space onto a lower-dimensional subspace — the columns of $\boldsymbol X$ effectively span fewer than $p$ directions.
+  - So even though we are estimating $p$ coefficients, the data only constrains them along the few directions with $d_j$ appreciably above zero. In effect, we have **more parameters to fit than effective dimensions to pin them down**, which is exactly why the variance $d_j^{-2}$ blows up.
 
 - In such cases, $\hat{\beta}_\mathrm{OLS}$ has large, unstable values with high variance.
 
@@ -265,7 +268,9 @@ indicating that we may not have been in the high-variance regime with our OLS es
 
 - **The Problem**: OLS has high variance when $\boldsymbol X$ is ill-conditioned (multicollinearity), which occurs when some singular values are near zero, making $(\boldsymbol X^\top \boldsymbol X)^{-1}$ unstable.
 
-- **The Solution**: Ridge regression constrains coefficients via $\|\beta\|_2^2 \leq s$ (or equivalently adds penalty $\lambda \|\beta\|_2^2$), which shrinks coefficients toward zero and stabilizes the solution with closed form $\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y$.
+- **The Solution**: Ridge regression constrains coefficients via $\|\beta\|_2^2 \leq s$ (or equivalently adds penalty $\lambda \|\beta\|_2^2$), which shrinks coefficients toward zero and stabilizes the solution with closed form
+
+  $$\hat f_\mathrm{ridge}(X) = X^\top \hat{\beta}_\lambda, \qquad \hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y.$$
 
 - **The Tradeoff**: Ridge introduces bias but significantly reduces variance, and we can use cross-validation to find the optimal $\lambda$ that minimizes prediction risk in the bias-variance tradeoff.
 
