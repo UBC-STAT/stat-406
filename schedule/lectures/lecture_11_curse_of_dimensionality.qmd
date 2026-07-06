@@ -135,6 +135,33 @@ it is a very well-used method in practice.
 (It is arguably the most common nonparametric method, and used in practice more than kernel ridge regression.)
 :::
 
+### kNN is a Piecewise Constant Predictor
+
+- Because $\hat{f}_\mathcal{D}(X) = \frac{1}{k}\sum_{i \in N_k(X)} Y_i$ only changes value when the neighbour set $N_k(X)$ changes, kNN is a **piecewise constant** predictor: it partitions the input space into regions and predicts the local average of the $Y_i$ within each region.
+
+```{r knn-piecewise-constant}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 4
+f_true <- function(x) sin(2 * pi * x)
+set.seed(406)
+plot_knn_n <- function(n, k = 3) {
+  x <- sort(runif(n))
+  y <- f_true(x) + rnorm(n, sd = 0.15)
+  grid <- seq(0, 1, length.out = 500)
+  pred <- FNN::knn.reg(matrix(x, ncol = 1), matrix(grid, ncol = 1), y = y, k = k)$pred
+  ggplot() +
+    geom_line(data = tibble(x = grid, y = f_true(grid)), aes(x, y), linetype = "dashed") +
+    geom_point(data = tibble(x = x, y = y), aes(x, y), colour = "blue", alpha = 0.4) +
+    geom_line(data = tibble(x = grid, y = pred), aes(x, y), colour = "orange", linewidth = 1.5) +
+    ggtitle(paste("n =", n)) + ylim(-2, 2)
+}
+plot_grid(plot_knn_n(20), plot_knn_n(100), plot_knn_n(500), ncol = 3)
+```
+
+- Each panel fixes $k=3$; the dashed line is the true $\mathbb E[Y\mid X]$ and the orange step function is the kNN fit.
+- Fixing $k$, more training data packs the points closer together, so the constant regions get **finer** and each one hugs $\mathbb E[Y \mid X]$ more tightly. This is why kNN's flexibility grows with $n$.
+
 ### Bias and Variance as a Function of k
 
 ```{r knn-changing-k}
@@ -166,7 +193,10 @@ plot_grid(g1, g2, g3, ncol = 3)
 - The above plots show the kNN regression function for different values of $k$.
 - $k=1$ and $k=40$ are poor fits and have high risk, while $k=5$ is likely a good predictor.
 - When $k$ is too large or too small, we are not balancing bias and variance well.
-  But which extreme are we in?
+  But which extreme are we in? We can reason about this using the piecewise-constant regions:
+
+  - **Small $k$:** the fit has many narrow steps, so it is flexible enough to closely track the shape of $\mathbb E[Y\mid X]$ (**low bias**). But each step is an average of only a few points, so its height is heavily influenced by the noise in those specific $Y_i$ (**high variance**).
+  - **Large $k$:** each step averages many points, so its height is stable across training samples (**low variance**). But the fit now has only a few wide steps, and this coarse approximation is too rigid to capture the shape of $\mathbb E[Y\mid X]$ (**high bias**).
 
 :::{.callout-note collapse="true" title="(Intuitive) Bias-Variance Tradeoff for kNN"}
 - As $k \to 1$, our prediction at a point $X$ depends only on a single training point $(X_i, Y_i)$, so it is very dependent on our *specific training sample*.
