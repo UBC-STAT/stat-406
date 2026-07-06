@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 5: The Bias-Variance Tradeoff – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -208,7 +210,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -234,7 +236,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
 <p>In the previous lecture, we:</p>
 <ol type="1">
-<li>decided that <strong>risk</strong> (<span class="math inline">\(\mathbb E[ L(Y, f_\mathcal{D}(X)) ]\)</span>) is the metric to quantify ``goodness’’ of a learned model <span class="math inline">\(f_\mathcal{D}\)</span>, and</li>
+<li>decided that <strong>risk</strong> (<span class="math inline">\(\mathbb E[ L(Y, \hat f_\mathcal{D}(X)) ]\)</span>) is the metric to quantify ``goodness’’ of a learned model <span class="math inline">\(\hat f_\mathcal{D}\)</span>, and</li>
 <li>used estimated quantities of risk (e.g.&nbsp;via cross-validation) to select between different models.</li>
 </ol>
 <p>As it stands right now, this model selection procedure is a bit like guess-and-check. We make a change to our model (i.e.&nbsp;add a covariate, change the model class, etc.), and then see if it improves our estimated risk.</p>
@@ -250,20 +252,20 @@ window.Quarto = {
 </section>
 <section id="setup" class="level2">
 <h2 class="anchored" data-anchor-id="setup">Setup</h2>
-<p>Given a learned model <span class="math inline">\(f_\mathcal{D}: \mathcal{X} \to \mathcal{Y}\)</span>, recall our definition of <strong>risk</strong> from the previous lecture:</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E[ L(Y, f_\mathcal{D}(X)) ]  = \mathbb E\left[ \mathbb E[ L(Y, f_\mathcal{D}(X)) \mid \mathcal D \right]. \]</span></p>
+<p>Given a learned model <span class="math inline">\(\hat f_\mathcal{D}: \mathcal{X} \to \mathcal{Y}\)</span> (the hat denotes that the model is estimated from data, and the subscript <span class="math inline">\(\mathcal D\)</span> emphasizes that it was estimated using the particular training set <span class="math inline">\(\mathcal D\)</span>), recall our definition of <strong>risk</strong> from the previous lecture:</p>
+<p><span class="math display">\[ \mathcal R = \mathbb E[ L(Y, \hat f_\mathcal{D}(X)) ] = \mathbb E\left[ \mathbb E\left[ L(Y, \hat f_\mathcal{D}(X)) \mid \mathcal D \right] \right]. \]</span></p>
 <p>This lecture will focus specifically on the square loss (though the ideas will apply to other losses):</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] \]</span></p>
+<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - \hat f_\mathcal{D}(X))^2 \right] \]</span></p>
 <p>Crucially, risk is an expectation over <em>all sources of randomness</em>, including:</p>
 <ul>
-<li>the training data <span class="math inline">\(\mathcal D = \{(X_i, Y_i)\}_{i=1}^n \overset{\text{i.i.d.}}{\sim} P(Y, X)\)</span></li>
-<li>the test data <span class="math inline">\((X, Y) \sim P(Y, X)\)</span></li>
+<li>the training data <span class="math inline">\(\mathcal D = \{(X_i, Y_i)\}_{i=1}^n \overset{\text{i.i.d.}}{\sim} \mathbb{P}_{X,Y}\)</span></li>
+<li>the test data <span class="math inline">\((X, Y) \sim \mathbb{P}_{X,Y}\)</span></li>
 <li>(any randomness in the estimation procedure).</li>
 </ul>
 <p>Our goal is to decompose this expectation into semantically meaningful components that we can reason about. Before we do so, we need to introduce some terms/ideas:</p>
 <section id="expected-label" class="level3">
 <h3 class="anchored" data-anchor-id="expected-label">Expected Label</h3>
-<p>For any given set of covariates <span class="math inline">\(X\)</span>, there is a distribution <span class="math inline">\(P(Y \mid X)\)</span> over possible labels. We can consider the expected label:</p>
+<p>For any given set of covariates <span class="math inline">\(X\)</span>, there is a distribution <span class="math inline">\(\mathbb{P}_{Y \mid X}\)</span> over possible labels. We can consider the expected label:</p>
 <p><span class="math display">\[ \bar{Y}(X) = \mathbb E[ Y \mid X ]. \]</span></p>
 <ul>
 <li><span class="math inline">\(\bar{Y}(X)\)</span> is sometimes called the <strong>regression function</strong>.</li>
@@ -273,8 +275,8 @@ window.Quarto = {
 </section>
 <section id="expected-model" class="level3">
 <h3 class="anchored" data-anchor-id="expected-model">Expected Model</h3>
-<p>Our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is a random variable because it depends on the (random) training data <span class="math inline">\(\mathcal D\)</span>. We can consider the <strong>expected model</strong>:</p>
-<p><span class="math display">\[ \bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]. \]</span></p>
+<p>Our learned model <span class="math inline">\(\hat f_\mathcal{D}\)</span> is a random variable because it depends on the (random) training data <span class="math inline">\(\mathcal D\)</span>. We can consider the <strong>expected model</strong>:</p>
+<p><span class="math display">\[ \bar{f}(X) = \mathbb E[ \hat f_\mathcal{D}(X) \mid X ]. \]</span></p>
 <ul>
 <li>Here, we are averaging over training datasets <span class="math inline">\(\mathcal D\)</span>, but nothing else.</li>
 <li><strong>Intuition</strong>: imagine we were to train many models on different training datasets <span class="math inline">\(\mathcal D_1, \ldots, \mathcal D_M\)</span>. Each model will make a different prediction because they are trained on different data. The expected model <span class="math inline">\(\bar{f}(X)\)</span> is the average of these predictions.</li>
@@ -286,9 +288,9 @@ window.Quarto = {
 <ul>
 <li><p>To decompose risk into multiple meaningful terms, we are going to play a mathematician’s favorite trick: adding zero.</p></li>
 <li><p>More specifically, we are going to add and subtract a very specific quantity, the expected label <span class="math inline">\(\bar{Y}(X)\)</span>, within the square loss portion of risk:</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - f_\mathcal{D}(X))^2 \right] = \mathbb E\left[ \left( Y \overbrace{- \bar{Y}(X) + \bar{Y}(X)}^{= 0} - f_\mathcal{D}(X) \right)^2 \right] \]</span></p></li>
+<p><span class="math display">\[ \mathcal R = \mathbb E\left[ (Y - \hat f_\mathcal{D}(X))^2 \right] = \mathbb E\left[ \left( Y \overbrace{- \bar{Y}(X) + \bar{Y}(X)}^{= 0} - \hat f_\mathcal{D}(X) \right)^2 \right] \]</span></p></li>
 <li><p>So far, this is dumb. But watch what happens when we group terms…</p>
-<p><span class="math display">\[ \mathcal R = \mathbb E\left[ \left( \underbrace{(Y - \bar{Y}(X))}_{A} + \underbrace{(\bar{Y}(X) - f_\mathcal{D}(X))}_{B} \right)^2 \right] \]</span></p></li>
+<p><span class="math display">\[ \mathcal R = \mathbb E\left[ \left( \underbrace{(Y - \bar{Y}(X))}_{A} + \underbrace{(\bar{Y}(X) - \hat f_\mathcal{D}(X))}_{B} \right)^2 \right] \]</span></p></li>
 <li><p>… and then expand the square into <span class="math inline">\(A^2 + 2AB + B^2\)</span>. After simplifying…</p>
 <details>
 <summary>
@@ -298,28 +300,28 @@ window.Quarto = {
     \mathcal R &amp;= \mathbb E\left[ A^2 + B^2 + 2AB \right] \\
     &amp;= \mathbb E\left[ A^2 \right] + \mathbb E\left[ B^2 \right] + 2\mathbb E\left[ AB \right]
     \end{align*}\]</span></p>
-<p>Consider <span class="math inline">\(\mathbb E\left[ AB \right] = \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \right]\)</span>. Applying the tower property, we have that:</p>
-<p><span class="math display">\[ \mathbb E\left[ AB \right] = \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right]. \]</span></p>
+<p>Consider <span class="math inline">\(\mathbb E\left[ AB \right] = \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \right]\)</span>. Applying the tower property, we have that:</p>
+<p><span class="math display">\[ \mathbb E\left[ AB \right] = \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right]. \]</span></p>
 <p>Within the inner expectation, <span class="math inline">\(Y\)</span> is the only random term after conditioning on <span class="math inline">\(\mathcal D\)</span> and <span class="math inline">\(X\)</span>. Since <span class="math inline">\(Y\)</span> is independent of our training data, we have that <span class="math inline">\(\mathbb E[ Y \mid X, \mathcal D ] = \mathbb E[ Y \mid X ] = \bar{Y}(X)\)</span>. Therefore,</p>
 <p><span class="math display">\[\begin{align*}
       \mathbb E\left[ AB \right]
-      &amp;= \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right] \\
-      &amp;= \mathbb E\left[ \left( \mathbb E[ Y \mid X, \mathcal D] - \bar{Y}(X) \right) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] \\
-      &amp;= \mathbb E\left[ (\bar{Y}(X) - \bar{Y}(X)) \left( \bar{Y}(X) - f_\mathcal{D}(X) \right) \right] = 0.
+      &amp;= \mathbb E\left[ \mathbb E\left[ (Y - \bar{Y}(X))(\bar{Y}(X) - \hat f_\mathcal{D}(X)) \mid X, \mathcal D \right] \right] \\
+      &amp;= \mathbb E\left[ \left( \mathbb E[ Y \mid X, \mathcal D] - \bar{Y}(X) \right) \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right) \right] \\
+      &amp;= \mathbb E\left[ (\bar{Y}(X) - \bar{Y}(X)) \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right) \right] = 0.
     \end{align*}\]</span></p>
 <p>Thus, the cross term vanishes, and we are left with</p>
 <p><span class="math display">\[ \mathcal R = \mathbb E\left[ A^2 \right] + \mathbb E\left[ B^2 \right].\]</span></p>
 <p>Plugging back in the definitions of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>…</p>
 </details>
 <p>… we get that</p>
-<p><span class="math display">\[ \mathcal R = \underbrace{\mathbb E\left[ \left( Y - \bar{Y}(X) \right)^2 \right]}_\text{irreducible error} + \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error} \]</span></p></li>
+<p><span class="math display">\[ \mathcal R = \underbrace{\mathbb E\left[ \left( Y - \bar{Y}(X) \right)^2 \right]}_\text{irreducible error} + \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error} \]</span></p></li>
 </ul>
 <section id="estimation-versus-irreducible-error" class="level3">
 <h3 class="anchored" data-anchor-id="estimation-versus-irreducible-error">Estimation versus Irreducible Error</h3>
 <p>I claim these two terms have intuitive interpretations:</p>
 <ol type="1">
-<li><p>The first term, the <strong>irreducible error</strong>, quantifies the inherent uncertainty in the response variable. Even if we were to perfectly know the conditional distribution <span class="math inline">\(P(Y \mid X)\)</span>, we would not be able to perfectly predict <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> due to some inherent randomness in <span class="math inline">\(Y \mid X\)</span>.</p></li>
-<li><p>The second term, the <strong>estimation error</strong>, quantifies how far off our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is from the optimal prediction rule <span class="math inline">\(\bar{Y}(X)\)</span>. It quantifies how well our learned model approximates the <strong>regression function</strong>; i.e.&nbsp;the optimal prediction rule.</p></li>
+<li><p>The first term, the <strong>irreducible error</strong>, quantifies the inherent uncertainty in the response variable. Even if we were to perfectly know the conditional distribution <span class="math inline">\(\mathbb{P}_{Y \mid X}\)</span>, we would not be able to perfectly predict <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> due to some inherent randomness in <span class="math inline">\(Y \mid X\)</span>.</p></li>
+<li><p>The second term, the <strong>estimation error</strong>, quantifies how far off our learned model <span class="math inline">\(\hat f_\mathcal{D}\)</span> is from the optimal prediction rule <span class="math inline">\(\bar{Y}(X)\)</span>. It quantifies how well our learned model approximates the <strong>regression function</strong>; i.e.&nbsp;the optimal prediction rule.</p></li>
 </ol>
 <p>The irreducible error is <strong>independent</strong> of our model/learning procedure. In general, we have no control over this term; it’s always there.</p>
 <div class="callout callout-style-default callout-warning callout-titled" title="Caveat">
@@ -356,8 +358,8 @@ Note
 Why?
 </summary>
 <ul>
-<li>The first term, the prediction error, does not depend on our model <span class="math inline">\(f_\mathcal{D}\)</span> at all. It is a property of the data distribution <span class="math inline">\(P(X, Y)\)</span>, and it is non-negative.</li>
-<li>The second term, the estimation error, is non-negative because it is an expectation of a squared term. It will be minimized when it equals zero, which happens when <span class="math inline">\(f_\mathcal{D}(X) = \bar{Y}(X)\)</span> for all <span class="math inline">\(X\)</span>.</li>
+<li>The first term, the prediction error, does not depend on our model <span class="math inline">\(\hat f_\mathcal{D}\)</span> at all. It is a property of the data distribution <span class="math inline">\(\mathbb{P}_{X,Y}\)</span>, and it is non-negative.</li>
+<li>The second term, the estimation error, is non-negative because it is an expectation of a squared term. It will be minimized when it equals zero, which happens when <span class="math inline">\(\hat f_\mathcal{D}(X) = \bar{Y}(X)\)</span> for all <span class="math inline">\(X\)</span>.</li>
 </ul>
 </details>
 </div>
@@ -368,34 +370,34 @@ Why?
 <h2 class="anchored" data-anchor-id="the-bias-variance-decomposition">The Bias-Variance Decomposition</h2>
 <p>Now for the real deal. Can we further decompose our estimation error term into meaningful components that we can reason about?</p>
 <p>Let’s play the adding-zero trick again, this time adding and subtracting the expected model <span class="math inline">\(\bar{f}(X)\)</span>:</p>
-<p><span class="math display">\[ \mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]
-= \mathbb E\left[ \left( \underbrace{\left( \bar{Y}(X) - \bar{f}(X) \right)}_{C} - \underbrace{\left( f_\mathcal{D}(X) - \bar{f}(X) \right)}_{D} \right)^2 \right]. \]</span></p>
+<p><span class="math display">\[ \mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]
+= \mathbb E\left[ \left( \underbrace{\left( \bar{Y}(X) - \bar{f}(X) \right)}_{C} - \underbrace{\left( \hat f_\mathcal{D}(X) - \bar{f}(X) \right)}_{D} \right)^2 \right]. \]</span></p>
 <p>A similar game will play out after we (1) expand the square and (2) apply linearity of expectation: the cross term will vanish…</p>
 <details>
 <summary>
 (details here)
 </summary>
 <p>If we take the cross term…</p>
-<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \right] \]</span></p>
+<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \right] \]</span></p>
 <p>… and again apply the tower property (this time only conditioning on <span class="math inline">\(X\)</span>)…</p>
-<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] \]</span></p>
-<p>… then the only term in the inner expectation that is random (after conditioning on <span class="math inline">\(X\)</span>) is <span class="math inline">\(f_\mathcal{D}(X)\)</span>. Since <span class="math inline">\(\bar{f}(X) = \mathbb E[ f_\mathcal{D}(X) \mid X ]\)</span>, we have that</p>
+<p><span class="math display">\[ \mathbb E\left[ CD \right] = \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \mid X \right] \right] \]</span></p>
+<p>… then the only term in the inner expectation that is random (after conditioning on <span class="math inline">\(X\)</span>) is <span class="math inline">\(\hat f_\mathcal{D}(X)\)</span>. Since <span class="math inline">\(\bar{f}(X) = \mathbb E[ \hat f_\mathcal{D}(X) \mid X ]\)</span>, we have that</p>
 <span class="math display">\[\begin{align*}
     \mathbb E\left[ CD \right]
-    &amp;= \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - f_\mathcal{D}(X) \right) \mid X \right] \right] \\
-    &amp;= \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \mathbb E\left[ f_\mathcal{D}(X) \mid X \right] \right)\right] \\
+    &amp;= \mathbb E\left[ \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right) \mid X \right] \right] \\
+    &amp;= \mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right) \left( \bar{f}(X) - \mathbb E\left[ \hat f_\mathcal{D}(X) \mid X \right] \right)\right] \\
     &amp;= \mathbb E\left[ (\bar{Y}(X) - \bar{f}(X)) (\bar{f}(X) - \bar{f}(X)) \right] = 0.
   \end{align*}\]</span>
 </details>
 <p>… and we will be left with</p>
-<p><span class="math display">\[ \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error}
+<p><span class="math display">\[ \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{estimation error}
 = \underbrace{\mathbb E\left[ \left( \bar{Y}(X) - \bar{f}(X) \right)^2 \right]}_\text{squared bias}
-+ \underbrace{\mathbb E\left[ \left( \bar{f}(X) - f_\mathcal{D}(X) \right)^2 \right]}_\text{variance}. \]</span></p>
++ \underbrace{\mathbb E\left[ \left( \bar{f}(X) - \hat f_\mathcal{D}(X) \right)^2 \right]}_\text{variance}. \]</span></p>
 <section id="bias-versus-variance" class="level3">
 <h3 class="anchored" data-anchor-id="bias-versus-variance">Bias Versus Variance</h3>
 <p>Again, these two components have intuitive (and very important) interpretations:</p>
-<p><strong>Variance</strong> captures how dependent our learned model <span class="math inline">\(f_\mathcal{D}\)</span> is on any particular training dataset <span class="math inline">\(\mathcal D\)</span>. High variance is bad, because it means that our predictions depend more on a particular training sample rather than generalizable patterns in the data.</p>
-<p><strong>Bias</strong>: captures how much “generalizable truth” can actually be learned by our statistical model/estimation procedure. High bias implies that, even if we had access to many training samples to “average out” the noise, we would still only be able to learn a poor approximation of the regression function <span class="math inline">\(\bar{Y}(X)\)</span>.</p>
+<p><strong>Variance</strong> captures how dependent our learned model <span class="math inline">\(\hat f_\mathcal{D}\)</span> is on any particular training dataset <span class="math inline">\(\mathcal D\)</span>. High variance is bad, because it means that our predictions depend more on a particular training sample rather than generalizable patterns in the data.</p>
+<p><strong>Bias</strong>: captures how much “generalizable truth” can actually be captured by our model (hypothesis class and estimation procedure). High bias implies that, even if we had access to many training samples to “average out” the noise, we would still only be able to learn a poor approximation of the regression function <span class="math inline">\(\bar{Y}(X)\)</span>.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://www.cs.cornell.edu/courses/cs4780/2024sp/lectures/images/bias_variance/bullseye.png" class="img-fluid figure-img" style="width:4in"></p>
@@ -442,7 +444,7 @@ Why?
 <p><strong>Remedies</strong>:</p>
 <ul>
 <li>Add features</li>
-<li>Use a more complex statistical model</li>
+<li>Use a more complex predictive model/hypothesis class</li>
 <li>(More to come!)</li>
 </ul>
 </section>

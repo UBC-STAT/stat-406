@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 10: Kernel Machines – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -204,7 +206,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -270,7 +272,7 @@ window.Quarto = {
 <ul>
 <li><p>Let’s begin with ridge regression on 1D data, with <span class="math inline">\(d\)</span>-Fourier basis functions:</p>
 <p><span class="math display">\[\begin{align*}
-\hat \beta_\mathrm{ridge} = \left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top \boldsymbol Y
+\hat f_\mathrm{ridge}(X) = \boldsymbol \phi(X)^\top \hat \beta_\mathrm{ridge}, \qquad \hat \beta_\mathrm{ridge} = \left( \boldsymbol \Phi^\top \boldsymbol \Phi + \lambda \boldsymbol I \right)^{-1} \boldsymbol \Phi^\top \boldsymbol Y
 \end{align*}\]</span></p>
 <p>where <span class="math inline">\(\boldsymbol \Phi \in \mathbb R^{n \times d}\)</span> is the design matrix, with the <span class="math inline">\(i^\mathrm{th}\)</span> row given by:</p>
 <p><span class="math display">\[\begin{align*}
@@ -295,7 +297,7 @@ window.Quarto = {
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>We can verify this by starting with the right-hand side, and using the SVD of <span class="math inline">\(\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V.\)</span></p>
+<p>We can verify this by starting with the right-hand side, and using the SVD of <span class="math inline">\(\boldsymbol \Phi = \boldsymbol U \boldsymbol D \boldsymbol V^\top.\)</span></p>
 <ul>
 <li>For now, let’s assume that <span class="math inline">\(d &gt; n\)</span>, so that <span class="math inline">\(\boldsymbol \Phi\)</span> has full row rank. Then,</li>
 <li><span class="math inline">\(\boldsymbol U \in \mathbb R^{n \times n}\)</span> is orthogonal,</li>
@@ -389,33 +391,50 @@ k(x_n, x_1) &amp; k(x_n, x_2) &amp; \cdots &amp; k(x_n, x_n)
 <ul>
 <li><p>The above formula is valid for any <span class="math inline">\(d\)</span>, even if <span class="math inline">\(d \gg n\)</span>.</p></li>
 <li><p>What happens if we let <span class="math inline">\(d \to \infty\)</span>?</p></li>
-<li><p>Imagine that we made our basis expansions <strong>random</strong>, rather than fixed:</p>
+<li><p>It turns out that, with a suitable choice of frequencies, the kernel function converges to a limit as <span class="math inline">\(d \to \infty\)</span>. The kernel is an <strong>average</strong> over <span class="math inline">\(d/2\)</span> terms:</p>
+<p><span class="math display">\[\begin{align*}
+k(x, x') = \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right],
+\end{align*}\]</span></p>
+<p>and, as <span class="math inline">\(d \to \infty\)</span>, this average converges to an <strong>expectation</strong>:</p>
+<p><span class="math display">\[\begin{align*}
+k(x, x') \;\xrightarrow{d \to \infty}\; \mathbb E_{W} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \right]
+= e^{-\frac{1}{2 \gamma^2} (x - x')^2}.
+\end{align*}\]</span></p></li>
+<li><p>This limiting kernel is known as the <strong>Gaussian</strong> (or <strong>radial basis function, RBF</strong>) kernel. It corresponds to a basis regressor with <strong>infinitely many</strong> basis functions.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="(Advanced!) Why does the Limiting Kernel Converge?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>(Advanced!) Why does the Limiting Kernel Converge?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>To take <span class="math inline">\(d \to \infty\)</span>, imagine that we make our basis expansions <strong>random</strong>, rather than fixed:</p>
 <p><span class="math display">\[\begin{align*}
   \phi_{2j - 1} (X_i) = \frac{1}{\sqrt d} \cos(W_j X_i),
   \quad
   \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
   \qquad
-  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2)
+  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2).
 \end{align*}\]</span></p>
-<p>i.e.&nbsp;we replace the fixed frequencies <span class="math inline">\(2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}\)</span> with random frequencies <span class="math inline">\(W_i\)</span> drawn from <span class="math inline">\(\mathcal{N}(0, 1/\gamma^2)\)</span>.</p></li>
-<li><p>Then our kernel function becomes:</p>
+<p>That is, we replace the fixed frequencies <span class="math inline">\(2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}\)</span> with random frequencies <span class="math inline">\(W_j\)</span> drawn from <span class="math inline">\(\mathcal{N}(0, 1/\gamma^2)\)</span>. The kernel function then becomes</p>
 <p><span class="math display">\[\begin{align*}
-k(x, x') &amp;= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right] \\
-\end{align*}\]</span></p></li>
-<li><p>For a fixed <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the summation terms <span class="math inline">\(\left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right]\)</span> are i.i.d. random variables.</p>
-<details>
-<summary>
-<p>Why?</p>
-</summary>
-<p>After fixing <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the only random quantity is <span class="math inline">\(W_j\)</span>. Since the <span class="math inline">\(W_j\)</span> are i.i.d., the summation terms are also i.i.d.</p>
-</details></li>
-<li><p>By the law of large numbers, as <span class="math inline">\(d \to \infty\)</span>, we have:</p>
-<p><span class="math display">\[\begin{align*}
-k(X, X') &amp;\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
-&amp;= e^{-\frac{1}{2 \gamma^2} (X - X')^2}
+k(x, x') = \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right].
 \end{align*}\]</span></p>
-<p>(Don’t worry about the details of how to compute this expectation; just trust me that it is true!)</p></li>
-</ul>
+<p>For a fixed <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the summation terms are i.i.d. random variables (after fixing <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span>, the only random quantity is <span class="math inline">\(W_j\)</span>, and the <span class="math inline">\(W_j\)</span> are i.i.d.). By the <strong>law of large numbers</strong>, the average converges to its expectation as <span class="math inline">\(d \to \infty\)</span>:</p>
+<p><span class="math display">\[\begin{align*}
+k(x, x') &amp;\to \mathbb E_{W \sim \mathcal N(0, 1/\gamma^2)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \right] \\
+&amp;= e^{-\frac{1}{2 \gamma^2} (x - x')^2}.
+\end{align*}\]</span></p>
+<p>(Don’t worry about the details of how to compute this expectation; just trust me that it is true!)</p>
+</div>
+</div>
+</div>
 <section id="infinitely-powerful-models-in-closed-form" class="level3">
 <h3 class="anchored" data-anchor-id="infinitely-powerful-models-in-closed-form">Infinitely Powerful Models in Closed Form</h3>
 <p>Let’s take a step back and think about what we’ve just done:</p>

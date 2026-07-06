@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 8: Basis Expansions – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -237,7 +239,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -276,11 +278,11 @@ window.Quarto = {
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
 <ul>
-<li><p>We have typically assumed a statistical model where <span class="math inline">\(\mathbb E[Y \mid X]\)</span> is a linear function of the input features <span class="math inline">\(X\)</span>, i.e.&nbsp;<span class="math inline">\(\mathbb E[Y \mid X] = X^\top \beta\)</span> for some <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
-<li><p>We will now relax this assumption of linearity, and instead assume that</p>
-<p><span class="math display">\[\mathbb E[Y \mid X] = f(X)\]</span></p>
+<li><p>We have typically assumed the linear statistical model <span class="math inline">\(Y = f(X) + \varepsilon\)</span>, where the signal is a linear function of the input features, i.e.&nbsp;<span class="math inline">\(f(X) = X^\top \beta\)</span> for some <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
+<li><p>We will now relax this assumption of linearity, and instead allow the signal to be an arbitrary function:</p>
+<p><span class="math display">\[Y = f(X) + \varepsilon\]</span></p>
 <p>for some unknown function <span class="math inline">\(f: \mathbb R^p \to \mathbb R\)</span>.</p></li>
-<li><p>Using a predictive model of the form <span class="math inline">\(\hat f_\mathcal{D}(X) = X^\top \hat \beta\)</span>, like what we get from OLS, will not work well if <span class="math inline">\(f\)</span> is highly nonlinear; it will be a high-bias predictor.</p></li>
+<li><p>Using a predictive model of the form <span class="math inline">\(\hat f(X) = X^\top \hat \beta\)</span>, like what we get from OLS, will not work well if <span class="math inline">\(f\)</span> is highly nonlinear; it will be a high-bias predictor.</p></li>
 </ul>
 <div class="callout callout-style-default callout-important callout-titled" title="But Isn't OLS Unbiased?">
 <div class="callout-header d-flex align-content-center">
@@ -294,11 +296,11 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <ul>
 <li>Recall that OLS is unbiased <strong>only under the assumptions made by the linear statistical model</strong>.</li>
-<li>Under the more general model <span class="math inline">\(\mathbb E[Y \mid X] = f(X)\)</span>, OLS is biased unless <span class="math inline">\(f\)</span> is actually linear.</li>
+<li>Under the more general model <span class="math inline">\(Y = f(X) + \varepsilon\)</span>, OLS is biased unless <span class="math inline">\(f\)</span> is actually linear.</li>
 <li>To see why this is the case, let’s do a Taylor expansion of <span class="math inline">\(f\)</span> around <span class="math inline">\(0\)</span>.</li>
 </ul>
 <p><span class="math display">\[f(X) = f(0) + \nabla f(0)^\top X + \frac{1}{2} X^\top H_f(0) X + \ldots\]</span></p>
-<p>Even if OLS were to perfectly estimate <span class="math inline">\(\hat \beta = \nabla f(0)\)</span>, the higher-order terms would still be missing, and so <span class="math inline">\(\mathbb E[\hat f_\mathcal{D}(X) \mid X] \neq f(X)\)</span>.</p>
+<p>Even if OLS were to perfectly estimate <span class="math inline">\(\hat \beta = \nabla f(0)\)</span>, the higher-order terms would still be missing, and so the linear predictor <span class="math inline">\(\hat f(X) = X^\top \hat\beta\)</span> systematically differs from <span class="math inline">\(f(X)\)</span> (i.e.&nbsp;OLS is biased).</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Quiz: Will Ridge or Lasso Be Beneficial in this Situation?">
@@ -316,7 +318,7 @@ window.Quarto = {
 <p>Probably not.</p>
 <ul>
 <li>Ridge and Lasso reduce variance and introduce bias, and we will likely be in a high-bias situation already.</li>
-<li>More specifically, Ridge and Lasso still produce predictors of the form <span class="math inline">\(\hat f_\mathcal{D}(X) = X^\top \hat \beta\)</span>, which are still missing the higher-order terms that create the bias problem in the first place.</li>
+<li>More specifically, Ridge and Lasso still produce predictors of the form <span class="math inline">\(\hat f(X) = X^\top \hat \beta\)</span>, which are still missing the higher-order terms that create the bias problem in the first place.</li>
 </ul>
 </div>
 </div>
@@ -327,8 +329,8 @@ window.Quarto = {
 <ul>
 <li><p>Why don’t we just use a predictive model that includes the higher-order terms?</p></li>
 <li><p>For example, if <span class="math inline">\(p=1\)</span>, we could learn a model of the form:</p>
-<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat \beta_0 + \hat \beta_1 x + \hat \beta_2 x^2 + \ldots + \hat \beta_d x^d.\]</span></p></li>
-<li><p>As <span class="math inline">\(d \to \infty\)</span>, there exists some set of coefficients <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span> such that <span class="math inline">\(f(x) = \sum_{j=0}^d \beta_j x^j\)</span>.</p></li>
+<p><span class="math display">\[f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \ldots + \beta_d x^d.\]</span></p></li>
+<li><p>As <span class="math inline">\(d \to \infty\)</span>, there exists some set of coefficients <span class="math inline">\(\beta_0, \ldots, \beta_d\)</span> such that <span class="math inline">\(f(x) = \sum_{j=0}^d \beta_j x^j\)</span>.</p></li>
 <li><p>This model is known as a <strong>polynomial regression model</strong>, or a <strong>polynomial basis expansion</strong>.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="Linearity vs. Nonlinearity">
@@ -344,7 +346,7 @@ window.Quarto = {
 <ul>
 <li>This model is <strong>non-linear</strong> in <span class="math inline">\(X\)</span> (because of the <span class="math inline">\(x^2, \ldots, x^d\)</span> terms)</li>
 <li>However, it is still <strong>linear</strong> in the parameters <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span>.</li>
-<li>Therefore, we can pretend as if we have a dataset with <span class="math inline">\(d\)</span> features <span class="math inline">\((X, X^2, \ldots, X^d)\)</span> and use OLS/Ridge/LASSO to learn the parameters <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span>.</li>
+<li>Therefore, we can pretend as if we have a dataset with <span class="math inline">\(d\)</span> features <span class="math inline">\((X, X^2, \ldots, X^d)\)</span> and use OLS/Ridge/LASSO to learn parameters <span class="math inline">\(\hat \beta_0, \ldots, \hat \beta_d\)</span>.</li>
 </ul>
 </div>
 </div>
@@ -352,9 +354,9 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="bias-reduction">Bias Reduction</h3>
 <p>Using higher-order polynomial terms can significantly reduce bias.</p>
 <ul>
-<li><p>Let’s assume that, under our statistical model, <span class="math inline">\(\mathbb E[Y \mid X] = f(x)\)</span> for some <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial <span class="math inline">\(f\)</span>.</p></li>
-<li><p>Let’s also assume that we use a <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial basis expansion to learn a predictor <span class="math inline">\(\hat f_\mathcal{D}(x) = \sum_{j=0}^d \hat \beta_j x^j\)</span> using OLS.</p></li>
-<li><p>Then <span class="math inline">\(\hat f_\mathcal{D}(x)\)</span> is an unbiased estimator of <span class="math inline">\(f(x)\)</span>!</p>
+<li><p>Let’s assume that, under our statistical model, <span class="math inline">\(Y = f(X) + \varepsilon\)</span> for some <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial <span class="math inline">\(f\)</span>.</p></li>
+<li><p>Let’s also assume that we use a <span class="math inline">\(d^\mathrm{th}\)</span> degree polynomial basis expansion to learn a predictor <span class="math inline">\(\hat f(x) = \sum_{j=0}^d \hat \beta_j x^j\)</span> using OLS.</p></li>
+<li><p>Then <span class="math inline">\(\hat f(x)\)</span> is an unbiased estimator of <span class="math inline">\(f(x)\)</span>!</p>
 <details>
 <summary>
 <p>Why</p>
@@ -413,7 +415,7 @@ window.Quarto = {
 <p>where <span class="math inline">\(\nabla f(0) \in \mathbb R^p\)</span> is the gradient of <span class="math inline">\(f\)</span> at <span class="math inline">\(0\)</span>, and <span class="math inline">\(H_f(0) \in \mathbb R^{p \times p}\)</span> is the Hessian of <span class="math inline">\(f\)</span> at <span class="math inline">\(0\)</span>.</p></li>
 <li><p>The gradient has <span class="math inline">\(p\)</span> entries, and the Hessian has <span class="math inline">\(p(p+1)/2\)</span> unique entries (since it is a symmetric matrix).</p></li>
 <li><p>Thus, the second-order polynomial basis expansion will be of the form:</p>
-<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_j + \sum_{j=1}^p \sum_{k=j}^p \hat \beta_{jk} x_j x_k.\]</span></p></li>
+<p><span class="math display">\[\hat f(x) = \hat \beta_0 + \sum_{j=1}^p \hat \beta_j x_j + \sum_{j=1}^p \sum_{k=j}^p \hat \beta_{jk} x_j x_k.\]</span></p></li>
 <li><p>The <span class="math inline">\(\beta_{jk}\)</span> parameters for <span class="math inline">\(j \neq k\)</span> are called <strong>interaction terms</strong>, which you studied in STAT 306.</p></li>
 <li><p>This model contains <span class="math inline">\(1 + p + p(p+1)/2 = 1 + p(p+3)/2\)</span> parameters, which is <span class="math inline">\(O(p^2)\)</span>.</p></li>
 <li><p>If <span class="math inline">\(n\)</span> is not much larger than <span class="math inline">\(p^2\)</span>, then including these interaction terms could push us back into a high-variance regime.</p></li>
@@ -449,7 +451,7 @@ window.Quarto = {
 <li><p>Recall that (most) <span class="math inline">\(\mathbb R \to \mathbb R\)</span> functions can be expressed by their <strong>Fourier series</strong>:</p>
 <p><span class="math display">\[f(x) = a_0 + \sum_{j=1}^\infty a_j \cos(j 2 \pi x) + b_j \sin(j 2 \pi x)\]</span></p></li>
 <li><p>We can thus consider a predictive model of the form:</p>
-<p><span class="math display">\[\hat f_\mathcal{D}(x) = \hat a_0 + \sum_{j=1}^d \hat a_j \cos(j 2 \pi x) + \hat b_j \sin(j 2 \pi x)\]</span></p>
+<p><span class="math display">\[\hat f(x) = \hat a_0 + \sum_{j=1}^d \hat a_j \cos(j 2 \pi x) + \hat b_j \sin(j 2 \pi x)\]</span></p>
 <p>for some <span class="math inline">\(d \in \mathbb N\)</span>.</p></li>
 <li><p>Higher values of <span class="math inline">\(d\)</span> will be capable of fitting more complex functions (i.e.&nbsp;reduce bias), but as <span class="math inline">\(d\)</span> gets close to <span class="math inline">\(n\)</span>, we will likely enter a high-variance regime.</p></li>
 </ul>

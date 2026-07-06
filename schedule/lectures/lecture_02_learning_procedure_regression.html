@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 2: Introduction to Learning, Regression – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -176,12 +178,9 @@ window.Quarto = {
   <li><a href="#the-linear-regression-model" id="toc-the-linear-regression-model" class="nav-link" data-scroll-target="#the-linear-regression-model">The Linear Regression Model</a></li>
   <li><a href="#other-models" id="toc-other-models" class="nav-link" data-scroll-target="#other-models">Other Models</a></li>
   </ul></li>
+  <li><a href="#hypothesis-class" id="toc-hypothesis-class" class="nav-link" data-scroll-target="#hypothesis-class">Hypothesis Class</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
   <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
-  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a>
-  <ul class="collapse">
-  <li><a href="#empirical-risk-minimization-erm" id="toc-empirical-risk-minimization-erm" class="nav-link" data-scroll-target="#empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</a></li>
-  <li><a href="#maximum-likelihood-estimation-mle" id="toc-maximum-likelihood-estimation-mle" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</a></li>
-  </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/ubc-stat/stat-406/blob/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li><li><a href="https://github.com/ubc-stat/stat-406/issues/new/" class="toc-action"><i class="bi empty"></i>Report an issue</a></li><li><a href="https://github.com/ubc-stat/stat-406/edit/main/schedule/lectures/lecture_02_learning_procedure_regression.qmd" class="toc-action"><i class="bi empty"></i>Edit this page</a></li></ul></div></nav>
@@ -208,7 +207,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -229,12 +228,13 @@ window.Quarto = {
 </ol>
 <ul>
 <li>Define a statistical model</li>
+<li>Define a hypothesis class</li>
 <li>Define an estimator</li>
 <li>Define a prediction rule</li>
 </ul>
 <ol start="3" type="1">
 <li>Define the standard linear regression model</li>
-<li>Derive ordinary least squares from either the maximum likelihood estimation (MLE) or the empirical risk minimization (ERM) framework</li>
+<li>Derive ordinary least squares from the empirical risk minimization (ERM) framework (and, optionally, connect it to maximum likelihood estimation)</li>
 </ol>
 </section>
 <section id="what-is-supervised-learning" class="level2">
@@ -247,7 +247,7 @@ window.Quarto = {
 </ul></li>
 </ul>
 <p><strong>Learning from data</strong>:</p>
-<p>We are given a <strong>training dataset</strong>: <span class="math display">\[ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in \mathbb R^p \times \mathcal Y\]</span></p>
+<p>We are given a <strong>training dataset</strong>: <span class="math display">\[ \mathcal{D} = \{(X_1, Y_1), (X_2, Y_2), \ldots, (X_n, Y_n)\} \in (\mathbb R^p \times \mathcal Y)^n \]</span></p>
 <p>where:</p>
 <ul>
 <li><span class="math inline">\(X_i \in \mathbb R^p\)</span> are the <span class="math inline">\(p\)</span>-dimensional covariates (e.g.&nbsp;size, location, number of bedrooms, etc. for each house)</li>
@@ -270,7 +270,7 @@ window.Quarto = {
 <li>This is a modelling choice. As statisticians, our primary tool for reasoning about the learning process is assuming something is random.</li>
 <li>In particular, we’re going to make the following assumptions about our data:
 <ol type="1">
-<li>There is some joint distribution <span class="math inline">\(P(X, Y)\)</span> that governs the covariate/response pairs we see in the world</li>
+<li>There is some joint distribution <span class="math inline">\(\mathbb{P}_{X,Y}\)</span> that governs the covariate/response pairs we see in the world</li>
 <li>Our training data are i.i.d. (independently and identically distributed) <em>random samples</em> from that distribution</li>
 <li>Our test data are also i.i.d. <em>random samples</em> from that distribution.</li>
 </ol></li>
@@ -283,7 +283,7 @@ window.Quarto = {
 <li>How do we codify “sufficiently similar” in a probabilistic way?
 <ul>
 <li>One way is to assume that they come from the same population distribution.</li>
-<li>To “come from the same population distribution” means that, mathematically, we treat them as random samples from <span class="math inline">\(P(Y, X)\)</span>.</li>
+<li>To “come from the same population distribution” means that, mathematically, we treat them as random samples from <span class="math inline">\(\mathbb{P}_{X,Y}\)</span>.</li>
 </ul></li>
 </ul>
 <section id="prediction-versus-inference" class="level3">
@@ -315,14 +315,14 @@ In this class, we will formulate these algorithms from first statistical princip
 <ul>
 <li>Given our dataset <span class="math inline">\(\mathcal{D}\)</span>, we split it into a training set <span class="math inline">\(\mathcal{D}_\mathrm{train}\)</span>, a validation set <span class="math inline">\(\mathcal{D}_\mathrm{val}\)</span>, and a test set <span class="math inline">\(\mathcal{D}_\mathrm{test}\)</span>.</li>
 </ul></li>
-<li><strong>Hypothesis class</strong>: Select a set of candidate <span class="math inline">\(\hat f\)</span> which might make a good prediction rule.
+<li><strong>Define a Predictive Model</strong>: Select a set of candidate <span class="math inline">\(\hat f\)</span> which could possibly predict <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span>.
 <ul>
-<li>For linear regression, the hypothesis class is linear functions of the form <span class="math inline">\(\hat f(x) = x^\top \hat\beta\)</span> for some <span class="math inline">\(\hat \beta\)</span>.</li>
+<li>For linear regression, the predictive model will be a linear function of the form <span class="math inline">\(\hat f(X) = X^\top \hat\beta\)</span> for some <span class="math inline">\(\hat \beta\)</span>.</li>
 </ul></li>
 <li><strong>Training</strong>: Define a training algorithm (a procedure to choose a <span class="math inline">\(\hat \beta\)</span> from the training data) and apply it to <span class="math inline">\(\mathcal{D}_\mathrm{train}\)</span>.
 <ul>
 <li>Most training algorithms involve minimizing a <strong>loss function</strong> over training data.</li>
-<li>For linear models, we often choose <span class="math inline">\(\hat f\)</span> to minimize the <strong>squared error loss</strong> over training data. <span class="math display">\[L(Y, \hat Y) = (Y - \hat Y)^2, \qquad \hat \beta = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, X_i^\top \beta). \]</span></li>
+<li>For linear models, we often choose <span class="math inline">\(\hat f\)</span> to minimize the <strong>squared error loss</strong> over training data. <span class="math display">\[L(Y, \hat f(X)) = (Y - \hat f(X))^2, \qquad \hat f = \mathrm{argmin}_{\hat f} \frac{1}{n} \sum_{i=1}^{n} L(Y_i, \hat f(X_i)). \]</span></li>
 </ul></li>
 <li><strong>Validation</strong>: Test performance on withheld validation data.
 <ul>
@@ -332,7 +332,7 @@ In this class, we will formulate these algorithms from first statistical princip
 <ul>
 <li>We may choose to change our hypothesis class, the set of features, the loss function, or the training algorithm to try to reduce validation error.</li>
 </ul></li>
-<li><strong>Testing</strong> <em>(confusingly referred to by some as “Inference”)</em>: Once satisfied with the model, evaluate on the test set to estimate performance on new data.</li>
+<li><strong>Testing</strong> <em>(confusingly referred to by some in the ML/AI world as “Inference”)</em>: Once satisfied with the model, evaluate on the test set to estimate performance and/or use this model to make predictions on new data.</li>
 </ol>
 </section>
 <section id="statistical-perspective" class="level3">
@@ -349,8 +349,8 @@ In this class, we will formulate these algorithms from first statistical princip
 <tbody>
 <tr class="odd">
 <td>2</td>
+<td>Predictive Model</td>
 <td>Hypothesis Class</td>
-<td>Statistical Model</td>
 </tr>
 <tr class="even">
 <td>3</td>
@@ -359,34 +359,62 @@ In this class, we will formulate these algorithms from first statistical princip
 </tr>
 <tr class="odd">
 <td>6</td>
-<td>Testing (Inference)</td>
+<td>Testing</td>
 <td>Prediction</td>
 </tr>
 </tbody>
 </table>
+<p>Before defining these components, however, we’ll introduce one concept that has no direct counterpart in the CS steps but underpins the statistical perspective: the <strong>statistical model</strong>, which we’ll define after taking a moment to think about our data.</p>
 </section>
 </section>
 <section id="statistical-models" class="level2">
 <h2 class="anchored" data-anchor-id="statistical-models">Statistical Models</h2>
-<p>A <strong>statistical model</strong> defines the possible relationships between the covariates <span class="math inline">\(X\)</span> and the response variable <span class="math inline">\(Y\)</span>.</p>
+<p>When thinking about learning from a statistical lens, before we even begin thinking about a <em>predictive model</em>, it is often best to define our <strong>statistical model</strong>, which is our best guess over the possible relationships between the covariates <span class="math inline">\(X\)</span> and the response variable <span class="math inline">\(Y\)</span></p>
 <ul>
-<li>Formally, it is a <em>set of probability distributions</em> that could possibly generate the data we observe.</li>
-<li>For the learning problem, where we care about predicting <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>, we will consider statistical models that are <strong>sets of conditional distributions</strong> <span class="math inline">\(P(Y \mid X)\)</span>.</li>
+<li><strong>Formally</strong>, it is a <em>set of conditional distributions over <span class="math inline">\(Y \mid X\)</span></em> that could possibly generate the data we observe. (We’ll go through this idea in detail in a sec.)</li>
+<li><strong>Informally</strong>, it tells us how the response <span class="math inline">\(Y\)</span> is composed of <em>deterministic signal</em> from <span class="math inline">\(X\)</span> and <em>unexplainable random noise</em>.</li>
 </ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Why Conditional Distributions over $Y \mid X$, and Not Joint Distributions over $X, Y$?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why Conditional Distributions over <span class="math inline">\(Y \mid X\)</span>, and Not Joint Distributions over <span class="math inline">\(X, Y\)</span>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Because our goal is to predict <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span>, we often don’t care about where <span class="math inline">\(X\)</span> comes from. We can often assume that <span class="math inline">\(X\)</span> is just “given” to us (i.e.&nbsp;we condition on it).</p>
+</div>
+</div>
+</div>
+<p>It’s best to illustrate this concept through an example:</p>
 <section id="the-linear-regression-model" class="level3">
 <h3 class="anchored" data-anchor-id="the-linear-regression-model">The Linear Regression Model</h3>
+<p>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta \]</span></p>
 <ul>
-<li><p>From STAT 306, you may recall that we typically assume that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> can be described as: <span class="math display">\[Y = X^\top \beta + \varepsilon\]</span></p>
-<ul>
-<li><span class="math inline">\(\beta\)</span> is the vector of parameters that we are trying to estimate.</li>
+<li><span class="math inline">\(\beta\)</span> is some (unknown) vector.</li>
 <li><span class="math inline">\(\varepsilon\)</span> is the random error term, which is typically i.i.d. <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma^2 &gt; 0\)</span>.</li>
-<li>(You may notice that we don’t have an intercept term <span class="math inline">\(\beta_0\)</span> in this model. We assume that <span class="math inline">\(X\)</span> has an “all-ones” covariate, i.e.&nbsp;<span class="math inline">\(X = [1, X_1, X_2, \ldots, X_p]\)</span>, so that the intercept term <span class="math inline">\(\beta_0\)</span> is included with the other <span class="math inline">\(\beta\)</span> terms, i.e.&nbsp;<span class="math inline">\(X^\top \beta = \beta_0 + X_1^\top \beta_1 + \ldots + X_p^\top \beta_p\)</span>.)</li>
-</ul></li>
-<li><p>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</p></li>
+<li>(You may notice that we don’t have an intercept term <span class="math inline">\(\beta_0\)</span> in this model. In this course, it’s often convenient to assume that <span class="math inline">\(X\)</span> has an “all-ones” covariate, i.e.&nbsp;<span class="math inline">\(X = [1, X_1, X_2, \ldots, X_p]\)</span>, so that the intercept term <span class="math inline">\(\beta_0\)</span> is included with the other <span class="math inline">\(\beta\)</span> terms, i.e.&nbsp;<span class="math inline">\(X^\top \beta = \beta_0 + X_1 \beta_1 + \ldots + X_p \beta_p\)</span>.)</li>
 </ul>
-<p><span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \: = \: \mathcal{N}(x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.\]</span></p>
+<p>This relationship (<span class="math inline">\(Y = f(X) + \varepsilon\)</span>, <span class="math inline">\(f(X) = X^\top \beta\)</span>) is a statistical model, and it is the one we will encounter most in the first part of this course. Let’s see how it matches our informal and formal definitions.</p>
+<section id="informal-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="informal-analysis">Informal Analysis</h4>
+<p>The linear statistical model assumes that <span class="math inline">\(Y\)</span> can be explained through a combination of <em>deterministic signal</em> from <span class="math inline">\(X\)</span> and <em>unexplainable random noise</em>.</p>
 <ul>
-<li>We refer to <span class="math inline">\(\beta\)</span> as the <strong>parameters</strong> of the model, as a given value of <span class="math inline">\(\beta\)</span> specifies a particular distribution within the set.</li>
+<li><strong>Signal</strong> – <span class="math inline">\(f(X)\)</span>: A portion of <span class="math inline">\(Y\)</span> comes from <span class="math inline">\(f(X) = X^\top \beta\)</span>, which is a deterministic transform of <span class="math inline">\(X\)</span>.</li>
+<li><strong>Noise</strong> – <span class="math inline">\(\varepsilon\)</span>: The other portion of <span class="math inline">\(Y\)</span> comes from <span class="math inline">\(\varepsilon\)</span>, which is random and independent of <span class="math inline">\(X\)</span>. Thus, knowing <span class="math inline">\(X\)</span> (and <span class="math inline">\(f(X)\)</span>) is insufficient to perfectly predict <span class="math inline">\(Y\)</span>.</li>
+</ul>
+</section>
+<section id="formal-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="formal-analysis">Formal Analysis</h4>
+<p>Let’s show how this linear statistical model is equivalent to a set of conditional distributions:</p>
+<ul>
+<li><p>For any given <span class="math inline">\(\beta\)</span>, if we are given <span class="math inline">\(X = x\)</span>, then we have that <span class="math inline">\(Y \sim \mathcal{N}(x^\top\beta, \sigma^2)\)</span>. Thus, the corresponding statistical model/set of possible conditional distributions is:</p>
+<p><span class="math display">\[\left\{ \mathbb{P}_{Y \mid X} \: : \: p_{Y \mid X}(y \mid x) \: = \: \mathcal{N}(y; \, x^\top\beta, \sigma^2), \:\: \beta \in \mathbb R^p \right\}.\]</span></p></li>
+<li><p>We refer to <span class="math inline">\(\beta\)</span> as the <strong>parameters</strong> of the model, as a given value of <span class="math inline">\(\beta\)</span> specifies a particular distribution within the set.</p></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Exercise: What is Random?">
 <div class="callout-header d-flex align-content-center">
@@ -408,7 +436,7 @@ Answer
 <li><p><span class="math inline">\(\varepsilon\)</span> is random; note that above we are assuming that <span class="math inline">\(\varepsilon \sim N(0, \sigma^2)\)</span></p>
 <ul>
 <li><span class="math inline">\(X\)</span> is random; again we make the assumption that our data are random samples from a distribution (also it’s noted as a capital letter!)</li>
-<li><span class="math inline">\(\beta\)</span> is fixed! It is the set of parameters that defines the particular distribution in our statistical model that actually relates <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span></li>
+<li><span class="math inline">\(\beta\)</span> is fixed! It defines the particular distribution in our statistical model that actually relates <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span></li>
 <li><span class="math inline">\(Y\)</span> is also random; again by assumption, but also because <span class="math inline">\(Y\)</span> equals some function involving random variables</li>
 </ul>
 <p>Note that if we instead consider <span class="math inline">\(Y \mid X = x\)</span>, then</p>
@@ -418,124 +446,110 @@ Answer
 </div>
 </div>
 </section>
+</section>
 <section id="other-models" class="level3">
 <h3 class="anchored" data-anchor-id="other-models">Other Models</h3>
 <p>This linear regression model is just one statistical model we could use to describe our data. Almost any family of conditional distributions can be used instead. For example:</p>
 <ol type="1">
-<li><p><strong>The more general linear regression model</strong>: we could consider the slightly more general case of conditional distributions defined by an expected value condition: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right.\}\]</span></p>
+<li><p><strong>The more general linear regression model</strong>: rather than assuming the noise component <span class="math inline">\(\varepsilon\)</span> is Gaussian (with some specified variance), we could instead assume any arbitrary (zero-mean) distribution over the noise</p>
+<p><span class="math display">\[ Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta, \qquad \mathbb E[\varepsilon] = 0.\]</span></p>
 <ul>
-<li>Note that <span class="math inline">\(\mathbb E[\mathcal{N}(x^\top\beta, \sigma^2)] = x^\top \beta\)</span>, and so the linear regression model is a <em>subset</em> of this more general model.</li>
-<li>However, this model allows for the possibility of non-normal residuals.</li>
+<li>This statistical model is equivalent to the set of conditional distributions <span class="math display">\[\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb E[Y \mid X = x] \: = \: x^\top\beta, \:\: \beta \in \mathbb R^p \right\}\]</span></li>
+<li>This model allows for the possibility of non-normal residuals.</li>
 </ul></li>
-<li><p><strong>The polynomial regression model</strong>: we could instead consider the slightly more general case where the expectation is a polynomial function of <span class="math inline">\(X\)</span>, rather than just a linear function: <span class="math display">\[\left\{ P \: : \: \mathbb E[Y \mid X = x] \: = \: p(x), \:\: p \text{ is a polynomial of degree } d \right\}\]</span></p>
+<li><p><strong>The more general regression model</strong>: we could instead consider the slightly more general case where the expectation is an arbitrary function of <span class="math inline">\(X\)</span> (not just a linear one):</p>
+<p><span class="math display">\[ Y = f(X) + \varepsilon, \qquad f(X) \text{ is an arbitrary function}, \qquad \mathbb E[\varepsilon] = 0. \]</span></p>
 <ul>
+<li>This statistical model is equivalent to the set of conditional distributions <span class="math display">\[\left\{ \mathbb{P}_{Y \mid X} \: : \: \mathbb E[Y \mid X = x] \: = \: f(x), \:\: f \text{ is an arbitrary function} \right\}\]</span></li>
 <li>Note again that our general linear model is a special case; however this model allows for more complex relationships between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</li>
-<li>This model also has parameters (the coefficients of the polynomial), though they are not explicit in this formulation.</li>
-</ul></li>
-<li><p><strong>All possible distributions</strong>: what if we used the most general set of distributions? <span class="math display">\[\left\{ P \: : \: P(Y \mid X = x) \text{ is any distribution} \right\}\]</span></p>
+<li>In general, this statistical model is too general to analyze properly. We’ll typically add some simplifying restrictions to <span class="math inline">\(f\)</span>, such as:
 <ul>
-<li>While this is a valid set, it turns out that it is too general for the purposes of learning.</li>
-<li>Specifically, the <strong>no free lunch theorem</strong> states that we will not be able to identify a “good” model from this set even if we were given infinite training data!</li>
-<li>(We need to have some “structure” or simplifying assumptions in our model to be able to learn from data.)</li>
+<li><span class="math inline">\(f\)</span> is a polynomial of degree <span class="math inline">\(d\)</span>, or</li>
+<li><span class="math inline">\(f\)</span> is continuous and differentiable everywhere.</li>
+</ul></li>
 </ul></li>
 </ol>
+<p>Now that we have a statistical model, which tells us the general relationship between covariates and response, let’s dive through the learning procedure.</p>
 </section>
 </section>
-<section id="prediction" class="level2">
-<h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
-<p>Going a bit out of order, let’s discuss how we make predictions on new data once we’ve selected a <strong>specific distribution</strong> from our <strong>statistical model</strong> to describe our data.</p>
+<section id="hypothesis-class" class="level2">
+<h2 class="anchored" data-anchor-id="hypothesis-class">Hypothesis Class</h2>
+<p>Recall that our statistical model says that there’s some portion of our response that’s “learnable” from our covariates (<span class="math inline">\(X^\top \beta\)</span> in our linear statistical model example) and some “unlearnable” portion of our response (<span class="math inline">\(\varepsilon\)</span>). Our goal is to learn an approximation <span class="math inline">\(\hat f(X)\)</span> to the learnable portion of our data; i.e.</p>
+<p><span class="math display">\[ \hat f(X) \approx f(X). \]</span></p>
+<p>Before we can go about choosing a specific <span class="math inline">\(\hat f\)</span>, we need to specify the <em>set of functions</em> <span class="math inline">\(\mathcal H\)</span> that we are considering.</p>
 <ul>
-<li><p>Working with the linear statistical model, each distribution is parameterized by some coefficients <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
-<li><p>Once we have chosen some <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the parameters of the distribution that “best” describes our data) we can make predictions on new data points <span class="math inline">\(X_\mathrm{new}\)</span>.</p></li>
-<li><p>For linear models, we often use the prediction rule: <span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top\hat{\beta}\]</span></p>
-<p>But where does that come from?</p></li>
-</ul>
-<p><strong>Decision theory for predictions</strong>: We want a principled reason for using this prediction rule.</p>
+<li><span class="math inline">\(\mathcal H\)</span> is often referred to as the <strong>hypothesis class</strong> of our predictive model.</li>
+<li>Often, it’s good to match the functional form of our statistical model.
 <ul>
-<li><p>First, we need a way of judging the quality of <em>any single prediction.</em></p></li>
-<li><p>We define a <strong>loss</strong> function <span class="math inline">\(L(Y, \hat Y)\)</span> that measures how bad our prediction <span class="math inline">\(\hat Y\)</span> matches the true response <span class="math inline">\(Y\)</span></p>
-<ul>
-<li><p>A common loss function for regression is the <strong>squared error</strong> <span class="math inline">\(L(Y, \hat Y) = (Y - \hat Y)^2\)</span>.</p></li>
-<li><p>Note that <span class="math inline">\(L(Y, \hat Y)\)</span> only equals 0 when <span class="math inline">\(Y = \hat Y\)</span>, and is <span class="math inline">\(&gt; 0\)</span> when <span class="math inline">\(Y \ne \hat Y\)</span>.</p></li>
+<li>In our running example, since we assume that <span class="math inline">\(f(X) = X^\top \beta\)</span>, it would make sense for <span class="math inline">\(\hat f(X) = X^\top \hat \beta\)</span> for some <span class="math inline">\(\hat \beta\)</span>.</li>
 </ul></li>
-<li><p><strong>Decision theory</strong>: choose a prediction <span class="math inline">\(\hat{Y}_\mathrm{new}\)</span> that minimizes the expected loss:</p>
-<p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[L(Y, \hat{y}_\mathrm{new}) \mid X_\mathrm{new}, \hat \beta].\]</span></p></li>
-<li><p>Solving this optimization problem for the squared error loss gives us</p>
-<p><span class="math display">\[\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\]</span></p></li>
+<li>However, later in this course we’ll discuss when it’s advantageous for <span class="math inline">\(\hat f\)</span> to look nothing like our statistical model.</li>
 </ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<p>Putting it all together for our running example, it makes sense to define the hypothesis class <span class="math inline">\(\mathcal H\)</span> as the set of all linear functions of <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[ \mathcal H = \left\{ \hat f(\cdot) \: : \: \hat f(X) = X^\top \hat \beta, \qquad \hat \beta \in \mathbb R^p \right\}. \]</span></p>
+</section>
+<section id="estimation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<p>Now that we’ve defined the set of <span class="math inline">\(\hat f\)</span> that we’re considering, how do we go about choosing which <span class="math inline">\(\hat f \in \mathcal H\)</span> is best at approximating <span class="math inline">\(f(X)\)</span>? We use the data!</p>
+<ul>
+<li>The <strong>estimation</strong> step involves us choosing a specific function <span class="math inline">\(\hat f\)</span> from the hypothesis class that best fits our training data.</li>
+<li>Alternatively, since all <span class="math inline">\(\hat f \in \mathcal H\)</span> can be written as <span class="math inline">\(\hat f(X) = X^\top \hat \beta\)</span>, and <span class="math inline">\(f(X) = X^\top \beta\)</span> under our linear statistical model, we could view the estimation step as choosing the best <span class="math inline">\(\hat \beta\)</span> parameters to estimate the true parameters <span class="math inline">\(\beta\)</span>:</li>
+</ul>
+<p><span class="math display">\[ \hat f(X) \approx f(X) \quad \Leftrightarrow \quad
+X^\top \hat\beta \approx X^\top \beta \quad \Leftrightarrow \quad
+\hat\beta \approx \beta. \]</span></p>
+<p><strong>Defining “Goodness” Through Loss Functions:</strong></p>
+<ul>
+<li><p>In order to choose the “best” <span class="math inline">\(\hat f \in \mathcal H\)</span>, we need to define what “best” means.</p></li>
+<li><p>We do so by defining a <strong>loss function</strong> <span class="math inline">\(L(Y, \hat f(X))\)</span>, which quantifies how poorly <span class="math inline">\(\hat f\)</span> is doing <em>at a per-prediction level</em>.</p></li>
+<li><p>The most common loss for regression (and the one we’ll see most throughout this course) is the squared error loss:</p>
+<p><span class="math display">\[ L(Y, \hat f(X)) = \left( Y - \hat f(X) \right)^2. \]</span></p>
+<p>We’ll discuss classification losses in the next lecture.</p></li>
+</ul>
+<p><strong>Our Goal – Minimizing Expected Loss:</strong></p>
+<ul>
+<li><p>Once we have defined a loss function, the best possible <span class="math inline">\(\hat f\)</span> is the one that minimizes the expected loss over <strong>all possible <span class="math inline">\((X, Y)\)</span> pairs</strong> drawn from <span class="math inline">\(\mathbb P_{X,Y}\)</span>:</p>
+<p><span class="math display">\[ f_\mathrm{best} = \mathrm{argmin}_{\hat f \in \mathcal H} \mathbb E[ L \left(Y, \hat f(X) \right)]. \]</span></p></li>
+<li><p>Unfortunately, computing <span class="math inline">\(f_\mathrm{best}(X)\)</span> would require exactly knowing <span class="math inline">\(\mathbb P_{X,Y}\)</span> (or equivalently, having an infinite amount of data from this distribution). We only have access to <span class="math inline">\(n\)</span> training pairs.</p></li>
+<li><p>We therefore have to use procedures that approximate <span class="math inline">\(f_\mathrm{best}(X)\)</span> from finite data.</p></li>
+<li><p>There are many statistically rational estimation procedures. The most basic procedure is referred to as <strong>Empirical Risk Minimization (ERM)</strong>. (We’ll talk about others throughout this course.)</p></li>
+</ul>
+<p><strong>The OLS/ERM Procedure:</strong></p>
+<ul>
+<li><p>If we have “enough” training data<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> from <span class="math inline">\(\mathbb P_{X,Y}\)</span>, then – by the law of large numbers<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> – we can assume that:</p>
+<p><span class="math display">\[ \mathbb E[ L \left(Y, \hat f(X) \right)] \approx \underbrace{\frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i))}_{=: \hat R_{\hat f}} \qquad \forall \hat f \in \mathcal H. \]</span></p></li>
+</ul>
+<ul>
+<li><p>We refer to <span class="math inline">\(\hat R_{\hat f}\)</span> as the <strong>empirical risk</strong> associated with <span class="math inline">\(\hat f\)</span>. It is the average loss on the training data.</p></li>
+<li><p><strong>Empirical risk minimization</strong> thus aims to approximate <span class="math inline">\(\hat f_\mathrm{best}(X)\)</span> by choosing the <span class="math inline">\(\hat f\)</span> with the lowest empirical risk (average training data loss).</p>
+<p><span class="math display">\[\hat{f}_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \hat R_{\hat f} = \mathrm{argmin}_{\hat f \in \mathcal H} \frac{1}{n}\sum_{i=1}^n L \left(Y_i, \hat f(X_i)\right).\]</span></p></li>
+</ul>
+<p><strong>Applying ERM to our Linear Hypothesis Class/Squared Loss</strong></p>
+<ul>
+<li><p>Going back to our running example (linear hypothesis class, squared loss), and recalling that <span class="math inline">\(\hat f\)</span> is specified through <span class="math inline">\(\hat \beta\)</span>, we have that</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\hat \beta} \frac{1}{n}\sum_{i=1}^n \left(Y_i - X_i^\top \hat \beta\right)^2. \]</span></p></li>
+<li><p>Taking the derivative and setting to zero:</p>
+<p><span class="math display">\[\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\hat\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\hat\beta) = 0\]</span></p></li>
+<li><p>By arranging all of our training data into a matrix <span class="math inline">\(\boldsymbol X \in \mathbb{R}^{n \times p}\)</span> and a vector <span class="math inline">\(\boldsymbol Y \in \mathbb{R}^n\)</span>, with</p>
+<p><span class="math display">\[\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},\]</span></p>
+<p>we get:</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
+<li><p>You should recognize <span class="math inline">\(\hat{\beta}_\mathrm{ERM}\)</span> as the ordinary least squares (OLS) estimator for linear models from STAT 306!</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="(Optional) Relation to Maximum Likelihood">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
+<span class="screen-reader-only">Note</span>(Optional) Relation to Maximum Likelihood
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<ul>
-<li><p>According to the distribution parameterized by <span class="math inline">\(\hat \beta\)</span>, we have</p>
-<p><span class="math display">\[P(Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta) = \mathcal{N}(X_\mathrm{new}^\top\hat{\beta}, \sigma^2).\]</span></p></li>
-<li><p>Plugging in the squared error loss function into this formula, we get:</p>
-<p><span class="math display">\[\begin{align*}
-  \hat{Y}_\mathrm{new} &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \mathbb E[(Y_\mathrm{new}- \hat{y}_\mathrm{new})^2 \mid X_\mathrm{new}, \hat \beta] \\
-  &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left( \underbrace{\mathbb E[Y_\mathrm{new}^2\mid X_\mathrm{new}, \hat \beta]}_{
-    \underbrace{\mathrm{Var}[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta]}_{\sigma^2} +
-    \underbrace{(\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat \beta])^2}_{(X_\mathrm{new}^\top \hat{\beta})^2}
-  } - 2\hat{y}_\mathrm{new} \underbrace{\mathbb E[Y_\mathrm{new} \mid X_\mathrm{new}, \hat\beta]}_{X_\mathrm{new}^\top \hat{\beta}}
-  + \hat{y}_\mathrm{new}^2 \right) \\
-  &amp;= \mathrm{argmin}_{\hat{y}_\mathrm{new}} \left(
-    \underbrace{\sigma^2}_\mathrm{const.} + \underbrace{
-      (X_\mathrm{new}^\top \hat{\beta})^2- 2\hat{y}_\mathrm{new} (X_\mathrm{new}^\top \hat{\beta}) + \hat{y}_\mathrm{new}^2
-    }_{(\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2}
-  \right)
-\end{align*}\]</span></p></li>
-<li><p>We can drop the <span class="math inline">\(\sigma^2\)</span> constant, since it doesn’t affect the minimum, and we are left with:</p>
-<p><span class="math display">\[\hat{Y}_\mathrm{new} = \mathrm{argmin}_{\hat{y}_\mathrm{new}} (\hat{y}_\mathrm{new} - X_\mathrm{new}^\top \hat{\beta})^2,\]</span></p>
-<p>which, after taking the derivative and setting to zero, gives us: <span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span>.</p></li>
-</ul>
-</div>
-</div>
-</div>
-<p><strong>Important!</strong> If we had chosen a different loss function, we could end up with a different prediction rule.</p>
-</section>
-<section id="estimation" class="level2">
-<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
-<p>We’ve talked about making predictions from a distribution selected by our statistical model. But how did we choose that distribution? (Or alternatively, how did we choose <span class="math inline">\(\hat\beta\)</span>?)</p>
-<ul>
-<li>The <strong>estimation</strong> step involves us choosing a specific distribution from the model (or alternatively, the parameters <span class="math inline">\(\hat \beta\)</span> defining the distribution) that best fits our training data.</li>
-<li>There are many statistically valid estimation procedures. We’ll derive two that you’ve likely seen before: <strong>Maximum Likelihood Estimation (MLE)</strong> and <strong>Empirical Risk Minimization (ERM)</strong>. (We’ll talk about others throughout this course.)</li>
-</ul>
-<p>We will work through these two procedures using the linear regression model as our statistical model.</p>
-<section id="empirical-risk-minimization-erm" class="level3">
-<h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">1. Empirical Risk Minimization (ERM)</h3>
-<p><strong>Goal</strong>: Find the parameters that minimize the loss on our training data.</p>
-<ul>
-<li>From STAT 306, you may remember a procedure known as <strong>Ordinary Least Squares (OLS)</strong> to estimate the parameters of a linear regression model.</li>
-<li>This procedure is a special case of a more general procedure <strong>Empirical Risk Minimization (ERM)</strong> for reasons that we will see in a few lectures.</li>
-</ul>
-<p><strong>The OLS/ERM Procedure:</strong></p>
-<p>The goal of ERM is to choose the distribution (i.e.&nbsp;set of parameters) that minimizes the loss over predictions on our training data.</p>
-<ul>
-<li><p>Given a set of parameters <span class="math inline">\(\hat \beta\)</span>, let <span class="math inline">\(\hat Y_i\)</span> be the predictions that we make on the training data using the prediction rule derived from the loss <span class="math inline">\(L(Y, \hat Y)\)</span>.</p></li>
-<li><p>The <strong>empirical risk</strong> is defined as the total loss over our training data:</p>
-<p><span class="math display">\[\hat{R}(\hat \beta) =\frac{1}{n}\sum_{i=1}^n L(Y_i, \hat Y_i)\]</span></p>
-<p>where we (typically) use the same loss that governs our prediction rule. Using the squared loss, <span class="math inline">\(\hat{R}(\hat\beta) = \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top \hat\beta)^2\)</span></p></li>
-<li><p>The <strong>ERM estimator</strong> is the set of parameters <span class="math inline">\(\hat{\beta}\)</span> (i.e.&nbsp;the distribution from our model) that minimizes this empirical risk:</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = \arg\min_{\beta} \hat{R}(\beta) = \arg\min_{\beta} \frac{1}{n}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2\]</span></p></li>
-<li><p>Taking the derivative and setting to zero:</p>
-<p><span class="math display">\[\frac{\partial}{\partial \beta}\sum_{i=1}^n (Y_i - X_i^\top\beta)^2 = -2\sum_{i=1}^n X_i(Y_i - X_i^\top\beta) = 0\]</span></p></li>
-<li><p>By arranging all of our training data into a matrix <span class="math inline">\(\boldsymbol X \in \mathbb{R}^{n \times p}\)</span> and a vector <span class="math inline">\(\boldsymbol Y \in \mathbb{R}^n\)</span>, with</p>
-<p><span class="math display">\[\boldsymbol X = \begin{bmatrix} -X_1^\top- \\ -X_2^\top- \\ \vdots \\ -X_n^\top- \end{bmatrix} \in \mathbb{R}^{n \times p}, \qquad \boldsymbol Y = \begin{bmatrix} Y_1 \\ Y_2 \\ \vdots \\ Y_n \end{bmatrix},\]</span></p>
-<p>we get:</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
-</ul>
-</section>
-<section id="maximum-likelihood-estimation-mle" class="level3">
-<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">2. Maximum Likelihood Estimation (MLE)</h3>
-<p><strong>Goal</strong>: Find the parameters that maximize the likelihood of observing our data.</p>
+<p>From STAT 306, you may have learned that we want to choose <span class="math inline">\(\hat \beta\)</span> through the principle of maximum likelihood estimation. It turns out that, in the case of our linear statistical model, it yields the same <span class="math inline">\(\hat \beta\)</span> as ERM!</p>
+<p><strong>Goal of maximum likelihood estimation:</strong> Find the parameters that maximize the likelihood of observing our data.</p>
 <ul>
 <li>The <strong>likelihood function</strong> maps a distribution from our model (parameterized by <span class="math inline">\(\beta\)</span>) to the probability density of our observed training data.</li>
 </ul>
@@ -557,33 +571,50 @@ Answer
 </summary>
 <p>The <span class="math inline">\(-\frac{n}{2}\log(2\pi\sigma^2)\)</span> constant and the <span class="math inline">\(\frac{1}{2\sigma^2}\)</span> scaling term also don’t affect the maximum, so we can ignore them.</p>
 </details></li>
-<li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
+<li><p>This is exactly the same optimization problem we derived for ERM! Thus, <span class="math display">\[ \hat{\beta}_\mathrm{MLE} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y = \hat{\beta}_\mathrm{ERM} = \hat{\beta}_\mathrm{OLS} \]</span></p></li>
 </ul>
-<p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results!</p>
-<ul>
-<li>If we had used a different loss function (e.g.&nbsp;<span class="math inline">\(L(Y_i, \hat{Y_i}) = |Y_i - \hat{Y_i}|\)</span>), the ERM estimator would not be the same as the OLS/MLE estimator.</li>
-<li>There are many possible loss functions with different properties, and we will explore them in future lectures.</li>
-</ul>
+<p><strong>Key Insight</strong>: For linear regression with normal errors, MLE and OLS/ERM give identical results! However, if we had used a different loss function (e.g.&nbsp;<span class="math inline">\(L(Y_i, \hat f(X_i)) = |Y_i - \hat f(X_i)|\)</span>), the ERM estimator would not be the same as the OLS/MLE estimator.</p>
+</div>
+</div>
+</div>
 </section>
+<section id="prediction" class="level2">
+<h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
+<p>Now that we have fit an estimator <span class="math inline">\(\hat f(X) = X^\top \hat\beta_\mathrm{ERM} \approx X^\top \beta\)</span>, we can use this function to make predictions about the responses for new data.</p>
+<ul>
+<li>Given a new set of covariates <span class="math inline">\(X_\mathrm{new}\)</span> we can make the following prediction about its associated response:</li>
+</ul>
+<p><span class="math display">\[ \hat Y_\mathrm{new} = \hat f(X_\mathrm{new}) = X^\top_\mathrm{new} \hat\beta_\mathrm{ERM} \approx Y_\mathrm{new}. \]</span></p>
+<ul>
+<li>Depending on the learning problem (i.e.&nbsp;our choice of statistical model, hypothesis class, and loss function) we may end up with different prediction rules. We’ll discuss how to derive prediction rules in the next lecture.</li>
+</ul>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <p>This lecture introduced the statistical framework for learning:</p>
 <ol type="1">
 <li><strong>Statistical models</strong> define the probabilistic structure of our data</li>
-<li><strong>Estimation</strong> finds the best parameters using MLE or ERM</li>
+<li><strong>Hypothesis classes</strong> define the functions of covariates <span class="math inline">\(X\)</span> that we consider to approximate the “signal”/“learnable” portion of our response <span class="math inline">\(Y\)</span></li>
+<li><strong>Estimation</strong> finds the best parameters using ERM</li>
 <li><strong>Prediction</strong> uses fitted models to make predictions on new data</li>
 </ol>
 <ul>
 <li>This framework will extend to more complex models and methods throughout the course.</li>
-<li>Linear regression serves as our foundational example, where MLE and ERM produce identical estimators under normal error assumptions.</li>
+<li>Linear regression serves as our foundational example, where the ERM produces the OLS estimator from STAT 306.</li>
 <li>In the next lecture, we will apply this statistical framework to <em>classification problems</em>.</li>
 </ul>
 
 
 </section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Though it’s hard to exactly quantify how much data is “enough,” we will add more rigour to this condition later in this course.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Technically, we need a stronger version of law of large numbers than what you learned in STAT 302. Take CPSC 532D if you’re interested!<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

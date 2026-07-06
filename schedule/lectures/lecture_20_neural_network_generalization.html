@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 20: Neural Network Generalization – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -213,7 +215,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -473,7 +475,7 @@ Warning
 <h2 class="anchored" data-anchor-id="regularization-in-the-overparameterized-regime">Regularization in the Overparameterized Regime</h2>
 <p>Now that we understand why neural networks generalize well despite having many parameters, we can revisit other variance reduction techniques that we’ve previously studied to determine whether or not they are necessary.</p>
 <p>The most general strategy we’ve studied for variance reduction is <strong>regularization</strong>, i.e.&nbsp;adding a complexity penalty to our optimization objective (think ridge regression, lasso, etc.).</p>
-<p><span class="math display">\[ \mathrm{argmin}_{\boldsymbol W^{(1)}, \ldots, \boldsymbol W^{(L)}, \boldsymbol \beta} \sum_{i=1}^n \ell(y_i, \hat f_\mathrm{NN}(\boldsymbol x_i)) \: + \: \text{complexity penalty} \]</span></p>
+<p><span class="math display">\[ \mathrm{argmin}_{\boldsymbol W^{(1)}, \ldots, \boldsymbol W^{(L)}, \boldsymbol \beta} \sum_{i=1}^n L(y_i, \hat f_\mathrm{NN}(\boldsymbol x_i)) \: + \: \text{complexity penalty} \]</span></p>
 <p>The most common form of regularization for neural networks is <strong>weight decay</strong> (also called <strong>L2 regularization</strong>):</p>
 <p><span class="math display">\[ \text{complexity penalty} = \frac{\lambda}{2} \left( \Vert \boldsymbol \beta \Vert_2^2 + \sum_{\ell=1}^L \Vert \mathrm{vec} (\boldsymbol W^{(\ell)}) \Vert_2^2 \right), \]</span></p>
 <p>where <span class="math inline">\(\lambda \geq 0\)</span> is a tuning parameter that controls the strength of the regularization, and <span class="math inline">\(\mathrm{vec}(\boldsymbol W^{(\ell)})\)</span> denotes the vectorization of the weight matrix <span class="math inline">\(\boldsymbol W^{(\ell)}\)</span>. (This penalty is exactly the same as the ridge regression penalty, but now it’s applied to all weight matrices in the neural network.)</p>

@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 6: Ridge Regression – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -246,7 +248,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -281,15 +283,17 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="motivation-risk-analysis-of-ordinary-least-squares">Motivation: Risk Analysis of Ordinary Least Squares</h2>
 <ul>
 <li><p>Consider the OLS estimator for linear regression:</p>
-<p><span class="math display">\[ \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^T \boldsymbol Y. \]</span></p>
+<p><span class="math display">\[ \hat f_\mathrm{OLS}(X) = X^\top \hat{\beta}_\mathrm{OLS}, \qquad \hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y. \]</span></p>
 <p>where <span class="math inline">\(\boldsymbol X \in \mathbb R^{n \times p}\)</span> is the design matrix (with rows <span class="math inline">\(x_i^\top\)</span>) and <span class="math inline">\(\boldsymbol Y \in \mathbb R^n\)</span> is the vector of training responses.</p></li>
-<li><p>Now let’s assume that our data i.i.d. generated according to the linear model <span class="math display">\[ Y = X^\top \beta + \epsilon, \qquad \epsilon \sim \mathcal N(0, \sigma^2), \]</span></p>
+<li><p>Recall from Lecture 2 that this OLS estimator <em>is</em> the empirical risk minimizer for the linear hypothesis class under squared loss: the learned predictor <span class="math inline">\(\hat f_\mathrm{OLS}\)</span> is exactly <span class="math inline">\(\hat f_\mathrm{ERM} = \mathrm{argmin}_{\hat f \in \mathcal H} \; \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i))\)</span>, so <span class="math inline">\(\hat\beta_\mathrm{OLS} = \hat\beta_\mathrm{ERM}\)</span>.</p></li>
+<li><p>Keep this in mind: by the end of this lecture we will have constructed our first estimator that is <em>not</em> the ERM solution.</p></li>
+<li><p>Now let’s assume that our data are i.i.d. generated according to the linear statistical model <span class="math display">\[ Y = f(X) + \varepsilon, \qquad f(X) = X^\top \beta, \qquad \varepsilon \sim \mathcal N(0, \sigma^2), \]</span></p>
 <p>for some true parameter vector <span class="math inline">\(\beta \in \mathbb R^p\)</span>.</p></li>
 <li><p>By this model (and again assuming that our data are i.i.d.), we can write the following model for our training data in <em>matrix form</em>:</p></li>
 </ul>
-<p><span class="math display">\[ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \epsilon, \qquad \boldsymbol \epsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). \]</span></p>
+<p><span class="math display">\[ \boldsymbol Y = \boldsymbol X \beta + \boldsymbol \varepsilon, \qquad \boldsymbol \varepsilon \sim \mathcal N(\boldsymbol 0, \sigma^2 I). \]</span></p>
 <ul>
-<li>Let’s now analyze the bias and variance of the OLS estimator <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span> under this model!</li>
+<li>Let’s now analyze the bias and variance of the OLS estimator <span class="math inline">\(\hat f_\mathrm{OLS}\)</span> (through its coefficients <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span>) under this model!</li>
 </ul>
 <section id="bias-of-ols" class="level3">
 <h3 class="anchored" data-anchor-id="bias-of-ols">Bias of OLS</h3>
@@ -328,8 +332,8 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>We have shown that the bias associated with OLS is zero <em>under the assumption that the linear model is correct</em>.</p>
-<p>In practice, it’s very unlikely that the linear model is exactly correct (i.e.&nbsp;the true value of <span class="math inline">\(Y\)</span> may depend on covariates we don’t have access to, interaction terms, etc.). In that case (i.e.&nbsp;when the linear model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.</p>
+<p>We have shown that the bias associated with OLS is zero <em>under the assumption that the linear statistical model is correct</em>.</p>
+<p>In practice, it’s very unlikely that the linear statistical model is exactly correct (i.e.&nbsp;the true value of <span class="math inline">\(Y\)</span> may depend on covariates we don’t have access to, interaction terms, etc.). In that case (i.e.&nbsp;when the linear statistical model is too simple of an approximation for the ground-truth data-generating process), the bias of OLS is non-zero.</p>
 </div>
 </div>
 </section>
@@ -367,34 +371,18 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="when-is-variance-large-an-svd-analysis">When is Variance Large? (An SVD Analysis)</h3>
 <ul>
 <li><p>To understand when the variance of OLS becomes problematic, we can use the <strong>singular value decomposition</strong> (SVD) of <span class="math inline">\(\boldsymbol X\)</span>.</p></li>
-<li><p>Recall that any rectangular <span class="math inline">\(n \times p\)</span> matrix <span class="math inline">\(\boldsymbol X\)</span> has an SVD <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span></p></li>
-</ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="SVD Review">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>SVD Review
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<ul>
-<li><p><span class="math inline">\(\boldsymbol U\)</span> is <span class="math inline">\(n \times p\)</span> with orthonormal columns: <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol I\)</span></p></li>
-<li><p><span class="math inline">\(\boldsymbol V\)</span> is <span class="math inline">\(p \times p\)</span> and orthonormal (rows and columns): <span class="math inline">\(\boldsymbol V^\top \boldsymbol V = \boldsymbol V \boldsymbol V^\top = \boldsymbol I\)</span></p></li>
-<li><p><span class="math inline">\(\boldsymbol D\)</span> is <span class="math inline">\(p \times p\)</span>, diagonal, and nonnegative (contains the singular values)</p></li>
+<li><p>Recall the (thin) SVD from Lecture 1: assuming <span class="math inline">\(n &gt; p\)</span>, the <span class="math inline">\(n \times p\)</span> matrix <span class="math inline">\(\boldsymbol X\)</span> factors as <span class="math inline">\(\boldsymbol X = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>, where <span class="math inline">\(\boldsymbol U \in \mathbb R^{n \times p}\)</span> has orthonormal columns, <span class="math inline">\(\boldsymbol V \in \mathbb R^{p \times p}\)</span> is orthonormal, and <span class="math inline">\(\boldsymbol D \in \mathbb R^{p \times p}\)</span> is diagonal with nonnegative singular values <span class="math inline">\(d_1, \ldots, d_p\)</span> on its diagonal.</p></li>
 <li><p>Using the SVD, we can rewrite the covariance of OLS as:</p></li>
 </ul>
 <p><span class="math display">\[\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 (\boldsymbol X^\top \boldsymbol X)^{-1} = \sigma^2 (\boldsymbol V \boldsymbol D^2 \boldsymbol V^\top)^{-1} = \sigma^2 \boldsymbol V (\boldsymbol D^2)^{-1} \boldsymbol V^\top\]</span></p>
-</div>
-</div>
-</div>
 <ul>
 <li><p>This means that <span class="math inline">\(\text{Cov}(\hat{\beta}_\mathrm{OLS}) = \sigma^2 \boldsymbol V \text{diag}(d_1^{-2}, d_2^{-2}, \ldots, d_p^{-2}) \boldsymbol V^\top\)</span>, where <span class="math inline">\(d_1, d_2, \ldots, d_p\)</span> are the singular values.</p></li>
 <li><p><strong>Key insight</strong>: When <span class="math inline">\(\boldsymbol X\)</span> has small singular values (i.e., when <span class="math inline">\(d_j \approx 0\)</span> for some <span class="math inline">\(j\)</span>), then <span class="math inline">\(d_j^{-2}\)</span> becomes very large, leading to high variance in <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span>.</p></li>
-<li><p>This situation arises when <span class="math inline">\(\boldsymbol X\)</span> is <strong>ill-conditioned</strong> or <strong>nearly rank-deficient</strong>, which happens when we have <strong>multicollinearity</strong>: a linear combination of predictor variables is nearly equal to another predictor variable.</p></li>
+<li><p>This situation arises when <span class="math inline">\(\boldsymbol X\)</span> is <strong>ill-conditioned</strong> or <strong>nearly rank-deficient</strong>, which happens when we have <strong>multicollinearity</strong>: a linear combination of predictor variables is nearly equal to another predictor variable.</p>
+<ul>
+<li>Recall the intuition from Lecture 1: the singular values measure the <strong>effective dimensionality</strong> of <span class="math inline">\(\boldsymbol X\)</span>. A near-zero singular value <span class="math inline">\(d_j \approx 0\)</span> means that <span class="math inline">\(\boldsymbol X\)</span> collapses the <span class="math inline">\(p\)</span>-dimensional predictor space onto a lower-dimensional subspace — the columns of <span class="math inline">\(\boldsymbol X\)</span> effectively span fewer than <span class="math inline">\(p\)</span> directions.</li>
+<li>So even though we are estimating <span class="math inline">\(p\)</span> coefficients, the data only constrains them along the few directions with <span class="math inline">\(d_j\)</span> appreciably above zero. In effect, we have <strong>more parameters to fit than effective dimensions to pin them down</strong>, which is exactly why the variance <span class="math inline">\(d_j^{-2}\)</span> blows up.</li>
+</ul></li>
 <li><p>In such cases, <span class="math inline">\(\hat{\beta}_\mathrm{OLS}\)</span> has large, unstable values with high variance.</p></li>
 </ul>
 </section>
@@ -456,12 +444,26 @@ window.Quarto = {
 <ul>
 <li><p>An equivalent way to write the constrained optimization problem <span class="math display">\[\hat{\beta}_s = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_2^2 \leq s\]</span> is as a <strong>regularized</strong> (or <strong>penalized</strong>) optimization with regularization weight <span class="math inline">\(\lambda\)</span>: <span class="math display">\[\hat{\beta}_\lambda = \mathrm{argmin}_{\beta} \frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 + \lambda \|\beta\|_2^2\]</span></p></li>
 <li><p>For every <span class="math inline">\(\lambda\)</span> there is a unique <span class="math inline">\(s\)</span> (and vice versa) that makes <span class="math inline">\(\hat{\beta}_s = \hat{\beta}_\lambda\)</span>. We will work with the <span class="math inline">\(\lambda\)</span> formulation.</p></li>
+<li><p>This yields the ridge predictor <span class="math inline">\(\hat f_\mathrm{ridge}(X) = X^\top \hat\beta_\lambda\)</span>, a <strong>different estimator</strong> than <span class="math inline">\(\hat f_\mathrm{OLS}\)</span>/<span class="math inline">\(\hat f_\mathrm{ERM}\)</span> arising from a <strong>different estimation procedure</strong>.</p></li>
 </ul>
+<div class="callout callout-style-default callout-important callout-titled" title="Ridge is not empirical risk minimization">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Ridge is not empirical risk minimization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Unlike OLS, ridge regression does <em>not</em> minimize the empirical risk. For any <span class="math inline">\(\lambda &gt; 0\)</span>, the ridge objective <span class="math inline">\(\frac{1}{n}\|\boldsymbol Y - \boldsymbol X\beta\|_2^2 + \lambda\|\beta\|_2^2\)</span> is the empirical risk <em>plus a penalty term</em>, so its minimizer <span class="math inline">\(\hat\beta_\lambda\)</span> is generally <strong>not</strong> the empirical risk minimizer <span class="math inline">\(\hat\beta_\mathrm{ERM} = \hat\beta_\mathrm{OLS}\)</span>. Indeed, since <span class="math inline">\(\hat f_\mathrm{OLS}\)</span> already achieves the smallest possible empirical risk, we have <span class="math inline">\(\hat R_{\hat f_\mathrm{ridge}} \geq \hat R_{\hat f_\mathrm{OLS}}\)</span> — ridge deliberately accepts higher <em>training</em> error in exchange for lower variance. Ridge is therefore our first example of an estimation procedure that departs from ERM.</p>
+</div>
+</div>
 </section>
 <section id="closed-form" class="level3">
 <h3 class="anchored" data-anchor-id="closed-form">Closed Form</h3>
 <ul>
-<li><p>Ridge regression has a closed-form solution (set the derivative with respect to <span class="math inline">\(\beta\)</span> to zero): <span class="math display">\[\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y\]</span></p></li>
+<li><p>Ridge regression has a closed-form solution (set the derivative with respect to <span class="math inline">\(\beta\)</span> to zero): <span class="math display">\[\hat f_\mathrm{ridge}(X) = X^\top \hat \beta_\lambda, \qquad \hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y\]</span></p></li>
 <li><p>Compare to OLS: <span class="math inline">\(\hat{\beta}_\mathrm{OLS} = (\boldsymbol X^\top \boldsymbol X)^{-1} \boldsymbol X^\top \boldsymbol Y\)</span></p></li>
 <li><p>The <span class="math inline">\(+ \lambda \boldsymbol I\)</span> term <strong>stabilizes</strong> the inversion when <span class="math inline">\(\boldsymbol X^\top \boldsymbol X\)</span> is ill-conditioned, preventing division by near-zero singular values.</p></li>
 </ul>
@@ -594,8 +596,10 @@ window.Quarto = {
 <ul>
 <li><p>We have now introduced our first method to help us navigate the bias-variance tradeoff: ridge regression, which introduces bias to reduce variance.</p></li>
 <li><p><strong>The Problem</strong>: OLS has high variance when <span class="math inline">\(\boldsymbol X\)</span> is ill-conditioned (multicollinearity), which occurs when some singular values are near zero, making <span class="math inline">\((\boldsymbol X^\top \boldsymbol X)^{-1}\)</span> unstable.</p></li>
-<li><p><strong>The Solution</strong>: Ridge regression constrains coefficients via <span class="math inline">\(\|\beta\|_2^2 \leq s\)</span> (or equivalently adds penalty <span class="math inline">\(\lambda \|\beta\|_2^2\)</span>), which shrinks coefficients toward zero and stabilizes the solution with closed form <span class="math inline">\(\hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y\)</span>.</p></li>
+<li><p><strong>The Solution</strong>: Ridge regression constrains coefficients via <span class="math inline">\(\|\beta\|_2^2 \leq s\)</span> (or equivalently adds penalty <span class="math inline">\(\lambda \|\beta\|_2^2\)</span>), which shrinks coefficients toward zero and stabilizes the solution with closed form</p>
+<p><span class="math display">\[\hat f_\mathrm{ridge}(X) = X^\top \hat{\beta}_\lambda, \qquad \hat{\beta}_\lambda = (\boldsymbol X^\top \boldsymbol X + \lambda \boldsymbol I)^{-1} \boldsymbol X^\top \boldsymbol Y.\]</span></p></li>
 <li><p><strong>The Tradeoff</strong>: Ridge introduces bias but significantly reduces variance, and we can use cross-validation to find the optimal <span class="math inline">\(\lambda\)</span> that minimizes prediction risk in the bias-variance tradeoff.</p></li>
+<li><p><strong>A New Kind of Procedure</strong>: Whereas <span class="math inline">\(\hat f_\mathrm{OLS}\)</span> is the empirical risk minimizer <span class="math inline">\(\hat f_\mathrm{ERM}\)</span>, the ridge predictor <span class="math inline">\(\hat f_\mathrm{ridge}\)</span> is <em>not</em> — it minimizes empirical risk <em>plus a penalty</em>. Ridge is thus our first estimation procedure that departs from ERM, a theme we will return to throughout the course.</p></li>
 </ul>
 
 

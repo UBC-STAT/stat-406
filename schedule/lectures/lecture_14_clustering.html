@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 14: Clustering – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -236,7 +238,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -303,12 +305,12 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^p \to \mathbb R^k\)</span></td>
+<td><span class="math inline">\(\hat f(X): \mathbb R^p \to \mathbb R^k\)</span></td>
 <td>Regression</td>
 <td>Dimensionality Reduction</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^p \to \{1, 2, \ldots, k\}\)</span></td>
+<td><span class="math inline">\(\hat f(X): \mathbb R^p \to \{1, 2, \ldots, k\}\)</span></td>
 <td>Classification</td>
 <td>Clustering</td>
 </tr>
@@ -348,7 +350,7 @@ window.Quarto = {
 <ul>
 <li>You’ll notice that the data are not uniformly distributed throughout the 2D space.</li>
 <li>If you squint, it looks like the data belong to three groups, or <strong>clusters</strong>.</li>
-<li>If we apply a clustering algorithm to learn a mapping <span class="math inline">\(\hat f_{\mathcal D}(X): \mathbb R^2 \to \{1, 2, 3\}\)</span>, we might get the following result:</li>
+<li>If we apply a clustering algorithm to learn a mapping <span class="math inline">\(\hat f(X): \mathbb R^2 \to \{1, 2, 3\}\)</span>, we might get the following result:</li>
 </ul>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># data: 140 x 2 matrix with our covariates</span></span>
@@ -386,17 +388,17 @@ window.Quarto = {
 <p>As with (almost) all other learning procedures we’ve discussed, we will formalize this clustering procedure as an optimization problem.</p>
 <ul>
 <li><p>Assume we have fixed <span class="math inline">\(k\)</span>, i.e.&nbsp;the number of clusters we hope to partition our data into. (We’ll discuss how to choose <span class="math inline">\(k\)</span> momentarily.)</p></li>
-<li><p><strong>What we are trying to learn</strong>: <span class="math inline">\(\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, or some function that maps covariates onto clusters.</p></li>
-<li><p>For any given <span class="math inline">\(\hat f_{\mathcal D}(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, let <span class="math inline">\(C_1, \ldots, C_k \subset \mathcal D\)</span> represent the <strong>clusters</strong> induced by this mapping; i.e.</p>
-<p><span class="math display">\[C_j = \{ X_i \in \mathcal D : \hat f_{\mathcal D}(X_i) = j \}\]</span></p>
+<li><p><strong>What we are trying to learn</strong>: <span class="math inline">\(\hat f(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, or some function that maps covariates onto clusters.</p></li>
+<li><p>For any given <span class="math inline">\(\hat f(X) : \mathbb R^p \to \{ 1, \ldots, k \}\)</span>, let <span class="math inline">\(C_1, \ldots, C_k \subset \mathcal D\)</span> represent the <strong>clusters</strong> induced by this mapping; i.e.</p>
+<p><span class="math display">\[C_j = \{ X_i \in \mathcal D : \hat f(X_i) = j \}\]</span></p>
 <p>In other words, <span class="math inline">\(C_j\)</span> is the set of all training covariates assigned to cluster <span class="math inline">\(j\)</span>.</p></li>
 <li><p>The <strong>within-distance variation</strong> of this clustering is defined as:</p>
 <p><span class="math display">\[ W_j := \frac{1}{|C_j|^2} \sum_{i, {i'} \in C_j} \| X_i - X_{i'} \|_2^2 \]</span></p>
 <p>where <span class="math inline">\(|C_j|\)</span> is the number of points in cluster <span class="math inline">\(j\)</span>. It is the <strong>average pairwise-distance</strong> between points in cluster <span class="math inline">\(j\)</span>.</p></li>
 <li><p>We want to minimize the total within-cluster variation, but weight each cluster by its size so larger clusters contribute more.</p></li>
 <li><p>Mathematically, this gives us:</p>
-<p><span class="math display">\[ \mathrm{argmin}_{\hat f_{\mathcal D}(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. \]</span></p>
-<p>The fraction <span class="math inline">\(1/2\)</span> is for mathematical convenience (it does not affect the maximization), as will become clear shortly.</p></li>
+<p><span class="math display">\[ \mathrm{argmin}_{\hat f(X)} \frac{1}{2}  \sum_{j=1}^k \vert C_j \vert W_j = \frac{1}{2} \sum_{j=1}^k \frac{1}{\vert C_j \vert} \sum_{i, i' \in C_j} \Vert X_i - X_{i'} \Vert^2_2. \]</span></p>
+<p>The fraction <span class="math inline">\(1/2\)</span> is for mathematical convenience (it does not affect the minimization), as will become clear shortly.</p></li>
 </ul>
 </section>
 <section id="cluster-centroids-a-crucial-simplification" class="level3">
@@ -427,15 +429,15 @@ Details
 <p>While we could go through this derivation step-by-step, it’s perhaps simpler if we replace the summations with expectations over the empirical distribution of points in cluster <span class="math inline">\(C_j\)</span>.</p>
 <p><span class="math display">\[
 \sum_{i, i' \in C_j} \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2
-= \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[ \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2 \right]
+= \vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[ \| (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \|_2^2 \right]
 \]</span></p>
-<p>We also note that <span class="math inline">\(\mu_j\)</span> is the expectation of <span class="math inline">\(X\)</span> under the empirical distribution <span class="math inline">\(\hat P_{C_j}\)</span>:</p>
+<p>We also note that <span class="math inline">\(\mu_j\)</span> is the expectation of <span class="math inline">\(X\)</span> under the empirical distribution <span class="math inline">\(\hat{\mathbb P}_{C_j}\)</span>:</p>
 <p><span class="math display">\[
 \begin{aligned}
-&amp;\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \Vert_2^2 \right]
+&amp;\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[\Vert (X_i {\color{blue}- \mu_j}) + ({\color{blue}\mu_j -} X_{i'}) \Vert_2^2 \right]
 \\
 =&amp;
-\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat P_{C_j}} \left[\Vert  (X_i - \mathbb E[X]) + (\mathbb E[X] - X_{i'}) \Vert_2^2 \right]
+\vert C_j \vert^2 \mathbb E_{X, X' \sim \hat{\mathbb P}_{C_j}} \left[\Vert  (X_i - \mathbb E[X]) + (\mathbb E[X] - X_{i'}) \Vert_2^2 \right]
 \end{aligned}
 \]</span></p>
 and now this derivation should look exactly like what we did in the bias-variance tradeoff! Follow those steps to see the cross terms disappear!
@@ -473,20 +475,20 @@ and now this derivation should look exactly like what we did in the bias-varianc
 <h4 class="anchored" data-anchor-id="the-idea">The Idea</h4>
 <ul>
 <li><p>We produce a series of clustering assignments</p>
-<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X), f_{\mathcal D}^{(1)}(X), f_{\mathcal D}^{(2)}(X), \ldots f_{\mathcal D}^{(t)}(X), \ldots \]</span></p>
+<p><span class="math display">\[ \hat f^{(0)}(X), \hat f^{(1)}(X), \hat f^{(2)}(X), \ldots \hat f^{(t)}(X), \ldots \]</span></p>
 <p>so that <span class="math inline">\(\sum_{j=1}^k |C_j| W_j\)</span> decreases as <span class="math inline">\(t\)</span> increases.</p></li>
-<li><p><span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span> will essentially be random:</p>
+<li><p><span class="math inline">\(\hat f^{(0)}(X)\)</span> will essentially be random:</p>
 <ol type="1">
 <li>Randomly initialize <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> somewhere in <span class="math inline">\(\mathbb R^p\)</span>.</li>
 <li>Assign each point to the cluster corresponding to the nearest <span class="math inline">\(\mu_j\)</span> value:</li>
 </ol>
-<p><span class="math display">\[ f_{\mathcal D}^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. \]</span></p>
+<p><span class="math display">\[ \hat f^{(0)}(X_i) = \mathrm{argmin}_{j \in \{1, \ldots, k\}} \| X_i - \mu_j \|_2^2. \]</span></p>
 <ol start="3" type="1">
-<li>Update <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> to be the <strong>centroids</strong> of the clusters induced by <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>:</li>
+<li>Update <span class="math inline">\(\mu_1, \ldots, \mu_k\)</span> to be the <strong>centroids</strong> of the clusters induced by <span class="math inline">\(\hat f^{(0)}(X)\)</span>:</li>
 </ol>
 <p><span class="math display">\[ \mu_j = \frac{1}{|C_j|} \sum_{i \in C_j} X_i. \]</span></p></li>
-<li><p>To get <span class="math inline">\(f_{\mathcal D}^{(1)}(X)\)</span> from <span class="math inline">\(f_{\mathcal D}^{(0)}(X)\)</span>, we repeat steps 2 and 3 above.</p></li>
-<li><p>More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e.&nbsp;when the distance that the cluster centroids change is <span class="math inline">\(&lt; \epsilon\)</span> for some pre-defined constant <span class="math inline">\(\epsilon\)</span>. Most implementations will define this constant for you.)</p></li>
+<li><p>To get <span class="math inline">\(\hat f^{(1)}(X)\)</span> from <span class="math inline">\(\hat f^{(0)}(X)\)</span>, we repeat steps 2 and 3 above.</p></li>
+<li><p>More generally, we repeat steps 2 and 3 until the cluster centroids are stable (i.e.&nbsp;when the distance that the cluster centroids change is <span class="math inline">\(&lt; \varepsilon\)</span> for some pre-defined constant <span class="math inline">\(\varepsilon\)</span>. Most implementations will define this constant for you.)</p></li>
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -576,7 +578,7 @@ Available components:
 [6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
 </div>
 </div>
-<p>You can guess what each of these variable names mean ;)</p>
+<p>You can guess what each of these variable names means ;)</p>
 </div>
 </div>
 </div>
@@ -602,9 +604,9 @@ Answer
 </summary>
 <ul>
 <li><p>As we add more clusters, each cluster will have fewer points. Thus, the points in each cluster will be closer together, and the within-cluster variation decreases.</p></li>
-<li><p>As we add more clusters, the between-cluster variation increases! (In my opinion, the intuition for this idea is best understood in reverse. <span class="math inline">\(B\)</span> essentially measures the empirical variance of our <span class="math inline">\(X_i\)</span> if we were to replace each <span class="math inline">\(X_i\)</span> with its cluster centroid <span class="math inline">\(\mu_{f_{\mathcal D}(X_i)}\)</span>. As we decrease the number of clusters, we are replacing many <span class="math inline">\(X_i\)</span> with the same centroid, which reduces the empirical variance of the data.)</p></li>
+<li><p>As we add more clusters, the between-cluster variation increases! (In my opinion, the intuition for this idea is best understood in reverse. <span class="math inline">\(B\)</span> essentially measures the empirical variance of our <span class="math inline">\(X_i\)</span> if we were to replace each <span class="math inline">\(X_i\)</span> with its cluster centroid <span class="math inline">\(\mu_{\hat f(X_i)}\)</span>. As we decrease the number of clusters, we are replacing many <span class="math inline">\(X_i\)</span> with the same centroid, which reduces the empirical variance of the data.)</p></li>
 </ul>
-If you want to understand see this relationship more rigorously, try to describe it via the <a href="https://en.wikipedia.org/wiki/Law_of_total_variance">law ot total variance</a>.
+If you want to understand this relationship more rigorously, try to describe it via the <a href="https://en.wikipedia.org/wiki/Law_of_total_variance">law of total variance</a>.
 </details>
 </div>
 </div>
@@ -662,7 +664,7 @@ If you want to understand see this relationship more rigorously, try to describe
 <ul>
 <li>Clustering is an unsupervised learning method that maps covariates <span class="math inline">\(X \in \mathbb R^p\)</span> to discrete cluster labels <span class="math inline">\(C \in \{1, 2, \ldots, k\}\)</span>.</li>
 <li>K-means clustering is a simple and widely used clustering algorithm that aims to minimize within-cluster variation, as measured by Euclidean distance.</li>
-<li>the centroids to be the mean of the points in each cluster.</li>
+<li>K-means alternates between assigning each point to its nearest centroid and updating the centroids to be the mean of the points in each cluster.</li>
 <li>The number of clusters <span class="math inline">\(k\)</span> can be chosen using heuristic methods like the Calinski-Harabasz index.</li>
 <li>There are many other clustering algorithms and variants that may be more appropriate for different data types (e.g.&nbsp;graph data) and applications (e.g.&nbsp;biological data).</li>
 </ul>

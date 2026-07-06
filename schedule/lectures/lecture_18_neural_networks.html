@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 18: Introduction to Neural Networks and Deep Learning – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -242,7 +244,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -304,9 +306,9 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="mathematical-motivation">Mathematical Motivation</h2>
 <ul>
 <li><p>In the last lecture, we discussed <em>boosted ensembles</em>, which composed simple “weak learners” <span class="math inline">\(h_1, \ldots, h_j\)</span> (e.g.&nbsp;bump functions or small decision trees) into ensembles of the form:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h_j(X), \]</span></p></li>
+<p><span class="math display">\[ \hat f(X) = \sum_{j=1}^M \beta_j \hat h_j(X), \]</span></p></li>
 <li><p>Each weak learner <span class="math inline">\(h_j\)</span> has a set of learnable parameters <span class="math inline">\(\theta_j\)</span> (e.g.&nbsp;split points in trees, location of the “bump”), so we can also write the ensemble like:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
+<p><span class="math display">\[ \hat f(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
 <p>where <span class="math inline">\(\hat h(X; \theta_j)\)</span> is the <span class="math inline">\(j^\mathrm{th}\)</span> weak learner with parameters <span class="math inline">\(\theta_j\)</span>. Crucially, <span class="math inline">\(\hat h(X; \theta_j)\)</span> applies some simple non-linear transformation to the input <span class="math inline">\(X\)</span> to weakly predict the residual response, and the ensemble sums up these non-linear transformations to produce a final prediction.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="Where have we seen this before?">
@@ -328,7 +330,7 @@ What was it?
 <p>Let <span class="math inline">\(\hat h(X; \theta_j)\)</span> represent a polynomial basis function, where <span class="math inline">\(\theta_j\)</span> represents the degree of the polynomial, i.e.</p>
 <p><span class="math display">\[ \hat h(X; \theta_j) = X^{\theta_j}. \]</span></p>
 <p>We can also think of <span class="math inline">\(\hat h(X; \theta_j)\)</span> as a “weak learner” of sorts, and we combine <span class="math inline">\(m\)</span> such weak learners with different degrees to form a polynomial regression model:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j X^{\theta_j} = \sum_{j=1}^M \beta_j \hat h(X; \theta_j). \]</span></p>
+<p><span class="math display">\[ \hat f(X) = \sum_{j=1}^M \beta_j X^{\theta_j} = \sum_{j=1}^M \beta_j \hat h(X; \theta_j). \]</span></p>
 </details>
 <details>
 <summary>
@@ -374,9 +376,9 @@ How do these models differ?
 <section id="the-anatomy-of-a-neural-network" class="level2">
 <h2 class="anchored" data-anchor-id="the-anatomy-of-a-neural-network">The anatomy of a Neural Network</h2>
 <p>Neural networks have the same functional form as boosted ensembles/basis regressions:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
+<p><span class="math display">\[ \hat f(X) = \sum_{j=1}^M \beta_j \hat h(X; \theta_j), \]</span></p>
 <p>where the weak learner/learned basis function <span class="math inline">\(\hat h(X; \theta_j)\)</span> takes a specific parametric form:</p>
-<p><span class="math display">\[ \hat h(X; \theta_j) = g\left( \theta_{j0} + X_1 \theta_{j1} + \ldots + X_{p} \theta_{jp} \right) = g\left( X^\top \theta \right)\]</span></p>
+<p><span class="math display">\[ \hat h(X; \theta_j) = g\left( \theta_{j0} + X_1 \theta_{j1} + \ldots + X_{p} \theta_{jp} \right) = g\left( X^\top \theta_j \right)\]</span></p>
 <p>:::{.callout-note collapse=“true” title=“Implicit bias term”} As we have throughout this course, we often drop the intercept term <span class="math inline">\(\theta_{j0}\)</span> for notational convenience, and we assume that <span class="math inline">\(X\)</span> has been augmented with a column of ones to account for the intercept. :::</p>
 <ul>
 <li><p><span class="math inline">\(\hat h(X; \theta_j)\)</span> is called a <strong>neuron</strong> or <strong>hidden unit</strong></p></li>
@@ -390,7 +392,7 @@ How do these models differ?
   g(X^\top \theta_M)
 \end{bmatrix}\)</span> is called the <strong>hidden feature representation</strong>, or the <strong>activations</strong> of <span class="math inline">\(X\)</span>.</p></li>
 <li><p>The final prediction is a linear combination of these activations:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \phi(X)^\top \beta, \quad \beta = \begin{bmatrix} \beta_1 \\ \vdots \\ \beta_M \end{bmatrix}. \]</span></p>
+<p><span class="math display">\[ \hat f(X) = \phi(X)^\top \beta, \quad \beta = \begin{bmatrix} \beta_1 \\ \vdots \\ \beta_M \end{bmatrix}. \]</span></p>
 <p>This functional form: a linear combination of non-linear transformations of the input, looks just like basis regression. Again, the key difference is that the basis features <span class="math inline">\(\phi(X)\)</span> are learned from data, rather than using a fixed basis expansion.</p></li>
 </ul>
 <section id="the-purpose-of-the-activation-function" class="level3">
@@ -484,7 +486,7 @@ How do these models differ?
 <p>What if we used the identity activation function <span class="math inline">\(g(z) = z\)</span> instead of ReLU?</p>
 <ul>
 <li><p>The model would reduce to a standard linear regression model:</p>
-<p><span class="math display">\[ \hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j (X^\top \theta_j) = X^\top \left( \sum_{j=1}^M \beta_j \theta_j \right). \]</span></p></li>
+<p><span class="math display">\[ \hat f(X) = \sum_{j=1}^M \beta_j (X^\top \theta_j) = X^\top \left( \sum_{j=1}^M \beta_j \theta_j \right). \]</span></p></li>
 <li><p>The model would lose its ability to capture non-linear relationships in the data.</p></li>
 </ul>
 </div>
@@ -529,7 +531,7 @@ How do these models differ?
 </div>
 <div class="callout-body-container callout-body">
 <ul>
-<li>The number of pieces in the piecewise linear function <span class="math inline">\(\hat{f}_\mathcal{D}(X) = \sum_{j=1}^M \beta_j g(X^\top \theta_j)\)</span> grows with the number of neurons <span class="math inline">\(M\)</span>.</li>
+<li>The number of pieces in the piecewise linear function <span class="math inline">\(\hat f(X) = \sum_{j=1}^M \beta_j g(X^\top \theta_j)\)</span> grows with the number of neurons <span class="math inline">\(M\)</span>.</li>
 <li>With enough neurons, a piecewise linear function can approximate <em>any</em> continuous function arbitrarily well.</li>
 <li>Thus, neural networks with one hidden layer and sufficiently many neurons are called <strong>universal approximators</strong>.</li>
 </ul>
@@ -573,7 +575,7 @@ How do these models differ?
 <li>activations <span class="math inline">\(\phi^{(l)}(X)\)</span>.</li>
 </ul></li>
 <li><p>The final prediction is still a linear combination of the last layer’s activations, i.e.&nbsp;it is a basis regression model with the basis features <span class="math inline">\(\phi^{(L)}(X)\)</span>:</p>
-<p><span class="math display">\[ \hat f_{\mathcal D}(X) = \phi^{(L)}(X)^\top \beta. \]</span></p></li>
+<p><span class="math display">\[ \hat f(X) = \phi^{(L)}(X)^\top \beta. \]</span></p></li>
 <li><p>However, the basis features <span class="math inline">\(\phi^{(L)}(X)\)</span> are recursively constructed through a non-linear combination of previous basis function <span class="math inline">\(\phi^{(L-1)}(X)\)</span></p></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Exponential Expressivity of Depth">

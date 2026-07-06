@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 4: Model Selection – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -240,7 +242,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -256,7 +258,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="learning-objective">Learning Objective</h2>
 <p>By the end of this lecture, you should be able to:</p>
 <ol type="1">
-<li>Define and differentiate between testing error, expected test error, and risk</li>
+<li>Define and differentiate between expected test error and risk</li>
 <li>Choose amongst metrics and estimators for model selection on a variety of problems</li>
 <li>Identify when a validation-set estimator of risk is biased or (nearly) unbiased</li>
 <li>Perform cross-validation to perform variable selection in linear regression</li>
@@ -264,7 +266,7 @@ window.Quarto = {
 </section>
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>We are now going to fill in the remaining steps of the learning procedure from a statistical perspective. We’ve already covered defining the statistical model, estimation, and prediction.</p>
+<p>We are now going to fill in the remaining steps of the learning procedure from a statistical perspective. We’ve already covered defining the statistical model, hypothesis class, estimation, and prediction.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 5%">
@@ -289,15 +291,15 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>2</td>
+<td>Predictive Model</td>
 <td>Hypothesis Class</td>
-<td>Statistical Model</td>
-<td><span class="math inline">\(\mathbb{E}[Y \mid X = x] = x^\top \beta\)</span></td>
+<td><span class="math inline">\(\hat f(X) = X^\top \hat\beta\)</span></td>
 </tr>
 <tr class="odd">
 <td>3</td>
 <td>Training</td>
 <td>Estimation</td>
-<td><span class="math inline">\(\hat{\beta}_\mathrm{MLE/OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}\)</span></td>
+<td><span class="math inline">\(\hat{\beta}_\mathrm{ERM} = \hat{\beta}_\mathrm{OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}\)</span></td>
 </tr>
 <tr class="even">
 <td>4</td>
@@ -313,7 +315,7 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>6</td>
-<td>Testing (Inference)</td>
+<td>Testing</td>
 <td>Prediction</td>
 <td><span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span></td>
 </tr>
@@ -321,38 +323,31 @@ window.Quarto = {
 </table>
 <ul>
 <li>From a statistical perspective, steps 1, 4, and 5 blur together in a procedure we call <strong>model selection.</strong></li>
-<li>At a high level, the purpose of these three steps is to <strong>choose the best statistical model given our training data.</strong></li>
+<li>At a high level, the purpose of these three steps is to <strong>choose the best predictive model given our training data.</strong></li>
 </ul>
 </section>
 <section id="defining-the-best-model" class="level2">
 <h2 class="anchored" data-anchor-id="defining-the-best-model">Defining “The Best Model”</h2>
+<p>Before defining what we mean by “best,” let’s recall the setup from the previous lectures:</p>
+<ul>
+<li>We have an i.i.d. training dataset <span class="math inline">\(\mathcal D = \left\{ (X_i, Y_i) \right\}_{i=1}^n\)</span> and we have chosen a <strong>loss function</strong> <span class="math inline">\(L(Y, \hat f(X))\)</span>.</li>
+<li>Using <span class="math inline">\(\mathcal D\)</span>, we performed <strong>empirical risk minimization (ERM)</strong> to obtain a trained model <span class="math inline">\(\hat f_{\mathcal D}\)</span> from our hypothesis class <span class="math inline">\(\mathcal H\)</span> by minimizing the average loss over the training data: <span class="math display">\[ \hat f_\mathcal{D} := \mathrm{argmin}_{\hat f \in \mathcal H} \; \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i)). \]</span></li>
+<li>In this lecture, we’ll write the trained model as <span class="math inline">\(\hat f_\mathcal{D}\)</span>: the subscript <span class="math inline">\(\mathcal D\)</span> emphasizes that it was estimated using the particular training set <span class="math inline">\(\mathcal D\)</span> (a dependence that is central to model selection as well as the material we will cover in the next lecture).</li>
+</ul>
 <section id="possible-metrics-for-best-model" class="level3">
 <h3 class="anchored" data-anchor-id="possible-metrics-for-best-model">Possible Metrics for “Best Model”</h3>
 <ol type="1">
-<li><p><strong>Test error</strong></p>
-<ul>
-<li><p>On (almost) every learning task, we usually withhold some test data <span class="math inline">\(\left\{ (X_j, Y_j) \right\}_{j=1}^t\)</span>, assumed to be i.i.d. from the same distribution as our training data.</p></li>
-<li><p>Given our training set <span class="math inline">\(\mathcal D = \left\{ (X_i, Y_i) \right\}_{i=1}^n\)</span>, the test error is:</p>
-<p><span class="math display">\[ \widehat{\mathrm{Err}}_\mathcal{D} := \frac{1}{t} \sum_{j=1}^t L(Y_j, f_\mathcal{D}(X_j)) \]</span></p></li>
-<li><p>I.e. we train our model <span class="math inline">\(\hat f\)</span> on <span class="math inline">\(\mathcal D\)</span>, and then compute its average loss on the test dataset.</p></li>
-</ul></li>
 <li><p><strong>Expected test error</strong></p>
 <ul>
-<li><p>As <span class="math inline">\(t \to \infty\)</span>, <span class="math inline">\(\widehat{\mathrm{Err}}_\mathcal{D}\)</span> converges (by the law of large numbers) to: <span class="math display">\[ \mathrm{Err}_\mathcal{D} := \mathbb E \left[ L(Y, \hat f_\mathcal{D}(X)) \mid \mathcal D \right] \]</span></p></li>
-<li><p>We call this the <strong>expected test error</strong>.</p></li>
-<li><p>Note that the training set <span class="math inline">\(\mathcal D\)</span> is fixed.</p>
-<details>
-<summary>
-<p>Why?</p>
-</summary>
-<p>We are assuming that the number of test samples <span class="math inline">\(t\)</span> goes to infinity, but we’re assuming the training set doesn’t change. So we’re averaging over the randomness in the test point <span class="math inline">\((X, Y)\)</span> only, but not the randomness in the training set <span class="math inline">\(\mathcal D\)</span>.</p>
-</details></li>
+<li><p>As in the previous two lectures, imagine drawing a fresh pair <span class="math inline">\((X_\mathrm{new}, Y_\mathrm{new})\)</span> from the same distribution as our training data, independent of <span class="math inline">\(\mathcal D\)</span>.</p></li>
+<li><p>The <strong>expected test error</strong> is the average loss our trained model <span class="math inline">\(\hat f_\mathcal{D}\)</span> incurs on such a point: <span class="math display">\[ \mathrm{Err}_\mathcal{D} := \mathbb E \left[ L(Y_\mathrm{new}, \hat f_\mathcal{D}(X_\mathrm{new})) \mid \mathcal D \right] \]</span></p></li>
+<li><p>Note that the training set <span class="math inline">\(\mathcal D\)</span> is fixed: we average only over the randomness in the new point <span class="math inline">\((X_\mathrm{new}, Y_\mathrm{new})\)</span>, not over the randomness in <span class="math inline">\(\mathcal D\)</span>.</p></li>
 <li><p><strong>Intuition:</strong> your boss hands you training set <span class="math inline">\(\mathcal D\)</span>, and you train a <span class="math inline">\(\hat f_\mathcal{D}\)</span> that’s going to be deployed for a very very long time. <span class="math inline">\(\mathrm{Err}_\mathcal{D}\)</span> estimates the error you’ll get on the many many predictions that will be made by your model.</p></li>
 </ul></li>
 <li><p><strong>Risk</strong></p>
 <ul>
-<li><p><strong>Risk</strong>, which is one level more abstract than expected test error, averages over <em>all sources of randomness</em>: <span class="math display">\[ \mathcal R := \mathbb E \left[ L \left( Y, \hat f_{\mathcal D}(X) \right) \right] \]</span></p></li>
-<li><p>Note that <em>all sources of randomness</em> includes the test datapoint <span class="math inline">\((X, Y)\)</span> as well as the training dataset <span class="math inline">\(\mathcal D\)</span>.</p></li>
+<li><p><strong>Risk</strong>, which is one level more abstract than expected test error, averages over <em>all sources of randomness</em>: <span class="math display">\[ \mathcal R := \mathbb E \left[ L \left( Y_\mathrm{new}, \hat f_{\mathcal D}(X_\mathrm{new}) \right) \right] \]</span></p></li>
+<li><p>Note that <em>all sources of randomness</em> includes the new point <span class="math inline">\((X_\mathrm{new}, Y_\mathrm{new})\)</span> as well as the training dataset <span class="math inline">\(\mathcal D\)</span>.</p></li>
 <li><p>We can relate <span class="math inline">\(\mathcal R\)</span> to the expected test error via:</p>
 <p><span class="math display">\[ \mathcal R = \mathbb E \left[ \mathrm{Err}_\mathcal{D} \right] \]</span></p>
 <details>
@@ -361,8 +356,8 @@ window.Quarto = {
 </summary>
 <p><strong>Tower rule!!!</strong></p>
 <p><span class="math display">\[\begin{align*}
-    \mathcal R &amp;= \mathbb E \left[ L \left( Y, \hat f_{\mathcal D}(X) \right) \right] \\
-    &amp;= \mathbb E \left[ \mathbb E \left[ L \left( Y, \hat f_{\mathcal D}(X) \right)  \mid \mathcal D \right] \right] \\
+    \mathcal R &amp;= \mathbb E \left[ L \left( Y_\mathrm{new}, \hat f_{\mathcal D}(X_\mathrm{new}) \right) \right] \\
+    &amp;= \mathbb E \left[ \mathbb E \left[ L \left( Y_\mathrm{new}, \hat f_{\mathcal D}(X_\mathrm{new}) \right)  \mid \mathcal D \right] \right] \\
     &amp;= \mathbb E \left[ \mathrm{Err}_\mathcal{D} \right]
   \end{align*}\]</span></p>
 </details></li>
@@ -373,9 +368,8 @@ window.Quarto = {
 <section id="in-a-perfect-world-which-metric-should-we-use" class="level3">
 <h3 class="anchored" data-anchor-id="in-a-perfect-world-which-metric-should-we-use">In a Perfect World, Which Metric Should We Use?</h3>
 <ul>
-<li><p>Let’s ignore the fact that we have access to limited amounts of data, and pretend that we happened to know all three of these metrics exactly. Which one should we use?</p></li>
-<li><p>Test error is out. There’s nothing special about the particular test set we happened to withhold. We’d much rather know the average error over all possible points, so expected test error is strictly better.</p></li>
-<li><p>Regarding expected test error vs.&nbsp;risk, there’s some debate. In general I would argue that risk is actually the metric we care most about.</p></li>
+<li><p>Let’s ignore the fact that we have access to limited amounts of data, and pretend that it was possible to (exactly) compute expected test error and risk. Which one should we use?</p></li>
+<li><p>In general I would argue that risk is actually the metric we care most about.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="Expected Test Error vs. Risk">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
@@ -414,7 +408,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="bad-idea-training-error">Bad Idea: Training Error</h3>
 <ul>
 <li><p>A common mistake is to use <strong>training error</strong> as an estimator of risk:</p>
-<p><span class="math display">\[ \widehat{\mathrm{Err}}_\mathrm{train} := \frac{1}{n} \sum_{i=1}^n L(Y_i, f_\mathcal{D}(X_i)) \]</span></p></li>
+<p><span class="math display">\[ \widehat{\mathrm{Err}}_\mathrm{train} := \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f_\mathcal{D}(X_i)) \]</span></p></li>
 <li><p>Training error is almost always a <strong>severely biased</strong> estimator of risk, and should never be used for model selection.</p>
 <details>
 <summary>
@@ -439,17 +433,18 @@ window.Quarto = {
 <li><p>Imagine we had access to a generator that produces random <span class="math inline">\(\left\{ (X_i, Y_i) \right\}_{i=1}^{n+1}\)</span> samples, where the <span class="math inline">\(n+1\)</span> pairs are i.i.d.</p></li>
 <li><p>We could estimate risk by:</p>
 <ol type="1">
-<li><p>Generating <span class="math inline">\(m\)</span> samples <span class="math inline">\(\left\{ \left\{ (X_i^{(j)}, Y_i^{(j)} \right\}_{i=1}^{n+1} \right\}_{j=1}^{m}\)</span></p></li>
-<li><p>Estimate risk as: <span class="math display">\[ \hat{\mathcal R} \approx \frac{1}{m} \sum_{i=1}^m L_j,
-  \quad L_j = L\left( Y_{n+1}^{(j)}, f_{\mathcal D^{(j)}}( X^{(j)}_{n+1}) \right),
+<li><p>Generating <span class="math inline">\(m\)</span> samples <span class="math inline">\(\left\{ \left\{ (X_i^{(j)}, Y_i^{(j)}) \right\}_{i=1}^{n+1} \right\}_{j=1}^{m}\)</span></p></li>
+<li><p>Estimate risk as: <span class="math display">\[ \hat{\mathcal R} := \frac{1}{m} \sum_{j=1}^m L_j,
+  \quad L_j = L\left( Y_{n+1}^{(j)}, \hat f_{\mathcal D^{(j)}}( X^{(j)}_{n+1}) \right),
   \quad \mathcal D^{(j)} = \left\{ (X_i^{(j)}, Y_i^{(j)}) \right\}_{i=1}^n.
   \]</span></p></li>
 </ol>
 <ul>
 <li>In other words, for each of the <span class="math inline">\(m\)</span> samples, we train a model on the first <span class="math inline">\(n\)</span> data points, and compute its loss on the <span class="math inline">\(n+1^\mathrm{th}\)</span> datapoint we withhold from training.</li>
+<li>Because all <span class="math inline">\(n+1\)</span> pairs are i.i.d. from the same distribution, the withheld point <span class="math inline">\((X_{n+1}, Y_{n+1})\)</span> is identically distributed to the new point <span class="math inline">\((X_\mathrm{new}, Y_\mathrm{new})\)</span> from our definition of risk: it plays exactly the same role, a fresh draw that the model did not train on.</li>
 </ul></li>
 <li><p>By the law of large numbers, as <span class="math inline">\(m \to \infty\)</span> we have:</p>
-<p><span class="math display">\[\hat{\mathcal R} \to \mathbb E[ L( Y_{n+1}, \hat f_\mathcal{D}( X_{n+1}) )] = \mathcal R\]</span></p></li>
+<p><span class="math display">\[\hat{\mathcal R} \to \mathbb E[ L( Y_{n+1}, \hat f_\mathcal{D}( X_{n+1}) )] = \mathbb E[ L( Y_\mathrm{new}, \hat f_\mathcal{D}( X_\mathrm{new}) )] = \mathcal R\]</span></p></li>
 </ul>
 </section>
 <section id="practical-solution-cross-validation" class="level3">
@@ -482,6 +477,7 @@ window.Quarto = {
 <section id="why-does-loo-cv-work" class="level4">
 <h4 class="anchored" data-anchor-id="why-does-loo-cv-work">Why Does LOO-CV Work?</h4>
 <ul>
+<li><p>To reason about cross-validation, it is helpful to make explicit the size of the training set. Let <span class="math inline">\(\mathcal R_m\)</span> denote the risk of a model trained on <span class="math inline">\(m\)</span> i.i.d. data points; under this notation, the risk of a model trained on our full dataset is <span class="math inline">\(\mathcal R = \mathcal R_n\)</span>.</p></li>
 <li><p>Each <span class="math inline">\(L_i\)</span> is an unbiased estimate of risk on a training set of size <span class="math inline">\(n-1\)</span>:</p>
 <p><span class="math display">\[\begin{align*}
   \mathbb E[L_i] &amp;= \mathbb E \left[ L(Y_i, \hat f_{\mathcal D_{-i}}(X_i)) \right] =: \mathcal R_{n-1} \\
@@ -544,7 +540,7 @@ window.Quarto = {
 </section>
 <section id="model-selection-finally" class="level2">
 <h2 class="anchored" data-anchor-id="model-selection-finally">Model Selection (Finally!)</h2>
-<p>Now that we’ve chosen <em>risk</em> as our metric for “the best model,” <strong>model selection</strong> amounts to choosing the statistical model with the best risk.</p>
+<p>Now that we’ve chosen <em>risk</em> as our metric for “the best model,” <strong>model selection</strong> amounts to choosing the predictive model with the best risk.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Model Selection">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -557,9 +553,9 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <ul>
 <li>Given: a single dataset <span class="math inline">\(\mathcal D\)</span></li>
-<li>for however long you have,
+<li>For however long you have,
 <ol type="1">
-<li>Propose a statistical model (e.g.&nbsp;linear regression, decision tree, neural network, etc.)</li>
+<li>Propose a model (hypothesis class + estimation procedure)</li>
 <li>Estimate its parameters on <span class="math inline">\(\mathcal D\)</span> to get <span class="math inline">\(\hat f_\mathcal{D}\)</span></li>
 <li>Estimate its risk <span class="math inline">\(\hat{\mathcal R}\)</span> using K-CV (or some other method)</li>
 </ol></li>
@@ -570,7 +566,7 @@ window.Quarto = {
 <section id="example-variable-selection" class="level3">
 <h3 class="anchored" data-anchor-id="example-variable-selection">Example: Variable Selection</h3>
 <p>Consider the following synthetic dataset, where we have:</p>
-<p><span class="math display">\[ Y = 3 X_1 + \frac{1}{3} X_2 + \epsilon, \quad \epsilon \sim \mathcal N(0, 0.5^2) \]</span></p>
+<p><span class="math display">\[ Y = 3 X_1 + \frac{1}{3} X_2 + \varepsilon, \quad \varepsilon \sim \mathcal N(0, 0.5^2) \]</span></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -585,34 +581,33 @@ window.Quarto = {
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Note that <span class="math inline">\(Y\)</span> is a function of <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> only, and <span class="math inline">\(X_3\)</span> and <span class="math inline">\(X_4\)</span> are irrelevant to predicting <span class="math inline">\(Y\)</span>.</p>
-<p>We might consider the following statistical models (here written as linear regression models), in all cases assuming <span class="math inline">\(\epsilon \sim \mathcal N(0, \sigma^2)\)</span> for some <span class="math inline">\(\sigma &gt; 0\)</span>:</p>
+<p>We might consider the following models (here written with linear regression notation):</p>
 <ol type="1">
-<li><strong>Model 1</strong>: <span class="math inline">\(Y = \beta_0 + \beta_1 X_1 + \epsilon\)</span></li>
-<li><strong>Model 2</strong>: <span class="math inline">\(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \epsilon\)</span></li>
-<li><strong>Model 3</strong>: <span class="math inline">\(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \epsilon\)</span></li>
-<li><strong>Model 4</strong>: <span class="math inline">\(Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_4 + \epsilon\)</span></li>
+<li><strong>Model 1</strong>: <span class="math inline">\(f(X) = \beta_0 + \beta_1 X_1\)</span></li>
+<li><strong>Model 2</strong>: <span class="math inline">\(f(X) = \beta_0 + \beta_1 X_1 + \beta_2 X_2\)</span></li>
+<li><strong>Model 3</strong>: <span class="math inline">\(f(X) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3\)</span></li>
+<li><strong>Model 4</strong>: <span class="math inline">\(f(X) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_4\)</span></li>
 </ol>
-<div class="callout callout-style-default callout-important callout-titled" title="Variable Selection is a Specific Instance of Model Selection">
+<div class="callout callout-style-default callout-tip callout-titled" title="Variable Selection is a Specific Instance of Model Selection">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Variable Selection is a Specific Instance of Model Selection
+<span class="screen-reader-only">Tip</span>Variable Selection is a Specific Instance of Model Selection
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>You might recognize this setup as a <strong>variable selection</strong> problem. (Even more specifically, these model choices may remind you of <em>forward stepwise selection</em> from STAT 306).</p>
-<p>Adding covariates to our regression changes the set of distributions that we are considering to represent our data (i.e.&nbsp;it changes our statistical model).</p>
+<p>You might recognize this setup as a <strong>variable selection</strong> problem. (Even more specifically, these model choices may remind you of <em>forward stepwise selection</em> from STAT 306). Adding covariates to our regression changes the hypothesis class of predictors we consider.</p>
 <p>Note that model selection is a much broader concept than variable selection. For example, we might also consider:</p>
-<p><span class="math display">\[Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_4 + \beta_5 X_1^2 + \epsilon\]</span></p>
-<p>This model doesn’t add any new covariates, but it does change the set of distributions we are considering.</p>
+<p><span class="math display">\[f(X) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_4 + \beta_5 X_1^2\]</span></p>
+<p>This predictive model doesn’t add any new covariates, but it does change the hypothesis class we are considering.</p>
 </div>
 </div>
 </div>
-<p>Let’s use 5-fold cross validation to estimate the risk of each of these models:</p>
+<p>Let’s fit each of these models with ERM, and use 5-fold cross validation to estimate the risks of the ERM-fitted models:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cv) <span class="co"># </span><span class="al">NOTE</span><span class="co">: you can't use this package on Homework 1</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>            <span class="co"># but for sure use it on your own projects!</span></span>
@@ -651,14 +646,14 @@ window.Quarto = {
 <ul>
 <li><strong>Step 1</strong> train/test/val split: the train/val split is implicit in K-fold CV, and the test set is used only at the very end to estimate test error of the final model. (<strong>Do not touch the test set until the very end!</strong>)</li>
 <li><strong>Step 4</strong> validation: here is where we actually estimate risk using K-fold CV.</li>
-<li><strong>Step 5</strong> iteration: we iterate over different statistical models, estimating their risk using K-fold CV, and performing model selection along the way (i.e.&nbsp;refining our statistical model in ways to reduce risk).</li>
+<li><strong>Step 5</strong> iteration: we iterate over different predictive models, estimating their risk using K-fold CV, and performing model selection along the way (i.e.&nbsp;refining our predictive model in ways to reduce risk).</li>
 </ul>
 </section>
 </section>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <ul>
-<li>Model selection is the process of choosing the “best statistical model” given our training data.</li>
+<li>Model selection is the process of choosing the “best predictive model” given our training data.</li>
 <li>We can define “best” in terms of expected test error, or risk. In practice, risk is often the most appropriate metric.</li>
 <li>We can estimate risk using cross-validation. (We will see other estimators later in the course.)</li>
 <li><strong>Never use training error to select models!</strong></li>

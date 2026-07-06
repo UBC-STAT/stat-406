@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 17: Boosting – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -221,7 +223,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -261,7 +263,7 @@ window.Quarto = {
 <ul>
 <li>Examples: Non-parametric models, deep decision trees, etc.</li>
 </ul></li>
-<li><p>A <strong>weak learner</strong> is a predictive model that can only achieve slightly better than random guessing on any learning problem. Specifically, for a binary classification problem where random guessing would achieve 50% accuracy, a weak learner can achieve <span class="math inline">\(50\% + \epsilon\)</span> accuracy for some small <span class="math inline">\(\epsilon &gt; 0\)</span>.</p>
+<li><p>A <strong>weak learner</strong> is a predictive model that can only achieve slightly better than random guessing on any learning problem. Specifically, for a binary classification problem where random guessing would achieve 50% accuracy, a weak learner can achieve <span class="math inline">\(50\% + \varepsilon\)</span> accuracy for some small <span class="math inline">\(\varepsilon &gt; 0\)</span>.</p>
 <ul>
 <li>Examples: Depth-1 decision trees (stumps).</li>
 </ul></li>
@@ -334,7 +336,7 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 \]</span></p></li>
 <li><p>We then simultaneously select <span class="math inline">\(\beta^{(t)}\)</span> and <span class="math inline">\(\hat h^{(t)}\)</span> to minimize the squared error on these residuals</p>
 <p><span class="math display">\[
-\hat h^{(t)}, \beta^{(t)} = \arg\min_{h, \beta} \sum_{i=1}^n (R_i^{(t)} - \beta h(X_i))^2
+\hat h^{(t)}, \beta^{(t)} = \mathrm{argmin}_{h, \beta} \sum_{i=1}^n (R_i^{(t)} - \beta h(X_i))^2
 \]</span></p></li>
 <li><p>This is similar to empirical risk minimization (ERM), except we are minimizing the loss on the residuals rather than the original response variables <span class="math inline">\(Y_i\)</span>.</p></li>
 </ul>
@@ -367,18 +369,18 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 <section id="generic-problems" class="level4">
 <h4 class="anchored" data-anchor-id="generic-problems">Generic Problems</h4>
 <ul>
-<li><p>The above procedure can be generalized to arbitrary loss functions <span class="math inline">\(\ell(Y, \hat f(X))\)</span> (not just squared error).</p></li>
+<li><p>The above procedure can be generalized to arbitrary loss functions <span class="math inline">\(L(Y, \hat f(X))\)</span> (not just squared error).</p></li>
 <li><p>For the squared error, note that:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \left( \underbrace{R_i^{(t)}}_{Y_i - \hat f^{(t-1)}(X_i)} - \beta^{(t)} \hat h^{(t)}(X_i) \right)^2
 &amp;= \left(Y_i - \left( \hat f^{(t-1)}(X_i) - \beta^{(t)} \hat h^{(t)}(X_i) \right) \right)^2 \\
-&amp;= \ell( Y_i, \hat f^{(t-1)}(X_i) + \beta^{(t)} \hat h^{(t)}(X_i) )
+&amp;= L( Y_i, \hat f^{(t-1)}(X_i) + \beta^{(t)} \hat h^{(t)}(X_i) )
 \end{aligned}
 \]</span></p></li>
 <li><p>Therefore, we can train the weak learners to minimize the loss on the updated ensemble predictions directly:</p>
 <p><span class="math display">\[
-(\hat h^{(t)}, \beta^{(t)}) = \arg\min_{h, \beta} \sum_{i=1}^n \ell( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) )
+(\hat h^{(t)}, \beta^{(t)}) = \mathrm{argmin}_{h, \beta} \sum_{i=1}^n L( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) )
 \]</span></p></li>
 <li><p>This procedure yields the following generic boosting algorithm:</p></li>
 </ul>
@@ -404,7 +406,7 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 <ul>
 <li><p>Choose a weak learner <span class="math inline">\(\hat h^{(t)}\)</span> that fits the current residuals:</p>
 <p><span class="math display">\[
-\hat h^{(t)}, \beta^{(t)} = \arg\min_{h, \beta} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
+\hat h^{(t)}, \beta^{(t)} = \mathrm{argmin}_{h, \beta} \sum_{i=1}^n L \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
 \]</span></p></li>
 <li><p>Update the ensemble predictor:</p>
 <p><span class="math display">\[
@@ -438,20 +440,20 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 <ul>
 <li><p>Assume that <span class="math inline">\(Y_i \in \{-1, +1\}\)</span> for all <span class="math inline">\(i\)</span> (binary classification), and assume that each weak learner <span class="math inline">\(\hat h^{(t)}\)</span> also outputs predictions in <span class="math inline">\(\{-1, +1\}\)</span>.</p></li>
 <li><p>The <strong>exponential loss</strong> is given by:</p>
-<p><span class="math display">\[ \ell(Y, \hat Y) = \exp(-Y \hat Y) \]</span></p>
+<p><span class="math display">\[ L(Y, \hat f(X)) = \exp(-Y \hat f(X)) \]</span></p>
 <ul>
-<li>If <span class="math inline">\(Y\)</span> and <span class="math inline">\(\hat Y\)</span> have the same sign (correct classification), then the term inside the exponential is negative (low loss)</li>
-<li>If <span class="math inline">\(Y\)</span> and <span class="math inline">\(\hat Y\)</span> have opposite signs (incorrect classification), then the term inside the exponential is positive (high loss)</li>
-<li>We can view the exponential loss as an approximation to the 0-1 loss that <strong>really</strong> penalizes large/incorrect <span class="math inline">\(\hat Y\)</span> values.</li>
+<li>If <span class="math inline">\(Y\)</span> and <span class="math inline">\(\hat f(X)\)</span> have the same sign (correct classification), then the term inside the exponential is negative (low loss)</li>
+<li>If <span class="math inline">\(Y\)</span> and <span class="math inline">\(\hat f(X)\)</span> have opposite signs (incorrect classification), then the term inside the exponential is positive (high loss)</li>
+<li>We can view the exponential loss as an approximation to the 0-1 loss that <strong>really</strong> penalizes large/incorrect <span class="math inline">\(\hat f(X)\)</span> values.</li>
 </ul></li>
 <li><p>Let’s apply this loss (and the fact that <span class="math inline">\(\hat h^{(t)}(X_i) \in \{-1, +1\}\)</span>) to the generic boosting optimization problem:</p>
 <p><span class="math display">\[
 \begin{align*}
-(\hat h^{(t)}, \beta^{(t)}) &amp;= \arg\min_{h, \beta} \sum_{i=1}^n \ell \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
+(\hat h^{(t)}, \beta^{(t)}) &amp;= \mathrm{argmin}_{h, \beta} \sum_{i=1}^n L \left( Y_i, \hat f^{(t-1)}(X_i) + \beta h(X_i) \right)
 \\
-&amp;= \arg\min_{h, \beta} \sum_{i=1}^n \exp\left( -Y_i \left( \hat f^{(t-1)}(X_i) + \beta h(X_i) \right) \right)
+&amp;= \mathrm{argmin}_{h, \beta} \sum_{i=1}^n \exp\left( -Y_i \left( \hat f^{(t-1)}(X_i) + \beta h(X_i) \right) \right)
 \\
-&amp;= \arg\min_{h, \beta} \sum_{i=1}^n \underbrace{\exp\left( -Y_i \hat f^{(t-1)}(X_i) \right)}_{W_i} \exp\left( -\beta Y_i h(X_i) \right)
+&amp;= \mathrm{argmin}_{h, \beta} \sum_{i=1}^n \underbrace{\exp\left( -Y_i \hat f^{(t-1)}(X_i) \right)}_{W_i} \exp\left( -\beta Y_i h(X_i) \right)
 \end{align*}
 \]</span></p></li>
 <li><p>We can interpret the <span class="math inline">\(W_i = \exp\left( -Y_i \hat f^{(t-1)}(X_i) \right)\)</span> terms as <strong>weights</strong> on each training example <span class="math inline">\(i\)</span>, which depend on how well the current ensemble <span class="math inline">\(\hat f^{(t-1)}\)</span> classifies that example. Misclassified points will have larger weights, while correctly classified points will have smaller weights.</p>
@@ -488,13 +490,13 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 <li><p>We can thus subdivide the above summation into points that <span class="math inline">\(h\)</span> correctly classifies and points that it misclassifies:</p>
 <p><span class="math display">\[
 \begin{align*}
-(\hat h^{(t)}, \beta^{(t)}) &amp;= \arg\min_{h, \beta} \left[ \sum_{i: Y_i = h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=+1} \right) + \sum_{i: Y_i \neq h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=-1} \right) \right] \\
-&amp;= \arg\min_{h, \beta} \left[ \exp(-\beta) \sum_{i: Y_i = h(X_i)} W_i + \exp(\beta) \sum_{i: Y_i \neq h(X_i)} W_i \right]
+(\hat h^{(t)}, \beta^{(t)}) &amp;= \mathrm{argmin}_{h, \beta} \left[ \sum_{i: Y_i = h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=+1} \right) + \sum_{i: Y_i \neq h(X_i)} W_i \exp \left( -\beta \underbrace{Y_i h(X_i)}_{=-1} \right) \right] \\
+&amp;= \mathrm{argmin}_{h, \beta} \left[ \exp(-\beta) \sum_{i: Y_i = h(X_i)} W_i + \exp(\beta) \sum_{i: Y_i \neq h(X_i)} W_i \right]
 \end{align*}
 \]</span></p></li>
 <li><p>By inspection (and assuming that <span class="math inline">\(\beta &gt; 0\)</span>), we can see that the optimal weak learner <span class="math inline">\(\hat h^{(t)}\)</span> is the one that minimizes the <strong>weighted classification error</strong>:</p>
 <p><span class="math display">\[
-\hat h^{(t)} = \arg\min_h \sum_{i=1}^n W_i \mathbb{I}(Y_i \neq h(X_i))
+\hat h^{(t)} = \mathrm{argmin}_h \sum_{i=1}^n W_i \mathbb{I}(Y_i \neq h(X_i))
 \]</span></p>
 <p>regardless of the value of <span class="math inline">\(\beta\)</span>.</p></li>
 <li><p>Moreover, for any fixed <span class="math inline">\(h\)</span>, we can find the optimal <span class="math inline">\(\beta\)</span> by differentiating the above expression, which yields:</p>
@@ -523,7 +525,7 @@ R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = Y_i - \sum_{j=1}^{t-1} \beta^{(j)} \hat 
 <ul>
 <li><p>Train a weak learner <span class="math inline">\(\hat h^{(t)}\)</span> to minimize the weighted classification error:</p>
 <p><span class="math display">\[
-\hat h^{(t)} = \arg\min_h \sum_{i=1}^n W_i \mathbb{I}(Y_i \neq h(X_i))
+\hat h^{(t)} = \mathrm{argmin}_h \sum_{i=1}^n W_i \mathbb{I}(Y_i \neq h(X_i))
 \]</span></p></li>
 <li><p>Compute the weight for the weak learner:</p>
 <p><span class="math display">\[
@@ -573,8 +575,8 @@ W_i \gets W_i \exp\left( -\beta^{(t)} Y_i \hat h^{(t)}(X_i) \right) = \exp\left(
 <li>These residuals can be viewed as the <strong>negative gradient</strong> of the squared loss function: <span class="math display">\[
 R_i^{(t)} = Y_i - \hat f^{(t-1)}(X_i) = -\frac{\partial}{\partial \hat f^{(t-1)}(X_i)} \frac{1}{2}(Y_i - \hat f^{(t-1)}(X_i))^2
 \]</span></li>
-<li>Gradient boosting generalizes this idea to any differentiable loss function <span class="math inline">\(\ell (Y, \hat f(X))\)</span> by training each weak learner to predict the <strong>negative gradient</strong> of the loss: <span class="math display">\[
-G_i^{(t)} = -\frac{\partial \ell(Y_i, \hat f(X_i))}{\partial \hat f(X_i)} \bigg|_{\hat f = \hat f^{(t-1)}}
+<li>Gradient boosting generalizes this idea to any differentiable loss function <span class="math inline">\(L (Y, \hat f(X))\)</span> by training each weak learner to predict the <strong>negative gradient</strong> of the loss: <span class="math display">\[
+G_i^{(t)} = -\frac{\partial L(Y_i, \hat f(X_i))}{\partial \hat f(X_i)} \bigg|_{\hat f = \hat f^{(t-1)}}
 \]</span></li>
 </ul>
 </section>
@@ -593,21 +595,21 @@ G_i^{(t)} = -\frac{\partial \ell(Y_i, \hat f(X_i))}{\partial \hat f(X_i)} \bigg|
 <p>Given:</p>
 <ul>
 <li>A training sample <span class="math inline">\(\mathcal{D} = \{(X_i, Y_i)\}_{i=1}^n\)</span></li>
-<li>A differentiable loss function <span class="math inline">\(\ell(Y, \hat f(X))\)</span></li>
+<li>A differentiable loss function <span class="math inline">\(L(Y, \hat f(X))\)</span></li>
 <li>A weak learning algorithm (e.g., depth-2 decision trees)</li>
 <li>The number of boosting rounds <span class="math inline">\(m\)</span></li>
 </ul>
-<p>Initialize: Set <span class="math inline">\(\hat f^{(0)}(X) = \arg\min_c \sum_{i=1}^n \ell(Y_i, c)\)</span> (constant initial prediction)</p>
+<p>Initialize: Set <span class="math inline">\(\hat f^{(0)}(X) = \mathrm{argmin}_c \sum_{i=1}^n L(Y_i, c)\)</span> (constant initial prediction)</p>
 <p>For <span class="math inline">\(t = 1, 2, \ldots, m\)</span>:</p>
 <ol type="1">
 <li>Compute the negative gradient (pseudo-residuals) for each training example: <span class="math display">\[
-G_i^{(t)} = -\frac{\partial \ell(Y_i, \hat f^{(t-1)}(X_i))}{\partial \hat f^{(t-1)}(X_i)}
+G_i^{(t)} = -\frac{\partial L(Y_i, \hat f^{(t-1)}(X_i))}{\partial \hat f^{(t-1)}(X_i)}
 \]</span></li>
 <li>Train a weak learner <span class="math inline">\(\hat h^{(t)}\)</span> to predict the pseudo-residuals: <span class="math display">\[
-\hat h^{(t)} = \arg\min_h \sum_{i=1}^n \ell (G_i^{(t)}, h(X_i))
+\hat h^{(t)} = \mathrm{argmin}_h \sum_{i=1}^n L (G_i^{(t)}, h(X_i))
 \]</span></li>
 <li>Find the optimal weight for the weak learner: <span class="math display">\[
-\beta^{(t)} = \arg\min_\beta \sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i) + \beta \hat h^{(t)}(X_i))
+\beta^{(t)} = \mathrm{argmin}_\beta \sum_{i=1}^n L(Y_i, \hat f^{(t-1)}(X_i) + \beta \hat h^{(t)}(X_i))
 \]</span></li>
 <li>Update the ensemble: <span class="math display">\[
 \hat f^{(t)}(X) = \hat f^{(t-1)}(X) + \beta^{(t)} \hat h^{(t)}(X)
@@ -623,7 +625,7 @@ G_i^{(t)} = -\frac{\partial \ell(Y_i, \hat f^{(t-1)}(X_i))}{\partial \hat f^{(t-
 <li><p>Let <span class="math inline">\(\boldsymbol G^{(t)} \in \mathbb R^n\)</span> be the concatenation of the gradients and let <span class="math inline">\(\boldsymbol{\hat h}^{(t)} \in \mathbb R^n\)</span> be the predictions of the weak learner on the training data.</p>
 <p><span class="math display">\[ \boldsymbol G^{(t)} = \begin{bmatrix} G_1^{(t)} \\ G_2^{(t)} \\ \vdots \\ G_n^{(t)} \end{bmatrix} \quad , \quad \boldsymbol{\hat h}^{(t)} = \begin{bmatrix} \hat h^{(t)}(X_1) \\ \hat h^{(t)}(X_2) \\ \vdots \\ \hat h^{(t)}(X_n) \end{bmatrix} \]</span></p></li>
 <li><p>In Step 2 of the algorithm, our goal is to minimize the loss between the gradients and the weak learner predictions:</p>
-<p><span class="math display">\[ \hat h^{(t)} = \arg\min_h \sum_{i=1}^n \left( G_i^{(t)} - h(X_i) \right)^2, \]</span></p>
+<p><span class="math display">\[ \hat h^{(t)} = \mathrm{argmin}_h \sum_{i=1}^n \left( G_i^{(t)} - h(X_i) \right)^2, \]</span></p>
 <p>i.e.&nbsp;we want to make each <span class="math inline">\(\hat h^{(t)}(X_i)\)</span> as close as possible to <span class="math inline">\(G_i^{(t)}\)</span>.</p></li>
 <li><p>We can view this idea as wanting the <span class="math inline">\(\boldsymbol{\hat h}^{(t)}\)</span> vector to point in the opposite direction as the <span class="math inline">\(\boldsymbol G^{(t)}\)</span> vector. In other words, we want to <strong>minimize the cosine similarity</strong> between these two vectors:</p>
 <p><span class="math display">\[ \min_{\hat h^{(t)}} \frac{\langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle}{\|\boldsymbol G^{(t)}\|_2 \|\boldsymbol{\hat h}^{(t)}\|_2}, \]</span></p>
@@ -637,13 +639,13 @@ G_i^{(t)} = -\frac{\partial \ell(Y_i, \hat f^{(t-1)}(X_i))}{\partial \hat f^{(t-
 \\
 &amp;= \min_{\hat h^{(t)}} \langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle
 \\
-&amp;= \min_{\hat h^{(t)}} \sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i)) + \langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle
+&amp;= \min_{\hat h^{(t)}} \sum_{i=1}^n L(Y_i, \hat f^{(t-1)}(X_i)) + \langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle
 \end{align*}
 \]</span></p>
-<p>where the last two equalities hold because neither <span class="math inline">\(\Vert \boldsymbol G^{(t)} \Vert\)</span> nor <span class="math inline">\(\sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i))\)</span> depend on <span class="math inline">\(\hat h^{(t)}\)</span>.</p></li>
+<p>where the last two equalities hold because neither <span class="math inline">\(\Vert \boldsymbol G^{(t)} \Vert\)</span> nor <span class="math inline">\(\sum_{i=1}^n L(Y_i, \hat f^{(t-1)}(X_i))\)</span> depend on <span class="math inline">\(\hat h^{(t)}\)</span>.</p></li>
 <li><p>In other words, Step 2 is equivalent to finding <span class="math inline">\(\hat h^{(t)}\)</span> that minimizes the first-order Taylor approximation of the loss around the current ensemble predictions:</p>
 <p><span class="math display">\[
-\sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i) + \hat h^{(t)}(X_i)) \approx \sum_{i=1}^n \ell(Y_i, \hat f^{(t-1)}(X_i)) + \langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle.
+\sum_{i=1}^n L(Y_i, \hat f^{(t-1)}(X_i) + \hat h^{(t)}(X_i)) \approx \sum_{i=1}^n L(Y_i, \hat f^{(t-1)}(X_i)) + \langle \boldsymbol G^{(t)}, \boldsymbol{\hat h}^{(t)} \rangle.
 \]</span></p></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Connection to Gradient-Based Optimization">

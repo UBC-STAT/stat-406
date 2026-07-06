@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
-<title>Lecture 1: Probability Review – UBC Stat406 2025 W1</title>
+<title>Lecture 1: Probability and Linear Algebra Review – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -162,22 +164,17 @@ window.Quarto = {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
-  <li><a href="#random-variables" id="toc-random-variables" class="nav-link" data-scroll-target="#random-variables">Random Variables</a>
+  <li><a href="#probability-review" id="toc-probability-review" class="nav-link" data-scroll-target="#probability-review">Probability Review</a>
   <ul class="collapse">
-  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
-  <li><a href="#notation" id="toc-notation" class="nav-link" data-scroll-target="#notation">Notation</a></li>
-  <li><a href="#joint-random-variables" id="toc-joint-random-variables" class="nav-link" data-scroll-target="#joint-random-variables">Joint Random Variables</a></li>
-  </ul></li>
+  <li><a href="#random-variables" id="toc-random-variables" class="nav-link" data-scroll-target="#random-variables">Random Variables</a></li>
   <li><a href="#distributions-and-the-two-rules-of-probability" id="toc-distributions-and-the-two-rules-of-probability" class="nav-link" data-scroll-target="#distributions-and-the-two-rules-of-probability">Distributions and The Two Rules of Probability</a></li>
-  <li><a href="#the-product-rule" id="toc-the-product-rule" class="nav-link" data-scroll-target="#the-product-rule">The Product Rule</a>
-  <ul class="collapse">
-  <li><a href="#independence" id="toc-independence" class="nav-link" data-scroll-target="#independence">Independence</a></li>
-  <li><a href="#bayes-rule" id="toc-bayes-rule" class="nav-link" data-scroll-target="#bayes-rule">Bayes’ Rule</a></li>
+  <li><a href="#the-product-rule" id="toc-the-product-rule" class="nav-link" data-scroll-target="#the-product-rule">The Product Rule</a></li>
+  <li><a href="#the-sum-rule" id="toc-the-sum-rule" class="nav-link" data-scroll-target="#the-sum-rule">The Sum Rule</a></li>
   </ul></li>
-  <li><a href="#the-sum-rule" id="toc-the-sum-rule" class="nav-link" data-scroll-target="#the-sum-rule">The Sum Rule</a>
+  <li><a href="#linear-algebra-review" id="toc-linear-algebra-review" class="nav-link" data-scroll-target="#linear-algebra-review">Linear Algebra Review</a>
   <ul class="collapse">
-  <li><a href="#linearity-of-expectation" id="toc-linearity-of-expectation" class="nav-link" data-scroll-target="#linearity-of-expectation">Linearity of Expectation</a></li>
-  <li><a href="#conditional-expectations-and-the-tower-rule" id="toc-conditional-expectations-and-the-tower-rule" class="nav-link" data-scroll-target="#conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</a></li>
+  <li><a href="#notation-1" id="toc-notation-1" class="nav-link" data-scroll-target="#notation-1">Notation</a></li>
+  <li><a href="#the-singular-value-decomposition" id="toc-the-singular-value-decomposition" class="nav-link" data-scroll-target="#the-singular-value-decomposition">The Singular Value Decomposition</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
@@ -188,7 +185,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lecture 1: Probability Review</h1>
+<h1 class="title">Lecture 1: Probability and Linear Algebra Review</h1>
 </div>
 
 
@@ -205,7 +202,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -224,12 +221,15 @@ window.Quarto = {
 <li>Define a random variable and understand when to use them to model quantities</li>
 <li>Derive probability rules through the product and sum rules</li>
 <li>Apply linearity of expectation and the law of total expectation to simplify calculations</li>
+<li>Apply the SVD decomposition and describe the properties of each component matrix</li>
 </ol>
 </section>
-<section id="random-variables" class="level2">
-<h2 class="anchored" data-anchor-id="random-variables">Random Variables</h2>
-<section id="motivation" class="level3">
-<h3 class="anchored" data-anchor-id="motivation">Motivation</h3>
+<section id="probability-review" class="level2">
+<h2 class="anchored" data-anchor-id="probability-review">Probability Review</h2>
+<section id="random-variables" class="level3">
+<h3 class="anchored" data-anchor-id="random-variables">Random Variables</h3>
+<section id="motivation" class="level4">
+<h4 class="anchored" data-anchor-id="motivation">Motivation</h4>
 <ul>
 <li><strong>Example</strong>: Let’s say you want to grab a coffee at Loafe and you want to know how long you’ll have to wait in line.</li>
 <li>Denote this time by the variable <span class="math inline">\(A\)</span></li>
@@ -243,15 +243,15 @@ window.Quarto = {
 <li>Instead, we can treat <span class="math inline">\(A\)</span> as a <strong>random variable</strong>: a variable whose value is <em>randomly</em> sampled from some distribution.</li>
 </ul>
 </section>
-<section id="notation" class="level3">
-<h3 class="anchored" data-anchor-id="notation">Notation</h3>
+<section id="notation" class="level4">
+<h4 class="anchored" data-anchor-id="notation">Notation</h4>
 <ul>
 <li>We (almost) always denote random variables with uppercase letters (e.g., <span class="math inline">\(A\)</span>)</li>
 <li>We (almost) always denote their realizations (i.e., specific values they can take) with lowercase letters (e.g., <span class="math inline">\(a\)</span>).</li>
 </ul>
 </section>
-<section id="joint-random-variables" class="level3">
-<h3 class="anchored" data-anchor-id="joint-random-variables">Joint Random Variables</h3>
+<section id="joint-random-variables" class="level4">
+<h4 class="anchored" data-anchor-id="joint-random-variables">Joint Random Variables</h4>
 <ul>
 <li>Throughout this class, most of the probability we will encounter will be concerned with relationships between two or more random variables.</li>
 <li><strong>Example</strong>: maybe we want to understand how the temperature outside, denoted by <span class="math inline">\(B\)</span>, affects the Loafe line length.</li>
@@ -266,121 +266,85 @@ window.Quarto = {
 </ul>
 </section>
 </section>
-<section id="distributions-and-the-two-rules-of-probability" class="level2">
-<h2 class="anchored" data-anchor-id="distributions-and-the-two-rules-of-probability">Distributions and The Two Rules of Probability</h2>
+<section id="distributions-and-the-two-rules-of-probability" class="level3">
+<h3 class="anchored" data-anchor-id="distributions-and-the-two-rules-of-probability">Distributions and The Two Rules of Probability</h3>
 <ul>
-<li><p>Given two random variables (A) and (B), we can describe this relationship through a <strong>joint probability distribution</strong></p>
+<li><p>Given two random variables (A) and (B), we can describe this relationship through a <strong>joint probability distribution</strong>, which can be specified by a PMF (for discrete random variables) or a density (for continuous random variables):</p>
 <p><span class="math display">\[
 \begin{cases}
-    P(A=a, B=b) &amp; \text{for discrete random variables} \\
-    f_{A,B}(a, b) &amp; \text{for continuous random variables}
+    p_{A,B}(a, b) = \mathbb P(A=a, B=b) &amp; \text{PMF for discrete random variables} \\
+    p_{A,B}(a, b) &amp; \text{density for continuous random variables}
 \end{cases}
 \]</span></p></li>
-<li><p>Without loss of generality, we will use the discrete random variable notation throughout the rest of this lecture (and throughout most of the course).</p></li>
-<li><p>We can also describe (A) and (B) through:</p>
-<ul>
-<li><strong>Conditional distributions</strong>, i.e., (P(A=a | B=b)) or (P(B=b | A=a))</li>
-<li><strong>Marginal distributions</strong>, i.e., (P(A=a)) or (P(B=b))</li>
-</ul></li>
-<li><p>While there are many fundamental rules of probability to manipulate these distributions, most of them can be derived from two basic rules: the <strong>product rule</strong> and the <strong>sum rule</strong>.</p></li>
 </ul>
-</section>
-<section id="the-product-rule" class="level2">
-<h2 class="anchored" data-anchor-id="the-product-rule">The Product Rule</h2>
-<p>The product rule allows us to decompose a joint distribution into the product of a conditional and marginal probability:</p>
-<p><span class="math display">\[\begin{align*}
-P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
-&amp;= P(B=b|A=a)P(A=a)
-\end{align*}\]</span></p>
-<ul>
-<li>This rule can be applied recursively in the case of more than two random variables.</li>
-<li>This rule gives rise to lots of useful facts from probability theory.</li>
-</ul>
-<section id="independence" class="level3">
-<h3 class="anchored" data-anchor-id="independence">Independence</h3>
-<ul>
-<li><p>We say that <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <strong>independent</strong> if <span class="math inline">\(P(A=a, B=b) = P(A=a) P(B=b)\)</span>; that is, their joint probability (density) is the product of their marginal probability (densities).</p></li>
-<li><p>By the product rule, for independent random variables we have that</p>
-<p><span class="math display">\[ P(A=a) P(B=b) = P(A=a, B=b) = P(A=a | B=b) P(B=b), \]</span></p>
-<p>and, through some algebra, that <span class="math inline">\(P(A=a) = P(A=a | B=b)\)</span>. (Similarly, <span class="math inline">\(P(B=b) = P(B=b | A=a)\)</span>.)</p></li>
-<li><p>In other words, when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are independent, the occurrence of <span class="math inline">\(B\)</span> does not affect the probability of <span class="math inline">\(A\)</span>, and vice versa.</p></li>
-</ul>
-</section>
-<section id="bayes-rule" class="level3">
-<h3 class="anchored" data-anchor-id="bayes-rule">Bayes’ Rule</h3>
-<p>We can derive Bayes’ formula</p>
-<p><span class="math display">\[ P(B=b | A=a) = \frac{P(A=a | B=b) P(B=b)}{P(A=a)} \]</span></p>
-<p>using the product rule by starting from the identity <span class="math inline">\(P(B=b, A=a) = P(A=a, B=b)\)</span> and simplifying.</p>
-</section>
-</section>
-<section id="the-sum-rule" class="level2">
-<h2 class="anchored" data-anchor-id="the-sum-rule">The Sum Rule</h2>
-<p>The sum rule allows us to obtain a marginal probability for <span class="math inline">\(A\)</span> (or <span class="math inline">\(B\)</span>) from a joint probability over <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>:</p>
-<p><span class="math display">\[ P(A=a) = \int_{b} P(A=a, B=b) \: \mathrm{d}b. \]</span></p>
-<ul>
-<li>Here, we are again assuming <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are continuous and <span class="math inline">\(P\)</span> represents a density. The integral becomes a summation in the case of discrete random variables.</li>
-<li>Again, this rule can be extended to three or more variables recursively.</li>
-<li>This rule is instrumental in establishing properties about expectations:</li>
-</ul>
-<section id="linearity-of-expectation" class="level3">
-<h3 class="anchored" data-anchor-id="linearity-of-expectation">Linearity of Expectation</h3>
-<ul>
-<li><p>We define the <strong>expected value</strong> of <span class="math inline">\(A\)</span> as:</p>
-<p><span class="math display">\[ \mathbb{E}[A] := \int_{a} a \: P(A=a) \: \mathrm{d}a. \]</span></p></li>
-<li><p>Similarly, the expected value of some function of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> is defined as:</p>
-<p><span class="math display">\[ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a. \]</span></p></li>
-<li><p>We can use the sum rule in conjunction with <a href="https://en.wikipedia.org/wiki/Fubini%27s_theorem">Fubini’s theorem</a> to derive one of the most important formulas in all of probability:</p>
-<p><span class="math display">\[ \mathbb E[A + B] = \mathbb E[A] + \mathbb E[B] \]</span></p></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-warning callout-titled" title="Warning! Notation Overload for PMFs/Densities">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
+<span class="screen-reader-only">Warning</span>Warning! Notation Overload for PMFs/Densities
 </div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><span class="math display">\[\begin{align*}
-  \mathbb{E}[A + B]
-  &amp;= \int_a \int_b (a + b) P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_a \int_b a P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &amp;\quad + \int_a \int_b b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\
-  &amp;= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
-  \\ &amp;\quad + \int_b b \int_a P(A=a, B=b) \: \mathrm{d}a \: \mathrm{d}b
-  \\
-  &amp;= \int_a a P(A=a) \: \mathrm{d}a + \int_b b P(B=b) \: \mathrm{d}b
-  \\
-  &amp;= \mathbb{E}[A] + \mathbb{E}[B]
-  \end{align*}\]</span></p>
-</div>
+<p>Here, and throughout the rest of the course, we will use the notation <span class="math inline">\(p_{A,B}\)</span> for both PMFs of discrete random variables as well as densities for continuous random variables.</p>
 </div>
 </div>
 <ul>
-<li><p>This formula, known as <strong>linearity of expectation</strong>, holds <em>even when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are not independent!</em> We will use this fact constantly throughout the course.</p></li>
-<li><p>As a fun challenge problem, try using this formula to derive the famous <strong>inclusion-exclusion principle</strong>:</p>
-<p><span class="math display">\[ P(A \cup B) = P(A) + P(B) - P(A \cap B). \]</span></p>
-<p><em>Hint: note that <span class="math inline">\(P(A) = \mathbb{E}[\mathbf{1}_A]\)</span>, where <span class="math inline">\(\mathbf{1}_A\)</span> is the indicator random variable for event <span class="math inline">\(A\)</span>. Similarly, <span class="math inline">\(P(A \cap B) = \mathbb{E}[\mathbf{1}_A \mathbf{1}_B]\)</span> and <span class="math inline">\(P(A \cup B) = 1 - P(\overline{A} \cap \overline{B})\)</span></em>.</p></li>
+<li>We can also describe (A) and (B) through:
+<ul>
+<li><strong>Conditional distributions</strong>, i.e., <span class="math inline">\(p_{A|B}(a|b)\)</span> or <span class="math inline">\(p_{B|A}(b|a)\)</span></li>
+<li><strong>Marginal distributions</strong>, i.e., <span class="math inline">\(p_A(a)\)</span> or <span class="math inline">\(p_B(b)\)</span></li>
+</ul></li>
+<li>While there are many fundamental rules of probability to manipulate these distributions, most of them can be derived from two basic rules: the <strong>product rule</strong> and the <strong>sum rule</strong>.</li>
+</ul>
+<p>(All the rules that follow will be defined/derived for continuous random variables, but they can be applied to discrete random variables by substituting “PMF” for “density” and replacing the integrals with sums.)</p>
+</section>
+<section id="the-product-rule" class="level3">
+<h3 class="anchored" data-anchor-id="the-product-rule">The Product Rule</h3>
+<p>The product rule allows us to decompose a joint density over two continuous random variables into the product of a conditional and marginal density:</p>
+<p><span class="math display">\[\begin{align*}
+p_{A,B}(a, b) &amp;= p_{A|B}(a|b) \, p_B(b) \\
+&amp;= p_{B|A}(b|a) \, p_A(a)
+\end{align*}\]</span></p>
+<ul>
+<li>This rule can be applied recursively in the case of more than two continuous random variables.</li>
+<li>This rule gives rise to lots of useful facts from probability theory.</li>
+</ul>
+<section id="independence" class="level4">
+<h4 class="anchored" data-anchor-id="independence">Independence</h4>
+<ul>
+<li><p>We say that <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <strong>independent</strong> if <span class="math inline">\(p_{A,B}(a,b) = p_A(a) \, p_B(b)\)</span>; that is, their joint density is the product of their marginal densities.</p></li>
+<li><p>By the product rule, for independent random variables we have that</p>
+<p><span class="math display">\[ p_A(a) \, p_B(b) = p_{A,B}(a,b) = p_{A|B}(a|b) \, p_B(b), \]</span></p>
+<p>and, through some algebra, that <span class="math inline">\(p_A(a) = p_{A|B}(a|b)\)</span>. (Similarly, <span class="math inline">\(p_B(b) = p_{B|A}(b|a)\)</span>.)</p></li>
+<li><p>In other words, when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are independent, the occurrence of <span class="math inline">\(B\)</span> does not affect the probability of <span class="math inline">\(A\)</span>, and vice versa.</p></li>
 </ul>
 </section>
-<section id="conditional-expectations-and-the-tower-rule" class="level3">
-<h3 class="anchored" data-anchor-id="conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</h3>
+<section id="bayes-rule" class="level4">
+<h4 class="anchored" data-anchor-id="bayes-rule">Bayes’ Rule</h4>
+<p>We can derive Bayes’ formula</p>
+<p><span class="math display">\[ p_{B|A}(b|a) = \frac{p_{A|B}(a|b) \, p_B(b)}{p_A(a)} \]</span></p>
+<p>using the product rule by starting from the identity <span class="math inline">\(p_{B,A}(b,a) = p_{A,B}(a,b)\)</span> and simplifying.</p>
+</section>
+</section>
+<section id="the-sum-rule" class="level3">
+<h3 class="anchored" data-anchor-id="the-sum-rule">The Sum Rule</h3>
+<p>The sum rule allows us to obtain a marginal density for <span class="math inline">\(A\)</span> (or <span class="math inline">\(B\)</span>) from a joint density over <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>:</p>
+<p><span class="math display">\[ p_A(a) = \int_{b} p_{A,B}(a, b) \: \mathrm{d}b. \]</span></p>
 <ul>
-<li><p>The <strong>conditional expectation</strong> of <span class="math inline">\(A\)</span> given <span class="math inline">\(B=b\)</span> is defined as:</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B = b] := \int_{a} a \: P(A=a \mid B=b) \: \mathrm{d}a. \]</span></p>
-<p>It is the average value that <span class="math inline">\(A\)</span> takes when we have the additional information that the random variable <span class="math inline">\(B\)</span> takes on the value <span class="math inline">\(b\)</span>.</p></li>
-<li><p>Note that this conditional expectation is a function of <span class="math inline">\(b\)</span>; i.e.&nbsp;we can write</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B = b] = g(b) \qquad \text{for some function} g.\]</span></p></li>
-<li><p>The expression <span class="math inline">\(\mathbb{E} [A \mid B]\)</span> should then be read as:</p>
-<p><span class="math display">\[ \mathbb{E}[A \mid B] = g(B). \]</span></p>
-<p>I.e. that we are applying the conditional expectation function to the <em>random variable</em> <span class="math inline">\(B\)</span> rather than to a specific realization <span class="math inline">\(b\)</span>.</p></li>
-<li><p>To relate <span class="math inline">\(\mathbb E[A \mid B]\)</span> to <span class="math inline">\(\mathbb E[A]\)</span>, we can use the sum and product rules to get:</p>
-<p><span class="math display">\[ \mathbb E[A] = \mathbb E[ \mathbb E[ A \mid B]] \]</span></p></li>
+<li>Again, this rule can be extended to three or more variables recursively.</li>
+<li>This rule is instrumental in establishing properties about expectations:</li>
+</ul>
+<section id="linearity-of-expectation" class="level4">
+<h4 class="anchored" data-anchor-id="linearity-of-expectation">Linearity of Expectation</h4>
+<ul>
+<li><p>We define the <strong>expected value</strong> of <span class="math inline">\(A\)</span> as:</p>
+<p><span class="math display">\[ \mathbb{E}[A] := \int_{a} a \: p_A(a) \: \mathrm{d}a. \]</span></p></li>
+<li><p>Similarly, the expected value of some function of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> is defined as:</p>
+<p><span class="math display">\[ \mathbb{E}[g(A, B)] := \int_a \int_b g(a, b) \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a. \]</span></p></li>
+<li><p>We can use the sum rule in conjunction with <a href="https://en.wikipedia.org/wiki/Fubini%27s_theorem">Fubini’s theorem</a> to derive one of the most important formulas in all of probability:</p>
+<p><span class="math display">\[ \mathbb E[A + B] = \mathbb E[A] + \mathbb E[B] \]</span></p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="Derivation">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
@@ -395,13 +359,58 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><span class="math display">\[\begin{align*}
-  \mathbb{E}[A] &amp;= \int_a a \int_b P(A=a, B=b) \: \mathrm{d}b \: \mathrm{d}a
+  \mathbb{E}[A + B]
+  &amp;= \int_a \int_b (a + b) \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &amp;= \int_a a \int_b P(A=a \mid B=b) P(B=b) \: \mathrm{d}b \: \mathrm{d}a
+  &amp;= \int_a \int_b a \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &amp;\quad + \int_a \int_b b \, p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
   \\
-  &amp;= \int_b \left( \int_a a P(A=a \mid B=b) \: \mathrm{d}a \right) P(B=b) \: \mathrm{d}b
+  &amp;= \int_a a \int_b p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \\ &amp;\quad + \int_b b \int_a p_{A,B}(a, b) \: \mathrm{d}a \: \mathrm{d}b
   \\
-  &amp;= \int_b \mathbb{E}[A \mid B=b] P(B=b) \: \mathrm{d}b
+  &amp;= \int_a a \: p_A(a) \: \mathrm{d}a + \int_b b \: p_B(b) \: \mathrm{d}b
+  \\
+  &amp;= \mathbb{E}[A] + \mathbb{E}[B]
+  \end{align*}\]</span></p>
+</div>
+</div>
+</div>
+<p>This formula, known as <strong>linearity of expectation</strong>, holds <em>even when <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are not independent!</em> We will use this fact constantly throughout the course.</p>
+</section>
+<section id="conditional-expectations-and-the-tower-rule" class="level4">
+<h4 class="anchored" data-anchor-id="conditional-expectations-and-the-tower-rule">Conditional Expectations and The Tower Rule</h4>
+<ul>
+<li><p>The <strong>conditional expectation</strong> of <span class="math inline">\(A\)</span> given <span class="math inline">\(B=b\)</span> is defined as:</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B = b] := \int_{a} a \: p_{A|B}(a|b) \: \mathrm{d}a. \]</span></p>
+<p>It is the average value that <span class="math inline">\(A\)</span> takes when we have the additional information that the random variable <span class="math inline">\(B\)</span> takes on the value <span class="math inline">\(b\)</span>.</p></li>
+<li><p>Note that this conditional expectation is a function of <span class="math inline">\(b\)</span>; i.e.&nbsp;we can write</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B = b] =: g(b).\]</span></p></li>
+<li><p>The expression <span class="math inline">\(\mathbb{E} [A \mid B]\)</span> should then be read as:</p>
+<p><span class="math display">\[ \mathbb{E}[A \mid B] = g(B). \]</span></p>
+<p>I.e. that we are applying the conditional expectation function to the <em>random variable</em> <span class="math inline">\(B\)</span> rather than to a specific realization <span class="math inline">\(b\)</span>.</p></li>
+<li><p>To relate <span class="math inline">\(\mathbb E[A \mid B]\)</span> to <span class="math inline">\(\mathbb E[A]\)</span>, we can use the sum and product rules to get:</p>
+<p><span class="math display">\[ \mathbb E[A] = \mathbb E[ \mathbb E[ A \mid B]] \]</span></p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\begin{align*}
+  \mathbb{E}[A] &amp;= \int_a a \int_b p_{A,B}(a, b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &amp;= \int_a a \int_b p_{A|B}(a|b) \, p_B(b) \: \mathrm{d}b \: \mathrm{d}a
+  \\
+  &amp;= \int_b \left( \int_a a \: p_{A|B}(a|b) \: \mathrm{d}a \right) p_B(b) \: \mathrm{d}b
+  \\
+  &amp;= \int_b \mathbb{E}[A \mid B=b] \, p_B(b) \: \mathrm{d}b
   \\
   &amp;= \mathbb{E} \left[ \mathbb{E}[ A \mid B ] \right]
   \end{align*}\]</span></p>
@@ -409,8 +418,8 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
 </div>
 </div>
 <ul>
-<li><p>This rule is known as the <strong>Tower Rule</strong>. It allows us to express marginal expectations as recursive applications of conditional expectations.</p></li>
-<li><p><em>This notation is often confusing and scary the first few times you encounter it. Try translating it back into probabilities via the sum and product rules, and you’ll fluently understand it in no time!</em></p></li>
+<li><p>This rule is known as the <strong>Tower Rule</strong>. It allows us to relate marginal expectations and conditional expectations. It will also be very important in this course.</p></li>
+<li><p><em>This notation is often confusing and scary. Try translating it back into probabilities via the sum and product rules, and you’ll fluently understand it in no time!</em></p></li>
 </ul>
 <div class="callout callout-style-default callout-important callout-titled" title="Important: What is Random?">
 <div class="callout-header d-flex align-content-center">
@@ -428,26 +437,133 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
 <summary>
 <p>Why?</p>
 </summary>
-<p>If we go back to the definition: $ E[A] = a P(A=a) da $, note that the two terms in the integral <span class="math inline">\(a\)</span>, <span class="math inline">\(P(A=a)\)</span> are functions of <span class="math inline">\(a\)</span>, which is a realized quantity and therefore <strong>not random</strong>. So we’re integrating non-random quantities together, giving us a non-random output.</p>
+<p>If we go back to the definition: <span class="math inline">\(\mathbb E[A] = \int a \, p_A(a) \, da\)</span>, note that the two terms in the integral, <span class="math inline">\(a\)</span> and <span class="math inline">\(p_A(a)\)</span>, are functions of <span class="math inline">\(a\)</span>, which is a realized quantity and therefore <strong>not random</strong>. So we’re integrating non-random quantities together, giving us a non-random output.</p>
 </details></li>
 <li><p>The conditional expectation <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> is also <strong>not</strong> a random variable.</p>
 <details>
 <summary>
 <p>Why?</p>
 </summary>
-<p>Again going back to the definition: $ E[A B=b] = a P(A=a B=b) da$, the terms inside the integral are functions of <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> (realized quantities, not random variables).</p>
+<p>Again going back to the definition: <span class="math inline">\(\mathbb E[A \mid B=b] = \int a \, p_{A|B}(a|b) \, da\)</span>, the terms inside the integral are functions of <span class="math inline">\(a\)</span> and <span class="math inline">\(b\)</span> (realized quantities, not random variables).</p>
 </details></li>
 <li><p>However, the conditional expectation <span class="math inline">\(\mathbb E[A \mid B]\)</span> <strong>is a random variable</strong>.</p>
 <details>
 <summary>
 <p>Why?</p>
 </summary>
-<p>Recall that we can view <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> as some function of <span class="math inline">\(b\)</span>; i.e. <span class="math inline">\(\mathbb E[A \mid B=b] = g(b)\)</span>. When we plug a realization (i.e.&nbsp;not a random variable) into <span class="math inline">\(g\)</span>, the output is a fixed (not random) quantity.</p>
+<p>Recall that we can view <span class="math inline">\(\mathbb E[A \mid B=b]\)</span> as some deterministic function of <span class="math inline">\(b\)</span>; i.e. <span class="math inline">\(\mathbb E[A \mid B=b] = g(b)\)</span>. When we plug a realization (i.e.&nbsp;not a random variable) into <span class="math inline">\(g\)</span>, the output is a fixed (not random) quantity.</p>
 <p>However, when we plug in a <em>random variable</em> into <span class="math inline">\(g\)</span>, the output is a random quantity! So <span class="math inline">\(\mathbb E[A \mid B] = g(B)\)</span> is a <em>random variable</em> due to the randomness in <span class="math inline">\(B\)</span>.</p>
 </details></li>
 </ul>
 </div>
 </div>
+</section>
+</section>
+</section>
+<section id="linear-algebra-review" class="level2">
+<h2 class="anchored" data-anchor-id="linear-algebra-review">Linear Algebra Review</h2>
+<p>We’re not going to go into too much review about linear algebra. Based on the course prerequisites, I’m assuming that you’re very familiar with the following concepts:</p>
+<ul>
+<li>Matrix multiplication</li>
+<li>Matrix inverses</li>
+<li>Matrix rank</li>
+<li>The trace and determinant of a matrix</li>
+<li>Orthogonal, symmetric, and positive definite matrices</li>
+<li>Vector inner product</li>
+<li>Vector norms</li>
+</ul>
+<p>If you are unfamiliar or uncomfortable with any of these ideas, brush up on them quickly! We’ll make use of them very extensively starting with the next lecture.</p>
+<p>One concept that you hopefully have seen before (but maybe haven’t used too much) is the <em>Singular Value Decomposition</em> (or SVD). It is an important tool for understanding the intuitions behind many of the methods we will discuss in this course.</p>
+<section id="notation-1" class="level3">
+<h3 class="anchored" data-anchor-id="notation-1">Notation</h3>
+<p>Matrices will (almost) always be represented by bold uppercase letters (e.g.&nbsp;<span class="math inline">\(\boldsymbol A\)</span>), regardless of whether they’re random or deterministic.</p>
+</section>
+<section id="the-singular-value-decomposition" class="level3">
+<h3 class="anchored" data-anchor-id="the-singular-value-decomposition">The Singular Value Decomposition</h3>
+<p>Any matrix <span class="math inline">\(\boldsymbol M \in \mathbb R^{n \times p}\)</span> can be decomposed as <span class="math inline">\(\boldsymbol M = \boldsymbol U \boldsymbol D \boldsymbol V^\top\)</span>. Writing <span class="math inline">\(r = \min(n, p)\)</span> for the smaller of the two dimensions:</p>
+<ul>
+<li><span class="math inline">\(\boldsymbol U \in \mathbb{R}^{n \times r}\)</span> has <strong>orthonormal columns</strong>: they are mutually orthogonal unit vectors, so <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol I\)</span>.</li>
+<li><span class="math inline">\(\boldsymbol D \in \mathbb{R}^{r \times r}\)</span> is <strong>square and diagonal</strong>: all off-diagonal entries are zero, and the diagonal entries (the <em>singular values</em>, denoted by <span class="math inline">\(d_1, d_2, \ldots, d_r\)</span>) are <strong>non-negative</strong>.</li>
+<li><span class="math inline">\(\boldsymbol V \in \mathbb{R}^{p \times r}\)</span> has <strong>orthonormal columns</strong> (<span class="math inline">\(\boldsymbol V^\top \boldsymbol V = \boldsymbol I\)</span>), so <span class="math inline">\(\boldsymbol V^\top \in \mathbb{R}^{r \times p}\)</span>.</li>
+</ul>
+<p>This is the <strong>thin</strong> (or <strong>reduced</strong>) SVD. We use it throughout the course because the square, diagonal <span class="math inline">\(\boldsymbol D\)</span> is convenient to work with (e.g.&nbsp;it is easy to invert when analyzing ridge regression). When <span class="math inline">\(\boldsymbol M\)</span> is square (<span class="math inline">\(n = p\)</span>, as in the 2D example below), <span class="math inline">\(\boldsymbol U\)</span> and <span class="math inline">\(\boldsymbol V\)</span> are themselves square orthonormal matrices — i.e.&nbsp;<em>rotation matrices</em>.</p>
+<p>This decomposition has so many uses in statistics and beyond, and we’ll see it many times throughout this class.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="The &quot;Thin&quot; SVD vs the &quot;Full&quot; SVD">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The “Thin” SVD vs the “Full” SVD
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You may have previously seen the <strong>full</strong> SVD, which pads the thin version with extra orthonormal columns so that <span class="math inline">\(\boldsymbol U\)</span> and <span class="math inline">\(\boldsymbol V\)</span> become <em>square</em>: <span class="math display">\[\boldsymbol M = \boldsymbol U \boldsymbol D \boldsymbol V^\top, \qquad \boldsymbol U \in \mathbb{R}^{n \times n}, \quad \boldsymbol D \in \mathbb{R}^{n \times p}, \quad \boldsymbol V \in \mathbb{R}^{p \times p}.\]</span> Now <span class="math inline">\(\boldsymbol U\)</span> and <span class="math inline">\(\boldsymbol V\)</span> are square <strong>orthogonal</strong> matrices (both their rows <em>and</em> columns are orthonormal: <span class="math inline">\(\boldsymbol U^\top \boldsymbol U = \boldsymbol U \boldsymbol U^\top = \boldsymbol I\)</span>, and likewise for <span class="math inline">\(\boldsymbol V\)</span>), while <span class="math inline">\(\boldsymbol D\)</span> becomes a rectangular “diagonal” matrix:</p>
+<ul>
+<li>If <span class="math inline">\(n &gt; p\)</span> (more rows than columns): <span class="math inline">\(\boldsymbol D\)</span> holds the <span class="math inline">\(p\)</span> singular values in its top <span class="math inline">\(p \times p\)</span> block, with the remaining <span class="math inline">\(n - p\)</span> rows all zero.</li>
+<li>If <span class="math inline">\(n &lt; p\)</span> (more columns than rows): <span class="math inline">\(\boldsymbol D\)</span> holds the <span class="math inline">\(n\)</span> singular values in its leftmost <span class="math inline">\(n \times n\)</span> block, with the remaining <span class="math inline">\(p - n\)</span> columns all zero.</li>
+</ul>
+<p>Those zero rows (or columns) multiply the “extra” columns of <span class="math inline">\(\boldsymbol U\)</span> (or <span class="math inline">\(\boldsymbol V\)</span>), so they contribute nothing to <span class="math inline">\(\boldsymbol M\)</span>. Dropping them recovers the thin SVD above.</p>
+</div>
+</div>
+</div>
+<section id="intuition" class="level4">
+<h4 class="anchored" data-anchor-id="intuition">Intuition</h4>
+<p>To understand its use, it’s important to first understand the information that’s captured in each of the terms in this decomposition. And, because everything is easier to visualize in 2D, let’s assume that <span class="math inline">\(n = p = 2\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/svd_geometry.svg" class="img-fluid figure-img" width="500"></p>
+<figcaption>SVD Intuition (adapted from <a href="https://commons.wikimedia.org/wiki/File:Singular-Value-Decomposition.svg">Wikipedia</a>)</figcaption>
+</figure>
+</div>
+<p>Any matrix <span class="math inline">\(\boldsymbol M\)</span> can be thought of as a (linear) operation to transform a vector (e.g.&nbsp;by rotation, scale, etc.).</p>
+<ul>
+<li>Consider the vectors <span class="math inline">\(\boldsymbol o\)</span> and <span class="math inline">\(\boldsymbol r\)</span>, visualized by the orange and red arrows (respectively) in the upper left.</li>
+<li>Applying the matrix to these vectors produces <span class="math inline">\(\boldsymbol M \boldsymbol o\)</span> and <span class="math inline">\(\boldsymbol M \boldsymbol r\)</span>, depicted by the arrows in the upper right.</li>
+<li>Note how these arrows have been rotated and stretched.</li>
+</ul>
+<p>The SVD breaks this transformation down into three composable steps:</p>
+<ul>
+<li>First, we rotate the vectors with the matrix <span class="math inline">\(\boldsymbol V^\top\)</span> (producing <span class="math inline">\(\boldsymbol V^\top \boldsymbol o\)</span> and <span class="math inline">\(\boldsymbol V^\top \boldsymbol r\)</span>). Recall that orthonormal matrices are <em>rotation matrices</em>, where multiplying them against a vector is the same as rotating that vector about the origin.</li>
+<li>Next, we stretch the vectors along the principal axis (x- and y-axis) with the matrix <span class="math inline">\(\boldsymbol D\)</span> (producing <span class="math inline">\(\boldsymbol D \boldsymbol V^\top \boldsymbol o\)</span> and <span class="math inline">\(\boldsymbol D \boldsymbol V^\top \boldsymbol r\)</span>). Recall that diagonal matrices shrink or stretch vectors along the principal axes.</li>
+<li>Finally, we apply one more rotation to the vectors with the matrix <span class="math inline">\(\boldsymbol U\)</span> (producing <span class="math inline">\(\boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol o = \boldsymbol M \boldsymbol o\)</span> and <span class="math inline">\(\boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol r = \boldsymbol M \boldsymbol r\)</span>).</li>
+</ul>
+<p>Amazingly, any linear transformation can be decomposed into this rotate-stretch-rotate pattern!</p>
+</section>
+<section id="how-well-use-the-svd" class="level4">
+<h4 class="anchored" data-anchor-id="how-well-use-the-svd">How We’ll Use the SVD</h4>
+<p>The most important information in the SVD lives in the <span class="math inline">\(\boldsymbol D\)</span> matrix. It can tell us the <strong>effective dimensionality of the matrix</strong>.</p>
+<ul>
+<li>In the example above, note how multiplying against <span class="math inline">\(\boldsymbol D\)</span> stretched the x-axis but shrunk the y-axis.</li>
+<li>This implies that <span class="math inline">\(d_1\)</span> (corresponding to the x axis) is a very large number, while <span class="math inline">\(d_2\)</span> (corresponding to the y axis) is a very small number.</li>
+<li>Now imagine if <span class="math inline">\(d_1 \gg d_2\)</span>, with <span class="math inline">\(d_2 \approx 0\)</span>:
+<ul>
+<li>Any vector <span class="math inline">\(\boldsymbol D \boldsymbol V^\top \boldsymbol z\)</span> would then approximately live on the x axis.</li>
+<li>Even after rotating with <span class="math inline">\(\boldsymbol U\)</span>, most vectors <span class="math inline">\(\boldsymbol M \boldsymbol z = \boldsymbol U \boldsymbol D \boldsymbol V^\top \boldsymbol z\)</span> would approximately live on a line.</li>
+<li>This implies that <span class="math inline">\(\boldsymbol M\)</span> effectively collapses all points to nearly live on a single line. So it collapses 2D points to a nearly 1D subspace.</li>
+</ul></li>
+<li>Conversely, if <span class="math inline">\(d_1 \approx d_2\)</span>, then no dimension gets collapsed more than the other. <span class="math inline">\(\boldsymbol D\)</span> isn’t doing too much (assuming without loss of generality that <span class="math inline">\(d_1 \approx d_2 \approx 1\)</span>), so <span class="math inline">\(\boldsymbol M\)</span> is mostly characterized by the two rotation matrices <span class="math inline">\(\boldsymbol U\)</span> and <span class="math inline">\(\boldsymbol V\)</span>.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="Takeaway">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Takeaway
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The singular values tell us how many dominant dimensions a matrix has. In 2D:</p>
+<ul>
+<li>If <span class="math inline">\(d_1 \approx d_2 \approx 1\)</span>, then the matrix isn’t doing much more than rotating vectors.</li>
+<li>If <span class="math inline">\(d_1 \gg d_2\)</span>, then the matrix will collapse vectors to a nearly 1D subspace.</li>
+</ul>
+</div>
+</div>
+</section>
 </section>
 </section>
 <section id="conclusion" class="level2">
@@ -456,6 +572,7 @@ P(A=a, B=b) &amp;= P(A=a|B=b)P(B=b) \\
 <li>We will use (jointly-distributed) random variables to model data, models that depend on data, and predictions that depend on models that depend on data.</li>
 <li>You will need to manipulate marginal, joint, and conditional probabilities and expectations of these random variables throughout the course.</li>
 <li>This review has covered most of the probability rules that we’ll use, but just remember that <em>you</em> can always derive any of them through the product and sum rules!</li>
+<li>The SVD tells us the effective dimensionality of a matrix. We’ll use it lots when analyzing methods throughout this course!</li>
 </ul>
 
 

@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 15: The Bootstrap – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -108,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -243,7 +245,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -274,7 +276,7 @@ window.Quarto = {
 <li>In this course, we probably demonstrated that methods like <strong>ridge regularization</strong> reduce variance.</li>
 <li>Moreover, we rigorously argued that methods like <strong>basis expansions</strong> reduce bias.</li>
 </ul>
-<p>However, these methods for uncertaity quantification, variance reduction, and bias reduction all relied on linear structure. Other predictive/statistical models do not have such convenient analytic properties.</p>
+<p>However, these methods for uncertaity quantification, variance reduction, and bias reduction all relied on linear structure. Other predictive models do not have such convenient analytic properties.</p>
 <p>In this module, we will replace <strong>mathematical analysis</strong> with <strong>computational simulation</strong> to achieve similar goals.</p>
 <ol type="1">
 <li><p>In this lecture, we will introduce the <strong>bootstrap</strong>, a computational method for estimating predictive uncertainty in arbitrary predictive models (with almost no assumptions about the statistical or predictive model)!</p></li>
@@ -315,7 +317,7 @@ window.Quarto = {
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
-<li>We assume that our training data are <strong>random samples</strong> with <span class="math inline">\(Y = X^\top \beta + \epsilon\)</span>, where <span class="math inline">\(\epsilon \sim \mathcal{N}(0, \sigma^2)\)</span>, for some fixed <span class="math inline">\(\beta, \sigma\)</span>.</li>
+<li>We assume that our training data are <strong>random samples</strong> with <span class="math inline">\(Y = f(X) + \varepsilon\)</span>, <span class="math inline">\(f(X) = X^\top \beta\)</span>, where <span class="math inline">\(\varepsilon \sim \mathcal{N}(0, \sigma^2)\)</span>, for some fixed <span class="math inline">\(\beta, \sigma\)</span>.</li>
 <li>95% probability refers to the randomness in the training data.</li>
 <li>If we repeatedly sampled new training datasets, trained linear models on them, and computed 95% confidence intervals for predictions at <span class="math inline">\(x\)</span>, then 95% of those confidence intervals would contain <span class="math inline">\(\mathbb E[Y \mid X=x]\)</span>.</li>
 </ul>
@@ -331,7 +333,7 @@ window.Quarto = {
 \]</span></p>
 <p>and by using the fact that <span class="math inline">\(\hat \beta_\mathrm{OLS} \mid \boldsymbol X\)</span> is Gaussian under our statistical model.</p></li>
 </ul>
-<p>However, consider what happens if we use a predictive model that’s based on a more complicated (or implicit) statistical model, like a decision tree or k-nearest neighbors.</p>
+<p>However, consider what happens if we use a predictive model that has no clean statistical model (or only an implicit one), like a decision tree or k-nearest neighbors.</p>
 <ul>
 <li>We haven’t necessarily defined the conditional distribution of <span class="math inline">\(Y \mid X\)</span>.</li>
 <li>Even if we did, the recursive decision tree algorithm is too complicated to compute expectations/variances of the estimator analytically.</li>
@@ -376,13 +378,13 @@ window.Quarto = {
 <section id="approximating-new-datasets-via-the-bootstrap" class="level2">
 <h2 class="anchored" data-anchor-id="approximating-new-datasets-via-the-bootstrap">Approximating New Datasets via the Bootstrap</h2>
 <ul>
-<li><p>Imagine that I have <span class="math inline">\(X_1, \ldots, X_n\)</span> drawn i.i.d. from some distribution <span class="math inline">\(P(X)\)</span>.</p></li>
-<li><p>The <strong>empirical distribution</strong> <span class="math inline">\(\hat P(X)\)</span> is the discrete distribution that places mass <span class="math inline">\(1/n\)</span> at each observed data point <span class="math inline">\(X_i\)</span>:</p>
+<li><p>Imagine that I have <span class="math inline">\(X_1, \ldots, X_n\)</span> drawn i.i.d. from some distribution <span class="math inline">\(\mathbb{P}_X\)</span>.</p></li>
+<li><p>The <strong>empirical distribution</strong> <span class="math inline">\(\hat{\mathbb{P}}_X\)</span> is the discrete distribution that places mass <span class="math inline">\(1/n\)</span> at each observed data point <span class="math inline">\(X_i\)</span>:</p>
 <p><span class="math display">\[
-\hat P(X=x) = \frac{1}{n} \sum_{i=1}^n \delta_{X_i}(x)
+\hat{\mathbb{P}}(X=x) = \frac{1}{n} \sum_{i=1}^n \delta_{X_i}(x)
 \]</span></p>
 <p>where <span class="math inline">\(\delta_{X_i}(x)\)</span> is a point mass at <span class="math inline">\(X_i\)</span>.</p></li>
-<li><p>If <span class="math inline">\(n\)</span> is large enough, then <span class="math inline">\(\hat P(X) \approx P(X)\)</span>:</p>
+<li><p>If <span class="math inline">\(n\)</span> is large enough, then <span class="math inline">\(\hat{\mathbb{P}}_X \approx \mathbb{P}_X\)</span>:</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -403,25 +405,25 @@ window.Quarto = {
 </div>
 </div></li>
 </ul>
-<div class="callout callout-style-default callout-note callout-titled" title="What is the Implication of $\hat P(X) \approx P(X)$?">
+<div class="callout callout-style-default callout-note callout-titled" title="What is the Implication of $\hat{\mathbb{P}}_X \approx \mathbb{P}_X$?">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>What is the Implication of <span class="math inline">\(\hat P(X) \approx P(X)\)</span>?
+<span class="screen-reader-only">Note</span>What is the Implication of <span class="math inline">\(\hat{\mathbb{P}}_X \approx \mathbb{P}_X\)</span>?
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <ul>
-<li>Let’s imagine I sample a new point <span class="math inline">\(X^*\)</span> from <span class="math inline">\(P(X)\)</span>, and another point <span class="math inline">\(\hat X^{*}\)</span> from <span class="math inline">\(\hat P(X)\)</span>.</li>
-<li>If <span class="math inline">\(\hat P(X) \approx P(X)\)</span>, then the distribution of <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\hat X^{*}\)</span> should be similar.</li>
-<li>Thus, sampling from the empirical distribution <span class="math inline">\(\hat P(X)\)</span> is (approximately) equivalent to sampling from the true distribution <span class="math inline">\(P(X)\)</span>!</li>
+<li>Let’s imagine I sample a new point <span class="math inline">\(X^*\)</span> from <span class="math inline">\(\mathbb{P}_X\)</span>, and another point <span class="math inline">\(\hat X^{*}\)</span> from <span class="math inline">\(\hat{\mathbb{P}}_X\)</span>.</li>
+<li>If <span class="math inline">\(\hat{\mathbb{P}}_X \approx \mathbb{P}_X\)</span>, then the distribution of <span class="math inline">\(X^*\)</span> and <span class="math inline">\(\hat X^{*}\)</span> should be similar.</li>
+<li>Thus, sampling from the empirical distribution <span class="math inline">\(\hat{\mathbb{P}}_X\)</span> is (approximately) equivalent to sampling from the true distribution <span class="math inline">\(\mathbb{P}_X\)</span>!</li>
 </ul>
 </div>
 </div>
 <ul>
-<li>If we wish to sample a whole-new dataset <span class="math inline">\(\mathcal D' = \{ X_1', \ldots, X_n' \}\)</span> that has (approximately) the same distribution as our original dataset <span class="math inline">\(\mathcal D = \{ X_1, \ldots, X_n \}\)</span>, we can thus sample each <span class="math inline">\(X_i'\)</span> i.i.d. from the empirical distribution <span class="math inline">\(\hat P(X)\)</span>.</li>
+<li>If we wish to sample a whole-new dataset <span class="math inline">\(\mathcal D' = \{ X_1', \ldots, X_n' \}\)</span> that has (approximately) the same distribution as our original dataset <span class="math inline">\(\mathcal D = \{ X_1, \ldots, X_n \}\)</span>, we can thus sample each <span class="math inline">\(X_i'\)</span> i.i.d. from the empirical distribution <span class="math inline">\(\hat{\mathbb{P}}_X\)</span>.</li>
 </ul>
 <section id="the-bootstrap" class="level3">
 <h3 class="anchored" data-anchor-id="the-bootstrap">The Bootstrap</h3>
@@ -437,10 +439,10 @@ window.Quarto = {
 </div>
 <div class="callout-body-container callout-body">
 <ol type="1">
-<li>Construct the empirical distribution <span class="math inline">\(\hat P(X, Y)\)</span> based on the observed data points <span class="math inline">\((X_i, Y_i)\)</span> in <span class="math inline">\(\mathcal D\)</span>.</li>
+<li>Construct the empirical distribution <span class="math inline">\(\hat{\mathbb{P}}_{X,Y}\)</span> based on the observed data points <span class="math inline">\((X_i, Y_i)\)</span> in <span class="math inline">\(\mathcal D\)</span>.</li>
 <li>For <span class="math inline">\(b = 1, \ldots, B\)</span>:
 <ul>
-<li>Sample <span class="math inline">\(n\)</span> data points <span class="math inline">\((X_i^{(b)}, Y_i^{(b)})\)</span> <em>with replacement</em> from <span class="math inline">\(\hat P(X, Y)\)</span> to form dataset <span class="math inline">\(\mathcal D^{(b)}\)</span>.</li>
+<li>Sample <span class="math inline">\(n\)</span> data points <span class="math inline">\((X_i^{(b)}, Y_i^{(b)})\)</span> <em>with replacement</em> from <span class="math inline">\(\hat{\mathbb{P}}_{X,Y}\)</span> to form dataset <span class="math inline">\(\mathcal D^{(b)}\)</span>.</li>
 <li>Compute the statistic of interest (e.g.&nbsp;prediction <span class="math inline">\(\hat f_{\mathcal D^{(b)}}(x)\)</span>) on dataset <span class="math inline">\(\mathcal D^{(b)}\)</span>. (<strong>Important</strong>: this step will require training <span class="math inline">\(b\)</span> models on the <span class="math inline">\(b\)</span> simulated datasets if the statistic of interest is a model prediction.)</li>
 </ul></li>
 <li>Compute the empirical variance <span class="math inline">\(\mathrm{Var}[ \hat f_{\mathcal D^{(b)}}(x) ]\)</span>, or construct a confidence interval from the <span class="math inline">\(B\)</span> computed statistics (using methods to be explained shortly).</li>
@@ -448,7 +450,7 @@ window.Quarto = {
 </div>
 </div>
 <ul>
-<li><p>Note that we sample <em>with replacement</em> from the empirical distribution because we want each data point in the new dataset to be an independent draw from <span class="math inline">\(\hat P(X, Y) \approx P(X, Y)\)</span>.</p></li>
+<li><p>Note that we sample <em>with replacement</em> from the empirical distribution because we want each data point in the new dataset to be an independent draw from <span class="math inline">\(\hat{\mathbb{P}}_{X,Y} \approx \mathbb{P}_{X,Y}\)</span>.</p></li>
 <li><p>Once we have sampled these new datasets, we can train models <span class="math inline">\(\hat f_{\mathcal D^{(1)}}, \ldots, \hat f_{\mathcal D^{(B)}}\)</span> on each dataset and use the predictions at <span class="math inline">\(x\)</span> to estimate the variance of <span class="math inline">\(\hat Y = \hat f_{\mathcal D}(x)\)</span>.</p></li>
 <li><p>Amazingly, this simple procedure can be used to estimate the variance of the predictions from any model, or just about any statistic that we could ever care about! We don’t need to derive complicated analytic expressions, nor do we even need to make any (significant) assumptions about the statistical model underlying our data!</p></li>
 </ul>
@@ -629,7 +631,7 @@ window.Quarto = {
 <summary>
 <p>When is the Percentile Interval Valid?</p>
 </summary>
-<p>If there exists a monotonic function <span class="math inline">\(m: \mathbb R \to \mathbb R\)</span> so that <span class="math inline">\(m(\hat Y)\)</span> is Gaussian distributed, i.e.&nbsp;<span class="math inline">\(m(\hat Y) \sim N(m(\hat Y), c^2)\)</span>, then the percentile interval has asymptotically correct coverage.</p>
+<p>If there exists a monotonic function <span class="math inline">\(m: \mathbb R \to \mathbb R\)</span> so that <span class="math inline">\(m(\hat Y)\)</span> is Gaussian distributed, i.e.&nbsp;<span class="math inline">\(m(\hat Y) \sim \mathcal N(m(\hat Y), c^2)\)</span>, then the percentile interval has asymptotically correct coverage.</p>
 <p>For most complicated statistics (e.g.&nbsp;the predictions of a decision tree), it’s hard to know whether such a function <span class="math inline">\(m\)</span> exists.</p>
 </details></li>
 <li><p>If we want (asymptotically) correct confidence intervals around the <strong>true regression function</strong>, we should use the <strong>pivotal interval</strong>.</p></li>

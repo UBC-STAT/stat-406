@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 19: Gradient Descent and Backpropagation – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -209,7 +211,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -245,11 +247,11 @@ window.Quarto = {
 <p>(For simplicity, we will assume that we have a one-hidden-layer neural network with two sets of learnable parameters: <span class="math inline">\(\Theta\)</span> (the hidden layer weights) and <span class="math inline">\(\beta\)</span> (the final linear combination weights). However, these ideas generalize to deeper networks.)</p>
 <ul>
 <li><p>As with many other predictive models we’ve studied, we fit the neural network parameters using empirical risk minimization.</p></li>
-<li><p>Given some training data <span class="math inline">\(\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n\)</span> and some loss function <span class="math inline">\(\ell(Y, \hat Y)\)</span>, the neural network training problem can be written as:</p>
+<li><p>Given some training data <span class="math inline">\(\mathcal{D} = \{(x_i, y_i)\}_{i=1}^n\)</span> and some loss function <span class="math inline">\(L(Y, \hat f(X))\)</span>, the neural network training problem can be written as:</p>
 <p><span class="math display">\[
-\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n L\left(y_i, \hat f(x_i; \Theta, \beta)\right)
 \]</span></p>
-<p>where <span class="math inline">\(f_\mathcal{D}(x; \Theta, \beta)\)</span> is the neural network’s prediction for input <span class="math inline">\(x\)</span> given parameters <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span>. (We will often omit the dependence on <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span> for brevity.)</p></li>
+<p>where <span class="math inline">\(\hat f(x; \Theta, \beta)\)</span> is the neural network’s prediction for input <span class="math inline">\(x\)</span> given parameters <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span>. (We will often omit the dependence on <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(\beta\)</span> for brevity.)</p></li>
 <li><p>Unlike other models we’ve studied (e.g., linear regression, ridge regression), there is no closed-form solution for this optimization problem, and so we must resort to iterative optimization algorithms.</p></li>
 </ul>
 <p><strong>Fitting neural networks with iterative optimization algorithms:</strong></p>
@@ -424,17 +426,17 @@ w_1 = w_0 - \frac{1}{2\lambda} \nabla f(w_0)
 </section>
 <section id="stopping-criteria" class="level3">
 <h3 class="anchored" data-anchor-id="stopping-criteria">Stopping Criteria</h3>
-<p>For some small tolerance <span class="math inline">\(\epsilon &gt; 0\)</span> (e.g., <span class="math inline">\(\epsilon = 10^{-6}\)</span>), we can check any/all of the following conditions:</p>
+<p>For some small tolerance <span class="math inline">\(\varepsilon &gt; 0\)</span> (e.g., <span class="math inline">\(\varepsilon = 10^{-6}\)</span>), we can check any/all of the following conditions:</p>
 <ol type="1">
-<li><strong>Gradient magnitude</strong>: <span class="math inline">\(\|\nabla f(w^{(k)})\| &lt; \epsilon\)</span>
+<li><strong>Gradient magnitude</strong>: <span class="math inline">\(\|\nabla f(w^{(k)})\| &lt; \varepsilon\)</span>
 <ul>
 <li>Stop when the gradient is nearly zero (i.e., we are close to a stationary point).</li>
 </ul></li>
-<li><strong>Step size</strong>: <span class="math inline">\(\|w^{(k)} - w^{(k-1)}\| &lt; \epsilon\)</span>
+<li><strong>Step size</strong>: <span class="math inline">\(\|w^{(k)} - w^{(k-1)}\| &lt; \varepsilon\)</span>
 <ul>
 <li>Stop when successive iterates are very close to each other.</li>
 </ul></li>
-<li><strong>Function value change</strong>: <span class="math inline">\(|f(w^{(k)}) - f(w^{(k-1)})| &lt; \epsilon\)</span>
+<li><strong>Function value change</strong>: <span class="math inline">\(|f(w^{(k)}) - f(w^{(k-1)})| &lt; \varepsilon\)</span>
 <ul>
 <li>Stop when the function value stops changing significantly.</li>
 </ul></li>
@@ -448,9 +450,9 @@ w_1 = w_0 - \frac{1}{2\lambda} \nabla f(w_0)
 <ul>
 <li><p>Recall that we want to minimize the empirical risk:</p>
 <p><span class="math display">\[
-\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n \ell\left(y_i, \hat f_\mathcal{D}(x_i; \Theta, \beta)\right)
+\hat \Theta, \hat \beta = \mathrm{argmin}_{\Theta, \beta} \sum_{i=1}^n L\left(y_i, \hat f(x_i; \Theta, \beta)\right)
 \]</span></p></li>
-<li><p>Assuming we’re using the squared error loss <span class="math inline">\(\ell(y, \hat y) = (y - \hat y)^2\)</span> and a one-hidden-layer neural network, this optimization problem becomes:</p>
+<li><p>Assuming we’re using the squared error loss <span class="math inline">\(L(y, \hat f(x)) = (y - \hat f(x))^2\)</span> and a one-hidden-layer neural network, this optimization problem becomes:</p>
 <p><span class="math display">\[
 \mathrm{argmin}_{\theta_1, \ldots, \theta_m, \beta_1, \ldots, \beta_m} \mathcal L,
 \qquad \mathcal L = \sum_{i=1}^n \left( Y_i - \sum_{j=1}^m \beta_j g(\theta_j^\top X_i) \right)^2

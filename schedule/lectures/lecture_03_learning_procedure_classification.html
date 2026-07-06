@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.38">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2025-12-18">
+<meta name="dcterms.date" content="2026-07-06">
 
 <title>Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression – UBC Stat406 2025 W1</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -33,15 +36,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-c405cde16e26c16f7328135cb468beb9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-1afd338e66d836ec54a0598310f22134.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
 <link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
@@ -73,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -163,12 +165,13 @@ window.Quarto = {
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
   <li><a href="#supervised-learning-for-classification-statistical-perspective" id="toc-supervised-learning-for-classification-statistical-perspective" class="nav-link" data-scroll-target="#supervised-learning-for-classification-statistical-perspective">Supervised Learning for Classification: Statistical Perspective</a></li>
-  <li><a href="#statistical-model-linear-log-odds" id="toc-statistical-model-linear-log-odds" class="nav-link" data-scroll-target="#statistical-model-linear-log-odds">Statistical Model: Linear Log-Odds</a></li>
-  <li><a href="#prediction-and-different-notions-of-risk" id="toc-prediction-and-different-notions-of-risk" class="nav-link" data-scroll-target="#prediction-and-different-notions-of-risk">Prediction and Different Notions of Risk</a></li>
-  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a>
+  <li><a href="#statistical-models-for-classification" id="toc-statistical-models-for-classification" class="nav-link" data-scroll-target="#statistical-models-for-classification">Statistical Models for Classification</a></li>
+  <li><a href="#hypothesis-class" id="toc-hypothesis-class" class="nav-link" data-scroll-target="#hypothesis-class">Hypothesis Class</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
+  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a>
   <ul class="collapse">
-  <li><a href="#maximum-likelihood-estimation-mle" id="toc-maximum-likelihood-estimation-mle" class="nav-link" data-scroll-target="#maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</a></li>
-  <li><a href="#empirical-risk-minimization-erm" id="toc-empirical-risk-minimization-erm" class="nav-link" data-scroll-target="#empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</a></li>
+  <li><a href="#making-predictions-using-decision-theory" id="toc-making-predictions-using-decision-theory" class="nav-link" data-scroll-target="#making-predictions-using-decision-theory">Making Predictions Using Decision Theory</a></li>
+  <li><a href="#how-costs-affect-decisions" id="toc-how-costs-affect-decisions" class="nav-link" data-scroll-target="#how-costs-affect-decisions">How Costs Affect Decisions</a></li>
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
@@ -196,7 +199,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">December 18, 2025</p>
+      <p class="date">July 6, 2026</p>
     </div>
   </div>
   
@@ -213,7 +216,7 @@ window.Quarto = {
 <p>By the end of this lecture, you will be able to:</p>
 <ol type="1">
 <li>Define the log-odds statistical model for binary classification, and justify its advantages</li>
-<li>Derive logistic regression through MLE and ERM</li>
+<li>Derive logistic regression through empirical risk minimization (ERM)</li>
 <li>Construct predictions for classifiers based on different notions of risk</li>
 </ol>
 </section>
@@ -238,21 +241,21 @@ window.Quarto = {
 <tbody>
 <tr class="odd">
 <td>2</td>
+<td>Predictive Model</td>
 <td>Hypothesis Class</td>
-<td>Statistical Model</td>
-<td><span class="math inline">\(\mathbb{E}[Y \mid X = x] = x^\top \beta\)</span></td>
+<td><span class="math inline">\(\hat f(X) = X^\top \hat\beta\)</span></td>
 </tr>
 <tr class="even">
 <td>3</td>
 <td>Training</td>
 <td>Estimation</td>
-<td><span class="math inline">\(\hat{\beta}_\mathrm{MLE/OLS} = (\boldsymbol{X}^\top \boldsymbol{X})^{-1} \boldsymbol{X}^\top \boldsymbol{Y}\)</span></td>
+<td><span class="math inline">\(\hat f_\mathrm{ERM}(X) = X^\top \hat\beta_\mathrm{OLS}\)</span></td>
 </tr>
 <tr class="odd">
 <td>6</td>
-<td>Testing (Inference)</td>
+<td>Testing</td>
 <td>Prediction</td>
-<td><span class="math inline">\(\hat{Y}_\mathrm{new} = X_\mathrm{new}^\top \hat{\beta}\)</span></td>
+<td><span class="math inline">\(\hat{Y}_\mathrm{new} = \hat f_\mathrm{ERM}(X)\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -269,161 +272,277 @@ window.Quarto = {
 <li>The goal remains the same: learn a function <span class="math inline">\(\hat{f}: \mathbb{R}^p \to \{0, 1\}\)</span> that accurately predicts the class label for new observations.</li>
 </ul>
 <p>Let’s now derive a statistical model estimation procedure, and prediction rule for binary classification!</p>
-<p><strong>Sneak peek: logistic regression</strong></p>
-<ul>
-<li>We will ultimately derive <strong>logistic regression</strong>,</li>
-</ul>
 </section>
-<section id="statistical-model-linear-log-odds" class="level2">
-<h2 class="anchored" data-anchor-id="statistical-model-linear-log-odds">Statistical Model: Linear Log-Odds</h2>
+<section id="statistical-models-for-classification" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-models-for-classification">Statistical Models for Classification</h2>
 <ul>
-<li>Recall that a statistical model is a set of probability distributions.</li>
-<li>In classification, we are interested in families of <span class="math inline">\(P(Y=1 \mid X = x)\)</span> distributions
+<li><p>Recall that, formally, a statistical model is a set of conditional distributions over <span class="math inline">\(Y \mid X\)</span>.</p></li>
+<li><p>In regression, as we saw last lecture, we tend to use statistical models that characterize <span class="math inline">\(Y\)</span> as the sum of a deterministic/learnable component <span class="math inline">\(f(X)\)</span> and a Gaussian/unlearnable component <span class="math inline">\(\varepsilon\)</span>.</p>
 <ul>
-<li>These distributions implicitly define the distribution of <span class="math inline">\(P(Y=0 \mid X = x)\)</span> by the law of total probability, i.e.&nbsp;<span class="math inline">\(P(Y=0 \mid X = x) = 1 - P(Y=1 \mid X = x)\)</span>.</li>
+<li><p>This implicitly places a Gaussian distribution on <span class="math inline">\(Y \mid X\)</span>:</p>
+<p><span class="math display">\[ Y = f(X) + \varepsilon, \:\: \varepsilon \sim \mathcal N(0, \sigma^2)
+\quad \Leftrightarrow \quad Y \mid X \sim \mathcal N( f(X), \sigma^2 ). \]</span></p></li>
+<li><p>Crucially, we will have a valid Gaussian distribution for any <span class="math inline">\(f(X) \in (-\infty, \infty).\)</span> This property makes <span class="math inline">\(f\)</span> easy to approximate with linear models.</p></li>
 </ul></li>
-<li><strong>Notation</strong>: For simplicity, let’s define:
+<li><p>For classification, it’s easier to start from the set of conditional distributions and derive the learnable/unlearnable components.</p>
 <ul>
-<li><span class="math inline">\(\pi_1(x) := P(Y = 1 \mid X = x)\)</span> (probability of positive class)</li>
-<li><span class="math inline">\(\pi_0(x) := P(Y = 0 \mid X = x)\)</span> (probability of negative class)</li>
-<li>Note that <span class="math inline">\(\pi_0(x) = 1 - \pi_1(x)\)</span>.</li>
+<li><p>The most general set of distributions is:</p>
+<p><span class="math display">\[ Y \mid X \sim \mathrm{Bern}( \pi_1(X) ), \qquad \pi_1(x) = \mathbb P(Y=1 \mid X=x), \qquad \pi_1 \text{ is some f'n with range } [0, 1]. \]</span></p></li>
+<li><p>Intuitively, we think of the class assignment as a weighted coin flip (the unlearnable component), where the covariates determine the weighting of the coin (the learnable bit).</p></li>
+</ul></li>
+<li><p>However, <span class="math inline">\(\pi_1(x) = \mathbb P(Y=1 \mid X=x)\)</span> is not the most natural parameterization of the learnable component.</p>
+<ul>
+<li><p>In order to be a valid Bernoulli distribution, <span class="math inline">\(\pi_1(x)\)</span> must be between <span class="math inline">\([0, 1]\)</span>.</p></li>
+<li><p>When it comes to approximating <span class="math inline">\(\pi_1(x)\)</span>, we’d be restricted to hypothesis classes where the functions have this range constraint.</p></li>
+<li><p>This constraint would exclude linear models.</p>
+<details>
+<summary>
+<p>Why?</p>
+</summary>
+<p>Consider <span class="math inline">\(\pi_1(x) = x^\top \beta\)</span>. What’s the problem with this?</p>
+<ul>
+<li>If <span class="math inline">\(x^\top \beta &gt; 1\)</span>, then <span class="math inline">\(\pi_1(x) = \mathbb{P}(Y=1|X=x) &gt; 1\)</span>, which is not a valid probability.
+<ul>
+<li>If <span class="math inline">\(x^\top \beta &lt; 0\)</span>, then <span class="math inline">\(\pi_1(x) = \mathbb{P}(Y=1|X=x) &lt; 0\)</span>, which is also not a valid probability.
+</li></ul></li></ul></details></li>
 </ul></li>
 </ul>
-<p><strong>Sneak peek: the logistic regression model</strong></p>
+
+
+<p><strong>The Log-Odds Parameterization</strong></p>
 <ul>
-<li>You may remember from STAT 406 or CPSC 340 a set of distributions that look like: <span class="math display">\[P(Y = 1 \mid X = x) = \pi_1(x) = \frac{\exp(x^\top \beta)}{1 + \exp(x^\top \beta)}\]</span>
-<ul>
-<li><span class="math inline">\(\beta \in \mathbb{R}^p\)</span> is a vector of parameters.</li>
-</ul></li>
-<li>This statistical model is known as <strong>logistic regression</strong>, and it is a good starting point for binary classification.</li>
-<li>We will now derive this model from first principles.</li>
-</ul>
-<p><strong>What type of distribution should we model?</strong></p>
-<ul>
-<li>It’s hard to directly model <span class="math inline">\(\pi_1(x)\)</span> or <span class="math inline">\(\pi_0(x)\)</span> distributions.</li>
-<li>Consider <span class="math inline">\(\pi_1(x) = x^\top \beta\)</span>. What’s the problem with this?
-<ul>
-<li>If <span class="math inline">\(x^\top \beta &gt; 1\)</span>, then <span class="math inline">\(\pi_1(x) = P(Y=1|X=x) &gt; 1\)</span>, which is not a valid probability.</li>
-<li>If <span class="math inline">\(x^\top \beta &lt; 0\)</span>, then <span class="math inline">\(\pi_1(x) = P(Y=1|X=x) &lt; 0\)</span>, which is also not a valid probability.</li>
-</ul></li>
-</ul>
-<p><strong>Modelling the log-odds</strong></p>
-<ul>
-<li><p>Instead of defining distributions through <span class="math inline">\(P(Y = 1 \mid X = x)\)</span> directly, we will instead define distributions through the <strong>log-odds ratio</strong></p></li>
-<li><p>The <strong>log-odds ratio</strong> is then: <span class="math display">\[r(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)\]</span></p></li>
-<li><p>I claim that this ratio can take any real value, i.e.&nbsp;<span class="math inline">\(r(x) \in \mathbb{R}\)</span>.</p>
+<li><p>Instead of defining distributions through <span class="math inline">\(\pi_1(X)\)</span> directly, we will instead define distributions through the <strong>log-odds ratio</strong></p></li>
+<li><p>Defining <span class="math inline">\(\pi_0(x) = \mathbb P(Y=0|X=x) = 1 - \mathbb P(Y=1|X=x)\)</span>, the <strong>log-odds ratio</strong> is: <span class="math display">\[f(x) := \log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right)\]</span></p></li>
+<li><p>I claim that this ratio can take any real value, i.e.&nbsp;<span class="math inline">\(f(x) \in \mathbb{R}\)</span>.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
 <th><span class="math inline">\(\pi_1(x)\)</span></th>
 <th>Odds Ratio</th>
-<th><span class="math inline">\(r(x)\)</span> (Log Odds Ratio)</th>
+<th><span class="math inline">\(f(x)\)</span> (Log Odds Ratio)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td><span class="math inline">\(\approx 1\)</span></td>
 <td><span class="math inline">\(\pi_1(x) / \pi_0(x) \to \infty\)</span></td>
-<td><span class="math inline">\(r(x) \to \infty\)</span></td>
+<td><span class="math inline">\(f(x) \to \infty\)</span></td>
 </tr>
 <tr class="even">
 <td><span class="math inline">\(\approx 0\)</span></td>
 <td><span class="math inline">\(\pi_1(x) / \pi_0(x) \to 0\)</span></td>
-<td><span class="math inline">\(r(x) \to -\infty\)</span></td>
+<td><span class="math inline">\(f(x) \to -\infty\)</span></td>
 </tr>
 </tbody>
 </table></li>
+<li><p>We can convert the log-odds ratio <span class="math inline">\(f(x)\)</span> to <span class="math inline">\(\pi_1(x)\)</span>…</p>
+<p><span class="math display">\[ \pi_1(x) = \sigma(f(x)), \qquad \sigma(f(x)) := \frac{\exp(f(x))}{\exp(f(x)) + 1} = \frac{1}{1 + \exp(-f(x))}\]</span></p>
+<details>
+<summary>
+<p>Derivation (it’s just algebra)</p>
+</summary>
+<p>Starting from the definition of <span class="math inline">\(f(x)\)</span> and solving for <span class="math inline">\(\pi_1(x)\)</span>: <span class="math display">\[\begin{align*}
+       f(x) &amp;= \log\left(\frac{\pi_1(x)}{1 - \pi_1(x)}\right) \\
+       \exp(f(x)) &amp;= \frac{\pi_1(x)}{1 - \pi_1(x)} \\
+       \exp(f(x)) \, (1 - \pi_1(x)) &amp;= \pi_1(x) \\
+       \exp(f(x)) &amp;= \pi_1(x) + \exp(f(x)) \, \pi_1(x) \\
+       \exp(f(x)) &amp;= \pi_1(x) \, (1 + \exp(f(x))) \\
+       \pi_1(x) &amp;= \frac{\exp(f(x))}{\exp(f(x)) + 1}.
+    \end{align*}\]</span> The second, equivalent form follows by multiplying the numerator and denominator by <span class="math inline">\(\exp(-f(x))\)</span>: <span class="math display">\[\begin{align*}
+       \pi_1(x) = \frac{\exp(f(x))}{\exp(f(x)) + 1} = \frac{\exp(f(x)) \, \exp(-f(x))}{\left(\exp(f(x)) + 1\right)\exp(-f(x))} = \frac{1}{1 + \exp(-f(x))}.
+    \end{align*}\]</span></p>
+</details></li>
+<li><p>… and so we can use <span class="math inline">\(f\)</span> to define the “learnable” component of our statistical model:</p>
+<p><span class="math display">\[ Y \mid X \sim \mathrm{Bern}(\sigma(f(X))), \qquad f \text{ is some f'n (with no range constraints)}.\]</span></p>
+<p>(As with regression, we’ll want to limit <span class="math inline">\(f\)</span> to some smaller class of functions if we hope to do any sort of useful analysis.)</p></li>
 </ul>
-<p><strong>The linear log-odds model</strong></p>
-<p>We’re now ready to define a statistical model for binary classification.</p>
-<ul>
-<li><p>We will consider</p>
-<p><span class="math display">\[\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta\]</span></p></li>
-<li><p>Thus our statistical model is the following set of distributions:</p></li>
-</ul>
-<p><span class="math display">\[\left\{ P(Y=1 \mid X) \: : \: P(Y=1 \mid X=x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}, \quad \beta \in \mathbb{R}^p \right\}\]</span></p>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-note callout-titled" title="The Logistic Function">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation
+<span class="screen-reader-only">Note</span>The Logistic Function
 </div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<ul>
-<li><p>Start with <span class="math inline">\(\log\left(\frac{\pi_1(x)}{\pi_0(x)}\right) = x^\top\beta\)</span></p></li>
-<li><p>By substituting <span class="math inline">\(\pi_0(x) = 1 - \pi_1(x)\)</span> and then solving for <span class="math inline">\(\pi_1(x)\)</span>, we get:</p>
-<p><span class="math display">\[\pi_1(x) = \frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)}\]</span></p></li>
-<li><p>Our statistical model is then the set of distributions <span class="math inline">\(P(Y=1 \mid X=x)\)</span> that can take the form of <span class="math inline">\(\pi_1\)</span>.</p></li>
-</ul>
-</div>
-</div>
-</div>
-<p><strong>The logistic function:</strong></p>
-<ul>
-<li><p>The function in the above equation is known as the <strong>logistic function</strong> or <strong>sigmoid function</strong>:</p>
-<p><span class="math display">\[\frac{\exp(x^\top\beta)}{1 + \exp(x^\top\beta)} = \frac{1}{1 + \exp(-x^\top\beta)} := \sigma(x^\top \beta)\]</span></p></li>
-<li><p>It has many useful properties</p>
+<p>The function <span class="math inline">\(\sigma(\cdot)\)</span> in the above equation is known as the <strong>logistic function</strong> or <strong>sigmoid function</strong>. It has many useful properties</p>
 <ol type="1">
 <li><strong>Range</strong>: <span class="math inline">\(\sigma(z) \in (0, 1)\)</span> for all <span class="math inline">\(z \in \mathbb{R}\)</span></li>
 <li><strong>Symmetric</strong>: <span class="math inline">\(\sigma(-z) = 1 - \sigma(z)\)</span></li>
 <li><strong>Convenient derivative</strong>: <span class="math inline">\(\sigma'(z) = \sigma(z)(1 - \sigma(z))\)</span></li>
-</ol></li>
-<li><p>It can be seen as a “smooth approximation” to the 0-1 step function:</p></li>
-</ul>
+</ol>
+<p>It can be seen as a “smooth approximation” to the 0-1 step function:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="../figures/logistic_function.svg" class="img-fluid figure-img"></p>
 <figcaption>Logistic Function</figcaption>
 </figure>
 </div>
+</div>
+</div>
 </section>
-<section id="prediction-and-different-notions-of-risk" class="level2">
-<h2 class="anchored" data-anchor-id="prediction-and-different-notions-of-risk">Prediction and Different Notions of Risk</h2>
-<p>Let’s discuss how we can make predictions using the logistic regression model.</p>
-<p><strong>Making predictions:</strong></p>
-<p>Given</p>
+<section id="hypothesis-class" class="level2">
+<h2 class="anchored" data-anchor-id="hypothesis-class">Hypothesis Class</h2>
 <ul>
-<li>a <span class="math inline">\(\hat \beta\)</span> estimate</li>
-<li>a new observation <span class="math inline">\(X_{\text{new}}\)</span></li>
-<li>a <strong>loss function</strong> <span class="math inline">\(L(Y, \hat{Y})\)</span> that quantifies how “bad” a prediction is</li>
+<li><p>Since the “learnable” portion of our statistical model – the log-odds ratio <span class="math inline">\(f(X)\)</span> – is any real-valued function, we can consider pretty much any hypothesis class.</p></li>
+<li><p>As with regression, it’s not a bad idea to consider linear functions:</p>
+<p><span class="math display">\[ \mathcal H = \left\{ \hat f \: : \: \hat f(X) = X^\top \hat \beta, \: \hat \beta \in \mathbb R^p \right\} \]</span></p></li>
+<li><p>If we assume that our statistical model has the same functional form (i.e.&nbsp;<span class="math inline">\(f(X) = X^\top \beta\)</span> for some <span class="math inline">\(\beta\)</span>), then we have that:</p>
+<p><span class="math display">\[
+    Y \mid X \sim \mathrm{Bern}(\sigma(X^\top \beta)) = \mathrm{Bern} \left( \frac{1}{1 + \exp(-X^\top \beta)} \right),
+\]</span> or alternatively, <span class="math display">\[
+    \mathbb P(Y=1 \mid X=x) = \frac{1}{1 + \exp(-x^\top \beta)}.
+\]</span></p>
+<p>You should recognize this equation from STAT 306 as <strong>logistic regression.</strong></p></li>
 </ul>
-<p>recall that we make predictions by minimizing the expected loss:</p>
-<p><span class="math display">\[\hat{Y}_{\text{new}} = \mathrm{argmin}_{\hat{y}} \mathbb{E}[L(Y, \hat{y}) \mid X_{\text{new}}, \hat \beta]\]</span></p>
-<p><strong>0/1 Loss:</strong></p>
+</section>
+<section id="estimation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<p>As with regression, we estimate the parameters <span class="math inline">\(\beta\)</span> through <strong>empirical risk minimization (ERM)</strong>: we choose the <span class="math inline">\(\hat \beta\)</span> that minimizes the average loss over the training data,</p>
+<p><span class="math display">\[\hat{\beta}_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat f(X_i)).\]</span></p>
+<p>For classification, it doesn’t make sense to use the squared error loss. However, deriving a good loss function is a bit tricky:</p>
+<p><strong>ERM with the logistic loss</strong>:</p>
+<p>Before suggesting a loss function, let’s think intuitively through how we’d like to penalize predictions:</p>
 <ul>
-<li>The most natural loss function for classification is the <strong>0/1 loss</strong>:</li>
+<li>If <span class="math inline">\(\hat f(X)\)</span> is very positive, then <span class="math inline">\(\hat \pi_1(X) \gg \hat \pi_0(X)\)</span> (where <span class="math inline">\(\hat \pi_1\)</span> and <span class="math inline">\(\hat \pi_0\)</span> are our predicted conditional probabilities for <span class="math inline">\(Y=1\)</span> and <span class="math inline">\(Y=0\)</span> respectively). This prediction would be bad if <span class="math inline">\(Y=0\)</span>, but great if <span class="math inline">\(Y=1\)</span>.</li>
+<li>If <span class="math inline">\(\hat f(X)\)</span> is very negative, the opposite is true: <span class="math inline">\(\hat \pi_1(X) \ll \hat \pi_0(X)\)</span>, bad prediction for <span class="math inline">\(Y=1\)</span>, great for <span class="math inline">\(Y=0\)</span>.</li>
+<li>If <span class="math inline">\(\hat f(X) \approx 0\)</span>, then <span class="math inline">\(\hat \pi_1(X) \approx \hat \pi_0(X)\)</span>. This prediction signifies uncertainty over <span class="math inline">\(Y=0\)</span> versus <span class="math inline">\(Y=1\)</span>. While not as bad as confidently predicting the incorrect class, there should still be some loss since we’d prefer a correct prediction.</li>
 </ul>
-<p><span class="math display">\[L_{0/1}(Y, \hat{Y}) = \mathbb{I}(Y \neq \hat{Y}) = \begin{cases} 0 &amp; \text{if } Y = \hat{Y} \\ 1 &amp; \text{if } Y \neq \hat{Y} \end{cases}\]</span></p>
+<p>To that end, consider the following function (which we’ll derive from first principles in a second), known as the <strong>logistic loss</strong> (also referred to as the <strong>cross-entropy loss</strong>):</p>
+<p><span class="math display">\[
+\begin{gather}
+L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \pi_0(X) \\
+\qquad \hat \pi_1(X) = \sigma(\hat f(X)), \quad \hat \pi_0(X) = 1 - \sigma(\hat f(X)).
+\end{gather}
+\]</span></p>
+<p>Let’s check that this loss matches the desiderata above. Since <span class="math inline">\(Y \in \{0, 1\}\)</span>, exactly one of the two terms is ever “active”:</p>
 <ul>
-<li>Under our logistic model, we have:</li>
+<li>If <span class="math inline">\(Y = 1\)</span>, the loss is <span class="math inline">\(-\log \hat \pi_1(X)\)</span>. This is small (near <span class="math inline">\(0\)</span>) when <span class="math inline">\(\hat \pi_1(X) \approx 1\)</span> (i.e.&nbsp;<span class="math inline">\(\hat f(X)\)</span> very positive), and blows up to <span class="math inline">\(+\infty\)</span> as <span class="math inline">\(\hat \pi_1(X) \to 0\)</span> (i.e.&nbsp;<span class="math inline">\(\hat f(X)\)</span> very negative).</li>
+<li>If <span class="math inline">\(Y = 0\)</span>, the loss is <span class="math inline">\(-\log \hat \pi_0(X)\)</span>, which is the mirror image: small when <span class="math inline">\(\hat f(X)\)</span> is very negative, and <span class="math inline">\(\to +\infty\)</span> when <span class="math inline">\(\hat f(X)\)</span> is very positive.</li>
+<li>If <span class="math inline">\(\hat f(X) \approx 0\)</span>, then <span class="math inline">\(\hat \pi_1(X) \approx \hat \pi_0(X) \approx \tfrac{1}{2}\)</span>, so the loss is <span class="math inline">\(-\log \tfrac{1}{2} = \log 2 \approx 0.69\)</span> regardless of <span class="math inline">\(Y\)</span> – a moderate penalty for “hedging,” exactly as we wanted.</li>
 </ul>
-<p><span class="math display">\[\begin{align*}
-\hat{Y}_{\text{new}} &amp;= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ \mathbb{I}(Y \neq \hat{y}) \mid X_{\text{new}}, \hat \beta] \\
-&amp;= \mathrm{argmin}_{\hat{y}} P(Y \neq \hat{y} \mid X_{\text{new}}, \hat \beta) \\
-&amp;= \mathrm{argmin}_{\hat{y}} \left[
-   \underbrace{P(Y = 1 \mid X_{\text{new}}, \hat \beta)}_{\sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 0) +
-   \underbrace{P(Y = 0 \mid X_{\text{new}}, \hat \beta)}_{1 - \sigma(X_\mathrm{new}^\top \hat \beta)} \mathbb{I}(\hat{y} = 1) \right] \\
-&amp;= \begin{cases}
-1 &amp; \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) &gt; 0.5 \\
-0 &amp; \text{if } \sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5
-\end{cases}
-\end{align*}\]</span>.</p>
-<p><strong>Decision boundary:</strong></p>
+<div class="callout callout-style-default callout-note callout-titled" title="(Optional) Where Does this Loss Come From?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>(Optional) Where Does this Loss Come From?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Minimizing the average logistic loss across our data is <em>equivalent</em> to maximum likelihood estimation of <span class="math inline">\(\beta\)</span>.</p>
+<p>Under the model <span class="math inline">\(Y_i \mid X_i \sim \mathrm{Bern}(\hat \pi_1(X_i))\)</span>, the likelihood of the training labels is <span class="math display">\[\begin{align*}
+   \prod_{i=1}^n \hat \pi_1(X_i)^{Y_i} \, \hat \pi_0(X_i)^{1 - Y_i},
+\end{align*}\]</span> where the exponents “select” the correct probability: the <span class="math inline">\(i\)</span>-th factor is <span class="math inline">\(\hat \pi_1(X_i)\)</span> when <span class="math inline">\(Y_i = 1\)</span> and <span class="math inline">\(\hat \pi_0(X_i)\)</span> when <span class="math inline">\(Y_i = 0\)</span>. Taking the negative logarithm turns the product into a sum: <span class="math display">\[\begin{align*}
+   -\log \prod_{i=1}^n \hat \pi_1(X_i)^{Y_i} \, \hat \pi_0(X_i)^{1 - Y_i}
+   &amp;= \sum_{i=1}^n \Big[ -Y_i \log \hat \pi_1(X_i) - (1 - Y_i) \log \hat \pi_0(X_i) \Big] \\
+   &amp;= \sum_{i=1}^n L_\mathrm{logistic}(Y_i, \hat f(X_i)).
+\end{align*}\]</span> So minimizing <span class="math inline">\(\tfrac{1}{n} \sum_i L_\mathrm{logistic}(Y_i, \hat f(X_i))\)</span> is the same as maximizing the likelihood.</p>
+</div>
+</div>
+</div>
+<p>Putting it together, for logistic regression we have:</p>
+<p><span class="math display">\[
+\hat \beta_\mathrm{ERM}
+= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \left[ -Y_i \log \sigma(X_i^\top \beta) - (1 - Y_i) \log\left(1 - \sigma(X_i^\top \beta)\right) \right].
+\]</span></p>
+<div class="callout callout-style-default callout-warning callout-titled" title="(Important) No Closed-Form Equation">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>(Important) No Closed-Form Equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Unlike with linear regression, there is no closed-form equation to express <span class="math inline">\(\hat \beta_\mathrm{ERM}\)</span> for classification. The optimization equation above is the most we can simplify it. We will need to rely on <em>numerical optimization</em> techniques to obtain <span class="math inline">\(\hat \beta_\mathrm{ERM}\)</span>, which we will discuss later in the course.</p>
+</div>
+</div>
+</section>
+<section id="prediction" class="level2">
+<h2 class="anchored" data-anchor-id="prediction">Prediction</h2>
+<p>Let’s discuss how we can make predictions using the logistic regression model given some new covariates <span class="math inline">\(X_\mathrm{new}\)</span>.</p>
 <ul>
-<li><p>Note that</p>
+<li>With regression, we simply used the prediction <span class="math inline">\(\hat Y_\mathrm{new} = \hat f(X_\mathrm{new})\)</span>.</li>
+<li>With classification, we can’t use the same strategy, since <span class="math inline">\(\hat Y_\mathrm{new}\)</span> must be 0 or 1, and <span class="math inline">\(\hat f(X_\mathrm{new})\)</span> is real-valued.</li>
+</ul>
+<p>We need to put a bit more care into making a prediction <span class="math inline">\(\hat Y\)</span> given our estimated log-odds ratio, for which we turn to the field of <strong>decision theory</strong>.</p>
+<section id="making-predictions-using-decision-theory" class="level3">
+<h3 class="anchored" data-anchor-id="making-predictions-using-decision-theory">Making Predictions Using Decision Theory</h3>
 <ul>
-<li><span class="math inline">\(\sigma(X_\mathrm{new}^\top \hat \beta) &gt; 0.5\)</span> when <span class="math inline">\(X_\mathrm{new}^\top \hat \beta &gt; 0\)</span></li>
-<li><span class="math inline">\(\sigma(X_\mathrm{new}^\top \hat \beta) \leq 0.5\)</span> when <span class="math inline">\(X_\mathrm{new}^\top \hat \beta \leq 0\)</span>.</li>
-</ul></li>
+<li><p>We begin by assuming there is some cost <span class="math inline">\(c\)</span> associated with an incorrect prediction.</p></li>
+<li><p>A common cost-function for classification is:</p>
+<p><span class="math display">\[
+    c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+       1 &amp; Y_\mathrm{new} \ne \hat Y_\mathrm{new} \\
+       0 &amp; Y_\mathrm{new} = \hat Y_\mathrm{new}
+    \end{cases},
+\]</span></p>
+<p>often referred to as the <strong>0/1 cost</strong>.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="(Important) $c$ is Theoretical">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>(Important) <span class="math inline">\(c\)</span> is Theoretical
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>When using this model to make predictions in practice, we won’t ever know the “true” <span class="math inline">\(Y_\mathrm{new}\)</span>. We only see <span class="math inline">\(X_\mathrm{new}\)</span></li>
+<li>Therefore, this cost is generally not something we compute; it’s a theoretical quantity that we can reason about.</li>
+<li>Intuitively, the cost measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><p>Since we don’t know the true responses, we instead have to reason about them probabilistically using our estimated <span class="math inline">\(\hat f\)</span>:</p>
+<p><span class="math display">\[ Y_\mathrm{new} \mid X_\mathrm{new} \sim \mathrm{Bern}( \sigma(\hat f(X_\mathrm{new}))), \]</span></p>
+<p>and thus we can think about the <em>expected cost</em> of a prediction:</p>
+<p><span class="math display">\[ \mathbb E[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
+<li><p>According to <strong>decision theory</strong>, the best choice for <span class="math inline">\(\hat Y_\mathrm{new}\)</span> is the one that minimizes expected cost:</p>
+<p><span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
+<li><p>Perhaps unsurprisingly, under the 0/1 cost, this decision simplifies down to:</p>
+<p><span class="math display">\[ \hat Y_\mathrm{new} = \begin{cases}
+    1 &amp; \hat f(X_\mathrm{new}) \geq 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) \geq 0.5, \: \hat \pi_0(X_\mathrm{new}) &lt; 0.5 \text{)} \\
+    0 &amp; \hat f(X_\mathrm{new}) &lt; 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) &lt; 0.5, \: \hat \pi_0(X_\mathrm{new}) \geq 0.5 \text{)}
+\end{cases}. \]</span></p>
+<details>
+<summary>
+<p>Derivation</p>
+</summary>
+<p>The expected 0/1 cost of predicting <span class="math inline">\(\hat y_\mathrm{new}\)</span> is a sum over the two possible outcomes, each weighted by its probability under our model: <span class="math display">\[\begin{align*}
+    \hat{Y}_\mathrm{new}
+    &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{E}[ \mathbb{I}(Y_\mathrm{new} \neq \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f] \\
+    &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{P}(Y_\mathrm{new} \neq \hat y_\mathrm{new} \mid X_\mathrm{new}, \hat f) \\
+    &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \left[
+       \underbrace{\hat \pi_1(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 1)} \, \mathbb{I}(\hat y_\mathrm{new} = 0) +
+       \underbrace{\hat \pi_0(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 0)} \, \mathbb{I}(\hat y_\mathrm{new} = 1) \right].
+    \end{align*}\]</span> We should therefore predict <span class="math inline">\(\hat y_\mathrm{new} = 1\)</span> whenever doing so incurs the smaller expected cost, i.e.&nbsp;whenever <span class="math inline">\(\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})\)</span>. Since <span class="math inline">\(\hat \pi_0 = 1 - \hat \pi_1\)</span>, this is exactly the condition <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq 0.5\)</span>. Finally, recall that <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5\)</span> if and only if <span class="math inline">\(\hat f(X_\mathrm{new}) \geq 0\)</span>.</p>
+</details></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="The Decision Boundary">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>The Decision Boundary
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
 <li><p>The <strong>decision boundary</strong>, defined by:</p>
-<p><span class="math display">\[x^\top\beta = 0\]</span></p>
-<p>is the hyperplane that separates the positively-classified <span class="math inline">\(x\)</span> from the negatively classified <span class="math inline">\(x\)</span>.</p></li>
-<li><p>This decision boundary for logistic regression is linear in <span class="math inline">\(x\)</span>.</p></li>
+<p><span class="math display">\[\hat f(x) = 0\]</span></p>
+<p>is the hyperplane that separates the <span class="math inline">\(x\)</span>s for which we would predict <span class="math inline">\(\hat Y = 1\)</span> versus <span class="math inline">\(\hat Y = 0\)</span>.</p></li>
+<li><p>For logistic regression, where <span class="math inline">\(\hat f(x) = x^\top \hat \beta\)</span>, this decision boundary is a (linear) hyperplane. This is one reason why we consider logistic regression to be a “linear method.”</p></li>
 </ul>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -431,102 +550,47 @@ window.Quarto = {
 <figcaption>Decision Boundary</figcaption>
 </figure>
 </div>
-<p><strong>Other losses:</strong></p>
-<p>There are other losses that we could use to generate different prediction rules:</p>
-<ol type="1">
-<li><strong>Probabilistic loss</strong>: <span class="math inline">\(L_\mathrm{prob}(Y, \hat{Y}) = -\log P(Y = \hat Y)\)</span>
-<ul>
-<li>This loss produces “soft” predictions (e.g.&nbsp;<span class="math inline">\(\hat{Y}_{\text{new}} = 0.273\)</span>) that give a probability estimate of the positive class.</li>
-</ul></li>
-<li><strong>Asymmetric losses</strong>: <span class="math inline">\(L_\alpha(Y, \hat{Y}) = \alpha \mathbb{I}(Y = 1, \hat{Y} = 0) + (1-\alpha) \mathbb{I}(Y = 0, \hat{Y} = 1)\)</span> for some <span class="math inline">\(\alpha \in (0, 1)\)</span>
-<ul>
-<li>This loss allows us to penalize false positives and false negatives differently, which can be useful in imbalanced datasets.</li>
-</ul></li>
-</ol>
-<p>We will explore these losses, as well as metrics derived from these losses, in a homework assignment.</p>
+</div>
+</div>
 </section>
-<section id="estimation" class="level2">
-<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
-<p>As with regression, we will derive estimators for the logistic regression parameters <span class="math inline">\(\beta\)</span> through the principle of <em>maximum likelihood estimation (MLE)</em>.</p>
-<section id="maximum-likelihood-estimation-mle" class="level3">
-<h3 class="anchored" data-anchor-id="maximum-likelihood-estimation-mle">Maximum Likelihood Estimation (MLE)</h3>
-<p>Recall the MLE estimator is given by</p>
-<p><span class="math display">\[\hat{\beta}_\mathrm{MLE} = \mathrm{argmax}_{\beta} \mathcal L(\beta) = \mathrm{argmax}_{\beta} \ell(\beta)\]</span></p>
-<p>where <span class="math inline">\(\mathcal{L}(\beta)\)</span> is the likelihood function and <span class="math inline">\(\ell(\beta)\)</span> is the log-likelihood function.</p>
-<p><strong>Log likelihood of the linear log-odds model:</strong></p>
+<section id="how-costs-affect-decisions" class="level3">
+<h3 class="anchored" data-anchor-id="how-costs-affect-decisions">How Costs Affect Decisions</h3>
 <ul>
-<li><p>Given training data <span class="math inline">\(\mathcal{D} = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}\)</span>, recall that the likelihood/log-likelihood function is:</p>
-<p><span class="math display">\[\begin{gather}
-\mathcal{L}(\beta) = \prod_{i=1}^n P(Y_i \mid X_i; \beta) \\
-\ell(\beta) = \sum_{i=1}^n \log P(Y_i \mid X_i; \beta)
-\end{gather}\]</span></p></li>
-<li><p>Plugging in our model, we have that:</p>
-<p><span class="math display">\[
-P(Y_i \mid X_i; \beta) = \begin{cases}
-   \sigma(X_i^\top \beta) &amp; \text{if } Y_i = 1 \\
-   1 - \sigma(X_i^\top \beta) &amp; \text{if } Y_i = 0
-\end{cases}
-\]</span></p></li>
-<li><p>We can write this equation more compactly as:</p>
-<p><span class="math display">\[P(Y_i \mid X_i, \beta) = \sigma(X_i^\top \beta)^{Y_i} (1 - \sigma(X_i^\top \beta))^{1-Y_i}.\]</span></p></li>
-<li><p>Thus the log likelihood function is:</p>
-<p><span class="math display">\[
-\ell(\beta) = \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
-\]</span></p></li>
-</ul>
-<p><strong>Computing the MLE estimator:</strong></p>
-<p><span class="math display">\[
-\hat \beta_\mathrm{MLE} = \mathrm{argmax}_{\beta} \sum_{i=1}^n \left[ Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \right]
-\]</span></p>
+<li><p>While the derivation above was perhaps a complicated way to obtain a simple prediction rule, decision theory shows its power when we start considering alternative costs.</p></li>
+<li><p>For example, imagine a world where <strong>false-positive predictions</strong> (predicting <span class="math inline">\(\hat Y = 1\)</span> when <span class="math inline">\(Y=0\)</span>) were twice as bad as <strong>false-negative predictions</strong> (predicting <span class="math inline">\(\hat Y = 0\)</span> when <span class="math inline">\(Y=1\)</span>).</p>
 <ul>
-<li><p>Unlike linear regression, we cannot compute this maximum of this log-likelihood in closed form.</p></li>
-<li><p>We can numerically solve for the optimization using a technique called <strong>gradient descent</strong>, which we will cover in a future lecture.</p></li>
+<li><p>We could codify this idea into a cost function:</p>
+<p><span class="math display">\[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+0 &amp; \hat Y_\mathrm{new} = Y_\mathrm{new} \quad \text{(correct prediction)} \\
+2 &amp; \hat Y_\mathrm{new} = 1, \: Y_\mathrm{new} = 0 \quad \text{(false positive)} \\
+1 &amp; \hat Y_\mathrm{new} = 0, \: Y_\mathrm{new} = 1 \quad \text{(false negative)}
+\end{cases}. \]</span></p></li>
+<li><p>Now considering our decision theoretic rule: <span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], \]</span></p>
+<p>the <span class="math inline">\(\hat f\)</span> estimate is the same as above but now the cost function <span class="math inline">\(c\)</span> is different. Thus we should end up with a different rule for <span class="math inline">\(\hat Y_\mathrm{new}\)</span>.</p></li>
+<li><p>Turning the crank, we have:</p>
+<p><span class="math display">\[ \hat Y_\mathrm{new} = \begin{cases}
+1 &amp; \hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3} \quad \text{(alternatively, } \hat f(X_\mathrm{new}) \geq \log 2 \text{)} \\
+0 &amp; \hat \pi_1(X_\mathrm{new}) &lt; \tfrac{2}{3} \quad \text{(alternatively, } \hat f(X_\mathrm{new}) &lt; \log 2 \text{)}
+\end{cases}. \]</span></p>
+<p>Making false positives more costly makes us more “conservative” about predicting <span class="math inline">\(\hat Y_\mathrm{new} = 1\)</span>: we now require <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}\)</span> rather than just <span class="math inline">\(\geq \tfrac{1}{2}\)</span>.</p>
+<details>
+<summary>
+<p>Derivation</p>
+</summary>
+<p>The expected costs of the two possible predictions are <span class="math display">\[\begin{align*}
+       \mathbb E[ c(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &amp;= 2 \, \hat \pi_0(X_\mathrm{new}) &amp; \text{(cost 2 incurred only if } Y_\mathrm{new} = 0), \\
+       \mathbb E[ c(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &amp;= 1 \, \hat \pi_1(X_\mathrm{new}) &amp; \text{(cost 1 incurred only if } Y_\mathrm{new} = 1).
+    \end{align*}\]</span> We predict <span class="math inline">\(\hat Y_\mathrm{new} = 1\)</span> whenever its expected cost is no larger, i.e.&nbsp;whenever <span class="math display">\[\begin{align*}
+       2 \, \hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new}).
+    \end{align*}\]</span> Substituting <span class="math inline">\(\hat \pi_0 = 1 - \hat \pi_1\)</span> and solving: <span class="math display">\[\begin{align*}
+       2 \left(1 - \hat \pi_1(X_\mathrm{new})\right) \leq \hat \pi_1(X_\mathrm{new})
+       \quad \Longleftrightarrow \quad 2 \leq 3 \, \hat \pi_1(X_\mathrm{new})
+       \quad \Longleftrightarrow \quad \hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}.
+    \end{align*}\]</span> Finally, since <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new}))\)</span>, the condition <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}\)</span> is equivalent to <span class="math inline">\(\hat f(X_\mathrm{new}) \geq \log\left(\tfrac{2/3}{1/3}\right) = \log 2\)</span>.</p>
+</details></li>
+</ul></li>
+<li><p>In general, we can encode any weighting of false positives versus false negatives into the cost, and the resulting rule is just a threshold on <span class="math inline">\(\hat \pi_1(X_\mathrm{new})\)</span> (equivalently, on <span class="math inline">\(\hat f(X_\mathrm{new})\)</span>) that shifts with the relative costs.</p></li>
 </ul>
-</section>
-<section id="empirical-risk-minimization-erm" class="level3">
-<h3 class="anchored" data-anchor-id="empirical-risk-minimization-erm">Empirical Risk Minimization (ERM)</h3>
-<ul>
-<li>What about ERM?</li>
-<li>With the 0/1 loss, the optimization problem becomes</li>
-</ul>
-<p><span class="math display">\[\hat \beta_\mathrm{ERM} = \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n \mathbb{I}(Y_i \neq \hat{Y}_i)
-= \begin{cases} 1 &amp; Y_i = 1, X_i^\top \beta &lt; 0 \\ 1 &amp; Y_i = 0, X_i^\top \beta &gt; 0 \\ 0 &amp; \mathrm{o.w.} \end{cases}\]</span></p>
-<ul>
-<li><p>Unfortunately, this optimization is <strong>NP-hard</strong> (i.e.&nbsp;computationally intractable), and so we can’t even solve it numerically for large values of <span class="math inline">\(n\)</span>!</p></li>
-<li><p>Alternative loss functions can yield numerically-solvable ERM solutions. For example, the “probabilistic loss” <span class="math inline">\(L(Y, \hat{Y}) = - (1 - Y_i) \log \hat Y - Y_i \log (1 - \hat Y_i)\)</span>, lead to the same optimization problem as MLE.</p></li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="Derivation of ERM with Probabilistic Loss">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Derivation of ERM with Probabilistic Loss
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>Under the probabilistic loss <span class="math inline">\(L(Y, \hat{Y}) = - Y_i \log \hat Y - (1 - Y_i) \log (1 - \hat Y_i)\)</span>, the prediction rule for logistic regression becomes:</p>
-<p><span class="math display">\[\begin{align*}
-\hat{Y}_{\text{new}} &amp;= \mathrm{argmin}_{\hat{y}} \mathbb{E}[ - Y \log \hat y - (1 - Y) \log (1 - \hat y) \mid X_{\text{new}}, \hat \beta] \\
-&amp;= \mathrm{argmin}_{\hat{y}} - \mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] \log \hat y - \mathbb{E}[1 - Y \mid X_{\text{new}}, \hat \beta] \log (1 - \hat y) \\
-&amp;= \mathrm{argmin}_{\hat{y}} - \sigma(X_\mathrm{new}^\top \hat \beta) \log \hat y - (1 - \sigma(X_\mathrm{new}^\top \hat \beta)) \log (1 - \hat y) \\
-\end{align*}\]</span></p>
-<p>where the second line follows from linearity of expectation, and the third line follows from our logistic model (and recognizing that <span class="math inline">\(\mathbb{E}[Y \mid X_{\text{new}}, \hat \beta] = P(Y=1 \mid X_{\text{new}}, \hat \beta)\)</span>).</p>
-<p>Solving for when the derivative is zero, we get:</p>
-<p><span class="math display">\[ \frac{\sigma(X_\mathrm{new}^\top \hat \beta)}{\hat Y_\mathrm{new}} - \frac{1 - \sigma(X_\mathrm{new}^\top \hat \beta)}{1 - \hat Y_\mathrm{new}} = 0, \]</span></p>
-<p>and thus <span class="math inline">\(\hat Y_\mathrm{new} = \sigma(X_\mathrm{new}^\top \hat \beta)\)</span>.</p>
-<p>With this prediction rule, the ERM optimization becomes:</p>
-<p><span class="math display">\[\begin{align*}
-\hat \beta_\mathrm{ERM} &amp;= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n L(Y_i, \hat Y_i) \\
-&amp;= \mathrm{argmin}_{\beta} \frac{1}{n} \sum_{i=1}^n - Y_i \log(\sigma(X_i^\top \beta)) - (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)) \\
-&amp;= \mathrm{argmax}_{\beta} \frac{1}{n} \sum_{i=1}^n Y_i \log(\sigma(X_i^\top \beta)) + (1 - Y_i) \log(1 - \sigma(X_i^\top \beta)),
-\end{align*}\]</span></p>
-<p>which is the same optimization problem as MLE!</p>
-</div>
-</div>
-</div>
 </section>
 </section>
 <section id="summary" class="level2">
@@ -534,9 +598,10 @@ P(Y_i \mid X_i; \beta) = \begin{cases}
 <p>This lecture extended the statistical framework from regression to classification:</p>
 <ol type="1">
 <li><p><strong>Statistical Model</strong>: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in <span class="math inline">\([0, 1]\)</span>.</p></li>
-<li><p><strong>Prediction</strong>: The optimal prediction rule depends on the loss function.</p></li>
-<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> loss, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \beta = 0\)</span>.</p></li>
-<li><p><strong>Estimation</strong>: The MLE solution cannot be computed analytically; it requires a numerical methods.</p></li>
+<li><p><strong>Hypothesis Class</strong>: We can estimate the log-odds ratio with a linear function of the covariates. (There are more complicated hypothesis classes which we’ll explore in future lectures.)</p></li>
+<li><p><strong>Estimation</strong>: The logistic regression ERM solution cannot be computed analytically; it requires numerical methods such as gradient descent.</p></li>
+<li><p><strong>Prediction</strong>: The optimal prediction rule depends on the cost function.</p></li>
+<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> cost, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \hat \beta = 0\)</span>.</p></li>
 </ol>
 <p>In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.</p>
 
