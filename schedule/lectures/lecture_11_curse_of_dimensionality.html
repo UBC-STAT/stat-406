@@ -206,6 +206,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#our-second-nonparametric-model-k-nearest-neighbours" id="toc-our-second-nonparametric-model-k-nearest-neighbours" class="nav-link" data-scroll-target="#our-second-nonparametric-model-k-nearest-neighbours">Our Second Nonparametric Model: k-Nearest Neighbours</a>
   <ul class="collapse">
+  <li><a href="#knn-is-a-piecewise-constant-predictor" id="toc-knn-is-a-piecewise-constant-predictor" class="nav-link" data-scroll-target="#knn-is-a-piecewise-constant-predictor">kNN is a Piecewise Constant Predictor</a></li>
   <li><a href="#bias-and-variance-as-a-function-of-k" id="toc-bias-and-variance-as-a-function-of-k" class="nav-link" data-scroll-target="#bias-and-variance-as-a-function-of-k">Bias and Variance as a Function of k</a></li>
   <li><a href="#degrees-of-freedom-of-knn" id="toc-degrees-of-freedom-of-knn" class="nav-link" data-scroll-target="#degrees-of-freedom-of-knn">Degrees of Freedom of kNN</a></li>
   </ul></li>
@@ -383,31 +384,67 @@ K(X, X_i) \approx \begin{cases}
 <p>While we have derived kNN as an approximation to kernel ridge regression, it is a very well-used method in practice. (It is arguably the most common nonparametric method, and used in practice more than kernel ridge regression.)</p>
 </div>
 </div>
+<section id="knn-is-a-piecewise-constant-predictor" class="level3">
+<h3 class="anchored" data-anchor-id="knn-is-a-piecewise-constant-predictor">kNN is a Piecewise Constant Predictor</h3>
+<ul>
+<li>Because <span class="math inline">\(\hat{f}_\mathcal{D}(X) = \frac{1}{k}\sum_{i \in N_k(X)} Y_i\)</span> only changes value when the neighbour set <span class="math inline">\(N_k(X)\)</span> changes, kNN is a <strong>piecewise constant</strong> predictor: it partitions the input space into regions and predicts the local average of the <span class="math inline">\(Y_i\)</span> within each region.</li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>f_true <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> x)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">406</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>plot_knn_n <span class="ot">&lt;-</span> <span class="cf">function</span>(n, <span class="at">k =</span> <span class="dv">3</span>) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">runif</span>(n))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">f_true</span>(x) <span class="sc">+</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> <span class="fl">0.15</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">length.out =</span> <span class="dv">500</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  pred <span class="ot">&lt;-</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(<span class="fu">matrix</span>(x, <span class="at">ncol =</span> <span class="dv">1</span>), <span class="fu">matrix</span>(grid, <span class="at">ncol =</span> <span class="dv">1</span>), <span class="at">y =</span> y, <span class="at">k =</span> k)<span class="sc">$</span>pred</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> grid, <span class="at">y =</span> <span class="fu">f_true</span>(grid)), <span class="fu">aes</span>(x, y), <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="fu">aes</span>(x, y), <span class="at">colour =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(<span class="at">data =</span> <span class="fu">tibble</span>(<span class="at">x =</span> grid, <span class="at">y =</span> pred), <span class="fu">aes</span>(x, y), <span class="at">colour =</span> <span class="st">"orange"</span>, <span class="at">linewidth =</span> <span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"n ="</span>, n)) <span class="sc">+</span> <span class="fu">ylim</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(<span class="fu">plot_knn_n</span>(<span class="dv">20</span>), <span class="fu">plot_knn_n</span>(<span class="dv">100</span>), <span class="fu">plot_knn_n</span>(<span class="dv">500</span>), <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lecture_11_curse_of_dimensionality_files/figure-html/knn-piecewise-constant-1.png" class="img-fluid figure-img" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li>Each panel fixes <span class="math inline">\(k=3\)</span>; the dashed line is the true <span class="math inline">\(\mathbb E[Y\mid X]\)</span> and the orange step function is the kNN fit.</li>
+<li>Fixing <span class="math inline">\(k\)</span>, more training data packs the points closer together, so the constant regions get <strong>finer</strong> and each one hugs <span class="math inline">\(\mathbb E[Y \mid X]\)</span> more tightly. This is why kNN’s flexibility grows with <span class="math inline">\(n\)</span>.</li>
+</ul>
+</section>
 <section id="bias-and-variance-as-a-function-of-k" class="level3">
 <h3 class="anchored" data-anchor-id="bias-and-variance-as-a-function-of-k">Bias and Variance as a Function of k</h3>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plot_knn <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">tibble</span>(</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>          arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>          <span class="at">k =</span> k</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        )<span class="sc">$</span>pred</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      ),</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">colour =</span> <span class="st">"orange"</span>, <span class="at">linewidth =</span> <span class="dv">2</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"k ="</span>, k))</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">1</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">5</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="fu">length</span>(arcuate_unif<span class="sc">$</span>position))</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot_knn <span class="ot">&lt;-</span> <span class="cf">function</span>(k) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(arcuate_unif, <span class="fu">aes</span>(position, fa)) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">colour =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">data =</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">position =</span> <span class="fu">seq_range</span>(arcuate_unif<span class="sc">$</span>position),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">fa =</span> FNN<span class="sc">::</span><span class="fu">knn.reg</span>(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>          arcuate_unif<span class="sc">$</span>position, <span class="fu">matrix</span>(position, <span class="at">ncol =</span> <span class="dv">1</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> arcuate_unif<span class="sc">$</span>fa,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>          <span class="at">k =</span> k</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        )<span class="sc">$</span>pred</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">colour =</span> <span class="st">"orange"</span>, <span class="at">linewidth =</span> <span class="dv">2</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="fu">paste</span>(<span class="st">"k ="</span>, k))</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>g1 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">1</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="dv">5</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>g3 <span class="ot">&lt;-</span> <span class="fu">plot_knn</span>(<span class="fu">length</span>(arcuate_unif<span class="sc">$</span>position))</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(g1, g2, g3, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -418,9 +455,13 @@ K(X, X_i) \approx \begin{cases}
 </div>
 </div>
 <ul>
-<li>The above plots show the kNN regression function for different values of <span class="math inline">\(k\)</span>.</li>
-<li><span class="math inline">\(k=1\)</span> and <span class="math inline">\(k=40\)</span> are poor fits and have high risk, while <span class="math inline">\(k=5\)</span> is likely a good predictor.</li>
-<li>When <span class="math inline">\(k\)</span> is too large or too small, we are not balancing bias and variance well. But which extreme are we in?</li>
+<li><p>The above plots show the kNN regression function for different values of <span class="math inline">\(k\)</span>.</p></li>
+<li><p><span class="math inline">\(k=1\)</span> and <span class="math inline">\(k=40\)</span> are poor fits and have high risk, while <span class="math inline">\(k=5\)</span> is likely a good predictor.</p></li>
+<li><p>When <span class="math inline">\(k\)</span> is too large or too small, we are not balancing bias and variance well. But which extreme are we in? We can reason about this using the piecewise-constant regions:</p>
+<ul>
+<li><strong>Small <span class="math inline">\(k\)</span>:</strong> the fit has many narrow steps, so it is flexible enough to closely track the shape of <span class="math inline">\(\mathbb E[Y\mid X]\)</span> (<strong>low bias</strong>). But each step is an average of only a few points, so its height is heavily influenced by the noise in those specific <span class="math inline">\(Y_i\)</span> (<strong>high variance</strong>).</li>
+<li><strong>Large <span class="math inline">\(k\)</span>:</strong> each step averages many points, so its height is stable across training samples (<strong>low variance</strong>). But the fit now has only a few wide steps, and this coarse approximation is too rigid to capture the shape of <span class="math inline">\(\mathbb E[Y\mid X]\)</span> (<strong>high bias</strong>).</li>
+</ul></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="(Intuitive) Bias-Variance Tradeoff for kNN">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
