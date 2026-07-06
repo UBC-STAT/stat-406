@@ -179,39 +179,49 @@ We have:
 
 - What happens if we let $d \to \infty$?
 
-- Imagine that we made our basis expansions **random**, rather than fixed:
+- It turns out that, with a suitable choice of frequencies, the kernel function converges to a limit as $d \to \infty$. The kernel is an **average** over $d/2$ terms:
 
   \begin{align*}
-    \phi_{2j - 1} (X_i) = \frac{1}{\sqrt d} \cos(W_j X_i),
-    \quad
-    \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
-    \qquad
-    W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2)
+  k(x, x') = \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right],
   \end{align*}
 
-  i.e. we replace the fixed frequencies $2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}$ with random frequencies $W_i$ drawn from $\mathcal{N}(0, 1/\gamma^2)$.
-
-- Then our kernel function becomes:
+  and, as $d \to \infty$, this average converges to an **expectation**:
 
   \begin{align*}
-  k(x, x') &= \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right] \\
+  k(x, x') \;\xrightarrow{d \to \infty}\; \mathbb E_{W} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \right]
+  = e^{-\frac{1}{2 \gamma^2} (x - x')^2}.
   \end{align*}
 
-- For a fixed $x$ and $x'$, the summation terms $\left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right]$ are i.i.d. random variables.
+- This limiting kernel is known as the **Gaussian** (or **radial basis function, RBF**) kernel. It corresponds to a basis regressor with **infinitely many** basis functions.
 
-  <details>
-  <summary>Why?</summary>
-  After fixing $x$ and $x'$, the only random quantity is $W_j$. Since the $W_j$ are i.i.d., the summation terms are also i.i.d.
-  </details>
+::: {.callout-note collapse="true" title="(Advanced!) Why does the Limiting Kernel Converge?"}
 
-- By the law of large numbers, as $d \to \infty$, we have:
+To take $d \to \infty$, imagine that we make our basis expansions **random**, rather than fixed:
 
-  \begin{align*}
-  k(X, X') &\to \mathbb E_{W \sim \mathcal N(0, 1)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \mid X, X' \right] \\
-  &= e^{-\frac{1}{2 \gamma^2} (X - X')^2}
-  \end{align*}
+\begin{align*}
+  \phi_{2j - 1} (X_i) = \frac{1}{\sqrt d} \cos(W_j X_i),
+  \quad
+  \phi_{2j} (X_i) = \frac{1}{\sqrt d} \sin(W_j X_i)
+  \qquad
+  W_j \sim \text{i.i.d. } \mathcal{N}(0, 1/\gamma^2).
+\end{align*}
 
-  (Don't worry about the details of how to compute this expectation; just trust me that it is true!)
+That is, we replace the fixed frequencies $2 \pi, 4 \pi, \ldots, 2 \pi \frac{d}{2}$ with random frequencies $W_j$ drawn from $\mathcal{N}(0, 1/\gamma^2)$. The kernel function then becomes
+
+\begin{align*}
+k(x, x') = \frac{1}{d} \sum_{j=1}^{d/2} \left[ \cos(W_j x) \cos(W_j x') + \sin(W_j x) \sin(W_j x') \right].
+\end{align*}
+
+For a fixed $x$ and $x'$, the summation terms are i.i.d. random variables (after fixing $x$ and $x'$, the only random quantity is $W_j$, and the $W_j$ are i.i.d.). By the **law of large numbers**, the average converges to its expectation as $d \to \infty$:
+
+\begin{align*}
+k(x, x') &\to \mathbb E_{W \sim \mathcal N(0, 1/\gamma^2)} \left[ \cos(W x) \cos(W x') + \sin(W x) \sin(W x') \right] \\
+&= e^{-\frac{1}{2 \gamma^2} (x - x')^2}.
+\end{align*}
+
+(Don't worry about the details of how to compute this expectation; just trust me that it is true!)
+
+:::
 
 
 ### Infinitely Powerful Models in Closed Form
