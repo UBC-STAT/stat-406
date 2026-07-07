@@ -24,6 +24,9 @@ The entire site and all materials are Quarto (`.qmd`) files.
   (`lecture_01_*.qmd` … `lecture_20_*.qmd`), rendered to HTML. Format config is in
   that folder's `_metadata.yml`.
 - `schedule/Rcode/` — standalone `R` code for the lectures.
+- `schedule/notebooks/` — Jupyter notebooks that generate lecture figures into
+  `schedule/figures/`. Not rendered as part of the site; run manually to
+  regenerate plots.
 - `schedule/handouts/` — supplementary handouts (programming, RMarkdown, git lab).
 - `computing/` — platform-specific setup instructions
   (`mac_arm.qmd`, `mac_x86.qmd`, `ubuntu.qmd`, `windows.qmd`).
