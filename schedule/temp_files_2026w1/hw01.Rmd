@@ -1,0 +1,300 @@
+---
+title: "Homework 1 - The Learning Procedure"
+author: "[Your Name Here]"
+date: "Due 26 September at 11:59pm"
+output:
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    number_sections: true
+    toc: FALSE
+urlcolour: blue
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, error = TRUE)
+library(tidyverse)
+library(testthat)
+library(Stat406)
+theme_set(theme_bw()) # Remove the ggplot grey background, isn't it ugly?
+```
+
+
+### Instructions {.unnumbered}
+
+* Use the space inside of
+
+```
+  ::: {.solbox data-latex=""}
+
+
+  :::
+```
+
+to answer the following questions.
+
+
+* Do not move this file or copy it and work elsewhere. Work in the same directory.
+* Use a new branch named whatever you want. Create it now! Can't come up with something, try [here](https://alator21.github.io/repository-name-generator/).  Make a small change, say by adding your name. Commit and push now!
+* Try to Knit your file now. Are there errors? Fix them now, not at 11pm on the due date.
+* There MUST be some text between `::: {.solbox}` and the next `:::` or this will fail to Knit.
+* If your code or figures run off the edge of the `.pdf`, you'll lose 2 points automatically.
+* Be sure to add your name in the `author` field at the top.
+
+::: {.solbox data-latex=""}
+**Generative AI Self Report**
+
+If you use any generative AI tool on homeworks or labs,
+indicate here how you used the tools and how they contributed to your learning/ability to understand the assignment.
+Include every prompt that you used.
+
+This self report will not affect your grade in any way.
+Please be as honest as possible.
+
+* your response here *
+
+:::
+
+\clearpage
+
+# Forecasting COVID in BC
+
+In the course `Stat406` package, you will find COVID-19 case data for the five health
+authorities in BC. We're going to play with a few models for making forecasts.
+Your goal is to **predict 2-week ahead case counts for all 5 health authorities**.
+
+There are 2 BC Covid datasets we need for this assignment: `bccovid_train` and
+`bccovid_test`. Both have 6 variables: `HA`, `date`, `cases+14`, `cases+0`,
+`cases-7`, `cases-14`. `cases+14` is the response: it is the total number of
+cases observed in that specific HA, in the week ending 14 days after `date`.
+The other `cases` variables are features: the total number of cases in the week
+ending on the date, those for 1 week earlier and those for 2 weeks earlier. For
+complete descriptions, try `?bccovid` after loading the course package (or
+examine the package documentation on the
+[web](https://ubc-stat.github.io/stat-406-rpackage/reference/bccovid.html)).
+
+## (1 point)
+
+Using only the training data:
+a. (0.5 point) make a plot of today's cases over time. colour the points by
+health authority.
+b. (0.5 point) Write a few sentences discussing the data. Describe any
+similarities or differences across health authorities you notice. How do cases
+seem to "evolve" over time?
+
+> **Hint:** to use these covariates in `ggplot()`, you have to put them inside "backtick" marks, like `` `cases+0` ``.
+
+::: {.solbox data-latex=""}
+
+a.
+
+```{r q1-solution}
+
+```
+
+
+b.
+
+:::
+
+
+\clearpage
+
+## (2 points)
+
+Estimate a linear model of 2-week ahead cases (`cases+14`) on the three other
+case features using the training data.
+
+a. (0.25 points) Plot the residuals against time (again coloured by HA).
+b. (0.5 points) Make a QQ-plot of the residuals (coloured by HA). Do these plots
+seem support the standard assumptions for a linear model? Why or why not?
+c. (0.5 point) Report the slope coefficient on `cases+0`. Describe what this coefficient means in the context of this problem. Does this interpretation make
+sense, why or why not?
+d. (0.75 points) Does this model seem appropriate? Justify your answer.
+
+**Hint:** to use these covariates in a formula, you have to put them inside "backtick" marks, like `` `cases+0` ``.
+
+::: {.solbox data-latex=""}
+
+a.
+
+```{r q2-solution}
+
+```
+
+b.
+
+```{r q2-solb}
+
+```
+
+
+c.
+
+d.
+
+e.
+:::
+
+
+
+\clearpage
+
+## (2 points)
+
+Examine the `bcpop` data set. Using an appropriate `*_join()`, add this column
+to the training data. Now scale all the columns by the population to get
+"cases per capita". Multiply by 100,000 just to get reasonable looking numbers.
+
+* (0.5 point) Make a plot of today's cases over time scaled by population (and
+coloured by HA). Furthermore, scale the y-axis on the `log10()` scale. (Hint:
+try `?scale_y_log10`). How does this compare to the plot in Question 1.1?
+Write 2 complete sentences.
+* (1.5 points) Repeat Question 1.2 with both your scaled data after taking
+`log()` of all the predictors AND using HA as a categorical predictor.
+
+::: {.solbox data-latex=""}
+
+**First bullet.**
+```{r q3-solution}
+
+```
+
+\clearpage
+
+**Repeat Q2 with different data.**
+
+a.
+
+```{r q3-solb}
+
+```
+
+b.
+
+c.
+
+d.
+
+e.
+
+:::
+
+
+## (1 point)
+
+Plot the fitted values from the two models against each other (fits
+from the Question 1.2 on the x-axis, with fits from Question 1.3 on the y-axis).
+Be sure to transform them as needed to be comparable. Colour the points by HA.
+What do you notice?
+
+::: {.solbox data-latex=""}
+
+```{r q4-solution}
+
+```
+
+(placeholder text)
+
+:::
+
+
+\clearpage
+
+## (1 point)
+
+Calculate the root mean squared error of both
+models. Discuss the results in 2 sentences.
+
+::: {.solbox data-latex=""}
+
+```{r q5-sol-table}
+
+```
+
+(placeholder text)
+
+:::
+
+
+## (1 point)
+
+Use the K-fold CV function from class (loaded below) to compare these two models
+(the first model being the one with `bccovid_train` from Question 1.2, and the second being the one with the log of case rates and the factor for HA from
+Question 1.3). Use $K = 10$. In order to do this, you'll need to be sure that
+the errors are on the same scale.
+
+Use `Cases` as the scale. This means you'll have to specify the model and the
+error function carefully.
+
+a. (0.5 points) What are the CV scores for both models?
+b. (0.25 points) Which do you prefer?
+c. (0.25 points) How much more accurate is it?
+
+```{r kfoldcv}
+#' @param data The full data set
+#' @param estimator Function. Has 1 argument (some data) and fits a model.
+#' @param predictor Function. Has 2 args (the fitted model, the_newdata) and
+#'   produces predictions
+#' @param error_fun Function. Has one arg: the test data, with fits added.
+#' @param kfolds Integer. The number of folds.
+kfold_cv <- function(data, estimator, predictor, error_fun, kfolds = 5) {
+  n <- nrow(data)
+  fold.labels <- sample(rep(1:kfolds, length.out = n))
+  errors <- double(kfolds)
+  for (fold in 1:kfolds) {
+    test.rows <- fold.labels == fold
+    train <- data[!test.rows, ]
+    test <- data[test.rows, ]
+    current_model <- estimator(train)
+    test$.preds <- predictor(current_model, test)
+    errors[fold] <- error_fun(test)
+  }
+  mean(errors)
+}
+```
+
+::: {.solbox data-latex=""}
+
+```{r q6-solution}
+
+```
+
+a.
+
+b.
+
+c.
+
+:::
+
+
+\clearpage
+
+## (1 point)
+
+Use your preferred model to predict the test set.
+a. (0.25 points) Plot the actual values and the predictions, coloured by HA.
+Use lines for the predictions and dots for the observations.
+b. (0.25 points) For each HA, how accurate is the prediction on average
+(what is the mean absolute error on the scale of cases)?
+c. (0.25 points) What about overall?
+d. (0.25 points) How does this compare to the CV score you computed above?
+
+::: {.solbox data-latex=""}
+
+a.
+```{r q7-solution}
+
+
+```
+
+b.
+
+c.
+
+d.
+
+:::
+
