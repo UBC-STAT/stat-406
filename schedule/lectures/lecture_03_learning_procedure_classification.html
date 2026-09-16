@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Geoff Pleiss">
-<meta name="dcterms.date" content="2026-09-13">
+<meta name="dcterms.date" content="2026-09-16">
 
 <title>Lecture 3: Introduction to Learning (Cont.), Classification, Logistic Regression – UBC Stat406 2026 W1</title>
 <style>
@@ -170,7 +170,7 @@ window.Quarto = {
   <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a>
   <ul class="collapse">
   <li><a href="#making-predictions-using-decision-theory" id="toc-making-predictions-using-decision-theory" class="nav-link" data-scroll-target="#making-predictions-using-decision-theory">Making Predictions Using Decision Theory</a></li>
-  <li><a href="#how-costs-affect-decisions" id="toc-how-costs-affect-decisions" class="nav-link" data-scroll-target="#how-costs-affect-decisions">How Costs Affect Decisions</a></li>
+  <li><a href="#how-prediction-loss-affect-decisions" id="toc-how-prediction-loss-affect-decisions" class="nav-link" data-scroll-target="#how-prediction-loss-affect-decisions">How Prediction Loss Affect Decisions</a></li>
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
@@ -198,7 +198,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 13, 2026</p>
+      <p class="date">September 16, 2026</p>
     </div>
   </div>
   
@@ -474,15 +474,15 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 <section id="making-predictions-using-decision-theory" class="level3">
 <h3 class="anchored" data-anchor-id="making-predictions-using-decision-theory">Making Predictions Using Decision Theory</h3>
 <ul>
-<li><p>We begin by assuming there is some cost <span class="math inline">\(c\)</span> associated with an incorrect prediction.</p></li>
-<li><p>A common cost-function for classification is:</p>
+<li><p>We begin by assuming there is some loss <span class="math inline">\(L_{\text{pred}}\)</span> associated with an incorrect prediction.</p></li>
+<li><p>A common loss-function for classification is:</p>
 <p><span class="math display">\[
-    c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+    L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
        1 &amp; Y_\mathrm{new} \ne \hat Y_\mathrm{new} \\
        0 &amp; Y_\mathrm{new} = \hat Y_\mathrm{new}
     \end{cases},
 \]</span></p>
-<p>often referred to as the <strong>0/1 cost</strong>.</p></li>
+<p>often referred to as the <strong>0/1 loss</strong>.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="(Important) $c$ is Theoretical">
 <div class="callout-header d-flex align-content-center">
@@ -496,19 +496,19 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 <div class="callout-body-container callout-body">
 <ul>
 <li>When using this model to make predictions in practice, we won’t ever know the “true” <span class="math inline">\(Y_\mathrm{new}\)</span>. We only see <span class="math inline">\(X_\mathrm{new}\)</span></li>
-<li>Therefore, this cost is generally not something we compute; it’s a theoretical quantity that we can reason about.</li>
-<li>Intuitively, the cost measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.</li>
+<li>Therefore, this loss is generally not something we compute; it’s a theoretical quantity that we can reason about.</li>
+<li>Intuitively, the loss measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.</li>
 </ul>
 </div>
 </div>
 <ul>
 <li><p>Since we don’t know the true responses, we instead have to reason about them probabilistically using our estimated <span class="math inline">\(\hat f\)</span>:</p>
 <p><span class="math display">\[ Y_\mathrm{new} \mid X_\mathrm{new} \sim \mathrm{Bern}( \sigma(\hat f(X_\mathrm{new}))), \]</span></p>
-<p>and thus we can think about the <em>expected cost</em> of a prediction:</p>
-<p><span class="math display">\[ \mathbb E[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
-<li><p>According to <strong>decision theory</strong>, the best choice for <span class="math inline">\(\hat Y_\mathrm{new}\)</span> is the one that minimizes expected cost:</p>
-<p><span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
-<li><p>Perhaps unsurprisingly, under the 0/1 cost, this decision simplifies down to:</p>
+<p>and thus we can think about the <em>expected loss</em> of a prediction:</p>
+<p><span class="math display">\[ \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
+<li><p>According to <strong>decision theory</strong>, the best choice for <span class="math inline">\(\hat Y_\mathrm{new}\)</span> is the one that minimizes expected loss:</p>
+<p><span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. \]</span></p></li>
+<li><p>Perhaps unsurprisingly, under the 0/1 loss, this decision simplifies down to:</p>
 <p><span class="math display">\[ \hat Y_\mathrm{new} = \begin{cases}
     1 &amp; \hat f(X_\mathrm{new}) \geq 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) \geq 0.5, \: \hat \pi_0(X_\mathrm{new}) &lt; 0.5 \text{)} \\
     0 &amp; \hat f(X_\mathrm{new}) &lt; 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) &lt; 0.5, \: \hat \pi_0(X_\mathrm{new}) \geq 0.5 \text{)}
@@ -517,14 +517,14 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 <summary>
 <p>Derivation</p>
 </summary>
-<p>The expected 0/1 cost of predicting <span class="math inline">\(\hat y_\mathrm{new}\)</span> is a sum over the two possible outcomes, each weighted by its probability under our model: <span class="math display">\[\begin{align*}
+<p>The expected 0/1 loss of predicting <span class="math inline">\(\hat y_\mathrm{new}\)</span> is a sum over the two possible outcomes, each weighted by its probability under our model: <span class="math display">\[\begin{align*}
     \hat{Y}_\mathrm{new}
     &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{E}[ \mathbb{I}(Y_\mathrm{new} \neq \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f] \\
     &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{P}(Y_\mathrm{new} \neq \hat y_\mathrm{new} \mid X_\mathrm{new}, \hat f) \\
     &amp;= \mathrm{argmin}_{\hat y_\mathrm{new}} \left[
        \underbrace{\hat \pi_1(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 1)} \, \mathbb{I}(\hat y_\mathrm{new} = 0) +
        \underbrace{\hat \pi_0(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 0)} \, \mathbb{I}(\hat y_\mathrm{new} = 1) \right].
-    \end{align*}\]</span> We should therefore predict <span class="math inline">\(\hat y_\mathrm{new} = 1\)</span> whenever doing so incurs the smaller expected cost, i.e.&nbsp;whenever <span class="math inline">\(\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})\)</span>. Since <span class="math inline">\(\hat \pi_0 = 1 - \hat \pi_1\)</span>, this is exactly the condition <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq 0.5\)</span>. Finally, recall that <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5\)</span> if and only if <span class="math inline">\(\hat f(X_\mathrm{new}) \geq 0\)</span>.</p>
+    \end{align*}\]</span> We should therefore predict <span class="math inline">\(\hat y_\mathrm{new} = 1\)</span> whenever doing so incurs the smaller expected loss, i.e.&nbsp;whenever <span class="math inline">\(\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})\)</span>. Since <span class="math inline">\(\hat \pi_0 = 1 - \hat \pi_1\)</span>, this is exactly the condition <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq 0.5\)</span>. Finally, recall that <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5\)</span> if and only if <span class="math inline">\(\hat f(X_\mathrm{new}) \geq 0\)</span>.</p>
 </details></li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="The Decision Boundary">
@@ -552,20 +552,20 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 </div>
 </div>
 </section>
-<section id="how-costs-affect-decisions" class="level3">
-<h3 class="anchored" data-anchor-id="how-costs-affect-decisions">How Costs Affect Decisions</h3>
+<section id="how-prediction-loss-affect-decisions" class="level3">
+<h3 class="anchored" data-anchor-id="how-prediction-loss-affect-decisions">How Prediction Loss Affect Decisions</h3>
 <ul>
-<li><p>While the derivation above was perhaps a complicated way to obtain a simple prediction rule, decision theory shows its power when we start considering alternative costs.</p></li>
+<li><p>While the derivation above was perhaps a complicated way to obtain a simple prediction rule, decision theory shows its power when we start considering alternative loss functions.</p></li>
 <li><p>For example, imagine a world where <strong>false-positive predictions</strong> (predicting <span class="math inline">\(\hat Y = 1\)</span> when <span class="math inline">\(Y=0\)</span>) were twice as bad as <strong>false-negative predictions</strong> (predicting <span class="math inline">\(\hat Y = 0\)</span> when <span class="math inline">\(Y=1\)</span>).</p>
 <ul>
-<li><p>We could codify this idea into a cost function:</p>
-<p><span class="math display">\[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+<li><p>We could codify this idea into a loss function:</p>
+<p><span class="math display">\[ L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
 0 &amp; \hat Y_\mathrm{new} = Y_\mathrm{new} \quad \text{(correct prediction)} \\
 2 &amp; \hat Y_\mathrm{new} = 1, \: Y_\mathrm{new} = 0 \quad \text{(false positive)} \\
 1 &amp; \hat Y_\mathrm{new} = 0, \: Y_\mathrm{new} = 1 \quad \text{(false negative)}
 \end{cases}. \]</span></p></li>
-<li><p>Now considering our decision theoretic rule: <span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], \]</span></p>
-<p>the <span class="math inline">\(\hat f\)</span> estimate is the same as above but now the cost function <span class="math inline">\(c\)</span> is different. Thus we should end up with a different rule for <span class="math inline">\(\hat Y_\mathrm{new}\)</span>.</p></li>
+<li><p>Now considering our decision theoretic rule: <span class="math display">\[ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], \]</span></p>
+<p>the <span class="math inline">\(\hat f\)</span> estimate is the same as above but now the loss function <span class="math inline">\(L_{\text{pred}}\)</span> is different. Thus we should end up with a different rule for <span class="math inline">\(\hat Y_\mathrm{new}\)</span>.</p></li>
 <li><p>Turning the crank, we have:</p>
 <p><span class="math display">\[ \hat Y_\mathrm{new} = \begin{cases}
 1 &amp; \hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3} \quad \text{(alternatively, } \hat f(X_\mathrm{new}) \geq \log 2 \text{)} \\
@@ -576,10 +576,10 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 <summary>
 <p>Derivation</p>
 </summary>
-<p>The expected costs of the two possible predictions are <span class="math display">\[\begin{align*}
-       \mathbb E[ c(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &amp;= 2 \, \hat \pi_0(X_\mathrm{new}) &amp; \text{(cost 2 incurred only if } Y_\mathrm{new} = 0), \\
-       \mathbb E[ c(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &amp;= 1 \, \hat \pi_1(X_\mathrm{new}) &amp; \text{(cost 1 incurred only if } Y_\mathrm{new} = 1).
-    \end{align*}\]</span> We predict <span class="math inline">\(\hat Y_\mathrm{new} = 1\)</span> whenever its expected cost is no larger, i.e.&nbsp;whenever <span class="math display">\[\begin{align*}
+<p>The expected loss of the two possible predictions are <span class="math display">\[\begin{align*}
+       \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &amp;= 2 \, \hat \pi_0(X_\mathrm{new}) &amp; \text{(loss 2 incurred only if } Y_\mathrm{new} = 0), \\
+       \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &amp;= 1 \, \hat \pi_1(X_\mathrm{new}) &amp; \text{(loss 1 incurred only if } Y_\mathrm{new} = 1).
+    \end{align*}\]</span> We predict <span class="math inline">\(\hat Y_\mathrm{new} = 1\)</span> whenever its expected loss is no larger, i.e.&nbsp;whenever <span class="math display">\[\begin{align*}
        2 \, \hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new}).
     \end{align*}\]</span> Substituting <span class="math inline">\(\hat \pi_0 = 1 - \hat \pi_1\)</span> and solving: <span class="math display">\[\begin{align*}
        2 \left(1 - \hat \pi_1(X_\mathrm{new})\right) \leq \hat \pi_1(X_\mathrm{new})
@@ -588,7 +588,7 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
     \end{align*}\]</span> Finally, since <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new}))\)</span>, the condition <span class="math inline">\(\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}\)</span> is equivalent to <span class="math inline">\(\hat f(X_\mathrm{new}) \geq \log\left(\tfrac{2/3}{1/3}\right) = \log 2\)</span>.</p>
 </details></li>
 </ul></li>
-<li><p>In general, we can encode any weighting of false positives versus false negatives into the cost, and the resulting rule is just a threshold on <span class="math inline">\(\hat \pi_1(X_\mathrm{new})\)</span> (equivalently, on <span class="math inline">\(\hat f(X_\mathrm{new})\)</span>) that shifts with the relative costs.</p></li>
+<li><p>In general, we can encode any weighting of false positives versus false negatives into the loss, and the resulting rule is just a threshold on <span class="math inline">\(\hat \pi_1(X_\mathrm{new})\)</span> (equivalently, on <span class="math inline">\(\hat f(X_\mathrm{new})\)</span>) that shifts with the relative loss</p></li>
 </ul>
 </section>
 </section>
@@ -599,8 +599,8 @@ L_\mathrm{logistic}(Y, \hat f(X)) = -Y \log \hat \pi_1(X) - (1 - Y) \log \hat \p
 <li><p><strong>Statistical Model</strong>: The log-odds model provides a principled way to model binary responses while ensuring probabilities stay in <span class="math inline">\([0, 1]\)</span>.</p></li>
 <li><p><strong>Hypothesis Class</strong>: We can estimate the log-odds ratio with a linear function of the covariates. (There are more complicated hypothesis classes which we’ll explore in future lectures.)</p></li>
 <li><p><strong>Estimation</strong>: The logistic regression ERM solution cannot be computed analytically; it requires numerical methods such as gradient descent.</p></li>
-<li><p><strong>Prediction</strong>: The optimal prediction rule depends on the cost function.</p></li>
-<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> cost, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \hat \beta = 0\)</span>.</p></li>
+<li><p><strong>Prediction</strong>: The optimal prediction rule depends on the prediction loss function, <span class="math inline">\(L_{\text{pred}}\)</span>.</p></li>
+<li><p><strong>Linear Decision Boundary</strong>: Under the <span class="math inline">\(0/1\)</span> loss for prediction, the <span class="math inline">\(Y=0\)</span> and <span class="math inline">\(Y=1\)</span> predictions are separated by a hyperplane defined by the decision boundary <span class="math inline">\(X^\top \hat \beta = 0\)</span>.</p></li>
 </ol>
 <p>In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.</p>
 
