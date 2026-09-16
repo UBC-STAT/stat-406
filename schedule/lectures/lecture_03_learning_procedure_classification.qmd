@@ -225,38 +225,38 @@ for which we turn to the field of **decision theory**.
 
 ### Making Predictions Using Decision Theory
 
-- We begin by assuming there is some cost $c$ associated with an incorrect prediction.
+- We begin by assuming there is some loss $L_{\text{pred}}$ associated with an incorrect prediction.
 
-- A common cost-function for classification is:
+- A common loss-function for classification is:
 
    $$
-      c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+      L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
          1 & Y_\mathrm{new} \ne \hat Y_\mathrm{new} \\
          0 & Y_\mathrm{new} = \hat Y_\mathrm{new}
       \end{cases},
    $$
 
-   often referred to as the **0/1 cost**.
+   often referred to as the **0/1 loss**.
 
 :::{.callout-note title="(Important) $c$ is Theoretical"}
 - When using this model to make predictions in practice, we won't ever know the "true" $Y_\mathrm{new}$. We only see $X_\mathrm{new}$
-- Therefore, this cost is generally not something we compute; it's a theoretical quantity that we can reason about.
-- Intuitively, the cost measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.
+- Therefore, this loss is generally not something we compute; it's a theoretical quantity that we can reason about.
+- Intuitively, the loss measures how bad our predictions would look in hindsight if eventually we were to find out the true responses associated with our predictions.
 :::
 
 - Since we don't know the true responses, we instead have to reason about them probabilistically using our estimated $\hat f$:
 
    $$ Y_\mathrm{new} \mid X_\mathrm{new} \sim \mathrm{Bern}( \sigma(\hat f(X_\mathrm{new}))), $$
 
-   and thus we can think about the *expected cost* of a prediction:
+   and thus we can think about the *expected loss* of a prediction:
 
-   $$ \mathbb E[ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
+   $$ \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
 
-- According to **decision theory**, the best choice for $\hat Y_\mathrm{new}$ is the one that minimizes expected cost:
+- According to **decision theory**, the best choice for $\hat Y_\mathrm{new}$ is the one that minimizes expected loss:
 
-   $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
+   $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f]. $$
 
-- Perhaps unsurprisingly, under the 0/1 cost, this decision simplifies down to:
+- Perhaps unsurprisingly, under the 0/1 loss, this decision simplifies down to:
 
    $$ \hat Y_\mathrm{new} = \begin{cases}
       1 & \hat f(X_\mathrm{new}) \geq 0 \quad \text{(alternatively, } \hat \pi_1(X_\mathrm{new}) \geq 0.5, \: \hat \pi_0(X_\mathrm{new}) < 0.5 \text{)} \\
@@ -265,7 +265,7 @@ for which we turn to the field of **decision theory**.
 
    <details>
       <summary>Derivation</summary>
-      The expected 0/1 cost of predicting $\hat y_\mathrm{new}$ is a sum over the two possible outcomes, each weighted by its probability under our model:
+      The expected 0/1 loss of predicting $\hat y_\mathrm{new}$ is a sum over the two possible outcomes, each weighted by its probability under our model:
       \begin{align*}
       \hat{Y}_\mathrm{new}
       &= \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb{E}[ \mathbb{I}(Y_\mathrm{new} \neq \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f] \\
@@ -274,7 +274,7 @@ for which we turn to the field of **decision theory**.
          \underbrace{\hat \pi_1(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 1)} \, \mathbb{I}(\hat y_\mathrm{new} = 0) +
          \underbrace{\hat \pi_0(X_\mathrm{new})}_{\mathbb{P}(Y_\mathrm{new} = 0)} \, \mathbb{I}(\hat y_\mathrm{new} = 1) \right].
       \end{align*}
-      We should therefore predict $\hat y_\mathrm{new} = 1$ whenever doing so incurs the smaller expected cost, i.e. whenever $\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})$. Since $\hat \pi_0 = 1 - \hat \pi_1$, this is exactly the condition $\hat \pi_1(X_\mathrm{new}) \geq 0.5$. Finally, recall that $\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5$ if and only if $\hat f(X_\mathrm{new}) \geq 0$.
+      We should therefore predict $\hat y_\mathrm{new} = 1$ whenever doing so incurs the smaller expected loss, i.e. whenever $\hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new})$. Since $\hat \pi_0 = 1 - \hat \pi_1$, this is exactly the condition $\hat \pi_1(X_\mathrm{new}) \geq 0.5$. Finally, recall that $\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new})) \geq 0.5$ if and only if $\hat f(X_\mathrm{new}) \geq 0$.
    </details>
 
 :::{.callout-tip title="The Decision Boundary"}
@@ -291,25 +291,25 @@ for which we turn to the field of **decision theory**.
 :::
 
 
-### How Costs Affect Decisions
+### How Prediction Loss Affect Decisions
 
 - While the derivation above was perhaps a complicated way to obtain a simple prediction rule,
-   decision theory shows its power when we start considering alternative costs.
+   decision theory shows its power when we start considering alternative loss functions.
 
 - For example, imagine a world where **false-positive predictions** (predicting $\hat Y = 1$ when $Y=0$) were twice as bad as **false-negative predictions** (predicting $\hat Y = 0$ when $Y=1$).
 
-   - We could codify this idea into a cost function:
+   - We could codify this idea into a loss function:
 
-      $$ c(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
+      $$ L_{\text{pred}}(Y_\mathrm{new}, \hat Y_\mathrm{new}) = \begin{cases}
       0 & \hat Y_\mathrm{new} = Y_\mathrm{new} \quad \text{(correct prediction)} \\
       2 & \hat Y_\mathrm{new} = 1, \: Y_\mathrm{new} = 0 \quad \text{(false positive)} \\
       1 & \hat Y_\mathrm{new} = 0, \: Y_\mathrm{new} = 1 \quad \text{(false negative)}
       \end{cases}. $$
 
    - Now considering our decision theoretic rule:
-      $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ c(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], $$
+      $$ \hat Y_\mathrm{new} = \mathrm{argmin}_{\hat y_\mathrm{new}} \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, \hat y_\mathrm{new}) \mid X_\mathrm{new}, \hat f], $$
 
-      the $\hat f$ estimate is the same as above but now the cost function $c$ is different. Thus we should end up with a different rule for $\hat Y_\mathrm{new}$.
+      the $\hat f$ estimate is the same as above but now the loss function $L_{\text{pred}}$ is different. Thus we should end up with a different rule for $\hat Y_\mathrm{new}$.
 
    - Turning the crank, we have:
 
@@ -322,12 +322,12 @@ for which we turn to the field of **decision theory**.
 
       <details>
          <summary>Derivation</summary>
-         The expected costs of the two possible predictions are
+         The expected loss of the two possible predictions are
          \begin{align*}
-            \mathbb E[ c(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &= 2 \, \hat \pi_0(X_\mathrm{new}) & \text{(cost 2 incurred only if } Y_\mathrm{new} = 0), \\
-            \mathbb E[ c(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &= 1 \, \hat \pi_1(X_\mathrm{new}) & \text{(cost 1 incurred only if } Y_\mathrm{new} = 1).
+            \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, 1) \mid X_\mathrm{new}, \hat f] &= 2 \, \hat \pi_0(X_\mathrm{new}) & \text{(loss 2 incurred only if } Y_\mathrm{new} = 0), \\
+            \mathbb E[ L_{\text{pred}}(Y_\mathrm{new}, 0) \mid X_\mathrm{new}, \hat f] &= 1 \, \hat \pi_1(X_\mathrm{new}) & \text{(loss 1 incurred only if } Y_\mathrm{new} = 1).
          \end{align*}
-         We predict $\hat Y_\mathrm{new} = 1$ whenever its expected cost is no larger, i.e. whenever
+         We predict $\hat Y_\mathrm{new} = 1$ whenever its expected loss is no larger, i.e. whenever
          \begin{align*}
             2 \, \hat \pi_0(X_\mathrm{new}) \leq \hat \pi_1(X_\mathrm{new}).
          \end{align*}
@@ -340,7 +340,7 @@ for which we turn to the field of **decision theory**.
          Finally, since $\hat \pi_1(X_\mathrm{new}) = \sigma(\hat f(X_\mathrm{new}))$, the condition $\hat \pi_1(X_\mathrm{new}) \geq \tfrac{2}{3}$ is equivalent to $\hat f(X_\mathrm{new}) \geq \log\left(\tfrac{2/3}{1/3}\right) = \log 2$.
       </details>
 
-- In general, we can encode any weighting of false positives versus false negatives into the cost, and the resulting rule is just a threshold on $\hat \pi_1(X_\mathrm{new})$ (equivalently, on $\hat f(X_\mathrm{new})$) that shifts with the relative costs.
+- In general, we can encode any weighting of false positives versus false negatives into the loss, and the resulting rule is just a threshold on $\hat \pi_1(X_\mathrm{new})$ (equivalently, on $\hat f(X_\mathrm{new})$) that shifts with the relative loss
 
 
 
@@ -355,9 +355,9 @@ This lecture extended the statistical framework from regression to classificatio
 
 3. **Estimation**: The logistic regression ERM solution cannot be computed analytically; it requires numerical methods such as gradient descent.
 
-4. **Prediction**: The optimal prediction rule depends on the cost function.
+4. **Prediction**: The optimal prediction rule depends on the prediction loss function, $L_{\text{pred}}$.
 
-5. **Linear Decision Boundary**: Under the $0/1$ cost, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \hat \beta = 0$.
+5. **Linear Decision Boundary**: Under the $0/1$ loss for prediction, the $Y=0$ and $Y=1$ predictions are separated by a hyperplane defined by the decision boundary $X^\top \hat \beta = 0$.
 
 
 In the next lecture, we will explore the last remaining steps of the learning procedure: model selection and evaluation.
